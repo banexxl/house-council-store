@@ -1,6 +1,7 @@
 "use client"
 
-import { Box, Button, Card, Container, Divider, Grid, MenuItem, TextField, Typography } from "@mui/material"
+import { Box, Button, Card, Container, Divider, MenuItem, TextField, Typography } from "@mui/material"
+import Grid from '@mui/material/Grid2';
 import EmailIcon from "@mui/icons-material/Email"
 import PhoneIcon from "@mui/icons-material/Phone"
 import LocationOnIcon from "@mui/icons-material/LocationOn"
@@ -24,23 +25,23 @@ export default function ContactPage() {
           </Box>
 
           <Grid container spacing={6}>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Typography variant="h4" gutterBottom>
                 Get in Touch
               </Typography>
-              <Typography variant="body1" color="text.secondary" paragraph>
+              <Typography variant="body1" color="text.secondary">
                 Fill out the form and our team will get back to you within 24 hours.
               </Typography>
 
               <Box component="form" sx={{ mt: 4 }}>
                 <Grid container spacing={3}>
-                  <Grid item xs={12}>
+                  <Grid size={{ xs: 12, md: 6 }}>
                     <TextField fullWidth label="Full Name" variant="outlined" placeholder="Enter your full name" />
                   </Grid>
-                  <Grid item xs={12}>
+                  <Grid size={{ xs: 12, md: 6 }}>
                     <TextField fullWidth label="Email" variant="outlined" placeholder="Enter your email" type="email" />
                   </Grid>
-                  <Grid item xs={12}>
+                  <Grid size={{ xs: 12 }}>
                     <TextField fullWidth select label="Subject" variant="outlined" defaultValue="">
                       <MenuItem value="">Select a subject</MenuItem>
                       <MenuItem value="general">General Inquiry</MenuItem>
@@ -50,7 +51,7 @@ export default function ContactPage() {
                       <MenuItem value="other">Other</MenuItem>
                     </TextField>
                   </Grid>
-                  <Grid item xs={12}>
+                  <Grid size={{ xs: 12 }}>
                     <TextField
                       fullWidth
                       label="Message"
@@ -60,7 +61,7 @@ export default function ContactPage() {
                       rows={5}
                     />
                   </Grid>
-                  <Grid item xs={12}>
+                  <Grid size={{ xs: 12 }}>
                     <Button variant="contained" size="large" fullWidth>
                       Send Message
                     </Button>
@@ -69,7 +70,7 @@ export default function ContactPage() {
               </Box>
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Typography variant="h4" gutterBottom>
                 Contact Information
               </Typography>
