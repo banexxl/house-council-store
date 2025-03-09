@@ -24,6 +24,8 @@ const navItems = [
   { name: "Documentation", path: "/docs" },
   { name: "Pricing", path: "/pricing" },
   { name: "Contact", path: "/contact" },
+  { name: "Register", path: "/auth/register" },
+  { name: "Sign In", path: "/auth/sign-in" },
 ]
 
 export default function Header() {

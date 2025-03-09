@@ -6,7 +6,9 @@ import { Inter } from "next/font/google"
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v14-appRouter"
 import { ThemeProvider } from "@mui/material/styles"
 import CssBaseline from "@mui/material/CssBaseline"
+import './globals.css'
 import theme from "@/app/theme"
+import { Toaster } from "react-hot-toast"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -24,6 +26,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <AppRouterCacheProvider>
           <ThemeProvider theme={theme}>
+            <Toaster />
             <CssBaseline />
             {children}
           </ThemeProvider>
@@ -32,7 +35,3 @@ export default function RootLayout({
     </html>
   )
 }
-
-
-
-import './globals.css'
