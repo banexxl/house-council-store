@@ -71,7 +71,7 @@ export default function ForgotPasswordPage() {
                                              see the email, please check your spam folder.
                                         </Typography>
                                         <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
-                                             <Button variant="outlined" component={Link} href="/login">
+                                             <Button variant="outlined" component={Link} href="/auth/sign-in">
                                                   Return to Login
                                              </Button>
                                         </Box>
@@ -104,7 +104,7 @@ export default function ForgotPasswordPage() {
                                         </Button>
 
                                         <Box sx={{ textAlign: "center", mt: 2 }}>
-                                             <Link href="/login" style={{ textDecoration: "none" }}>
+                                             <Link href="/auth/sign-in" style={{ textDecoration: "none" }}>
                                                   <Typography variant="body2" color="primary">
                                                        Back to Login
                                                   </Typography>

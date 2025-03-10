@@ -11,13 +11,13 @@ import {
      Container,
      Divider,
      FormControlLabel,
-     Grid,
      IconButton,
      InputAdornment,
      Paper,
      TextField,
      Typography,
 } from "@mui/material"
+import Grid from "@mui/material/Grid2"
 import Visibility from "@mui/icons-material/Visibility"
 import VisibilityOff from "@mui/icons-material/VisibilityOff"
 import GoogleIcon from "@mui/icons-material/Google"
@@ -26,16 +26,16 @@ import AppleIcon from "@mui/icons-material/Apple"
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
+import { signInSchema } from "./sign-in-schema"
+import { signInUser } from "./sign-in-action"
+import { useRouter } from "next/navigation"
+import toast from "react-hot-toast"
 
-// Validation schema using Yup
-const validationSchema = Yup.object({
-     email: Yup.string().email("Enter a valid email").required("Email is required"),
-     password: Yup.string().required("Password is required"),
-})
+
 
 export default function LoginPage() {
      const [showPassword, setShowPassword] = useState(false)
-
+     const router = useRouter()
      const handleClickShowPassword = () => {
           setShowPassword(!showPassword)
      }
@@ -46,12 +46,22 @@ export default function LoginPage() {
                password: "",
                rememberMe: false,
           },
-          validationSchema: validationSchema,
-          onSubmit: (values) => {
-               // In a real application, you would handle the login here
-               console.log("Login submitted:", values)
-               // For demo purposes, let's simulate a successful login
-               alert("Login successful!")
+          validationSchema: signInSchema,
+          onSubmit: async (values) => {
+               const signInUserResponse = await signInUser(values)
+
+               if (signInUserResponse.success) {
+                    toast.success("Sign in successful!")
+                    router.push("/")
+               }
+
+               if (signInUserResponse.error) {
+                    toast.error(signInUserResponse.error.message ?
+                         signInUserResponse.error.message : signInUserResponse.error.hint ?
+                              signInUserResponse.error.hint : signInUserResponse.error.details
+                    )
+                    console.log(signInUserResponse.error)
+               }
           },
      })
 
@@ -84,7 +94,7 @@ export default function LoginPage() {
 
                               <Box component="form" onSubmit={formik.handleSubmit} noValidate>
                                    <Grid container spacing={3}>
-                                        <Grid item xs={12}>
+                                        <Grid size={{ xs: 12 }}>
                                              <TextField
                                                   fullWidth
                                                   id="email"
@@ -99,7 +109,7 @@ export default function LoginPage() {
                                              />
                                         </Grid>
 
-                                        <Grid item xs={12}>
+                                        <Grid size={{ xs: 12 }}>
                                              <TextField
                                                   fullWidth
                                                   id="password"
@@ -112,23 +122,25 @@ export default function LoginPage() {
                                                   onBlur={formik.handleBlur}
                                                   error={formik.touched.password && Boolean(formik.errors.password)}
                                                   helperText={formik.touched.password && formik.errors.password}
-                                                  InputProps={{
-                                                       endAdornment: (
-                                                            <InputAdornment position="end">
-                                                                 <IconButton
-                                                                      aria-label="toggle password visibility"
-                                                                      onClick={handleClickShowPassword}
-                                                                      edge="end"
-                                                                 >
-                                                                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                                                                 </IconButton>
-                                                            </InputAdornment>
-                                                       ),
+                                                  slotProps={{
+                                                       input: {
+                                                            endAdornment: (
+                                                                 <InputAdornment position="end">
+                                                                      <IconButton
+                                                                           aria-label="toggle password visibility"
+                                                                           onClick={handleClickShowPassword}
+                                                                           edge="end"
+                                                                      >
+                                                                           {showPassword ? <VisibilityOff /> : <Visibility />}
+                                                                      </IconButton>
+                                                                 </InputAdornment>
+                                                            ),
+                                                       }
                                                   }}
                                              />
                                         </Grid>
 
-                                        <Grid item xs={12}>
+                                        <Grid size={{ xs: 12 }}>
                                              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                                                   <FormControlLabel
                                                        control={
@@ -142,7 +154,7 @@ export default function LoginPage() {
                                                        }
                                                        label={<Typography variant="body2">Remember me</Typography>}
                                                   />
-                                                  <Link href="/forgot-password" style={{ textDecoration: "none" }}>
+                                                  <Link href="/auth/forgot-password" style={{ textDecoration: "none" }}>
                                                        <Typography variant="body2" color="primary">
                                                             Forgot password?
                                                        </Typography>
@@ -150,7 +162,7 @@ export default function LoginPage() {
                                              </Box>
                                         </Grid>
 
-                                        <Grid item xs={12}>
+                                        <Grid size={{ xs: 12 }}>
                                              <Button type="submit" fullWidth variant="contained" size="large" disabled={formik.isSubmitting}>
                                                   Sign In
                                              </Button>
@@ -167,7 +179,7 @@ export default function LoginPage() {
                               </Box>
 
                               <Grid container spacing={2}>
-                                   <Grid item xs={12}>
+                                   <Grid size={{ xs: 12 }}>
                                         <Button
                                              fullWidth
                                              variant="outlined"
@@ -180,7 +192,7 @@ export default function LoginPage() {
                                         </Button>
                                    </Grid>
 
-                                   <Grid item xs={12}>
+                                   <Grid size={{ xs: 12 }}>
                                         <Button
                                              fullWidth
                                              variant="outlined"
@@ -193,7 +205,7 @@ export default function LoginPage() {
                                         </Button>
                                    </Grid>
 
-                                   <Grid item xs={12}>
+                                   <Grid size={{ xs: 12 }}>
                                         <Button
                                              fullWidth
                                              variant="outlined"
@@ -210,7 +222,7 @@ export default function LoginPage() {
                               <Box sx={{ mt: 4, textAlign: "center" }}>
                                    <Typography variant="body2">
                                         Don't have an account?{" "}
-                                        <Link href="/register" style={{ textDecoration: "none", color: "primary" }}>
+                                        <Link href="/auth/register" style={{ textDecoration: "none", color: "primary" }}>
                                              <Typography component="span" variant="body2" color="primary" fontWeight={500}>
                                                   Sign up
                                              </Typography>

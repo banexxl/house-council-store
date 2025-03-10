@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import {
   AppBar,
@@ -18,22 +18,40 @@ import {
 } from "@mui/material"
 import MenuIcon from "@mui/icons-material/Menu"
 import ApartmentIcon from "@mui/icons-material/Apartment"
-
-const navItems = [
-  { name: "Home", path: "/" },
-  { name: "Documentation", path: "/docs" },
-  { name: "Pricing", path: "/pricing" },
-  { name: "Contact", path: "/contact" },
-  { name: "Register", path: "/auth/register" },
-  { name: "Sign In", path: "/auth/sign-in" },
-]
+import { getSession } from "@/lib/get-session"
 
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [session, setSession] = useState<{ user: any } | null>(null)
+
+  useEffect(() => {
+    const getSessionAsync = async () => {
+      const session = await getSession()
+      setSession(session)
+    }
+    getSessionAsync()
+  }, [])
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen)
   }
+
+  // Conditionally render menu items based on session state
+  const navItems = [
+    { name: "Home", path: "/" },
+    { name: "Documentation", path: "/docs" },
+    { name: "Pricing", path: "/pricing" },
+    { name: "Contact", path: "/contact" },
+    ...(session
+      ? [
+        { name: "Profile", path: "/profile" },
+        { name: "Sign Out", path: "/auth/sign-out" },
+      ]
+      : [
+        // { name: "Register", path: "/auth/register" },
+        { name: "Sign In", path: "/auth/sign-in" },
+      ]),
+  ]
 
   const drawer = (
     <Box onClick={handleDrawerToggle} sx={{ textAlign: "center" }}>
@@ -119,4 +137,3 @@ export default function Header() {
     </Box>
   )
 }
-

@@ -11,7 +11,6 @@ import {
   CardActions,
   CardContent,
   Container,
-  Grid,
   Paper,
   Tab,
   Tabs,
@@ -24,6 +23,7 @@ import {
   AccordionSummary,
   AccordionDetails,
 } from "@mui/material"
+import Grid from "@mui/material/Grid2"
 import CheckIcon from "@mui/icons-material/Check"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import Header from "@/components/Header"
@@ -144,7 +144,7 @@ export default function PricingPage() {
 
           <Grid container spacing={4} justifyContent="center">
             {pricingOptions.map((option) => (
-              <Grid item xs={12} md={4} key={option.title}>
+              <Grid size={{ xs: 12, md: 6, lg: 4 }} key={option.title}>
                 <Card
                   sx={{
                     height: "100%",
@@ -152,10 +152,10 @@ export default function PricingPage() {
                     flexDirection: "column",
                     ...(option.popular
                       ? {
-                          border: 2,
-                          borderColor: "primary.main",
-                          position: "relative",
-                        }
+                        border: 2,
+                        borderColor: "primary.main",
+                        position: "relative",
+                      }
                       : {}),
                   }}
                 >

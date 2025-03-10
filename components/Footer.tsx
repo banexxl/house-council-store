@@ -1,7 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { Box, Container, Grid, Typography, Divider, List, ListItem, ListItemText } from "@mui/material"
+import { Box, Container, Typography, Divider, List, ListItem, ListItemText } from "@mui/material"
+import Grid from "@mui/material/Grid2"
 import ApartmentIcon from "@mui/icons-material/Apartment"
 
 export default function Footer() {
@@ -9,7 +10,7 @@ export default function Footer() {
     <Box component="footer" sx={{ bgcolor: "background.paper", py: 6, borderTop: 1, borderColor: "divider" }}>
       <Container maxWidth="lg">
         <Grid container spacing={4}>
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
               <ApartmentIcon sx={{ mr: 1 }} />
               <Typography variant="h6" component="div" sx={{ fontWeight: 700 }}>
@@ -21,9 +22,9 @@ export default function Footer() {
             </Typography>
           </Grid>
 
-          <Grid item xs={12} md={8}>
+          <Grid size={{ xs: 12, md: 8 }}>
             <Grid container spacing={2}>
-              <Grid item xs={12} sm={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600 }}>
                   Product
                 </Typography>
@@ -46,7 +47,7 @@ export default function Footer() {
                 </List>
               </Grid>
 
-              <Grid item xs={12} sm={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600 }}>
                   Company
                 </Typography>
@@ -57,19 +58,19 @@ export default function Footer() {
                     </Link>
                   </ListItem>
                   <ListItem disablePadding>
-                    <Link href="#" style={{ textDecoration: "none", color: "inherit" }}>
+                    <Link href="/privacy-policy" style={{ textDecoration: "none", color: "inherit" }}>
                       <ListItemText primary="Privacy Policy" />
                     </Link>
                   </ListItem>
                   <ListItem disablePadding>
-                    <Link href="#" style={{ textDecoration: "none", color: "inherit" }}>
+                    <Link href="/terms" style={{ textDecoration: "none", color: "inherit" }}>
                       <ListItemText primary="Terms of Service" />
                     </Link>
                   </ListItem>
                 </List>
               </Grid>
 
-              <Grid item xs={12} sm={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600 }}>
                   Connect
                 </Typography>

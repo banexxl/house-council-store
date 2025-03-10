@@ -6,7 +6,6 @@ import { useState } from "react"
 import {
   Box,
   Container,
-  Grid,
   InputAdornment,
   Link as MuiLink,
   List,
@@ -18,6 +17,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material"
+import Grid from "@mui/material/Grid2"
 import SearchIcon from "@mui/icons-material/Search"
 import DescriptionIcon from "@mui/icons-material/Description"
 import Header from "@/components/Header"
@@ -83,7 +83,7 @@ export default function DocsPage() {
       <Box component="main" sx={{ flexGrow: 1 }}>
         <Container maxWidth="lg">
           <Grid container spacing={4} sx={{ pt: 4 }}>
-            <Grid item xs={12} md={3}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <Box
                 component="nav"
                 sx={{
@@ -169,7 +169,7 @@ export default function DocsPage() {
               </Box>
             </Grid>
 
-            <Grid item xs={12} md={9}>
+            <Grid size={{ xs: 12, md: 9 }}>
               <Box sx={{ typography: "body1" }}>
                 <Box id="getting-started">
                   <Typography

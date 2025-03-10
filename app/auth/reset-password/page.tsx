@@ -77,7 +77,7 @@ const getStrengthLabel = (strength: number): string => {
 
 export default function ResetPasswordPage() {
      const router = useRouter()
-     const searchParams = useSearchParams()
+
      const [showPassword, setShowPassword] = useState(false)
      const [showConfirmPassword, setShowConfirmPassword] = useState(false)
      const [isSubmitted, setIsSubmitted] = useState(false)
@@ -85,33 +85,6 @@ export default function ResetPasswordPage() {
      const [isTokenChecking, setIsTokenChecking] = useState(true)
      const [passwordStrength, setPasswordStrength] = useState(0)
 
-     // Get token from URL
-     const token = searchParams.get("token")
-
-     useEffect(() => {
-          // Validate token on component mount
-          const validateToken = async () => {
-               setIsTokenChecking(true)
-
-               try {
-                    // In a real app, you would verify the token with your backend
-                    // For demo purposes, we'll simulate a token check
-                    await new Promise((resolve) => setTimeout(resolve, 1500))
-
-                    // Simulate token validation (in a real app, this would be an API call)
-                    // For demo, we'll consider the token valid if it exists and is at least 10 chars
-                    const isValid = !!token && token.length >= 10
-                    setIsTokenValid(isValid)
-               } catch (error) {
-                    console.error("Error validating token:", error)
-                    setIsTokenValid(false)
-               } finally {
-                    setIsTokenChecking(false)
-               }
-          }
-
-          validateToken()
-     }, [token])
 
      const handleClickShowPassword = () => {
           setShowPassword(!showPassword)
@@ -130,7 +103,7 @@ export default function ResetPasswordPage() {
           onSubmit: async (values) => {
                try {
                     // In a real application, you would send the new password and token to your backend
-                    console.log("Password reset submitted:", { ...values, token })
+
 
                     // Simulate API call
                     await new Promise((resolve) => setTimeout(resolve, 1500))
@@ -187,13 +160,13 @@ export default function ResetPasswordPage() {
                                    <Typography variant="h5" gutterBottom>
                                         Invalid or Expired Link
                                    </Typography>
-                                   <Typography variant="body1" paragraph>
+                                   <Typography variant="body1" >
                                         The password reset link you clicked is invalid or has expired.
                                    </Typography>
-                                   <Typography variant="body2" color="text.secondary" paragraph>
+                                   <Typography variant="body2" color="text.secondary" >
                                         Password reset links are valid for 24 hours. Please request a new password reset link.
                                    </Typography>
-                                   <Button variant="contained" component={Link} href="/forgot-password" sx={{ mt: 2 }}>
+                                   <Button variant="contained" component={Link} href="/auth/forgot-password" sx={{ mt: 2 }}>
                                         Request New Reset Link
                                    </Button>
                               </Paper>
@@ -235,7 +208,7 @@ export default function ResetPasswordPage() {
                                         <Typography variant="body2" color="text.secondary" paragraph>
                                              You can now log in to your account with your new password.
                                         </Typography>
-                                        <Button variant="contained" component={Link} href="/login" sx={{ mt: 2 }}>
+                                        <Button variant="contained" component={Link} href="/auth/sign-in" sx={{ mt: 2 }}>
                                              Go to Login
                                         </Button>
                                    </Box>

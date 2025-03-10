@@ -1,6 +1,6 @@
 'use server'
 
-import { useServerSideSupabaseClient } from "@/lib/ss-supabase-client";
+import { useServerSideSupabaseClient } from "@/lib/ss-supabase-anon-client";
 
 export const resendRegistrationEmail = async (email: string): Promise<boolean> => {
 

@@ -55,10 +55,11 @@ export default function RegisterPage() {
           validationSchema: registrationSchema,
           onSubmit: async (values: RegisterFormValues) => {
                const { success, error }: { success: boolean, error?: ErrorType } = await registerUser(values);
+               console.log('error', error);
 
                if (success) {
                     toast.success("Registration successful!");
-                    router.push("/registration-confirmation");
+                    router.push("/auth/registration-confirmation");
                }
                if (error) {
                     if (error.code === '23505') {
@@ -116,7 +117,7 @@ export default function RegisterPage() {
                                                   name="email"
                                                   label="Email Address"
                                                   type="email"
-                                                  autoComplete="new-email"
+                                                  // autoComplete="new-email"
                                                   value={formik.values.email}
                                                   onChange={formik.handleChange}
                                                   onBlur={formik.handleBlur}
@@ -150,7 +151,7 @@ export default function RegisterPage() {
                                                   onBlur={formik.handleBlur}
                                                   error={formik.touched.password && Boolean(formik.errors.password)}
                                                   helperText={formik.touched.password && formik.errors.password}
-                                                  autoComplete="new-password"
+                                                  // autoComplete="new-password"
                                                   slotProps={{
                                                        input: {
                                                             endAdornment: (
@@ -180,7 +181,7 @@ export default function RegisterPage() {
                                                   onBlur={formik.handleBlur}
                                                   error={formik.touched.confirm_password && Boolean(formik.errors.confirm_password)}
                                                   helperText={formik.touched.confirm_password && formik.errors.confirm_password}
-                                                  autoComplete="new-password"
+                                                  // autoComplete="new-password"
                                                   slotProps={{
                                                        input: {
                                                             endAdornment: (
@@ -285,7 +286,7 @@ export default function RegisterPage() {
                               <Box sx={{ textAlign: "center" }}>
                                    <Typography variant="body2">
                                         Already have an account?{" "}
-                                        <Link href="/login" style={{ color: "primary" }}>
+                                        <Link href="/auth/sign-in" style={{ color: "primary" }}>
                                              Sign in
                                         </Link>
                                    </Typography>
