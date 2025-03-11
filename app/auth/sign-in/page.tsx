@@ -3,7 +3,6 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useFormik } from "formik"
-import * as Yup from "yup"
 import {
      Box,
      Button,
@@ -24,8 +23,6 @@ import GoogleIcon from "@mui/icons-material/Google"
 import FacebookIcon from "@mui/icons-material/Facebook"
 import AppleIcon from "@mui/icons-material/Apple"
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined"
-import Header from "@/components/Header"
-import Footer from "@/components/Footer"
 import { signInSchema } from "./sign-in-schema"
 import { signInUser } from "./sign-in-action"
 import { useRouter } from "next/navigation"
@@ -67,8 +64,6 @@ export default function LoginPage() {
 
      return (
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-               <Header />
-
                <Box component="main" sx={{ flexGrow: 1, py: { xs: 6, md: 10 } }}>
                     <Container maxWidth="sm">
                          <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
@@ -232,8 +227,6 @@ export default function LoginPage() {
                          </Paper>
                     </Container>
                </Box>
-
-               <Footer />
           </Box>
      )
 }

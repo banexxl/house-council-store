@@ -24,8 +24,6 @@ import {
 import Link from "next/link"
 import NavigateNextIcon from "@mui/icons-material/NavigateNext"
 import SecurityIcon from "@mui/icons-material/Security"
-import Header from "@/components/Header"
-import Footer from "@/components/Footer"
 
 // Table of contents items
 const tableOfContents = [
@@ -60,8 +58,6 @@ export default function PrivacyPolicyPage() {
 
      return (
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-               <Header />
-
                <Box component="main" sx={{ flexGrow: 1, py: { xs: 4, md: 6 } }}>
                     <Container maxWidth="lg">
                          {/* Breadcrumbs */}
@@ -545,8 +541,6 @@ export default function PrivacyPolicyPage() {
                          </Box>
                     </Container>
                </Box>
-
-               <Footer />
           </Box>
      )
 }

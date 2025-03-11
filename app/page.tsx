@@ -8,14 +8,12 @@ import ArrowForwardIcon from "@mui/icons-material/ArrowForward"
 import PeopleIcon from "@mui/icons-material/People"
 import ShieldIcon from "@mui/icons-material/Shield"
 import NotificationsIcon from "@mui/icons-material/Notifications"
-import Header from "@/components/Header"
-import Footer from "@/components/Footer"
 
 export default function Home() {
+
+
   return (
     <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-      <Header />
-
       <Box component="main" sx={{ flexGrow: 1 }}>
         {/* Hero Section */}
         <Box sx={{ py: { xs: 8, md: 12, lg: 16 } }}>
@@ -210,8 +208,6 @@ export default function Home() {
           </Container>
         </Box>
       </Box>
-
-      <Footer />
     </Box>
   )
 }

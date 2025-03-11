@@ -20,8 +20,6 @@ import {
 import EmailIcon from "@mui/icons-material/Email"
 import MarkEmailReadIcon from "@mui/icons-material/MarkEmailRead"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
-import Header from "@/components/Header"
-import Footer from "@/components/Footer"
 import { resendRegistrationEmail } from "./resend-email-action"
 
 export default function RegistrationConfirmationPage() {
@@ -54,8 +52,6 @@ export default function RegistrationConfirmationPage() {
 
      return (
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-               <Header />
-
                <Box component="main" sx={{ flexGrow: 1, py: { xs: 6, md: 10 } }}>
                     <Container maxWidth="md">
                          <Paper
@@ -175,8 +171,6 @@ export default function RegistrationConfirmationPage() {
                          </Paper>
                     </Container>
                </Box>
-
-               <Footer />
           </Box>
      )
 }

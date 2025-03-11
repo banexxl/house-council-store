@@ -20,14 +20,10 @@ import PersonIcon from "@mui/icons-material/Person"
 import HomeIcon from "@mui/icons-material/Home"
 import SettingsIcon from "@mui/icons-material/Settings"
 import EmailIcon from "@mui/icons-material/Email"
-import Header from "@/components/Header"
-import Footer from "@/components/Footer"
 
 export default function RegistrationConfirmedPage() {
      return (
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-               <Header />
-
                <Box component="main" sx={{ flexGrow: 1, py: { xs: 6, md: 10 } }}>
                     <Container maxWidth="md">
                          <Paper elevation={3} sx={{ p: { xs: 3, md: 5 }, textAlign: "center" }}>
@@ -125,8 +121,6 @@ export default function RegistrationConfirmedPage() {
                          </Paper>
                     </Container>
                </Box>
-
-               <Footer />
           </Box>
      )
 }

@@ -8,8 +8,6 @@ import SearchIcon from "@mui/icons-material/Search"
 import SentimentDissatisfiedIcon from "@mui/icons-material/SentimentDissatisfied"
 import HomeIcon from "@mui/icons-material/Home"
 import ContactSupportIcon from "@mui/icons-material/ContactSupport"
-import Header from "@/components/Header"
-import Footer from "@/components/Footer"
 
 export default function NotFound() {
      const handleSearch = (event: React.FormEvent<HTMLFormElement>) => {
@@ -23,8 +21,6 @@ export default function NotFound() {
 
      return (
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-               <Header />
-
                <Box
                     component="main"
                     sx={{
@@ -147,8 +143,6 @@ export default function NotFound() {
                          </Paper>
                     </Container>
                </Box>
-
-               <Footer />
           </Box>
      )
 }

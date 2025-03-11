@@ -20,8 +20,6 @@ import {
 import Grid from "@mui/material/Grid2"
 import SearchIcon from "@mui/icons-material/Search"
 import DescriptionIcon from "@mui/icons-material/Description"
-import Header from "@/components/Header"
-import Footer from "@/components/Footer"
 
 interface TabPanelProps {
   children?: React.ReactNode
@@ -54,8 +52,6 @@ export default function DocsPage() {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-      <Header />
-
       <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
         <Container maxWidth="lg">
           <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", py: 2 }}>
@@ -326,8 +322,6 @@ const createAnnouncement = async () => {
           </Grid>
         </Container>
       </Box>
-
-      <Footer />
     </Box>
   )
 }

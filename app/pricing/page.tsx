@@ -26,8 +26,6 @@ import {
 import Grid from "@mui/material/Grid2"
 import CheckIcon from "@mui/icons-material/Check"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
-import Header from "@/components/Header"
-import Footer from "@/components/Footer"
 
 interface PricingOption {
   title: string
@@ -122,8 +120,6 @@ export default function PricingPage() {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-      <Header />
-
       <Box component="main" sx={{ flexGrow: 1, py: { xs: 6, md: 10 } }}>
         <Container maxWidth="lg">
           <Box sx={{ textAlign: "center", mb: 6 }}>
@@ -277,8 +273,6 @@ export default function PricingPage() {
           </Paper>
         </Container>
       </Box>
-
-      <Footer />
     </Box>
   )
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useFormik } from "formik"
 import {
@@ -20,13 +20,10 @@ import {
 import Grid from "@mui/material/Grid2"
 import Visibility from "@mui/icons-material/Visibility"
 import VisibilityOff from "@mui/icons-material/VisibilityOff"
-import Header from "@/components/Header"
-import Footer from "@/components/Footer"
 import { registrationSchema } from "./register-schema"
 import { ErrorType, RegisterFormValues, registerUser } from "./register-action"
 import toast from "react-hot-toast"
 import { useRouter } from "next/navigation"
-
 
 export default function RegisterPage() {
      const [showPassword, setShowPassword] = useState(false)
@@ -81,8 +78,6 @@ export default function RegisterPage() {
 
      return (
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-               <Header />
-
                <Box component="main" sx={{ flexGrow: 1, py: { xs: 6, md: 10 } }}>
                     <Container maxWidth="sm">
                          <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
@@ -294,8 +289,6 @@ export default function RegisterPage() {
                          </Paper>
                     </Container>
                </Box>
-
-               <Footer />
           </Box>
      )
 }

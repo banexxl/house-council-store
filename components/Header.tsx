@@ -18,19 +18,15 @@ import {
 } from "@mui/material"
 import MenuIcon from "@mui/icons-material/Menu"
 import ApartmentIcon from "@mui/icons-material/Apartment"
-import { getSession } from "@/lib/get-session"
 
-export default function Header() {
+
+type HeaderProps = {
+  session: any
+}
+export default function Header(props: HeaderProps) {
+
+  const { session } = props
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [session, setSession] = useState<{ user: any } | null>(null)
-
-  useEffect(() => {
-    const getSessionAsync = async () => {
-      const session = await getSession()
-      setSession(session)
-    }
-    getSessionAsync()
-  }, [])
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen)
@@ -45,7 +41,6 @@ export default function Header() {
     ...(session
       ? [
         { name: "Profile", path: "/profile" },
-        { name: "Sign Out", path: "/auth/sign-out" },
       ]
       : [
         // { name: "Register", path: "/auth/register" },

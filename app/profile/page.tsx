@@ -12,7 +12,6 @@ import {
      CardHeader,
      Container,
      Divider,
-     Grid,
      IconButton,
      List,
      ListItem,
@@ -38,6 +37,7 @@ import {
      MenuItem,
      Alert,
 } from "@mui/material"
+import Grid from "@mui/material/Grid2"
 import EditIcon from "@mui/icons-material/Edit"
 import LockIcon from "@mui/icons-material/Lock"
 import CreditCardIcon from "@mui/icons-material/CreditCard"
@@ -53,8 +53,6 @@ import VerifiedUserIcon from "@mui/icons-material/VerifiedUser"
 import EmailIcon from "@mui/icons-material/Email"
 import PhoneIcon from "@mui/icons-material/Phone"
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday"
-import Header from "@/components/Header"
-import Footer from "@/components/Footer"
 
 // Mock data for the profile
 const userData = {
@@ -213,13 +211,11 @@ export default function ProfilePage() {
 
      return (
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-               <Header />
-
                <Box component="main" sx={{ flexGrow: 1, py: { xs: 4, md: 6 } }}>
                     <Container maxWidth="lg">
                          <Grid container spacing={4}>
                               {/* Profile Sidebar */}
-                              <Grid item xs={12} md={4}>
+                              <Grid size={{ xs: 12, md: 4 }}>
                                    <Card elevation={2}>
                                         <CardContent sx={{ textAlign: "center", position: "relative", pt: 6, pb: 4 }}>
                                              <IconButton
@@ -414,7 +410,7 @@ export default function ProfilePage() {
                               </Grid>
 
                               {/* Main Content */}
-                              <Grid item xs={12} md={8}>
+                              <Grid size={{ xs: 12, md: 8 }}>
                                    <Paper elevation={2} sx={{ mb: 3 }}>
                                         <Tabs
                                              value={tabValue}
@@ -444,27 +440,27 @@ export default function ProfilePage() {
                                                             </Alert>
 
                                                             <Grid container spacing={3}>
-                                                                 <Grid item xs={12} sm={6}>
+                                                                 <Grid size={{ xs: 12, md: 6 }}>
                                                                       <TextField fullWidth label="Full Name" defaultValue={userData.name} required />
                                                                  </Grid>
 
-                                                                 <Grid item xs={12} sm={6}>
+                                                                 <Grid size={{ xs: 12, md: 6 }}>
                                                                       <TextField fullWidth label="Email" type="email" defaultValue={userData.email} required />
                                                                  </Grid>
 
-                                                                 <Grid item xs={12} sm={6}>
+                                                                 <Grid size={{ xs: 12, md: 6 }}>
                                                                       <TextField fullWidth label="Phone Number" defaultValue={userData.phone} />
                                                                  </Grid>
 
-                                                                 <Grid item xs={12} sm={6}>
+                                                                 <Grid size={{ xs: 12, md: 6 }}>
                                                                       <TextField fullWidth label="Unit/Apartment" defaultValue={userData.unit} />
                                                                  </Grid>
 
-                                                                 <Grid item xs={12}>
+                                                                 <Grid size={{ xs: 12 }}>
                                                                       <TextField fullWidth label="Role" defaultValue={userData.role} />
                                                                  </Grid>
 
-                                                                 <Grid item xs={12}>
+                                                                 <Grid size={{ xs: 12 }}>
                                                                       <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
                                                                            <Button variant="outlined" onClick={() => setEditMode(false)}>
                                                                                 Cancel
@@ -486,28 +482,28 @@ export default function ProfilePage() {
                                                             </Box>
 
                                                             <Grid container spacing={3}>
-                                                                 <Grid item xs={12} sm={6}>
+                                                                 <Grid size={{ xs: 12, md: 6 }}>
                                                                       <Typography variant="subtitle2" color="text.secondary">
                                                                            User ID
                                                                       </Typography>
                                                                       <Typography variant="body1">{userData.id}</Typography>
                                                                  </Grid>
 
-                                                                 <Grid item xs={12} sm={6}>
+                                                                 <Grid size={{ xs: 12, md: 6 }}>
                                                                       <Typography variant="subtitle2" color="text.secondary">
                                                                            Status
                                                                       </Typography>
                                                                       <Chip label={userData.status} color={getStatusColor(userData.status)} size="small" />
                                                                  </Grid>
 
-                                                                 <Grid item xs={12} sm={6}>
+                                                                 <Grid size={{ xs: 12, md: 6 }}>
                                                                       <Typography variant="subtitle2" color="text.secondary">
                                                                            Full Name
                                                                       </Typography>
                                                                       <Typography variant="body1">{userData.name}</Typography>
                                                                  </Grid>
 
-                                                                 <Grid item xs={12} sm={6}>
+                                                                 <Grid size={{ xs: 12, md: 6 }}>
                                                                       <Typography variant="subtitle2" color="text.secondary">
                                                                            Email
                                                                       </Typography>
@@ -517,35 +513,35 @@ export default function ProfilePage() {
                                                                       </Box>
                                                                  </Grid>
 
-                                                                 <Grid item xs={12} sm={6}>
+                                                                 <Grid size={{ xs: 12, md: 6 }}>
                                                                       <Typography variant="subtitle2" color="text.secondary">
                                                                            Phone Number
                                                                       </Typography>
                                                                       <Typography variant="body1">{userData.phone}</Typography>
                                                                  </Grid>
 
-                                                                 <Grid item xs={12} sm={6}>
+                                                                 <Grid size={{ xs: 12, md: 6 }}>
                                                                       <Typography variant="subtitle2" color="text.secondary">
                                                                            Member Since
                                                                       </Typography>
                                                                       <Typography variant="body1">{userData.joinDate}</Typography>
                                                                  </Grid>
 
-                                                                 <Grid item xs={12} sm={6}>
+                                                                 <Grid size={{ xs: 12, md: 6 }}>
                                                                       <Typography variant="subtitle2" color="text.secondary">
                                                                            Community
                                                                       </Typography>
                                                                       <Typography variant="body1">{userData.community}</Typography>
                                                                  </Grid>
 
-                                                                 <Grid item xs={12} sm={6}>
+                                                                 <Grid size={{ xs: 12, md: 6 }}>
                                                                       <Typography variant="subtitle2" color="text.secondary">
                                                                            Unit/Apartment
                                                                       </Typography>
                                                                       <Typography variant="body1">{userData.unit}</Typography>
                                                                  </Grid>
 
-                                                                 <Grid item xs={12} sm={6}>
+                                                                 <Grid size={{ xs: 12, md: 6 }}>
                                                                       <Typography variant="subtitle2" color="text.secondary">
                                                                            Role
                                                                       </Typography>
@@ -597,14 +593,14 @@ export default function ProfilePage() {
                                                                  <Divider sx={{ my: 2 }} />
 
                                                                  <Grid container spacing={2}>
-                                                                      <Grid item xs={12} sm={6}>
+                                                                      <Grid size={{ xs: 12, md: 6 }}>
                                                                            <Typography variant="subtitle2" color="text.secondary">
                                                                                 Next billing date
                                                                            </Typography>
                                                                            <Typography variant="body2">{subscriptionData.nextBillingDate}</Typography>
                                                                       </Grid>
 
-                                                                      <Grid item xs={12} sm={6}>
+                                                                      <Grid size={{ xs: 12, md: 6 }}>
                                                                            <Typography variant="subtitle2" color="text.secondary">
                                                                                 Auto-renewal
                                                                            </Typography>
@@ -621,7 +617,7 @@ export default function ProfilePage() {
 
                                                                       <Grid container spacing={1}>
                                                                            {subscriptionData.features.map((feature, index) => (
-                                                                                <Grid item xs={12} sm={6} key={index}>
+                                                                                <Grid size={{ xs: 12, md: 6 }} key={index}>
                                                                                      <Box sx={{ display: "flex", alignItems: "center" }}>
                                                                                           <CheckCircleIcon color="success" fontSize="small" sx={{ mr: 1 }} />
                                                                                           <Typography variant="body2">{feature}</Typography>
@@ -893,8 +889,6 @@ export default function ProfilePage() {
                          </Grid>
                     </Container>
                </Box>
-
-               <Footer />
           </Box>
      )
 }

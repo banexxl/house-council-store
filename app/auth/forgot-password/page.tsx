@@ -6,8 +6,6 @@ import { useFormik } from "formik"
 import * as Yup from "yup"
 import { Box, Button, Container, Paper, TextField, Typography, Alert, CircularProgress } from "@mui/material"
 import LockResetIcon from "@mui/icons-material/LockReset"
-import Header from "@/components/Header"
-import Footer from "@/components/Footer"
 
 // Validation schema using Yup
 const validationSchema = Yup.object({
@@ -36,8 +34,6 @@ export default function ForgotPasswordPage() {
 
      return (
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-               <Header />
-
                <Box component="main" sx={{ flexGrow: 1, py: { xs: 6, md: 10 } }}>
                     <Container maxWidth="sm">
                          <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
@@ -71,7 +67,7 @@ export default function ForgotPasswordPage() {
                                              see the email, please check your spam folder.
                                         </Typography>
                                         <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
-                                             <Button variant="outlined" component={Link} href="/auth/sign-in">
+                                             <Button variant="outlined" component={Link} href="/auth/forgot-password">
                                                   Return to Login
                                              </Button>
                                         </Box>
@@ -115,8 +111,6 @@ export default function ForgotPasswordPage() {
                          </Paper>
                     </Container>
                </Box>
-
-               <Footer />
           </Box>
      )
 }

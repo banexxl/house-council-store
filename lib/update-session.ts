@@ -46,8 +46,8 @@ export async function updateSession(request: NextRequest) {
 
      if (user) {
           // User is authenticated
-          if (pathname === '/auth/sign-in' || pathname === '/') {
-               // Redirect to dashboard if trying to access login page or root
+          if (pathname === '/auth/sign-in') {
+               // Redirect to homepage if trying to access login page or root
                return NextResponse.redirect(new URL('/', request.url));
           }
      } else {

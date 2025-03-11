@@ -5,14 +5,10 @@ import Grid from '@mui/material/Grid2';
 import EmailIcon from "@mui/icons-material/Email"
 import PhoneIcon from "@mui/icons-material/Phone"
 import LocationOnIcon from "@mui/icons-material/LocationOn"
-import Header from "@/components/Header"
-import Footer from "@/components/Footer"
 
 export default function ContactPage() {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-      <Header />
-
       <Box component="main" sx={{ flexGrow: 1, py: { xs: 6, md: 10 } }}>
         <Container maxWidth="lg">
           <Box sx={{ textAlign: "center", mb: 6 }}>
@@ -153,8 +149,6 @@ export default function ContactPage() {
           </Grid>
         </Container>
       </Box>
-
-      <Footer />
     </Box>
   )
 }

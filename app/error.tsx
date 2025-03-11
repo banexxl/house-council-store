@@ -6,8 +6,6 @@ import { Box, Button, Container, Typography, Paper } from "@mui/material"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
 import ReplayIcon from "@mui/icons-material/Replay"
 import HomeIcon from "@mui/icons-material/Home"
-import Header from "@/components/Header"
-import Footer from "@/components/Footer"
 
 export default function Error({
      error,
@@ -23,8 +21,6 @@ export default function Error({
 
      return (
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-               <Header />
-
                <Box
                     component="main"
                     sx={{
@@ -105,8 +101,6 @@ export default function Error({
                          </Paper>
                     </Container>
                </Box>
-
-               <Footer />
           </Box>
      )
 }

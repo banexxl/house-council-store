@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useFormik } from "formik"
 import * as Yup from "yup"
@@ -26,8 +26,6 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff"
 import LockResetIcon from "@mui/icons-material/LockReset"
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
-import Header from "@/components/Header"
-import Footer from "@/components/Footer"
 
 // Validation schema using Yup
 const validationSchema = Yup.object({
@@ -126,8 +124,6 @@ export default function ResetPasswordPage() {
      if (isTokenChecking) {
           return (
                <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-                    <Header />
-
                     <Box component="main" sx={{ flexGrow: 1, py: { xs: 6, md: 10 } }}>
                          <Container maxWidth="sm">
                               <Paper elevation={3} sx={{ p: 4, borderRadius: 2, textAlign: "center" }}>
@@ -139,8 +135,6 @@ export default function ResetPasswordPage() {
                               </Paper>
                          </Container>
                     </Box>
-
-                    <Footer />
                </Box>
           )
      }
@@ -149,8 +143,6 @@ export default function ResetPasswordPage() {
      if (isTokenValid === false) {
           return (
                <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-                    <Header />
-
                     <Box component="main" sx={{ flexGrow: 1, py: { xs: 6, md: 10 } }}>
                          <Container maxWidth="sm">
                               <Paper elevation={3} sx={{ p: 4, borderRadius: 2, textAlign: "center" }}>
@@ -172,16 +164,12 @@ export default function ResetPasswordPage() {
                               </Paper>
                          </Container>
                     </Box>
-
-                    <Footer />
                </Box>
           )
      }
 
      return (
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-               <Header />
-
                <Box component="main" sx={{ flexGrow: 1, py: { xs: 6, md: 10 } }}>
                     <Container maxWidth="sm">
                          <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
@@ -333,8 +321,6 @@ export default function ResetPasswordPage() {
                          </Paper>
                     </Container>
                </Box>
-
-               <Footer />
           </Box>
      )
 }
