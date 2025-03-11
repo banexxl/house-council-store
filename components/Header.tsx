@@ -75,18 +75,19 @@ export type Session = {
 }
 
 type HeaderProps = {
-  session?: Session
+  session?: Session | null
   isLoading?: boolean
   refreshSession?: () => void
 }
 
 export default function Header({ session, isLoading = false, refreshSession }: HeaderProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [currentSession, setCurrentSession] = useState<Session | undefined>(session)
+  const [currentSession, setCurrentSession] = useState<Session | undefined>(session ? session : undefined)
   const router = useRouter()
 
+
   useEffect(() => {
-    setCurrentSession(session) // Update state when session changes
+    setCurrentSession(session ? session : undefined) // Update state when session changes
   }, [session])
 
   const handleDrawerToggle = () => {

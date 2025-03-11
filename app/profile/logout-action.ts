@@ -1,6 +1,6 @@
 'use server';
 
-import { useServerSideSupabaseClient } from '@/lib/ss-supabase-anon-client';
+import { useServerSideSupabaseClient } from '@/lib/ss-supabase-service-user-client';
 
 export const logoutUserAction = async (): Promise<string | null> => {
      const supabase = await useServerSideSupabaseClient();

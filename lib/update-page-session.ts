@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
-export async function updateSession(request: NextRequest) {
+export async function updatePageSession(request: NextRequest) {
 
      let supabaseResponse = NextResponse.next({
           request,
@@ -46,7 +46,7 @@ export async function updateSession(request: NextRequest) {
 
      if (user) {
           // User is authenticated
-          if (pathname === '/auth/sign-in') {
+          if (pathname === '/auth/sign-in' || pathname === '/auth/register' || pathname === '/auth/error') {
                // Redirect to homepage if trying to access login page or root
                return NextResponse.redirect(new URL('/', request.url));
           }

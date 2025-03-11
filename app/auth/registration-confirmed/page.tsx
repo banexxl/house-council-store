@@ -21,7 +21,9 @@ import HomeIcon from "@mui/icons-material/Home"
 import SettingsIcon from "@mui/icons-material/Settings"
 import EmailIcon from "@mui/icons-material/Email"
 
+
 export default function RegistrationConfirmedPage() {
+
      return (
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
                <Box component="main" sx={{ flexGrow: 1, py: { xs: 6, md: 10 } }}>
@@ -58,7 +60,7 @@ export default function RegistrationConfirmedPage() {
                                         variant="contained"
                                         size="large"
                                         component={Link}
-                                        href="/login"
+                                        href="/auth/sign-in"
                                         startIcon={<LoginIcon />}
                                         sx={{ px: 4, py: 1.5 }}
                                    >

@@ -25,10 +25,13 @@ import { ErrorType, RegisterFormValues, registerUser } from "./register-action"
 import toast from "react-hot-toast"
 import { useRouter } from "next/navigation"
 
+
 export default function RegisterPage() {
      const [showPassword, setShowPassword] = useState(false)
      const [showConfirmPassword, setShowConfirmPassword] = useState(false)
      const router = useRouter()
+
+
 
      const handleClickShowPassword = () => {
           setShowPassword(!showPassword)
