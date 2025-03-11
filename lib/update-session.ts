@@ -52,7 +52,7 @@ export async function updateSession(request: NextRequest) {
           }
      } else {
           // User is not authenticated
-          if (!isPublicRoute) {
+          if (!isPublicRoute || pathname.startsWith('/profile')) {
                // Redirect to login page if trying to access a protected route
                return NextResponse.redirect(new URL('/auth/sign-in', request.url));
           }

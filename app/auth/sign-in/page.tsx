@@ -49,7 +49,7 @@ export default function LoginPage() {
 
                if (signInUserResponse.success) {
                     toast.success("Sign in successful!")
-                    router.push("/")
+                    router.push("/profile")
                }
 
                if (signInUserResponse.error) {

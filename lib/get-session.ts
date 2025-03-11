@@ -1,8 +1,9 @@
 'use server'
 
+import { Session, User } from "@/components/Header";
 import { useServerSideSupabaseClient } from "./ss-supabase-anon-client";
 
-export const getSession = async () => {
+export const getSession = async (): Promise<{ user: User } | null> => {
 
      const supabase = await useServerSideSupabaseClient()
 
@@ -13,5 +14,5 @@ export const getSession = async () => {
           return null
      }
 
-     return data
+     return { user: data.user as User }
 }

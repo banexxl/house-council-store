@@ -15,21 +15,101 @@ import {
   ListItemButton,
   ListItemText,
   Container,
+  CircularProgress,
 } from "@mui/material"
 import MenuIcon from "@mui/icons-material/Menu"
 import ApartmentIcon from "@mui/icons-material/Apartment"
+import { useRouter } from "next/navigation"
+import { logoutUserAction } from "@/app/profile/logout-action"
+import toast from "react-hot-toast"
 
+type UserMetadata = {
+  email: string
+  email_verified: boolean
+  phone_verified: boolean
+  sub: string
+}
+
+type Identity = {
+  identity_id: string
+  id: string
+  user_id: string
+  identity_data: {
+    email: string
+    email_verified: boolean
+    phone_verified: boolean
+    sub: string
+  }
+  provider: string
+  last_sign_in_at: string
+  created_at: string
+  updated_at: string
+  email: string
+}
+
+type AppMetadata = {
+  provider: string
+  providers: string[]
+}
+
+export type User = {
+  id: string
+  aud: string
+  role: string
+  email: string
+  email_confirmed_at: string
+  phone: string
+  confirmation_sent_at: string
+  confirmed_at: string
+  last_sign_in_at: string
+  app_metadata: AppMetadata
+  user_metadata: UserMetadata
+  identities: Identity[]
+  created_at: string
+  updated_at: string
+  is_anonymous: boolean
+}
+
+export type Session = {
+  user?: User
+}
 
 type HeaderProps = {
-  session: any
+  session?: Session
+  isLoading?: boolean
+  refreshSession?: () => void
 }
-export default function Header(props: HeaderProps) {
 
-  const { session } = props
+export default function Header({ session, isLoading = false, refreshSession }: HeaderProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [currentSession, setCurrentSession] = useState<Session | undefined>(session)
+  const router = useRouter()
+
+  useEffect(() => {
+    setCurrentSession(session) // Update state when session changes
+  }, [session])
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen)
+  }
+
+  const handleSignOut = async () => {
+    try {
+      const logoutError = await logoutUserAction()
+
+      if (logoutError) {
+        toast.error(logoutError)
+        return
+      }
+      // After sign out, refresh the session
+      if (refreshSession) {
+        refreshSession()
+      }
+
+      router.push("/")
+    } catch (error) {
+      console.error("Error signing out:", error)
+    }
   }
 
   // Conditionally render menu items based on session state
@@ -38,14 +118,6 @@ export default function Header(props: HeaderProps) {
     { name: "Documentation", path: "/docs" },
     { name: "Pricing", path: "/pricing" },
     { name: "Contact", path: "/contact" },
-    ...(session
-      ? [
-        { name: "Profile", path: "/profile" },
-      ]
-      : [
-        // { name: "Register", path: "/auth/register" },
-        { name: "Sign In", path: "/auth/sign-in" },
-      ]),
   ]
 
   const drawer = (
@@ -66,6 +138,37 @@ export default function Header(props: HeaderProps) {
             </Link>
           </ListItem>
         ))}
+
+        {isLoading ? (
+          <ListItem disablePadding>
+            <ListItemButton sx={{ textAlign: "center" }}>
+              <CircularProgress size={24} />
+            </ListItemButton>
+          </ListItem>
+        ) : currentSession?.user ? (
+          <>
+            <ListItem disablePadding>
+              <Link href="/profile" style={{ textDecoration: "none", width: "100%", color: "inherit" }}>
+                <ListItemButton sx={{ textAlign: "center" }}>
+                  <ListItemText primary="Profile" />
+                </ListItemButton>
+              </Link>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton sx={{ textAlign: "center" }} onClick={handleSignOut}>
+                <ListItemText primary="Sign Out" />
+              </ListItemButton>
+            </ListItem>
+          </>
+        ) : (
+          <ListItem disablePadding>
+            <Link href="/auth/sign-in" style={{ textDecoration: "none", width: "100%", color: "inherit" }}>
+              <ListItemButton sx={{ textAlign: "center" }}>
+                <ListItemText primary="Sign In" />
+              </ListItemButton>
+            </Link>
+          </ListItem>
+        )}
       </List>
     </Box>
   )
@@ -94,6 +197,24 @@ export default function Header(props: HeaderProps) {
                   <Button color="inherit">{item.name}</Button>
                 </Link>
               ))}
+
+              {isLoading ? (
+                <CircularProgress size={24} />
+              ) : currentSession?.user ? (
+                <>
+                  <Link href="/profile" style={{ textDecoration: "none" }}>
+                    <Button color="inherit">Profile</Button>
+                  </Link>
+                  <Button variant="outlined" onClick={handleSignOut}>
+                    Sign Out
+                  </Button>
+                </>
+              ) : (
+                <Link href="/auth/sign-in" style={{ textDecoration: "none" }}>
+                  <Button color="inherit">Sign In</Button>
+                </Link>
+              )}
+
               <Link href="/pricing" style={{ textDecoration: "none" }}>
                 <Button variant="contained" color="primary">
                   Get Started
@@ -132,3 +253,4 @@ export default function Header(props: HeaderProps) {
     </Box>
   )
 }
+

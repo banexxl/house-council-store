@@ -10,8 +10,6 @@ import ShieldIcon from "@mui/icons-material/Shield"
 import NotificationsIcon from "@mui/icons-material/Notifications"
 
 export default function Home() {
-
-
   return (
     <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
       <Box component="main" sx={{ flexGrow: 1 }}>

@@ -53,6 +53,9 @@ import VerifiedUserIcon from "@mui/icons-material/VerifiedUser"
 import EmailIcon from "@mui/icons-material/Email"
 import PhoneIcon from "@mui/icons-material/Phone"
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday"
+import { logoutUserAction } from "./logout-action"
+import toast from "react-hot-toast"
+import { useRouter } from "next/navigation"
 
 // Mock data for the profile
 const userData = {
@@ -164,7 +167,7 @@ export default function ProfilePage() {
      const [editMode, setEditMode] = useState(false)
      const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null)
      const [notificationSettings, setNotificationSettings] = useState(notificationPreferences)
-
+     const router = useRouter()
      const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
           setTabValue(newValue)
      }
@@ -181,6 +184,19 @@ export default function ProfilePage() {
           setNotificationSettings((prevSettings) =>
                prevSettings.map((setting) => (setting.id === id ? { ...setting, enabled: !setting.enabled } : setting)),
           )
+     }
+
+     const handleLogout = async () => {
+          handleMenuClose();
+          try {
+               const logoutUserResponse = await logoutUserAction();
+               if (!logoutUserResponse) {
+                    toast.success("You have been logged out successfully!");
+                    router.push("/");
+               }
+          } catch (error) {
+               toast.error("Error logging out");
+          }
      }
 
      const getStatusColor = (status: string) => {
@@ -248,7 +264,7 @@ export default function ProfilePage() {
                                                        <ListItemText>Change Password</ListItemText>
                                                   </MenuItem>
                                                   <Divider />
-                                                  <MenuItem onClick={handleMenuClose} sx={{ color: "error.main" }}>
+                                                  <MenuItem onClick={handleLogout} sx={{ color: "error.main" }}>
                                                        <ListItemIcon>
                                                             <SecurityIcon fontSize="small" color="error" />
                                                        </ListItemIcon>
@@ -388,7 +404,7 @@ export default function ProfilePage() {
                                    </Card>
 
                                    <Card elevation={2} sx={{ mt: 3 }}>
-                                        <CardHeader title="Recent Activity" titleTypographyProps={{ variant: "h6" }} />
+                                        <CardHeader title={<Typography variant="h6">Recent Activity</Typography>} />
                                         <CardContent sx={{ px: 0 }}>
                                              <List dense>
                                                   {recentActivity.map((activity) => (
