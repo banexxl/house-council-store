@@ -10,14 +10,6 @@ import HomeIcon from "@mui/icons-material/Home"
 import ContactSupportIcon from "@mui/icons-material/ContactSupport"
 
 export default function NotFound() {
-     const handleSearch = (event: React.FormEvent<HTMLFormElement>) => {
-          event.preventDefault()
-          // In a real app, you would implement search functionality here
-          const formData = new FormData(event.currentTarget)
-          const searchQuery = formData.get("search") as string
-          console.log("Search query:", searchQuery)
-          // Redirect to search results page or implement search logic
-     }
 
      return (
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
@@ -89,7 +81,7 @@ export default function NotFound() {
 
                               <Box
                                    component="form"
-                                   onSubmit={handleSearch}
+                                   // onSubmit={handleSearch}
                                    sx={{
                                         maxWidth: 500,
                                         mx: "auto",

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 import {
      Box,
      Container,
@@ -40,12 +40,17 @@ const tableOfContents = [
 
 export default function TermsPage() {
      const [activeSection, setActiveSection] = useState("introduction")
-     const handleSectionClick = (sectionId: string) => {
+
+     // Define refs for each section
+     const sectionRefs = {
+          introduction: useRef<HTMLDivElement>(null),
+          terms: useRef<HTMLDivElement>(null),
+          privacy: useRef<HTMLDivElement>(null),
+     }
+
+     const handleSectionClick = (sectionId: keyof typeof sectionRefs) => {
           setActiveSection(sectionId)
-          const element = document.querySelector(`[data-section-id="${sectionId}"]`)
-          if (element) {
-               element.scrollIntoView({ behavior: "smooth" })
-          }
+          sectionRefs[sectionId]?.current?.scrollIntoView({ behavior: "smooth" })
      }
 
      // Last updated date
@@ -118,7 +123,7 @@ export default function TermsPage() {
                                                                  component="button"
                                                                  underline="hover"
                                                                  color={activeSection === item.id ? "primary" : "inherit"}
-                                                                 onClick={() => handleSectionClick(item.id)}
+                                                                 onClick={() => handleSectionClick(item.id as keyof typeof sectionRefs)}
                                                                  sx={{
                                                                       textAlign: "left",
                                                                       fontWeight: activeSection === item.id ? 600 : 400,
