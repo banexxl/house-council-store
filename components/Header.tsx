@@ -131,44 +131,38 @@ export default function Header({ session, isLoading = false, refreshSession }: H
       <List>
         {navItems.map((item) => (
           <ListItem key={item.name} disablePadding>
-            <Link href={item.path} style={{ textDecoration: "none", width: "100%", color: "inherit" }}>
-              <ListItemButton sx={{ textAlign: "center" }}>
-                <ListItemText primary={item.name} />
-              </ListItemButton>
-            </Link>
-          </ListItem>
-        ))}
-
-        {isLoading ? (
-          <ListItem disablePadding>
             <ListItemButton sx={{ textAlign: "center" }}>
-              <CircularProgress size={24} />
+              <Link href={item.path} style={{ textDecoration: "none", width: "100%", color: "inherit" }}>
+                <ListItemText primary={item.name} />
+              </Link>
             </ListItemButton>
           </ListItem>
-        ) : currentSession?.user ? (
-          <>
+        ))}
+        {
+          currentSession?.user ? (
+            <>
+              <ListItem disablePadding>
+                <Link href="/profile" style={{ textDecoration: "none", width: "100%", color: "inherit" }}>
+                  <ListItemButton sx={{ textAlign: "center" }}>
+                    <ListItemText primary="Profile" />
+                  </ListItemButton>
+                </Link>
+              </ListItem>
+              <ListItem disablePadding>
+                <ListItemButton sx={{ textAlign: "center" }} onClick={handleSignOut}>
+                  <ListItemText primary="Sign Out" />
+                </ListItemButton>
+              </ListItem>
+            </>
+          ) : (
             <ListItem disablePadding>
-              <Link href="/profile" style={{ textDecoration: "none", width: "100%", color: "inherit" }}>
+              <Link href="/auth/sign-in" style={{ textDecoration: "none", width: "100%", color: "inherit" }}>
                 <ListItemButton sx={{ textAlign: "center" }}>
-                  <ListItemText primary="Profile" />
+                  <ListItemText primary="Sign In" />
                 </ListItemButton>
               </Link>
             </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton sx={{ textAlign: "center" }} onClick={handleSignOut}>
-                <ListItemText primary="Sign Out" />
-              </ListItemButton>
-            </ListItem>
-          </>
-        ) : (
-          <ListItem disablePadding>
-            <Link href="/auth/sign-in" style={{ textDecoration: "none", width: "100%", color: "inherit" }}>
-              <ListItemButton sx={{ textAlign: "center" }}>
-                <ListItemText primary="Sign In" />
-              </ListItemButton>
-            </Link>
-          </ListItem>
-        )}
+          )}
       </List>
     </Box>
   )
@@ -198,22 +192,21 @@ export default function Header({ session, isLoading = false, refreshSession }: H
                 </Link>
               ))}
 
-              {isLoading ? (
-                <CircularProgress size={24} />
-              ) : currentSession?.user ? (
-                <>
-                  <Link href="/profile" style={{ textDecoration: "none" }}>
-                    <Button color="inherit">Profile</Button>
+              {
+                currentSession?.user ? (
+                  <>
+                    <Link href="/profile" style={{ textDecoration: "none" }}>
+                      <Button color="inherit">Profile</Button>
+                    </Link>
+                    <Button variant="outlined" onClick={handleSignOut}>
+                      Sign Out
+                    </Button>
+                  </>
+                ) : (
+                  <Link href="/auth/sign-in" style={{ textDecoration: "none" }}>
+                    <Button color="inherit">Sign In</Button>
                   </Link>
-                  <Button variant="outlined" onClick={handleSignOut}>
-                    Sign Out
-                  </Button>
-                </>
-              ) : (
-                <Link href="/auth/sign-in" style={{ textDecoration: "none" }}>
-                  <Button color="inherit">Sign In</Button>
-                </Link>
-              )}
+                )}
 
               <Link href="/pricing" style={{ textDecoration: "none" }}>
                 <Button variant="contained" color="primary">

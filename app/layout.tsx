@@ -12,15 +12,12 @@ import Header, { type Session } from "@/components/Header"
 import Footer from "@/components/Footer"
 import { useEffect, useState } from "react"
 import { getSession } from "@/lib/get-session"
-import { usePathname, useSearchParams } from "next/navigation"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<{ session: Session } | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
 
   // Function to fetch session
   const fetchSession = async () => {
@@ -39,7 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   // Fetch session on initial load and when route changes
   useEffect(() => {
     fetchSession()
-  }, [pathname, searchParams]) // Re-fetch when route changes
+  }, [session]) // Re-fetch when route changes
 
   // Create a function to refresh the session that can be passed to Header
   const refreshSession = () => {
