@@ -35,7 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   // Fetch session on initial load and when route changes
   useEffect(() => {
     fetchSession()
-  }, [session]) // Re-fetch when route changes
+  }, [])
 
   // Create a function to refresh the session that can be passed to Header
   const refreshSession = () => {
