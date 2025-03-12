@@ -3,7 +3,6 @@
 import type React from "react"
 
 import { Inter } from "next/font/google"
-import { AppRouterCacheProvider } from "@mui/material-nextjs/v14-appRouter"
 import { ThemeProvider } from "@mui/material/styles"
 import CssBaseline from "@mui/material/CssBaseline"
 import { Box } from "@mui/material"
@@ -50,22 +49,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="description" content="Simplify your house council management with our comprehensive platform." />
       </head>
       <body className={inter.className}>
-        <AppRouterCacheProvider>
-          <ThemeProvider theme={theme}>
-            <CssBaseline />
-            <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-              <Header
-                session={session ? session.session : undefined}
-                isLoading={isLoading}
-                refreshSession={refreshSession}
-              />
-              <Box component="main" sx={{ flexGrow: 1 }}>
-                {children}
-              </Box>
-              <Footer />
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+            <Header
+              session={session ? session.session : undefined}
+              isLoading={isLoading}
+              refreshSession={refreshSession}
+            />
+            <Box component="main" sx={{ flexGrow: 1 }}>
+              {children}
             </Box>
-          </ThemeProvider>
-        </AppRouterCacheProvider>
+            <Footer />
+          </Box>
+        </ThemeProvider>
       </body>
     </html>
   )
