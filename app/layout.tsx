@@ -1,49 +1,47 @@
 "use client"
 
 import type React from "react"
-import { Inter } from 'next/font/google'
+
+import { Inter } from "next/font/google"
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v14-appRouter"
 import { ThemeProvider } from "@mui/material/styles"
 import CssBaseline from "@mui/material/CssBaseline"
 import { Box } from "@mui/material"
 import theme from "@/app/theme"
-import Header, { type User } from "@/components/Header"
+import Header, { type Session } from "@/components/Header"
 import Footer from "@/components/Footer"
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState } from "react"
 import { getSession } from "@/lib/get-session"
-import { useSessionUpdater } from "@/lib/client-session-update"
 
 const inter = Inter({ subsets: ["latin"] })
 
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const [session, setSession] = useState<{ session: Session } | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
-  const [session, setSession] = useState<{ user: User } | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const initialFetchDone = useRef(false);
-
+  // Function to fetch session
   const fetchSession = async () => {
-    setIsLoading(true);
+    setIsLoading(true)
     try {
-      const sessionData = await getSession();
-      setSession(sessionData);
+      const sessionData = await getSession()
+      setSession(sessionData?.user ? { session: sessionData } : null)
     } catch (error) {
-      console.error("Error fetching session:", error);
-      setSession(null);
+      console.error("Error fetching session:", error)
+      setSession(null)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
+  // Fetch session on initial load and when route changes
   useEffect(() => {
-    if (!initialFetchDone.current) {
-      fetchSession();
-      initialFetchDone.current = true;
-    }
-  }, []);
+    fetchSession()
+  }, [session]) // Re-fetch when route changes
 
-  // Use cookie change detector
-  useSessionUpdater(fetchSession);
+  // Create a function to refresh the session that can be passed to Header
+  const refreshSession = () => {
+    fetchSession()
+  }
 
   return (
     <html lang="en">
@@ -55,9 +53,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AppRouterCacheProvider>
           <ThemeProvider theme={theme}>
             <CssBaseline />
-            <Header session={session} isLoading={isLoading} refreshSession={fetchSession} />
             <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-              {children}
+              <Header
+                session={session ? session.session : undefined}
+                isLoading={isLoading}
+                refreshSession={refreshSession}
+              />
+              <Box component="main" sx={{ flexGrow: 1 }}>
+                {children}
+              </Box>
               <Footer />
             </Box>
           </ThemeProvider>

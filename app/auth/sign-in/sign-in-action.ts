@@ -1,7 +1,7 @@
 'use server';
 
 import { verifyPassword } from '@/lib/bcrypt';
-import { useServerSideSupabaseClient } from '@/lib/ss-supabase-service-user-client';
+import { useServerSideSupabaseClient } from '@/lib/ss-supabase-anon-client';
 
 export type SignInFormValues = {
      email: string;
@@ -22,6 +22,8 @@ export const signInUser = async (values: SignInFormValues): Promise<{ success: b
           .select('password')
           .eq('email', values.email)
           .single();
+     console.log('data', data);
+     console.log('error', error);
 
      if (error) {
           switch (error.code) {
@@ -35,6 +37,7 @@ export const signInUser = async (values: SignInFormValues): Promise<{ success: b
      }
 
      const isValid = await verifyPassword(values.password, data.password);
+     console.log('isValid', isValid);
 
      if (!isValid) {
           return { success: false, error: { code: 'INVALID_PASSWORD', details: 'Invalid password', hint: 'Please correct the password', message: 'Invalid password' } };

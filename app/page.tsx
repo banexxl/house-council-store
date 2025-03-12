@@ -2,27 +2,26 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { Box, Button, Card, CardContent, Container, Grid, Typography, Avatar } from "@mui/material"
+import { Box, Button, Card, CardContent, Container, Typography, Avatar } from "@mui/material"
+import Grid from "@mui/material/Grid2"
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward"
 import PeopleIcon from "@mui/icons-material/People"
 import ShieldIcon from "@mui/icons-material/Shield"
 import NotificationsIcon from "@mui/icons-material/Notifications"
-import Footer from "@/components/Footer"
 
 export default function Home() {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-
       <Box component="main" sx={{ flexGrow: 1 }}>
         {/* Hero Section */}
         <Box sx={{ py: { xs: 8, md: 12, lg: 16 } }}>
           <Container maxWidth="lg">
             <Grid container spacing={6} alignItems="center">
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Typography variant="h1" gutterBottom>
                   Simplify Your House Council Management
                 </Typography>
-                <Typography variant="h6" color="text.secondary" paragraph sx={{ mb: 4 }}>
+                <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
                   Our app streamlines communication, decision-making, and financial management for residential
                   communities.
                 </Typography>
@@ -39,7 +38,7 @@ export default function Home() {
                   </Link>
                 </Box>
               </Grid>
-              <Grid item xs={12} md={6} sx={{ display: "flex", justifyContent: "center" }}>
+              <Grid size={{ xs: 12, md: 6 }} sx={{ display: "flex", justifyContent: "center" }}>
                 <Box sx={{ position: "relative", width: "100%", height: { xs: 300, md: 400 } }}>
                   <Image
                     src="/placeholder.svg?height=550&width=450"
@@ -66,7 +65,7 @@ export default function Home() {
             </Box>
 
             <Grid container spacing={4} justifyContent="center">
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-start", height: "100%" }}>
                   <Avatar sx={{ bgcolor: "primary.main", mb: 2, width: 56, height: 56 }}>
                     <PeopleIcon />
@@ -80,7 +79,7 @@ export default function Home() {
                 </Box>
               </Grid>
 
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-start", height: "100%" }}>
                   <Avatar sx={{ bgcolor: "primary.main", mb: 2, width: 56, height: 56 }}>
                     <ShieldIcon />
@@ -94,7 +93,7 @@ export default function Home() {
                 </Box>
               </Grid>
 
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-start", height: "100%" }}>
                   <Avatar sx={{ bgcolor: "primary.main", mb: 2, width: 56, height: 56 }}>
                     <NotificationsIcon />
@@ -124,10 +123,10 @@ export default function Home() {
             </Box>
 
             <Grid container spacing={4}>
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Card sx={{ height: "100%" }}>
                   <CardContent>
-                    <Typography variant="body1" color="text.secondary" paragraph>
+                    <Typography variant="body1" color="text.secondary" >
                       "HouseCouncil has transformed how we manage our building. Communication is seamless, and our
                       residents are more engaged than ever."
                     </Typography>
@@ -144,10 +143,10 @@ export default function Home() {
                 </Card>
               </Grid>
 
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Card sx={{ height: "100%" }}>
                   <CardContent>
-                    <Typography variant="body1" color="text.secondary" paragraph>
+                    <Typography variant="body1" color="text.secondary" >
                       "The financial tracking features have made our budget management transparent and efficient. Highly
                       recommended!"
                     </Typography>
@@ -164,10 +163,10 @@ export default function Home() {
                 </Card>
               </Grid>
 
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Card sx={{ height: "100%" }}>
                   <CardContent>
-                    <Typography variant="body1" color="text.secondary" paragraph>
+                    <Typography variant="body1" color="text.secondary">
                       "Setting up voting for important decisions used to be a nightmare. Now it's just a few clicks
                       away!"
                     </Typography>
@@ -207,8 +206,7 @@ export default function Home() {
           </Container>
         </Box>
       </Box>
-
-      <Footer />
     </Box>
   )
 }
+

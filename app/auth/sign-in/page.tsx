@@ -29,6 +29,7 @@ import { useRouter } from "next/navigation"
 import toast from "react-hot-toast"
 
 
+
 export default function LoginPage() {
      const [showPassword, setShowPassword] = useState(false)
      const router = useRouter()
@@ -48,7 +49,7 @@ export default function LoginPage() {
 
                if (signInUserResponse.success) {
                     toast.success("Sign in successful!")
-                    router.refresh()
+                    router.push("/profile")
                }
 
                if (signInUserResponse.error) {
@@ -56,6 +57,7 @@ export default function LoginPage() {
                          signInUserResponse.error.message : signInUserResponse.error.hint ?
                               signInUserResponse.error.hint : signInUserResponse.error.details
                     )
+                    console.log(signInUserResponse.error)
                }
           },
      })

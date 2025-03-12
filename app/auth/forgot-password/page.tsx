@@ -7,16 +7,12 @@ import * as Yup from "yup"
 import { Box, Button, Container, Paper, TextField, Typography, Alert, CircularProgress } from "@mui/material"
 import LockResetIcon from "@mui/icons-material/LockReset"
 
-
 // Validation schema using Yup
 const validationSchema = Yup.object({
      email: Yup.string().email("Enter a valid email").required("Email is required"),
 })
 
 export default function ForgotPasswordPage() {
-
-
-
      const [isSubmitted, setIsSubmitted] = useState(false)
 
      const formik = useFormik({

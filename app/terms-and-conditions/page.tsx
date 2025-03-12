@@ -40,9 +40,10 @@ const tableOfContents = [
 
 export default function TermsPage() {
      const [activeSection, setActiveSection] = useState("introduction")
+
      const handleSectionClick = (sectionId: string) => {
           setActiveSection(sectionId)
-          const element = document.querySelector(`[data-section-id="${sectionId}"]`)
+          const element = document.getElementById(sectionId)
           if (element) {
                element.scrollIntoView({ behavior: "smooth" })
           }
