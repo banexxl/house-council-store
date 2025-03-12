@@ -1,6 +1,6 @@
 'use server'
 
-import { User } from "@/components/Header";
+import { User } from "@supabase/supabase-js";
 import { useServerSideSupabaseClient } from "./ss-supabase-anon-client";
 
 export const getSession = async (): Promise<{ user: User } | null> => {

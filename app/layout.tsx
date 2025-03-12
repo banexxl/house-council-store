@@ -7,15 +7,16 @@ import { ThemeProvider } from "@mui/material/styles"
 import CssBaseline from "@mui/material/CssBaseline"
 import { Box } from "@mui/material"
 import theme from "@/app/theme"
-import Header, { type Session } from "@/components/Header"
+import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import { useEffect, useState } from "react"
 import { getSession } from "@/lib/get-session"
+import { User } from "@supabase/supabase-js"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const [session, setSession] = useState<{ session: Session } | null>(null)
+  const [session, setSession] = useState<{ user: User } | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   // Function to fetch session
@@ -23,7 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     setIsLoading(true)
     try {
       const sessionData = await getSession()
-      setSession(sessionData?.user ? { session: sessionData } : null)
+      setSession(sessionData ?? null)
     } catch (error) {
       console.error("Error fetching session:", error)
       setSession(null)
@@ -38,8 +39,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   }, [])
 
   // Create a function to refresh the session that can be passed to Header
-  const refreshSession = () => {
-    fetchSession()
+  const refreshSession = (): Promise<void> => {
+    return fetchSession()
   }
 
   return (
@@ -53,7 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <CssBaseline />
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
             <Header
-              session={session ? session.session : undefined}
+              user={session ? session.user : null}
               isLoading={isLoading}
               refreshSession={refreshSession}
             />
