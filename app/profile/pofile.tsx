@@ -54,7 +54,7 @@ import EmailIcon from "@mui/icons-material/Email"
 import PhoneIcon from "@mui/icons-material/Phone"
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday"
 import { logoutUserAction } from "./logout-action"
-import toast from "react-hot-toast"
+import toast, { Toaster } from "react-hot-toast"
 import { useRouter } from "next/navigation"
 
 // Mock data for the profile
@@ -905,6 +905,7 @@ export const ProfilePage = () => {
                          </Grid>
                     </Container>
                </Box>
+               <Toaster />
           </Box>
      )
 }

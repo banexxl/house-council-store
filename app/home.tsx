@@ -17,6 +17,7 @@ import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import PeopleIcon from "@mui/icons-material/People";
 import ShieldIcon from "@mui/icons-material/Shield";
 import NotificationsIcon from "@mui/icons-material/Notifications";
+import { Toaster } from "react-hot-toast";
 
 export default function HomePage() {
      return (
@@ -210,6 +211,8 @@ export default function HomePage() {
                               </Typography>
                          </Container>
                     </Box>
+
+                    <Toaster />
                </Box>
           </Box>
      );

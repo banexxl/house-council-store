@@ -22,10 +22,11 @@ import Visibility from "@mui/icons-material/Visibility"
 import VisibilityOff from "@mui/icons-material/VisibilityOff"
 import { registrationSchema } from "./register-schema"
 import { ErrorType, RegisterFormValues, registerUser } from "./register-action"
-import toast from "react-hot-toast"
+import toast, { Toaster } from "react-hot-toast"
 import { useRouter } from "next/navigation"
 
 export const RegisterPage = () => {
+
      const [showPassword, setShowPassword] = useState(false)
      const [showConfirmPassword, setShowConfirmPassword] = useState(false)
      const router = useRouter()
@@ -52,7 +53,9 @@ export const RegisterPage = () => {
           validationSchema: registrationSchema,
           onSubmit: async (values: RegisterFormValues) => {
                const { success, error }: { success: boolean, error?: ErrorType } = await registerUser(values);
+               console.log('success', success);
                console.log('error', error);
+
 
                if (success) {
                     toast.success("Registration successful!");
@@ -289,6 +292,7 @@ export const RegisterPage = () => {
                          </Paper>
                     </Container>
                </Box>
+               <Toaster />
           </Box>
      )
 }

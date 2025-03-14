@@ -5,6 +5,7 @@ import Grid from '@mui/material/Grid2';
 import EmailIcon from "@mui/icons-material/Email"
 import PhoneIcon from "@mui/icons-material/Phone"
 import LocationOnIcon from "@mui/icons-material/LocationOn"
+import { Toaster } from "react-hot-toast";
 
 export const ContactPage = () => {
      return (
@@ -149,6 +150,7 @@ export const ContactPage = () => {
                          </Grid>
                     </Container>
                </Box>
+               <Toaster />
           </Box>
      )
 }

@@ -20,6 +20,7 @@ import {
 import Grid from "@mui/material/Grid2"
 import SearchIcon from "@mui/icons-material/Search"
 import DescriptionIcon from "@mui/icons-material/Description"
+import { Toaster } from "react-hot-toast"
 
 interface TabPanelProps {
      children?: React.ReactNode
@@ -322,6 +323,7 @@ const createAnnouncement = async () => {
                          </Grid>
                     </Container>
                </Box>
+               <Toaster />
           </Box>
      )
 }

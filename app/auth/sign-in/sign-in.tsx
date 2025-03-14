@@ -26,7 +26,7 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined"
 import { signInSchema } from "./sign-in-schema"
 import { signInUser } from "./sign-in-action"
 import { useRouter } from "next/navigation"
-import toast from "react-hot-toast"
+import toast, { Toaster } from "react-hot-toast"
 
 
 
@@ -227,6 +227,7 @@ export const LoginPage = () => {
                          </Paper>
                     </Container>
                </Box>
+               <Toaster />
           </Box>
      )
 }

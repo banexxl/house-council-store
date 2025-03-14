@@ -21,6 +21,7 @@ import EmailIcon from "@mui/icons-material/Email"
 import MarkEmailReadIcon from "@mui/icons-material/MarkEmailRead"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
 import { resendRegistrationEmail } from "./resend-email-action"
+import { Toaster } from "react-hot-toast"
 
 export const RegistrationConfirmationPage = () => {
      const [email, setEmail] = useState("")
@@ -171,6 +172,7 @@ export const RegistrationConfirmationPage = () => {
                          </Paper>
                     </Container>
                </Box>
+               <Toaster />
           </Box>
      )
 }

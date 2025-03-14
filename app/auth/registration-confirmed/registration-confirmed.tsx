@@ -20,6 +20,7 @@ import PersonIcon from "@mui/icons-material/Person"
 import HomeIcon from "@mui/icons-material/Home"
 import SettingsIcon from "@mui/icons-material/Settings"
 import EmailIcon from "@mui/icons-material/Email"
+import { Toaster } from "react-hot-toast"
 
 export const RegistrationConfirmedPage = () => {
      return (
@@ -121,6 +122,7 @@ export const RegistrationConfirmedPage = () => {
                          </Paper>
                     </Container>
                </Box>
+               <Toaster />
           </Box>
      )
 }

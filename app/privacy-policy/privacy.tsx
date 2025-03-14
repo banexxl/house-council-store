@@ -24,6 +24,7 @@ import {
 import Link from "next/link"
 import NavigateNextIcon from "@mui/icons-material/NavigateNext"
 import SecurityIcon from "@mui/icons-material/Security"
+import { Toaster } from "react-hot-toast"
 
 // Table of contents items
 const tableOfContents = [
@@ -541,6 +542,7 @@ export const PrivacyPage = () => {
                          </Box>
                     </Container>
                </Box>
+               <Toaster />
           </Box>
      )
 }

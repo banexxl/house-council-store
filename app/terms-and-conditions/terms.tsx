@@ -19,6 +19,7 @@ import {
 import Link from "next/link"
 import NavigateNextIcon from "@mui/icons-material/NavigateNext"
 import GavelIcon from "@mui/icons-material/Gavel"
+import { Toaster } from "react-hot-toast"
 
 // Table of contents items
 const tableOfContents = [
@@ -488,6 +489,7 @@ export const TermsPage = () => {
                          </Box>
                     </Container>
                </Box>
+               <Toaster />
           </Box>
      )
 }

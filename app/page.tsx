@@ -1,5 +1,5 @@
 import { getSession } from "@/lib/get-session";
-import HomePage from "./home-page";
+import HomePage from "./home";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 

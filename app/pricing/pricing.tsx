@@ -26,6 +26,7 @@ import {
 import Grid from "@mui/material/Grid2"
 import CheckIcon from "@mui/icons-material/Check"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
+import { Toaster } from "react-hot-toast"
 
 interface PricingOption {
      title: string
@@ -273,6 +274,7 @@ export const PricingPage = () => {
                          </Paper>
                     </Container>
                </Box>
+               <Toaster />
           </Box>
      )
 }

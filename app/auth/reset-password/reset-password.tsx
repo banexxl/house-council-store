@@ -26,6 +26,7 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff"
 import LockResetIcon from "@mui/icons-material/LockReset"
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
+import { Toaster } from "react-hot-toast"
 
 // Validation schema using Yup
 const validationSchema = Yup.object({
@@ -321,6 +322,7 @@ export const ResetPasswordPage = () => {
                          </Paper>
                     </Container>
                </Box>
+               <Toaster />
           </Box>
      )
 }
