@@ -12,11 +12,9 @@ import { useRouter } from "next/navigation";
 
 type HeaderProps = {
   user: User | null;
-  isLoading: boolean;
-  refreshSession: () => Promise<void>;
 }
 
-export default function Header({ user, isLoading, refreshSession }: HeaderProps) {
+export default function Header({ user }: HeaderProps) {
   // const { session, isLoading, refreshSession } = useSession();
   const [mobileOpen, setMobileOpen] = useState(false);
   const router = useRouter();

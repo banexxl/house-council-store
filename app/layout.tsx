@@ -7,8 +7,6 @@ import { ThemeProvider } from "@mui/material/styles"
 import CssBaseline from "@mui/material/CssBaseline"
 import { Box } from "@mui/material"
 import theme from "@/app/theme"
-import Header from "@/components/Header"
-import Footer from "@/components/Footer"
 import { useEffect, useState } from "react"
 import { getSession } from "@/lib/get-session"
 import { User } from "@supabase/supabase-js"
@@ -53,15 +51,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider theme={theme}>
           <CssBaseline />
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-            <Header
-              user={session ? session.user : null}
-              isLoading={isLoading}
-              refreshSession={refreshSession}
-            />
             <Box component="main" sx={{ flexGrow: 1 }}>
               {children}
             </Box>
-            <Footer />
           </Box>
         </ThemeProvider>
       </body>
