@@ -1,17 +1,53 @@
 "use client"
 
-import { Box, Button, Card, Container, Divider, MenuItem, TextField, Typography } from "@mui/material"
+import { Box, Button, Card, Container, Divider, MenuItem, Paper, TextField, Typography } from "@mui/material"
 import Grid from '@mui/material/Grid2';
 import EmailIcon from "@mui/icons-material/Email"
 import PhoneIcon from "@mui/icons-material/Phone"
 import LocationOnIcon from "@mui/icons-material/LocationOn"
 import { Toaster } from "react-hot-toast";
+import GoogleMap, { MapMarker } from "@/components/google-map";
+import { use, useEffect, useState } from "react";
 
-export const ContactPage = () => {
+// Sample data for markers
+const sampleLocations: MapMarker[] = [
+     {
+          id: 1,
+          position: { lat: 40.7128, lng: -74.006 },
+          title: "New York City",
+          description: "The Big Apple",
+     },
+     {
+          id: 2,
+          position: { lat: 40.7484, lng: -73.9857 },
+          title: "Empire State Building",
+          description: "Iconic skyscraper in Midtown Manhattan",
+     },
+     {
+          id: 3,
+          position: { lat: 40.7061, lng: -74.0088 },
+          title: "One World Trade Center",
+          description: "Tallest building in the Western Hemisphere",
+     },
+]
+
+type ContactProps = {
+     mapKey: string
+}
+
+export const ContactPage = ({ mapKey }: ContactProps) => {
+
+     const [selectedLocation, setSelectedLocation] = useState<MapMarker | null>(null)
+
+     const handleMarkerClick = (marker: MapMarker) => {
+          setSelectedLocation(marker)
+     }
+
      return (
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
                <Box component="main" sx={{ flexGrow: 1, py: { xs: 6, md: 10 } }}>
                     <Container maxWidth="lg">
+
                          <Box sx={{ textAlign: "center", mb: 6 }}>
                               <Typography variant="h2" gutterBottom>
                                    Contact Us
@@ -65,6 +101,19 @@ export const ContactPage = () => {
                                              </Grid>
                                         </Grid>
                                    </Box>
+                              </Grid>
+
+                              <Grid size={{ xs: 12, md: 6 }}>
+                                   <Paper elevation={2} sx={{ flex: 2, overflow: "hidden" }}>
+                                        <GoogleMap
+                                             markers={sampleLocations}
+                                             center={{ lat: 47.5021, lng: 19.0402 }}
+                                             zoom={13}
+                                             height={500}
+                                             onMarkerClick={handleMarkerClick}
+                                             apiKey={mapKey}
+                                        />
+                                   </Paper>
                               </Grid>
 
                               <Grid size={{ xs: 12, md: 6 }}>
@@ -148,6 +197,7 @@ export const ContactPage = () => {
                                    </Card>
                               </Grid>
                          </Grid>
+
                     </Container>
                </Box>
                <Toaster />

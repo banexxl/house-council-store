@@ -1,7 +1,7 @@
 import { getSession } from "@/lib/get-session";
 
-import Footer from "@/components/Footer";
-import Header from "@/components/Header";
+import Footer from "@/components/footer";
+import Header from "@/components/header";
 import { ResetPasswordPage } from "./reset-password";
 export default async function Page() {
 

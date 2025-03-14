@@ -63,7 +63,7 @@ export default function Footer() {
                     </Link>
                   </ListItem>
                   <ListItem disablePadding>
-                    <Link href="/terms" style={{ textDecoration: "none", color: "inherit" }}>
+                    <Link href="/terms-and-conditions" style={{ textDecoration: "none", color: "inherit" }}>
                       <ListItemText primary="Terms of Service" />
                     </Link>
                   </ListItem>

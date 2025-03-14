@@ -59,7 +59,7 @@ export const RegistrationConfirmedPage = () => {
                                         variant="contained"
                                         size="large"
                                         component={Link}
-                                        href="/login"
+                                        href="/auth/sign-in"
                                         startIcon={<LoginIcon />}
                                         sx={{ px: 4, py: 1.5 }}
                                    >
