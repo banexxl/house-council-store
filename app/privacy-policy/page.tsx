@@ -2,7 +2,7 @@ import { getSession } from "@/lib/get-session";
 
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
-import { PrivacyPage } from "./privacy-page";
+import { PrivacyPage } from "./privacy";
 
 
 export default async function Page() {

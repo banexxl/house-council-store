@@ -2,7 +2,7 @@ import { getSession } from "@/lib/get-session";
 
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
-import { TermsPage } from "./terms-page";
+import { TermsPage } from "./terms";
 
 
 export default async function Page() {
