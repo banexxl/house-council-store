@@ -75,13 +75,17 @@ export async function GET(request: Request) {
      if (clientError) {
           console.error('Error checking email in database:', clientError);
           supabase.auth.signOut();
-          supabase.auth.admin.deleteUser(userEmail ? userEmail : '')
+          const { data, error } = await supabase.auth.admin.deleteUser(userEmail ? userEmail : '');
+          console.log('data', data);
+          console.log('error', error);
           return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=Error checking email in database.`);
      }
 
      if (!data || data.length === 0) {
           supabase.auth.signOut();
-          supabase.auth.admin.deleteUser(userEmail ? userEmail : '');
+          const { data, error } = await supabase.auth.admin.deleteUser(userEmail ? userEmail : '');
+          console.log('data', data);
+          console.log('error', error);
           console.log('Email not registered. Consider triggering a sign-up process.');
           return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=Email not registered. Please sign up.`);
      }
