@@ -88,7 +88,11 @@ export async function GET(request: Request) {
 
      if (data.length > 1) {
           supabase.auth.signOut();
-          supabase.auth.admin.deleteUser(userEmail ? userEmail : '');
+          const { data, error } = await supabase.auth.admin.deleteUser(userEmail ? userEmail : '');
+          console.log('data', data);
+          console.log('error', error);
+
+
           console.log('Duplicate email found in tblClients. Please contact support.');
           return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=Duplicate email found in tblClients. Please contact support.`);
      }
