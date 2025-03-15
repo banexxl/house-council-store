@@ -2,6 +2,7 @@
 
 import { verifyPassword } from '@/lib/bcrypt';
 import { useServerSideSupabaseClient } from '@/lib/ss-supabase-anon-client';
+import { redirect } from 'next/navigation';
 
 export type SignInFormValues = {
      email: string;
@@ -67,57 +68,19 @@ export const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: 
                redirectTo: `${process.env.BASE_URL}/auth/callback`
           },
      });
-     console.log('authData', authData);
-     console.log('authError', authError);
 
-
-     if (authError) {
+     if (!authError == null) {
           console.error('Error during Google sign in:', authError);
           return { success: false, error: authError };
+     } else {
+          if (authData.url) {
+               redirect(authData.url);
+          } else {
+               return { success: false, error: { message: 'Redirect URL is null.' } };
+          }
      }
 
-     // After OAuth the user is usually redirected and the session is set.
-     // Here we try to retrieve the session.
-     const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-     if (sessionError) {
-          console.error('Error retrieving session:', sessionError);
-          return { success: false, error: sessionError };
-     }
-     console.log('sessionData', sessionData);
-     console.log('sessionError', sessionError);
 
-
-     if (!sessionData.session) {
-          console.error('No session available after Google sign in.');
-          return { success: false, error: { message: 'No session found.' } };
-     }
-
-     const userEmail = sessionData.session.user.email;
-     console.log('Authenticated user email:', userEmail);
-
-     // Check if the user's email exists in tblClients.
-     const { data, error } = await supabase
-          .from('tblClients')
-          .select('email')
-          .eq('email', userEmail)
-          .single();
-     console.log('data', data);
-     console.log('error', error);
-
-
-     if (error) {
-          console.error('Error checking email in database:', error);
-          return { success: false, error };
-     }
-
-     if (!data) {
-          console.log('Email not registered. Consider triggering a sign-up process.');
-          // You could return an error or trigger a sign-up flow.
-          return { success: false, error: { message: 'Email not registered. Please sign up.' } };
-     }
-
-     console.log('Email found in tblClients. Sign in successful.');
-     return { success: true };
 };
 
 

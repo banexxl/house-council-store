@@ -8,8 +8,11 @@ import SearchIcon from "@mui/icons-material/Search"
 import SentimentDissatisfiedIcon from "@mui/icons-material/SentimentDissatisfied"
 import HomeIcon from "@mui/icons-material/Home"
 import ContactSupportIcon from "@mui/icons-material/ContactSupport"
+import Header from "@/components/header"
+import { getSession } from "@/lib/get-session"
+import Footer from "@/components/footer"
 
-export default function NotFound() {
+export default async function NotFound() {
      const handleSearch = (event: React.FormEvent<HTMLFormElement>) => {
           event.preventDefault()
           // In a real app, you would implement search functionality here
@@ -19,8 +22,11 @@ export default function NotFound() {
           // Redirect to search results page or implement search logic
      }
 
+     const session = await getSession();
+
      return (
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+               <Header user={session ? session.user : null} />
                <Box
                     component="main"
                     sx={{
@@ -143,6 +149,7 @@ export default function NotFound() {
                          </Paper>
                     </Container>
                </Box>
+               <Footer />
           </Box>
      )
 }

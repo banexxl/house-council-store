@@ -250,8 +250,6 @@ export const LoginPage = () => {
                                                        setGoogleSignInLoading(false)
                                                        toast.error(error.message ? error.message : error.hint ? error.hint : error.details)
                                                   }
-                                                  console.log('success', success, 'error', error);
-
                                              }}
                                              loading={googleSignInLoading}
                                         >

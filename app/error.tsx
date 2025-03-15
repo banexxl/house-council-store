@@ -6,8 +6,10 @@ import { Box, Button, Container, Typography, Paper } from "@mui/material"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
 import ReplayIcon from "@mui/icons-material/Replay"
 import HomeIcon from "@mui/icons-material/Home"
+import Header from "@/components/header"
+import { getSession } from "@/lib/get-session"
 
-export default function Error({
+export default async function Error({
      error,
      reset,
 }: {
@@ -19,8 +21,11 @@ export default function Error({
           console.error(error)
      }, [error])
 
+     const session = await getSession();
+
      return (
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+               <Header user={session ? session.user : null} />
                <Box
                     component="main"
                     sx={{
