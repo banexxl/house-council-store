@@ -75,7 +75,7 @@ export async function GET(request: Request) {
      if (clientError) {
           console.error('Error checking email in database:', clientError);
           supabase.auth.signOut();
-          const { data, error } = await supabase.auth.admin.deleteUser(userEmail ? userEmail : '');
+          const { data, error } = await supabase.auth.admin.deleteUser(sessionData.session.user.id);
           console.log('data', data);
           console.log('error', error);
           return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=Error checking email in database.`);
@@ -83,7 +83,7 @@ export async function GET(request: Request) {
 
      if (!data || data.length === 0) {
           supabase.auth.signOut();
-          const { data, error } = await supabase.auth.admin.deleteUser(userEmail ? userEmail : '');
+          const { data, error } = await supabase.auth.admin.deleteUser(sessionData.session.user.id);
           console.log('data', data);
           console.log('error', error);
           console.log('Email not registered. Consider triggering a sign-up process.');
@@ -92,7 +92,7 @@ export async function GET(request: Request) {
 
      if (data.length > 1) {
           supabase.auth.signOut();
-          const { data, error } = await supabase.auth.admin.deleteUser(userEmail ? userEmail : '');
+          const { data, error } = await supabase.auth.admin.deleteUser(sessionData.session.user.id);
           console.log('data', data);
           console.log('error', error);
 
