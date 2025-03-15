@@ -105,8 +105,8 @@ export default function AuthErrorPage() {
                               Back to Login
                          </Button>
 
-                         <Button variant="contained" component={Link} href="/">
-                              Go to Homepage
+                         <Button variant="contained" component={Link} href="/auth/register">
+                              Sign Up
                          </Button>
                     </Box>
                </Paper>
