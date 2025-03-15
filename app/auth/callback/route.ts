@@ -1,4 +1,5 @@
 import { createServerClient } from '@supabase/ssr';
+import { redirect } from 'next/dist/server/api-utils';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
@@ -74,7 +75,8 @@ export async function GET(request: Request) {
 
      if (clientError) {
           console.error('Error checking email in database:', clientError);
-          return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=${clientError.message}`);
+          supabase.auth.signOut();
+          return NextResponse.redirect('/');
      }
 
      if (!data || data.length === 0) {
