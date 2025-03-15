@@ -69,7 +69,6 @@ export async function GET(request: Request) {
           .from('tblClients')
           .select('*')
           .eq('email', userEmail)
-          .single()
      console.log('data', data);
      console.log('clientError', clientError);
 
