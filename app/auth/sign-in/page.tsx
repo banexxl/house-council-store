@@ -1,8 +1,8 @@
 import { getSession } from "@/lib/get-session";
 
 import Footer from "@/components/footer";
-import Header from "@/components/header";
 import { LoginPage } from "./sign-in";
+import Header from "@/components/header";
 
 export default async function Page() {
 

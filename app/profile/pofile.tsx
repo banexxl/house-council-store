@@ -905,7 +905,6 @@ export const ProfilePage = () => {
                          </Grid>
                     </Container>
                </Box>
-               <Toaster />
           </Box>
      )
 }
