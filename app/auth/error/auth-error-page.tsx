@@ -38,10 +38,8 @@ export default function AuthErrorPage() {
 
      // Format error code to a more readable title
      const formatErrorTitle = (errorCode: string): string => {
-          return errorCode
-               .split("_")
-               .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-               .join(" ")
+          const sentences = errorCode.split("_").join(" ").replace(/([.!?])\s+/g, "$1|").split("|")
+          return sentences.map((sentence) => sentence.charAt(0).toUpperCase() + sentence.slice(1).toLowerCase()).join(" ")
      }
 
      // Get default error message based on error code
