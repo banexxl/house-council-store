@@ -76,7 +76,8 @@ export async function GET(request: Request) {
      if (clientError) {
           console.error('Error checking email in database:', clientError);
           supabase.auth.signOut();
-          return NextResponse.redirect(`${process.env.BASE_URL}`);
+          supabase.auth.admin.deleteUser(userEmail ? userEmail : '')
+          return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=Error checking email in database.`);
      }
 
      if (!data || data.length === 0) {
