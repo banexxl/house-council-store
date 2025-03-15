@@ -76,7 +76,7 @@ export async function GET(request: Request) {
      if (clientError) {
           console.error('Error checking email in database:', clientError);
           supabase.auth.signOut();
-          return NextResponse.redirect('/');
+          return NextResponse.redirect(`${process.env.BASE_URL}`);
      }
 
      if (!data || data.length === 0) {
