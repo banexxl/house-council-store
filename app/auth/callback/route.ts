@@ -31,14 +31,6 @@ export async function GET(request: Request) {
      const errorCode = requestUrl.searchParams.get('error_code');
      const errorDescription = requestUrl.searchParams.get('error_description');
 
-
-     console.log('code', code);
-     console.log('error', error);
-     console.log('errorCode', errorCode);
-     console.log('errorDescription', errorDescription);
-
-
-
      if (error) {
           // Redirect to error page with absolute URL
           const errorPageUrl = `${requestUrl.origin}/auth/error?error=${error}&error_code=${errorCode}&error_description=${encodeURIComponent(errorDescription || '')}`;
@@ -86,11 +78,15 @@ export async function GET(request: Request) {
      }
 
      if (!data || data.length === 0) {
+          supabase.auth.signOut();
+          supabase.auth.admin.deleteUser(userEmail ? userEmail : '');
           console.log('Email not registered. Consider triggering a sign-up process.');
           return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=Email not registered. Please sign up.`);
      }
 
      if (data.length > 1) {
+          supabase.auth.signOut();
+          supabase.auth.admin.deleteUser(userEmail ? userEmail : '');
           console.log('Duplicate email found in tblClients. Please contact support.');
           return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=Duplicate email found in tblClients. Please contact support.`);
      }

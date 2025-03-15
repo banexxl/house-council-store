@@ -6,6 +6,7 @@ import Grid from "@mui/material/Grid2"
 import ApartmentIcon from "@mui/icons-material/Apartment"
 
 export const Footer = () => {
+
   return (
     <Box component="footer" sx={{ bgcolor: "background.paper", py: 6, borderTop: 1, borderColor: "divider" }}>
       <Container maxWidth="lg">
