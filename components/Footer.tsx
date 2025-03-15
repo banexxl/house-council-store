@@ -5,7 +5,7 @@ import { Box, Container, Typography, Divider, List, ListItem, ListItemText } fro
 import Grid from "@mui/material/Grid2"
 import ApartmentIcon from "@mui/icons-material/Apartment"
 
-export default function Footer() {
+export const Footer = () => {
   return (
     <Box component="footer" sx={{ bgcolor: "background.paper", py: 6, borderTop: 1, borderColor: "divider" }}>
       <Container maxWidth="lg">

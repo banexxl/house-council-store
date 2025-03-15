@@ -14,7 +14,7 @@ type HeaderProps = {
   user: User | null;
 }
 
-export default function Header({ user }: HeaderProps) {
+export const Header = ({ user }: HeaderProps) => {
   // const { session, isLoading, refreshSession } = useSession();
   const [mobileOpen, setMobileOpen] = useState(false);
   const router = useRouter();
