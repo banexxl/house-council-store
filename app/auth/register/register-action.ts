@@ -28,7 +28,6 @@ export const registerUser = async (values: RegisterFormValues): Promise<{ succes
      }
 
      const supabase = await useServerSideSupabaseClient();
-
      if (values.password !== values.confirm_password) {
           return { success: false, error: { code: 'PASSWORDS_DO_NOT_MATCH', details: 'Passwords do not match', hint: null, message: 'Passwords do not match' } };
      }
