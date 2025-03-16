@@ -1,3 +1,5 @@
+'use server'
+
 import { getSession } from "@/lib/get-session";
 import HomePage from "./home";
 import { Footer } from "@/components/footer";

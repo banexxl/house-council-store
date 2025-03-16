@@ -9,7 +9,7 @@ import SentimentDissatisfiedIcon from "@mui/icons-material/SentimentDissatisfied
 import HomeIcon from "@mui/icons-material/Home"
 import ContactSupportIcon from "@mui/icons-material/ContactSupport"
 
-export default async function NotFound() {
+export default function NotFound() {
      const handleSearch = (event: React.FormEvent<HTMLFormElement>) => {
           event.preventDefault()
           // In a real app, you would implement search functionality here

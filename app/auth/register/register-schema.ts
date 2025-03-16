@@ -4,7 +4,7 @@ import * as Yup from "yup"
 export const registrationSchema = Yup.object({
      contact_person: Yup.string().required("Full name is required").min(2, "Name must be at least 2 characters"),
      email: Yup.string().email("Enter a valid email").required("Email is required"),
-     confirm_email: Yup.string().oneOf([Yup.ref("email")], "Emails must match"),
+     confirm_email: Yup.string().oneOf([Yup.ref("email")], "Emails must match").required("Confirm email is required"),
      password: Yup.string()
           .min(8, "Password must be at least 8 characters")
           .required("Password is required")
