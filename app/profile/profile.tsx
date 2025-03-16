@@ -93,12 +93,9 @@ const recentActivity = [
 ]
 
 type ProfilePageProps = {
-     sessionDataCombined?: { client: Client, session: User }
+     sessionAndClientDataCombined?: { client: Client, session: User }
 }
-
-export const ProfilePage = ({ sessionDataCombined }: ProfilePageProps) => {
-
-     console.log('sessionDataCombined', sessionDataCombined);
+export const ProfilePage = ({ sessionAndClientDataCombined }: ProfilePageProps) => {
 
 
      const [editMode, setEditMode] = useState(false)
@@ -113,7 +110,7 @@ export const ProfilePage = ({ sessionDataCombined }: ProfilePageProps) => {
                               {/* Profile Sidebar */}
                               <Grid size={{ xs: 12, md: 4 }}>
                                    <ProfileSidebar
-                                        userData={userData}
+                                        userData={sessionAndClientDataCombined!}
                                         subscriptionData={subscriptionData}
                                         recentActivity={recentActivity}
                                         onEditProfile={() => setEditMode(true)}
@@ -123,7 +120,7 @@ export const ProfilePage = ({ sessionDataCombined }: ProfilePageProps) => {
                               {/* Main Content */}
                               <Grid size={{ xs: 12, md: 8 }}>
                                    <ProfileTabs
-                                        userData={userData}
+                                        userData={sessionAndClientDataCombined!}
                                         editMode={editMode}
                                         setEditMode={setEditMode}
                                         subscriptionData={subscriptionData}

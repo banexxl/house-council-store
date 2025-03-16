@@ -15,14 +15,14 @@ export default async function Page() {
           ? await readAccountByEmailAction(user.email)
           : { data: null, error: 'No email provided' };
 
-     const sessionDataCombined = user && (data)
+     const sessionAndClientDataCombined = user && (data)
           ? { client: { clientInitialValues, ...data }, session: { ...user } } // Ensures session is always a User
           : undefined; // Ensure undefined instead of incorrect types
 
      return (
           <>
                <Header user={user ? user : null} />
-               <ProfilePage sessionDataCombined={sessionDataCombined} />
+               <ProfilePage sessionAndClientDataCombined={sessionAndClientDataCombined} />
                <Footer />
           </>
 

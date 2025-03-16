@@ -37,22 +37,8 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday"
 import { logoutUserAction } from "../logout-action"
 import toast from "react-hot-toast"
 import { useRouter } from "next/navigation"
-
-// Types
-export interface UserData {
-     id: string
-     name: string
-     email: string
-     phone: string
-     avatar: string
-     role: string
-     status: string
-     joinDate: string
-     community: string
-     unit: string
-     emailVerified: boolean
-     twoFactorEnabled: boolean
-}
+import { Client } from "@/app/types/client"
+import { User } from "@supabase/supabase-js"
 
 export interface SubscriptionData {
      plan: string
@@ -72,7 +58,7 @@ export interface ActivityItem {
 }
 
 interface ProfileSidebarProps {
-     userData: UserData
+     userData: { client: Client; session: User }
      subscriptionData: SubscriptionData
      recentActivity: ActivityItem[]
      onEditProfile: () => void
@@ -183,18 +169,18 @@ export default function ProfileSidebar({
                                         </IconButton>
                                    }
                               >
-                                   <Avatar src={userData.avatar} alt={userData.name} sx={{ width: 120, height: 120 }} />
+                                   <Avatar src={userData.client.avatar} alt={userData.client.name} sx={{ width: 120, height: 120 }} />
                               </Badge>
                          </Box>
 
                          <Typography variant="h5" gutterBottom>
-                              {userData.name}
+                              {userData.client.name}
                          </Typography>
 
-                         <Chip label={userData.status} color={getStatusColor(userData.status)} size="small" sx={{ mb: 1 }} />
+                         <Chip label={userData.client.client_status} color={getStatusColor(userData.client.client_status)} size="small" sx={{ mb: 1 }} />
 
                          <Typography variant="body2" color="text.secondary" gutterBottom>
-                              {userData.role} at {userData.community}
+                              {userData.client.role_id}
                          </Typography>
 
                          <Divider sx={{ my: 2 }} />
@@ -204,42 +190,35 @@ export default function ProfileSidebar({
                                    <ListItemIcon>
                                         <EmailIcon fontSize="small" />
                                    </ListItemIcon>
-                                   <ListItemText primary={userData.email} secondary={userData.emailVerified ? "Verified" : "Not verified"} />
-                                   {userData.emailVerified && <VerifiedUserIcon color="success" fontSize="small" />}
+                                   <ListItemText primary={userData.client.email} secondary={userData.client.is_verified ? "Verified" : "Not verified"} />
+                                   {userData.client.is_verified && <VerifiedUserIcon color="success" fontSize="small" />}
                               </ListItem>
 
                               <ListItem>
                                    <ListItemIcon>
                                         <PhoneIcon fontSize="small" />
                                    </ListItemIcon>
-                                   <ListItemText primary={userData.phone} />
-                              </ListItem>
-
-                              <ListItem>
-                                   <ListItemIcon>
-                                        <ApartmentIcon fontSize="small" />
-                                   </ListItemIcon>
-                                   <ListItemText primary={userData.unit} />
+                                   <ListItemText primary={userData.client.phone} />
                               </ListItem>
 
                               <ListItem>
                                    <ListItemIcon>
                                         <CalendarTodayIcon fontSize="small" />
                                    </ListItemIcon>
-                                   <ListItemText primary="Member since" secondary={userData.joinDate} />
+                                   <ListItemText primary="Member since" secondary={userData.session.created_at} />
                               </ListItem>
                          </List>
 
                          <Divider sx={{ my: 2 }} />
 
-                         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                         {/* <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                               <Typography variant="subtitle2">Two-Factor Authentication</Typography>
                               <Chip
                                    label={userData.twoFactorEnabled ? "Enabled" : "Disabled"}
                                    color={userData.twoFactorEnabled ? "success" : "default"}
                                    size="small"
                               />
-                         </Box>
+                         </Box> */}
                     </CardContent>
                </Card>
 

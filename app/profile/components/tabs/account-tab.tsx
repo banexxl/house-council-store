@@ -6,15 +6,18 @@ import Link from "next/link"
 import EditIcon from "@mui/icons-material/Edit"
 import LockIcon from "@mui/icons-material/Lock"
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser"
-import { getStatusColor, UserData } from "../profile-sidebar"
+import { getStatusColor } from "../profile-sidebar"
 import { deleteAccountAction } from "../../account-action"
 import Swal from 'sweetalert2'
+import { Client } from "@/app/types/client"
+import { User } from "@supabase/supabase-js"
 
 interface AccountTabProps {
-     userData: UserData
+     userData: { client: Client; session: User }
      editMode: boolean
      setEditMode: (value: boolean) => void
 }
+
 
 export default function AccountTab({ userData, editMode, setEditMode }: AccountTabProps) {
 
@@ -30,7 +33,7 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                cancelButtonColor: "#d33",
                confirmButtonText: "Yes, delete it!",
                preConfirm: async () => {
-                    const deleteAccount = await deleteAccountAction(userData.id, userData.email);
+                    const deleteAccount = await deleteAccountAction(userData.session.id, userData.client.email);
                     console.log('deleteAccount', deleteAccount);
 
                     if (deleteAccount.success) {
@@ -64,23 +67,19 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
 
                          <Grid container spacing={3}>
                               <Grid size={{ xs: 12, md: 6 }}>
-                                   <TextField fullWidth label="Full Name" defaultValue={userData.name} required />
+                                   <TextField fullWidth label="Full Name" defaultValue={userData.client.name} required />
                               </Grid>
 
                               <Grid size={{ xs: 12, md: 6 }}>
-                                   <TextField fullWidth label="Email" type="email" defaultValue={userData.email} required />
+                                   <TextField fullWidth label="Email" type="email" defaultValue={userData.client.email} required />
                               </Grid>
 
                               <Grid size={{ xs: 12, md: 6 }}>
-                                   <TextField fullWidth label="Phone Number" defaultValue={userData.phone} />
+                                   <TextField fullWidth label="Phone Number" defaultValue={userData.client.phone} />
                               </Grid>
 
                               <Grid size={{ xs: 12, md: 6 }}>
-                                   <TextField fullWidth label="Unit/Apartment" defaultValue={userData.unit} />
-                              </Grid>
-
-                              <Grid size={{ xs: 12, md: 6 }}>
-                                   <TextField fullWidth label="Role" defaultValue={userData.role} />
+                                   <TextField fullWidth label="Role" defaultValue={userData.client.role_id} />
                               </Grid>
 
                               <Grid size={{ xs: 12 }}>
@@ -109,21 +108,21 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                    <Typography variant="subtitle2" color="text.secondary">
                                         User ID
                                    </Typography>
-                                   <Typography variant="body1">{userData.id}</Typography>
+                                   <Typography variant="body1">{userData.client.id}</Typography>
                               </Grid>
 
                               <Grid size={{ xs: 12, md: 6 }}>
                                    <Typography variant="subtitle2" color="text.secondary">
                                         Status
                                    </Typography>
-                                   <Chip label={userData.status} color={getStatusColor(userData.status)} size="small" />
+                                   <Chip label={userData.client.client_status} color={getStatusColor(userData.client.client_status)} size="small" />
                               </Grid>
 
                               <Grid size={{ xs: 12, md: 6 }}>
                                    <Typography variant="subtitle2" color="text.secondary">
                                         Full Name
                                    </Typography>
-                                   <Typography variant="body1">{userData.name}</Typography>
+                                   <Typography variant="body1">{userData.client.name}</Typography>
                               </Grid>
 
                               <Grid size={{ xs: 12, md: 6 }}>
@@ -131,8 +130,8 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                         Email
                                    </Typography>
                                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                        <Typography variant="body1">{userData.email}</Typography>
-                                        {userData.emailVerified && <VerifiedUserIcon color="success" fontSize="small" />}
+                                        <Typography variant="body1">{userData.client.email}</Typography>
+                                        {userData.client.is_verified && <VerifiedUserIcon color="success" fontSize="small" />}
                                    </Box>
                               </Grid>
 
@@ -140,35 +139,21 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                    <Typography variant="subtitle2" color="text.secondary">
                                         Phone Number
                                    </Typography>
-                                   <Typography variant="body1">{userData.phone}</Typography>
+                                   <Typography variant="body1">{userData.client.phone}</Typography>
                               </Grid>
 
                               <Grid size={{ xs: 12, md: 6 }}>
                                    <Typography variant="subtitle2" color="text.secondary">
                                         Member Since
                                    </Typography>
-                                   <Typography variant="body1">{userData.joinDate}</Typography>
-                              </Grid>
-
-                              <Grid size={{ xs: 12, md: 6 }}>
-                                   <Typography variant="subtitle2" color="text.secondary">
-                                        Community
-                                   </Typography>
-                                   <Typography variant="body1">{userData.community}</Typography>
-                              </Grid>
-
-                              <Grid size={{ xs: 12, md: 6 }}>
-                                   <Typography variant="subtitle2" color="text.secondary">
-                                        Unit/Apartment
-                                   </Typography>
-                                   <Typography variant="body1">{userData.unit}</Typography>
+                                   <Typography variant="body1">{userData.session.created_at}</Typography>
                               </Grid>
 
                               <Grid size={{ xs: 12, md: 6 }}>
                                    <Typography variant="subtitle2" color="text.secondary">
                                         Role
                                    </Typography>
-                                   <Typography variant="body1">{userData.role}</Typography>
+                                   <Typography variant="body1">{userData.client.role_id}</Typography>
                               </Grid>
                          </Grid>
 

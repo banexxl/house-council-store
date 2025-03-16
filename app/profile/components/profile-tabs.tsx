@@ -13,8 +13,9 @@ import AccountTab from "./tabs/account-tab"
 import BillingTab from "./tabs/billing-tab"
 import NotificationsTab from "./tabs/notifications-tab"
 import SecurityTab from "./tabs/security-tab"
-import type { UserData } from "./profile-sidebar"
 import PaymentsTab from "./tabs/payments-tab"
+import { Session, User } from "@supabase/supabase-js"
+import { Client } from "@/app/types/client"
 
 interface TabPanelProps {
      children?: React.ReactNode
@@ -39,7 +40,7 @@ function TabPanel(props: TabPanelProps) {
 }
 
 interface ProfileTabsProps {
-     userData: UserData
+     userData: { client: Client, session: User }
      editMode: boolean
      setEditMode: (value: boolean) => void
      subscriptionData: any
