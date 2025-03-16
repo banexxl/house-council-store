@@ -42,7 +42,3 @@ export const useSessionUpdater = () => {
      }, []);
 };
 
-export const DeleteCodeVerifierCookie = () => {
-     const COOKIE_NAME = "sb-sorklznvftjmhkaejkej-auth-token-code-verifier";
-     document.cookie = `${COOKIE_NAME}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-};
