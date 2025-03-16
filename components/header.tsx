@@ -124,14 +124,14 @@ export const Header = ({ user }: HeaderProps) => {
                   <Button color="inherit">Sign In</Button>
                 </Link>
               )}
-              <Link href="https://house-council-app-v2-plum.vercel.app/auth/login" target="_blank" style={{ textDecoration: "none" }}>
+              <Link href="https://house-council-app-v2-plum.vercel.app/" target="_blank" style={{ textDecoration: "none" }}>
                 <Button variant="contained" color="primary">
                   Dashboard
                 </Button>
               </Link>
             </Box>
             <Box sx={{ display: { xs: "flex", md: "none" } }}>
-              <Link href="/pricing" style={{ textDecoration: "none", marginRight: "8px" }}>
+              <Link href="https://house-council-app-v2-plum.vercel.app/" style={{ textDecoration: "none", marginRight: "8px" }}>
                 <Button variant="contained" color="primary" size="small">
                   Dashboard
                 </Button>
