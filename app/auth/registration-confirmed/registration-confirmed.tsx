@@ -17,8 +17,8 @@ import {
 import CheckCircleIcon from "@mui/icons-material/CheckCircle"
 import LoginIcon from "@mui/icons-material/Login"
 import PersonIcon from "@mui/icons-material/Person"
-import HomeIcon from "@mui/icons-material/Home"
-import SettingsIcon from "@mui/icons-material/Settings"
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import BiotechIcon from '@mui/icons-material/Biotech';
 import EmailIcon from "@mui/icons-material/Email"
 import { Toaster } from "react-hot-toast"
 
@@ -41,18 +41,8 @@ export const RegistrationConfirmedPage = () => {
                               </Typography>
 
                               <Typography variant="body1" paragraph sx={{ maxWidth: 600, mx: "auto" }}>
-                                   Your account has been successfully created. We've sent a confirmation email to your inbox. Please check
-                                   your email and verify your account to access all features.
+                                   Your account has been successfully created. You can now log in and start using our services.
                               </Typography>
-
-                              <Alert severity="info" sx={{ maxWidth: 600, mx: "auto", mb: 4, textAlign: "left" }}>
-                                   <Box sx={{ display: "flex", alignItems: "center" }}>
-                                        <EmailIcon sx={{ mr: 1 }} />
-                                        <Typography variant="subtitle2">
-                                             Please check your inbox and spam folder for the verification email.
-                                        </Typography>
-                                   </Box>
-                              </Alert>
 
                               <Box sx={{ my: 4 }}>
                                    <Button
@@ -84,28 +74,28 @@ export const RegistrationConfirmedPage = () => {
                                                   <PersonIcon color="primary" />
                                              </ListItemIcon>
                                              <ListItemText
-                                                  primary="Complete Your Profile"
+                                                  primary="Sign in and Set Up Your Profile"
                                                   secondary="Add your personal information and preferences to customize your experience."
                                              />
                                         </ListItem>
 
                                         <ListItem>
                                              <ListItemIcon>
-                                                  <HomeIcon color="primary" />
+                                                  <AttachMoneyIcon color="primary" />
                                              </ListItemIcon>
                                              <ListItemText
-                                                  primary="Set Up Your Community"
-                                                  secondary="Add your residential community details or join an existing one."
+                                                  primary="Purchase a subscription"
+                                                  secondary="Choose a plan that fits your needs and join our community."
                                              />
                                         </ListItem>
 
                                         <ListItem>
                                              <ListItemIcon>
-                                                  <SettingsIcon color="primary" />
+                                                  <BiotechIcon color="primary" />
                                              </ListItemIcon>
                                              <ListItemText
-                                                  primary="Configure Notifications"
-                                                  secondary="Choose how and when you want to receive updates from your community."
+                                                  primary="Get a Free Trial"
+                                                  secondary="Try our service for free and explore its features."
                                              />
                                         </ListItem>
                                    </List>

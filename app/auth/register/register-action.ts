@@ -1,7 +1,7 @@
 'use server';
 
 import { hashPassword } from '@/lib/bcrypt';
-import { useServerSideSupabaseClient } from '@/lib/ss-supabase-service-role-client';
+import { useServerSideSupabaseServiceRoleClient } from '@/lib/ss-supabase-service-role-client';
 
 export type RegisterFormValues = {
      contact_person: string;
@@ -27,7 +27,8 @@ export const registerUser = async (values: RegisterFormValues): Promise<{ succes
           return { success: false, error: { code: 'VALIDATION_ERROR', details: 'All fields are required', hint: null, message: 'All fields are required' } };
      }
 
-     const supabase = await useServerSideSupabaseClient();
+     const supabase = await useServerSideSupabaseServiceRoleClient();
+
      if (values.password !== values.confirm_password) {
           return { success: false, error: { code: 'PASSWORDS_DO_NOT_MATCH', details: 'Passwords do not match', hint: null, message: 'Passwords do not match' } };
      }

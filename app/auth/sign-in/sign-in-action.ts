@@ -1,7 +1,7 @@
 'use server';
 
 import { verifyPassword } from '@/lib/bcrypt';
-import { useServerSideSupabaseClient } from '@/lib/ss-supabase-anon-client';
+import { useServerSideSupabaseAnonClient } from '@/lib/ss-supabase-anon-client';
 import { redirect } from 'next/navigation';
 
 export type SignInFormValues = {
@@ -16,7 +16,7 @@ export type ErrorType = {
 }
 export const signInUser = async (values: SignInFormValues): Promise<{ success: boolean, error?: ErrorType }> => {
 
-     const supabase = await useServerSideSupabaseClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      const { data, error } = await supabase
           .from('tblClients')
@@ -58,7 +58,7 @@ export const signInUser = async (values: SignInFormValues): Promise<{ success: b
 
 
 export const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: any }> => {
-     const supabase = await useServerSideSupabaseClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      // Initiate Google OAuth flow.
      const { data: authData, error: authError } = await supabase.auth.signInWithOAuth({

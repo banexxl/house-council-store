@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useFormik } from "formik"
 import {
@@ -24,6 +24,7 @@ import { signInSchema } from "./sign-in-schema"
 import { handleGoogleSignIn, signInUser } from "./sign-in-action"
 import { useRouter } from "next/navigation"
 import toast, { Toaster } from "react-hot-toast"
+import { useSessionUpdater } from "@/lib/client-session-update"
 
 // Custom multi-colored Google icon as an SVG component
 const GoogleMultiColorIcon = (props: any) => (
@@ -74,6 +75,10 @@ export const LoginPage = () => {
      const [showPassword, setShowPassword] = useState(false)
      const [googleSignInLoading, setGoogleSignInLoading] = useState(false)
      const router = useRouter()
+
+
+     useSessionUpdater()
+
 
      const handleClickShowPassword = () => {
           setShowPassword(!showPassword)

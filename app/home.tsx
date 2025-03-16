@@ -211,6 +211,7 @@ export default function HomePage() {
                               </Typography>
                          </Container>
                     </Box>
+                    <Toaster />
                </Box>
           </Box>
      );

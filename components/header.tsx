@@ -119,16 +119,16 @@ export const Header = ({ user }: HeaderProps) => {
                   <Button color="inherit">Sign In</Button>
                 </Link>
               )}
-              <Link href="/pricing" style={{ textDecoration: "none" }}>
+              <Link href="https://house-council-app-v2-plum.vercel.app/auth/login" target="_blank" style={{ textDecoration: "none" }}>
                 <Button variant="contained" color="primary">
-                  Get Started
+                  Dashboard
                 </Button>
               </Link>
             </Box>
             <Box sx={{ display: { xs: "flex", md: "none" } }}>
               <Link href="/pricing" style={{ textDecoration: "none", marginRight: "8px" }}>
                 <Button variant="contained" color="primary" size="small">
-                  Get Started
+                  Dashboard
                 </Button>
               </Link>
               <IconButton color="inherit" aria-label="open drawer" edge="end" onClick={handleDrawerToggle}>

@@ -78,6 +78,10 @@ export async function GET(request: Request) {
           const { data, error } = await supabase.auth.admin.deleteUser(sessionData.session.user.id);
           console.log('data', data);
           console.log('error', error);
+
+          // Remove cookies
+          cookieStore.getAll().forEach(cookie => cookieStore.delete(cookie.name));
+
           return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=Error checking email in database.`);
      }
 
@@ -87,6 +91,10 @@ export async function GET(request: Request) {
           console.log('data', data);
           console.log('error', error);
           console.log('Email not registered. Consider triggering a sign-up process.');
+
+          // Remove cookies
+          cookieStore.getAll().forEach(cookie => cookieStore.delete(cookie.name));
+
           return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=Email not registered. Please sign up.`);
      }
 
@@ -95,9 +103,11 @@ export async function GET(request: Request) {
           const { data, error } = await supabase.auth.admin.deleteUser(sessionData.session.user.id);
           console.log('data', data);
           console.log('error', error);
-
-
           console.log('Duplicate email found in tblClients. Please contact support.');
+
+          // Remove cookies
+          cookieStore.getAll().forEach(cookie => cookieStore.delete(cookie.name));
+
           return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=Duplicate email found in tblClients. Please contact support.`);
      }
 

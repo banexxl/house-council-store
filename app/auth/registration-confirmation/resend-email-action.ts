@@ -1,10 +1,10 @@
 'use server'
 
-import { useServerSideSupabaseClient } from "@/lib/ss-supabase-anon-client";
+import { useServerSideSupabaseServiceRoleClient } from "@/lib/ss-supabase-service-role-client";
 
 export const resendRegistrationEmail = async (email: string): Promise<boolean> => {
 
-     const supabase = await useServerSideSupabaseClient();
+     const supabase = await useServerSideSupabaseServiceRoleClient();
      const { data, error } = await supabase.auth.resend({
           type: 'signup',
           email,
