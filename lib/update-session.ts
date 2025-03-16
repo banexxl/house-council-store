@@ -46,19 +46,24 @@ export async function updateSession(request: NextRequest) {
 
      if (user) {
           // User is authenticated
-          if (pathname === '/auth/sign-in' || pathname === '/auth/registration-confirmation' || pathname === '/auth/registration-confirmed') {
+          if (pathname === '/auth/sign-in'
+               || pathname === '/auth/registration-confirmation'
+               || pathname === '/auth/registration-confirmed'
+          ) {
                // Redirect to homepage if trying to access login page or root
                return NextResponse.redirect(new URL('/', request.url));
           }
      } else {
           // User is not authenticated
-          if (!isPublicRoute || pathname.startsWith('/profile')) {
-               // Redirect to login page if trying to access a protected route
-               return NextResponse.redirect(new URL('/auth/sign-in', request.url));
+          if (!isPublicRoute || pathname.startsWith('/profile') || pathname.startsWith('/auth/reset-password')) {
+               {
+                    // Redirect to login page if trying to access a protected route
+                    return NextResponse.redirect(new URL('/auth/sign-in', request.url));
+               }
           }
+
+          // Return the response for all other cases
+          return supabaseResponse;
      }
 
-     // Return the response for all other cases
-     return supabaseResponse;
 }
-

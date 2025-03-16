@@ -26,6 +26,7 @@
     "react-hook-form": "^7.54.1",
     "react-hot-toast": "^2.5.2",
     "supabase": "^2.15.8",
+    "sweetalert2": "^11.17.2",
     "yup": "^1.6.1"
   },
   "devDependencies": {
