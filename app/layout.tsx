@@ -11,12 +11,16 @@ import { usePathname } from "next/navigation"
 import { AnimatePresence } from "framer-motion"
 import Animate from "@/components/animation-framer-motion"
 import { Toaster } from "react-hot-toast"
+import { CheckCookiesOnFocus } from "@/components/cookie-checker"
+
 
 const inter = Inter({ subsets: ["latin"] })
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
 
   const pathname = usePathname()
+
+  CheckCookiesOnFocus()
 
   return (
     <html lang="en">

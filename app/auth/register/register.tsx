@@ -25,7 +25,7 @@ import { registrationSchema } from "./register-schema"
 import { ErrorType, RegisterFormValues, registerUser } from "./register-action"
 import toast, { Toaster } from "react-hot-toast"
 import { useRouter } from "next/navigation"
-import { CheckCookiesOnFocus } from "@/components/cookie-checker"
+
 
 export const RegisterPage = () => {
 
@@ -33,7 +33,7 @@ export const RegisterPage = () => {
      const [showConfirmPassword, setShowConfirmPassword] = useState(false)
      const router = useRouter()
 
-     CheckCookiesOnFocus()
+
 
      const handleClickShowPassword = () => {
           setShowPassword(!showPassword)

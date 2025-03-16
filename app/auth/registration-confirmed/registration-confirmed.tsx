@@ -21,11 +21,11 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import BiotechIcon from '@mui/icons-material/Biotech';
 import EmailIcon from "@mui/icons-material/Email"
 import { Toaster } from "react-hot-toast"
-import { CheckCookiesOnFocus } from "@/components/cookie-checker"
+
 
 export const RegistrationConfirmedPage = () => {
 
-     CheckCookiesOnFocus()
+
 
      return (
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
