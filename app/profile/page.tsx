@@ -1,22 +1,28 @@
-import { getSession } from "@/lib/get-session";
+import { getSessionUser } from "@/lib/get-session";
 
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { ProfilePage } from "./profile";
-import { readAccountByIdAction } from "./account-action";
-
-
+import { readAccountByEmailAction } from "./account-action";
+import { User } from "@supabase/supabase-js";
+import { clientInitialValues } from "../types/client";
 
 export default async function Page() {
 
-     const session = await getSession();
-     const { success, error } = await readAccountByIdAction(session ? session.user.id : '');
+     const user: User | null = await getSessionUser();
 
+     const { data, error } = user?.email
+          ? await readAccountByEmailAction(user.email)
+          : { data: null, error: 'No email provided' };
+
+     const sessionDataCombined = user && (data)
+          ? { client: { clientInitialValues, ...data }, session: { ...user } } // Ensures session is always a User
+          : undefined; // Ensure undefined instead of incorrect types
 
      return (
           <>
-               <Header user={session?.user ? session.user : null} />
-               <ProfilePage />
+               <Header user={user ? user : null} />
+               <ProfilePage sessionDataCombined={sessionDataCombined} />
                <Footer />
           </>
 

@@ -3,7 +3,7 @@
 import { User } from "@supabase/supabase-js";
 import { useServerSideSupabaseAnonClient } from "./ss-supabase-anon-client";
 
-export const getSession = async (): Promise<{ user: User } | null> => {
+export const getSessionUser = async (): Promise<User | null> => {
 
      const supabase = await useServerSideSupabaseAnonClient()
 
@@ -14,5 +14,5 @@ export const getSession = async (): Promise<{ user: User } | null> => {
           return null
      }
 
-     return { user: data.user as User }
+     return data.user
 }

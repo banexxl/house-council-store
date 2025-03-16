@@ -1,15 +1,15 @@
-import { getSession } from "@/lib/get-session";
+import { getSessionUser } from "@/lib/get-session";
 import { RegisterPage } from "./register";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 
 export default async function Page() {
 
-     const session = await getSession();
+     const user = await getSessionUser();
 
      return (
           <>
-               <Header user={session?.user ? session.user : null} />
+               <Header user={user ? user : null} />
                <RegisterPage />
                <Footer />
           </>

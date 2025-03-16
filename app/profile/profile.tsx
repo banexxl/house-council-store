@@ -6,6 +6,8 @@ import Grid from "@mui/material/Grid2"
 import { Toaster } from "react-hot-toast"
 import ProfileSidebar from "./components/profile-sidebar"
 import ProfileTabs from "./components/profile-tabs"
+import { Client } from "../types/client"
+import { User } from "@supabase/supabase-js"
 
 // Mock data for the profile
 const userData = {
@@ -90,7 +92,15 @@ const recentActivity = [
      { id: "act_5", type: "Profile", description: "Updated profile information", date: "December 28, 2023" },
 ]
 
-export const ProfilePage = () => {
+type ProfilePageProps = {
+     sessionDataCombined?: { client: Client, session: User }
+}
+
+export const ProfilePage = ({ sessionDataCombined }: ProfilePageProps) => {
+
+     console.log('sessionDataCombined', sessionDataCombined);
+
+
      const [editMode, setEditMode] = useState(false)
      const [notificationSettings, setNotificationSettings] = useState(notificationPreferences)
 

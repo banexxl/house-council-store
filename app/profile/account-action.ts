@@ -2,6 +2,7 @@
 
 import { useServerSideSupabaseServiceRoleClient } from "@/lib/ss-supabase-service-role-client";
 import { logoutUserAction } from "./logout-action";
+import { Client } from "../types/client";
 
 export const deleteAccountAction = async (clientId: string, clientEmail: string): Promise<{ success: boolean, error?: string }> => {
 
@@ -28,20 +29,21 @@ export const deleteAccountAction = async (clientId: string, clientEmail: string)
      return { success: true }
 }
 
-export const readAccountByIdAction = async (clientId: string): Promise<{ success: boolean, error?: string }> => {
+export const readAccountByEmailAction = async (email: string): Promise<{ data?: Client, error?: string }> => {
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
+
      const { data, error } = await supabase
           .from('tblClients')
           .select('*')
-          .eq('id', clientId)
+          .eq('email', email)
           .single();
+     console.log('data', data);
+     console.log('error', error);
 
      if (error) {
-          console.log('error', error);
-          return { success: false, error: error.message }
+          return { error: error.message }
      }
 
-     console.log('data', data);
-     return { success: true }
+     return { data }
 }
