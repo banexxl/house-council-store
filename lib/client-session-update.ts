@@ -5,17 +5,18 @@ import { useEffect, useRef } from "react";
 export const useSessionUpdater = () => {
      const COOKIE_NAME = "sb-sorklznvftjmhkaejkej-auth-token-code-verifier";
 
-     // Helper function to get the value of a specific cookie
-     const getCookieValue = (name: string) => {
-          const match = document.cookie
-               .split("; ")
-               .find((row) => row.startsWith(`${name}=`));
-          return match ? match.split("=")[1] : undefined;
-     };
-
-     const prevCookieValue = useRef<string | null>(getCookieValue(COOKIE_NAME) ?? null);
 
      useEffect(() => {
+
+          // Helper function to get the value of a specific cookie
+          const getCookieValue = (name: string) => {
+               const match = document.cookie
+                    .split("; ")
+                    .find((row) => row.startsWith(`${name}=`));
+               return match ? match.split("=")[1] : undefined;
+          };
+
+          const prevCookieValue = useRef<string | null>(getCookieValue(COOKIE_NAME) ?? null);
           const checkCookieChange = () => {
                const currentCookieValue = getCookieValue(COOKIE_NAME);
 
