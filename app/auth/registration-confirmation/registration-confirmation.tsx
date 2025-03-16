@@ -31,7 +31,7 @@ export const RegistrationConfirmationPage = () => {
      const [resendError, setResendError] = useState(false)
      const [showResendForm, setShowResendForm] = useState(false)
 
-     useSessionUpdater()
+     // useSessionUpdater()
 
      const handleResendEmail = async (e: React.FormEvent) => {
           e.preventDefault()

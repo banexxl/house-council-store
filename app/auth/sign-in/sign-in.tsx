@@ -76,7 +76,6 @@ export const LoginPage = () => {
      const [googleSignInLoading, setGoogleSignInLoading] = useState(false)
      const router = useRouter()
 
-
      useSessionUpdater()
 
 
