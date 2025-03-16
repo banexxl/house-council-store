@@ -46,7 +46,7 @@ export async function updateSession(request: NextRequest) {
 
      if (user) {
           // User is authenticated
-          if (pathname === '/auth/sign-in') {
+          if (pathname === '/auth/sign-in' || pathname === '/auth/registration-confirmation' || pathname === '/auth/registration-confirmed') {
                // Redirect to homepage if trying to access login page or root
                return NextResponse.redirect(new URL('/', request.url));
           }

@@ -2,9 +2,18 @@
 
 import { useEffect, useRef } from "react";
 
-export const useSessionUpdater = () => {
-     const COOKIE_NAME = "sb-sorklznvftjmhkaejkej-auth-token-code-verifier";
-     const prevCookieValue = useRef<string | null>(null);
+export const useCookieTokenUpdater = () => {
+     const COOKIE_NAME = "sb-sorklznvftjmhkaejkej-auth-token";
+     const COOKIE_NAME_0 = `${COOKIE_NAME}.0`;
+     const COOKIE_NAME_1 = `${COOKIE_NAME}.1`;
+
+     const prevCookieValues = useRef<{
+          [key: string]: string | undefined;
+     }>({
+          [COOKIE_NAME]: undefined,
+          [COOKIE_NAME_0]: undefined,
+          [COOKIE_NAME_1]: undefined,
+     });
 
      useEffect(() => {
           const getCookieValue = (name: string) => {
@@ -15,26 +24,44 @@ export const useSessionUpdater = () => {
                return match ? match.split("=")[1] : undefined;
           };
 
-          prevCookieValue.current = getCookieValue(COOKIE_NAME) ?? null;
+          prevCookieValues.current = {
+               [COOKIE_NAME]: getCookieValue(COOKIE_NAME) ?? undefined,
+               [COOKIE_NAME_0]: getCookieValue(COOKIE_NAME_0) ?? undefined,
+               [COOKIE_NAME_1]: getCookieValue(COOKIE_NAME_1) ?? undefined,
+          };
 
           const handleStorageChange = () => {
-               const currentCookieValue = getCookieValue(COOKIE_NAME);
+               console.log('usao u handleStorageChange');
+
+               const currentCookieValues = {
+                    [COOKIE_NAME]: getCookieValue(COOKIE_NAME) ?? undefined,
+                    [COOKIE_NAME_0]: getCookieValue(COOKIE_NAME_0) ?? undefined,
+                    [COOKIE_NAME_1]: getCookieValue(COOKIE_NAME_1) ?? undefined,
+               };
 
                if (
-                    prevCookieValue.current !== null &&
-                    currentCookieValue !== prevCookieValue.current &&
-                    currentCookieValue !== ""
+                    (Object.keys(currentCookieValues) as Array<keyof typeof currentCookieValues>).some(
+                         (key) =>
+                              prevCookieValues.current?.[key] !==
+                              currentCookieValues[key] &&
+                              currentCookieValues[key] !== "",
+                    )
                ) {
-                    console.log(`Cookie "${COOKIE_NAME}" modified - reloading page`);
-                    prevCookieValue.current = currentCookieValue ?? null;
+                    console.log(
+                         `Cookie(s) modified - reloading page`,
+                    );
+                    prevCookieValues.current = {
+                         ...prevCookieValues.current,
+                         ...currentCookieValues,
+                    };
                     window.location.reload();
                }
           };
 
-          window.addEventListener("storage", handleStorageChange);
+          document.addEventListener("cookiechange", handleStorageChange);
 
           return () => {
-               window.removeEventListener("storage", handleStorageChange);
+               document.removeEventListener("cookiechange", handleStorageChange);
           };
      }, []);
 };

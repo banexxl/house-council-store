@@ -18,8 +18,12 @@ import PeopleIcon from "@mui/icons-material/People";
 import ShieldIcon from "@mui/icons-material/Shield";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import { Toaster } from "react-hot-toast";
+import { CheckCookiesOnFocus } from "@/components/cookie-checker";
 
 export default function HomePage() {
+
+     CheckCookiesOnFocus()
+
      return (
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
                <Box component="main">

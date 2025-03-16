@@ -24,7 +24,7 @@ import { signInSchema } from "./sign-in-schema"
 import { handleGoogleSignIn, signInUser } from "./sign-in-action"
 import { useRouter } from "next/navigation"
 import toast, { Toaster } from "react-hot-toast"
-import { useSessionUpdater } from "@/lib/client-session-update"
+import { CheckCookiesOnFocus } from "@/components/cookie-checker"
 
 // Custom multi-colored Google icon as an SVG component
 const GoogleMultiColorIcon = (props: any) => (
@@ -76,8 +76,7 @@ export const LoginPage = () => {
      const [googleSignInLoading, setGoogleSignInLoading] = useState(false)
      const router = useRouter()
 
-     useSessionUpdater()
-
+     CheckCookiesOnFocus()
 
      const handleClickShowPassword = () => {
           setShowPassword(!showPassword)

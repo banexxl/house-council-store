@@ -22,7 +22,7 @@ import MarkEmailReadIcon from "@mui/icons-material/MarkEmailRead"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
 import { resendRegistrationEmail } from "./resend-email-action"
 import { Toaster } from "react-hot-toast"
-import { useSessionUpdater } from "@/lib/client-session-update"
+import { CheckCookiesOnFocus } from "@/components/cookie-checker"
 
 export const RegistrationConfirmationPage = () => {
      const [email, setEmail] = useState("")
@@ -31,7 +31,7 @@ export const RegistrationConfirmationPage = () => {
      const [resendError, setResendError] = useState(false)
      const [showResendForm, setShowResendForm] = useState(false)
 
-     // useSessionUpdater()
+     CheckCookiesOnFocus()
 
      const handleResendEmail = async (e: React.FormEvent) => {
           e.preventDefault()

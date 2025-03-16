@@ -56,6 +56,7 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday"
 import { logoutUserAction } from "./logout-action"
 import toast, { Toaster } from "react-hot-toast"
 import { useRouter } from "next/navigation"
+import { CheckCookiesOnFocus } from "@/components/cookie-checker"
 
 // Mock data for the profile
 const userData = {
@@ -163,11 +164,15 @@ function TabPanel(props: TabPanelProps) {
 }
 
 export const ProfilePage = () => {
+
      const [tabValue, setTabValue] = useState(0)
      const [editMode, setEditMode] = useState(false)
      const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null)
      const [notificationSettings, setNotificationSettings] = useState(notificationPreferences)
      const router = useRouter()
+
+     CheckCookiesOnFocus()
+
      const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
           setTabValue(newValue)
      }

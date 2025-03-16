@@ -68,6 +68,8 @@ export const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: 
                redirectTo: `${process.env.BASE_URL}/auth/callback`
           },
      });
+     console.log('Google authData', authData);
+     console.log('Google authError', authError);
 
      if (!authError == null) {
           console.error('Error during Google sign in:', authError);
@@ -79,8 +81,6 @@ export const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: 
                return { success: false, error: { message: 'Redirect URL is null.' } };
           }
      }
-
-
 };
 
 

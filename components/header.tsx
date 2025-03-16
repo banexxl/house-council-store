@@ -2,12 +2,13 @@
 
 import { AppBar, Toolbar, Button, Box, Container, IconButton, Drawer, List, ListItem, ListItemButton, ListItemText, Typography } from "@mui/material";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import MenuIcon from '@mui/icons-material/Menu';
 import ApartmentIcon from '@mui/icons-material/Apartment';
 import { User } from "@supabase/supabase-js";
 import { logoutUserAction } from "@/app/profile/logout-action";
 import { useRouter } from "next/navigation";
+import { useCookieTokenUpdater } from "@/lib/client-session-update";
 // import other dependencies as needed
 
 type HeaderProps = {
@@ -18,6 +19,10 @@ export const Header = ({ user }: HeaderProps) => {
   // const { session, isLoading, refreshSession } = useSession();
   const [mobileOpen, setMobileOpen] = useState(false);
   const router = useRouter();
+
+
+  useCookieTokenUpdater();
+
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);

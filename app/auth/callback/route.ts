@@ -1,5 +1,4 @@
 import { createServerClient } from '@supabase/ssr';
-import { redirect } from 'next/dist/server/api-utils';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
