@@ -205,7 +205,10 @@ export default function ProfileSidebar({
                                    <ListItemIcon>
                                         <CalendarTodayIcon fontSize="small" />
                                    </ListItemIcon>
-                                   <ListItemText primary="Member since" secondary={userData.session.created_at} />
+                                   <ListItemText
+                                        primary="Member since"
+                                        secondary={new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(userData.session.created_at))}
+                                   />
                               </ListItem>
                          </List>
 
