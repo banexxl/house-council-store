@@ -3,10 +3,11 @@
 import { Box, Button, Card, CardContent, Chip, Typography, List, ListItem, ListItemText } from "@mui/material"
 import Link from "next/link"
 import LockIcon from "@mui/icons-material/Lock"
-import { UserData } from "../profile-sidebar"
+import { Client } from "@/app/types/client"
+import { User } from "@supabase/supabase-js"
 
 interface SecurityTabProps {
-     userData: UserData
+     userData: { client: Client; session: User }
 }
 
 export default function SecurityTab({ userData }: SecurityTabProps) {
@@ -36,10 +37,10 @@ export default function SecurityTab({ userData }: SecurityTabProps) {
                     <CardContent>
                          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
                               <Typography variant="h6">Two-Factor Authentication</Typography>
-                              <Chip
+                              {/* <Chip
                                    label={userData.twoFactorEnabled ? "Enabled" : "Disabled"}
                                    color={userData.twoFactorEnabled ? "success" : "default"}
-                              />
+                              /> */}
                          </Box>
 
                          <Typography variant="body2" color="text.secondary" paragraph>
@@ -47,9 +48,9 @@ export default function SecurityTab({ userData }: SecurityTabProps) {
                               your mobile phone.
                          </Typography>
 
-                         <Button variant={userData.twoFactorEnabled ? "outlined" : "contained"}>
+                         {/* <Button variant={userData.twoFactorEnabled ? "outlined" : "contained"}>
                               {userData.twoFactorEnabled ? "Disable" : "Enable"} Two-Factor Authentication
-                         </Button>
+                         </Button> */}
                     </CardContent>
                </Card>
 
