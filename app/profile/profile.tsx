@@ -97,6 +97,8 @@ type ProfilePageProps = {
 }
 export const ProfilePage = ({ sessionAndClientDataCombined }: ProfilePageProps) => {
 
+     console.log('sessionAndClientDataCombined', sessionAndClientDataCombined);
+
 
      const [editMode, setEditMode] = useState(false)
      const [notificationSettings, setNotificationSettings] = useState(notificationPreferences)

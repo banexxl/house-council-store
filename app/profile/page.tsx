@@ -6,18 +6,36 @@ import { ProfilePage } from "./profile";
 import { readAccountByEmailAction } from "./account-action";
 import { User } from "@supabase/supabase-js";
 import { clientInitialValues } from "../types/client";
+import { readEntity } from "@/lib/base-entity-actions";
 
 export default async function Page() {
 
      const user: User | null = await getSessionUser();
 
-     const { data, error } = user?.email
-          ? await readAccountByEmailAction(user.email)
-          : { data: null, error: 'No email provided' };
+     const { data, error } = await readAccountByEmailAction(user?.email!);
 
-     const sessionAndClientDataCombined = user && (data)
-          ? { client: { clientInitialValues, ...data }, session: { ...user } } // Ensures session is always a User
-          : undefined; // Ensure undefined instead of incorrect types
+     if (!data) {
+          throw new Error(error || "Failed to fetch account data");
+     }
+
+     // Fetch related entities in parallel
+     const [role, client_status, client_type] = await Promise.all([
+          readEntity("tblClientRoles", data.role_id),
+          readEntity("tblClientStatuses", data.client_status),
+          readEntity("tblClientTypes", data.type),
+     ]);
+
+     const sessionAndClientDataCombined = user && data ? {
+          client: {
+               ...clientInitialValues,
+               ...data,
+               role_id: role?.entity?.name ?? '',
+               client_status: client_status?.entity?.name ?? '',
+               type: client_type?.entity?.name ?? '',
+          },
+          session: { ...user },
+     } : undefined;
+
 
      return (
           <>

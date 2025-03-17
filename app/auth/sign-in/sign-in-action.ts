@@ -65,7 +65,7 @@ export const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: 
           provider: 'google',
           // Optionally, set a redirect URL after sign in:
           options: {
-               redirectTo: `${process.env.BASE_URL}/auth/callback`
+               redirectTo: `${process.env.BASE_URL}auth/callback`
           },
      });
      console.log('Google authData', authData);
