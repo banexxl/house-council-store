@@ -37,18 +37,9 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday"
 import { logoutUserAction } from "../logout-action"
 import toast from "react-hot-toast"
 import { useRouter } from "next/navigation"
-import { Client } from "@/app/types/client"
+import { Client, clientInitialValues } from "@/app/types/client"
 import { User } from "@supabase/supabase-js"
-
-export interface SubscriptionData {
-     plan: string
-     status: string
-     nextBillingDate: string
-     amount: string
-     billingCycle: string
-     autoRenew: boolean
-     features: string[]
-}
+import { SubscriptionPlan } from "@/app/types/subscription-plan"
 
 export interface ActivityItem {
      id: string
@@ -59,7 +50,7 @@ export interface ActivityItem {
 
 interface ProfileSidebarProps {
      userData: { client: Client; session: User }
-     subscriptionData: SubscriptionData
+     subscriptionData?: SubscriptionPlan
      recentActivity: ActivityItem[]
      onEditProfile: () => void
 }
@@ -77,12 +68,8 @@ export const getStatusColor = (status: string) => {
      }
 }
 
-export default function ProfileSidebar({
-     userData,
-     subscriptionData,
-     recentActivity,
-     onEditProfile,
-}: ProfileSidebarProps) {
+export default function ProfileSidebar({ userData, subscriptionData, recentActivity, onEditProfile, }: ProfileSidebarProps) {
+
      const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null)
      const router = useRouter()
 
@@ -225,34 +212,41 @@ export default function ProfileSidebar({
                     </CardContent>
                </Card>
 
-               <Card elevation={2} sx={{ mt: 3 }}>
-                    <CardHeader title="Subscription" titleTypographyProps={{ variant: "h6" }} />
-                    <CardContent>
-                         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                              <Typography variant="h5" color="primary.main">
-                                   {subscriptionData.plan}
-                              </Typography>
-                              <Chip label={subscriptionData.status} color={getStatusColor(subscriptionData.status)} size="small" />
-                         </Box>
+               {subscriptionData ? (
+                    <Card elevation={2} sx={{ mt: 3 }}>
+                         <CardHeader title="Subscription" sx={{ variant: "h6" }} />
+                         <CardContent>
+                              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                                   <Typography variant="h5" color="primary.main">
+                                        {subscriptionData.name}
+                                   </Typography>
+                                   <Chip label={subscriptionData.status_id} color={getStatusColor(subscriptionData.status_id)} size="small" />
+                              </Box>
 
-                         <Typography variant="body2" color="text.secondary" paragraph>
-                              {subscriptionData.amount} billed {subscriptionData.billingCycle.toLowerCase()}
-                         </Typography>
-
-                         <Box sx={{ bgcolor: "background.default", p: 2, borderRadius: 1, mb: 2 }}>
-                              <Typography variant="subtitle2" gutterBottom>
-                                   Next billing date: {subscriptionData.nextBillingDate}
-                              </Typography>
                               <Typography variant="body2" color="text.secondary">
-                                   Auto-renewal: {subscriptionData.autoRenew ? "Enabled" : "Disabled"}
+                                   {subscriptionData.base_price_per_month} billed {subscriptionData.can_bill_yearly ? "annually" : "monthly"}
                               </Typography>
-                         </Box>
 
-                         <Typography variant="subtitle2" gutterBottom>
-                              Plan Features:
-                         </Typography>
+                              <Box sx={{ bgcolor: "background.default", p: 2, borderRadius: 1, mb: 2 }}>
+                                   {clientInitialValues.next_billing_date ? (
+                                        <Typography variant="subtitle2" gutterBottom>
+                                             Next billing date: {new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(clientInitialValues.next_billing_date))}
+                                        </Typography>
+                                   ) : (
+                                        <Typography variant="subtitle2" gutterBottom>
+                                             Next billing date: N/A
+                                        </Typography>
+                                   )}
+                                   {/* <Typography variant="body2" color="text.secondary">
+                                   Auto-renewal: {subscriptionData.autoRenew ? "Enabled" : "Disabled"}
+                              </Typography> */}
+                              </Box>
 
-                         <List dense disablePadding>
+                              <Typography variant="subtitle2" gutterBottom>
+                                   Plan Features:
+                              </Typography>
+
+                              {/* <List dense disablePadding>
                               {subscriptionData.features.map((feature, index) => (
                                    <ListItem key={index} disablePadding sx={{ py: 0.5 }}>
                                         <ListItemIcon sx={{ minWidth: 28 }}>
@@ -261,14 +255,23 @@ export default function ProfileSidebar({
                                         <ListItemText primary={feature} />
                                    </ListItem>
                               ))}
-                         </List>
+                         </List> */}
 
-                         <Button variant="outlined" fullWidth sx={{ mt: 2 }} component={Link} href="/pricing">
-                              Manage Subscription
-                         </Button>
-                    </CardContent>
-               </Card>
-
+                              <Button variant="outlined" fullWidth sx={{ mt: 2 }} component={Link} href="/pricing">
+                                   Manage Subscription
+                              </Button>
+                         </CardContent>
+                    </Card>
+               ) : (
+                    <Card elevation={2} sx={{ mt: 3 }}>
+                         <CardHeader title="Subscription" sx={{ variant: "h6" }} />
+                         <CardContent>
+                              <Typography variant="body2" color="text.secondary">
+                                   No active subscription found.
+                              </Typography>
+                         </CardContent>
+                    </Card>
+               )}
                <Card elevation={2} sx={{ mt: 3 }}>
                     <CardHeader title={<Typography variant="h6">Recent Activity</Typography>} />
                     <CardContent sx={{ px: 0 }}>

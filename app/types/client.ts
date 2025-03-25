@@ -27,6 +27,8 @@ export interface Client {
   is_verified?: boolean;
   total_spent?: number;
   total_orders?: number;
+  subscription_plan?: string | null;
+  next_billing_date?: Date | null;
 }
 
 export interface ClientLog {
@@ -67,7 +69,8 @@ export const clientValidationSchema = (t: (key: string) => string) => {
     is_verified: Yup.bool(),
     client_status: Yup.string().max(255).required(t('clients.clientStatusRequired')),
     role_id: Yup.string().max(36).required(t('clients.clientRoleRequired')),
-    subscription_plan: Yup.string().max(255).nullable(),
+    subscription_plan: Yup.string().max(40).nullable(),
+    next_billing_date: Yup.date().nullable(),
     billing_information: Yup.string().max(255).nullable(),
     notes: Yup.string().max(255),
     avatar: Yup.string().max(255),
@@ -105,4 +108,6 @@ export const clientInitialValues: Client = {
   is_verified: false,
   total_spent: 0,
   total_orders: 0,
+  subscription_plan: null,
+  next_billing_date: null,
 };

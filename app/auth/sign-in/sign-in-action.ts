@@ -8,12 +8,14 @@ export type SignInFormValues = {
      email: string;
      password: string;
 };
+
 export type ErrorType = {
      code: string;
      details: string;
      hint?: string;
      message?: string;
 }
+
 export const signInUser = async (values: SignInFormValues): Promise<{ success: boolean, error?: ErrorType }> => {
 
      const supabase = await useServerSideSupabaseAnonClient();
@@ -56,7 +58,6 @@ export const signInUser = async (values: SignInFormValues): Promise<{ success: b
      return { success: true };
 }
 
-
 export const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: any }> => {
      const supabase = await useServerSideSupabaseAnonClient();
 
@@ -65,7 +66,7 @@ export const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: 
           provider: 'google',
           // Optionally, set a redirect URL after sign in:
           options: {
-               redirectTo: `${process.env.BASE_URL}auth/callback`
+               redirectTo: `${process.env.BASE_URL}/auth/callback`
           },
      });
      console.log('Google authData', authData);

@@ -37,21 +37,21 @@ export const deleteAccountAction = async (clientId: string, clientEmail: string)
      return { success: true }
 }
 
-export const readAccountByEmailAction = async (email: string): Promise<{ data?: Client, error?: string }> => {
+export const readAccountByEmailAction = async (email: string): Promise<{ client?: Client, error?: string }> => {
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
-     const { data, error } = await supabase
+     const { data: client, error } = await supabase
           .from('tblClients')
           .select('*')
           .eq('email', email)
           .single();
-     console.log('data', data);
+     console.log('data', client);
      console.log('error', error);
 
      if (error) {
           return { error: error.message }
      }
 
-     return { data }
+     return { client }
 }

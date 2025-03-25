@@ -25,6 +25,7 @@ import { Toaster } from "react-hot-toast"
 
 
 export const RegistrationConfirmationPage = () => {
+
      const [email, setEmail] = useState("")
      const [isResending, setIsResending] = useState(false)
      const [resendSuccess, setResendSuccess] = useState(false)

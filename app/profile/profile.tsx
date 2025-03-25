@@ -8,39 +8,7 @@ import ProfileSidebar from "./components/profile-sidebar"
 import ProfileTabs from "./components/profile-tabs"
 import { Client } from "../types/client"
 import { User } from "@supabase/supabase-js"
-
-// Mock data for the profile
-const userData = {
-     id: "usr_12345",
-     name: "Sarah Johnson",
-     email: "sarah.johnson@example.com",
-     phone: "+1 (555) 123-4567",
-     avatar: "/placeholder.svg?height=150&width=150",
-     role: "Council President",
-     status: "Active",
-     joinDate: "January 15, 2023",
-     community: "Oakwood Residences",
-     unit: "Apartment 302",
-     emailVerified: true,
-     twoFactorEnabled: true,
-}
-
-// Mock data for subscription
-const subscriptionData = {
-     plan: "Standard",
-     status: "Active",
-     nextBillingDate: "February 15, 2024",
-     amount: "$59.00",
-     billingCycle: "Monthly",
-     autoRenew: true,
-     features: [
-          "Up to 150 units/residents",
-          "Advanced financial tools",
-          "Voting system",
-          "Maintenance requests",
-          "Priority email support",
-     ],
-}
+import { SubscriptionPlan } from "../types/subscription-plan"
 
 // Mock data for payment history
 const paymentHistory = [
@@ -94,8 +62,9 @@ const recentActivity = [
 
 type ProfilePageProps = {
      sessionAndClientDataCombined?: { client: Client, session: User }
+     subscriptionPlan?: SubscriptionPlan
 }
-export const ProfilePage = ({ sessionAndClientDataCombined }: ProfilePageProps) => {
+export const ProfilePage = ({ sessionAndClientDataCombined, subscriptionPlan }: ProfilePageProps) => {
 
      console.log('sessionAndClientDataCombined', sessionAndClientDataCombined);
 
@@ -113,7 +82,7 @@ export const ProfilePage = ({ sessionAndClientDataCombined }: ProfilePageProps) 
                               <Grid size={{ xs: 12, md: 4 }}>
                                    <ProfileSidebar
                                         userData={sessionAndClientDataCombined!}
-                                        subscriptionData={subscriptionData}
+                                        subscriptionData={subscriptionPlan}
                                         recentActivity={recentActivity}
                                         onEditProfile={() => setEditMode(true)}
                                    />
@@ -125,7 +94,7 @@ export const ProfilePage = ({ sessionAndClientDataCombined }: ProfilePageProps) 
                                         userData={sessionAndClientDataCombined!}
                                         editMode={editMode}
                                         setEditMode={setEditMode}
-                                        subscriptionData={subscriptionData}
+                                        subscriptionData={subscriptionPlan}
                                         paymentMethods={paymentMethods}
                                         paymentHistory={paymentHistory}
                                         notificationSettings={notificationSettings}
