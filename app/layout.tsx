@@ -9,9 +9,9 @@ import { Box } from "@mui/material"
 import theme from "@/app/theme"
 import { usePathname } from "next/navigation"
 import { AnimatePresence } from "framer-motion"
-import Animate from "@/components/animation-framer-motion"
+import Animate from "@/app/components/animation-framer-motion"
 import { Toaster } from "react-hot-toast"
-import { CheckCookiesOnFocus } from "@/components/cookie-checker"
+import { CheckCookiesOnFocus } from "@/app/components/cookie-checker"
 
 
 const inter = Inter({ subsets: ["latin"] })

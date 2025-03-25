@@ -1,5 +1,5 @@
 import { type NextRequest } from 'next/server'
-import { updateSession } from './lib/update-session'
+import { updateSession } from './app/lib/update-session'
 
 export async function middleware(request: NextRequest) {
 

@@ -1,6 +1,6 @@
 'use server';
 
-import { useServerSideSupabaseServiceRoleClient } from "@/lib/ss-supabase-service-role-client";
+import { useServerSideSupabaseServiceRoleClient } from "@/app/lib/ss-supabase-service-role-client";
 import { logoutUserAction } from "./logout-action";
 import { Client } from "../types/client";
 

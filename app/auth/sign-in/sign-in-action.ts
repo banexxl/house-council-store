@@ -1,7 +1,7 @@
 'use server';
 
-import { verifyPassword } from '@/lib/bcrypt';
-import { useServerSideSupabaseAnonClient } from '@/lib/ss-supabase-anon-client';
+import { verifyPassword } from '@/app/lib/bcrypt';
+import { useServerSideSupabaseAnonClient } from '@/app/lib/ss-supabase-anon-client';
 import { redirect } from 'next/navigation';
 
 export type SignInFormValues = {

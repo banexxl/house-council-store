@@ -6,7 +6,7 @@ import EmailIcon from "@mui/icons-material/Email"
 import PhoneIcon from "@mui/icons-material/Phone"
 import LocationOnIcon from "@mui/icons-material/LocationOn"
 import { Toaster } from "react-hot-toast";
-import GoogleMap, { MapMarker } from "@/components/google-map";
+import GoogleMap, { MapMarker } from "@/app/components/google-map";
 import { use, useEffect, useState } from "react";
 
 // Sample data for markers

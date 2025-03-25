@@ -1,6 +1,6 @@
 'use server';
 
-import { useServerSideSupabaseAnonClient } from '@/lib/ss-supabase-anon-client';
+import { useServerSideSupabaseAnonClient } from '@/app/lib/ss-supabase-anon-client';
 
 export const logoutUserAction = async (): Promise<string | null> => {
      const supabase = await useServerSideSupabaseAnonClient();

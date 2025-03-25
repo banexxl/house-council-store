@@ -6,8 +6,8 @@ import { Box, Button, Container, Typography, Paper } from "@mui/material"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
 import ReplayIcon from "@mui/icons-material/Replay"
 import HomeIcon from "@mui/icons-material/Home"
-import { Header } from "@/components/header"
-import { getSessionUser } from "@/lib/get-session"
+import { Header } from "@/app/components/header"
+import { getSessionUser } from "@/app/lib/get-session"
 
 export default async function Error({
      error,

@@ -1,7 +1,7 @@
 'use server';
 
-import { hashPassword } from '@/lib/bcrypt';
-import { useServerSideSupabaseServiceRoleClient } from '@/lib/ss-supabase-service-role-client';
+import { hashPassword } from '@/app/lib/bcrypt';
+import { useServerSideSupabaseServiceRoleClient } from '@/app/lib/ss-supabase-service-role-client';
 
 export type RegisterFormValues = {
      contact_person: string;

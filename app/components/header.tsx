@@ -8,7 +8,7 @@ import ApartmentIcon from '@mui/icons-material/Apartment';
 import { User } from "@supabase/supabase-js";
 import { logoutUserAction } from "@/app/profile/logout-action";
 import { useRouter } from "next/navigation";
-import { useCookieTokenUpdater } from "@/lib/client-session-update";
+import { useCookieTokenUpdater } from "@/app/lib/client-session-update";
 // import other dependencies as needed
 
 type HeaderProps = {

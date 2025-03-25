@@ -1,8 +1,8 @@
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
+import { Header } from "@/app/components/header"
+import { Footer } from "@/app/components/footer"
 import type { Metadata } from "next"
 import AuthErrorPage from "./auth-error-page"
-import { getSessionUser } from "@/lib/get-session"
+import { getSessionUser } from "@/app/lib/get-session"
 
 export const metadata: Metadata = {
      title: "Authentication Error | House Council",

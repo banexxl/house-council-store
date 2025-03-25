@@ -1,11 +1,11 @@
-import { getSessionUser } from "@/lib/get-session";
-import { Footer } from "@/components/footer";
-import { Header } from "@/components/header";
+import { getSessionUser } from "@/app/lib/get-session";
+import { Footer } from "@/app/components/footer";
+import { Header } from "@/app/components/header";
 import { ProfilePage } from "./profile";
 import { readAccountByEmailAction } from "./account-action";
 import { User } from "@supabase/supabase-js";
 import { clientInitialValues } from "../types/client";
-import { readEntity } from "@/lib/base-entity-actions";
+import { readEntity } from "@/app/lib/base-entity-actions";
 import { readSubscriptionPlan } from "./subscription-plan-actions";
 
 export default async function Page() {
