@@ -12,7 +12,7 @@ import { SubscriptionPlan } from "../types/subscription-plan";
  * - `subscriptionPlan`: The subscription plan that was read, if successful.
  * - `readSubscriptionPlanError`: The error that occurred, if any.
  */
-export const readSubscriptionPlan = async (id: string | null): Promise<{
+export const readSubscriptionPlanById = async (id: string | null): Promise<{
      readSubscriptionPlanSuccess: boolean; subscriptionPlan?: SubscriptionPlan; readSubscriptionPlanError?: string;
 }> => {
      if (!id) {
@@ -43,6 +43,9 @@ export const readSubscriptionPlan = async (id: string | null): Promise<{
 
      // Return the subscription plan without tblSubscriptionPlans_Features
      const { tblSubscriptionPlans_Features, ...restOfSubscriptionPlan } = subscriptionPlan;
+     console.log('restOfSubscriptionPlan', restOfSubscriptionPlan);
+     console.log('features', features);
+
 
      return {
           readSubscriptionPlanSuccess: true,
@@ -91,19 +94,23 @@ export const unubscribeAction = async (id: string): Promise<{ success: boolean, 
      return { success: true }
 }
 
-export const readSubscriptionPlansFromClientId = async (clientId: string): Promise<{ success: boolean, subscriptionPlans?: SubscriptionPlan[], error?: string }> => {
+export const readSubscriptionPlanFromClientId = async (clientId: string): Promise<{ success: boolean, subscriptionPlan?: SubscriptionPlan | null, error?: string }> => {
 
      if (!clientId) {         // Check if clientId is provided
           return { success: false, error: "Client ID is required" };
      }     // Fetch the subscription plan for the client
      const supabase = await useServerSideSupabaseServiceRoleClient();
-     const { data: subscriptionPlans, error: planError } = await supabase
+     const { data: subscriptionPlan, error: planError } = await supabase
           .from("tblSubscriptionPlans")
           .select(`*`)
           .eq("client_id", clientId)
+          .single();
      if (planError) {
-          return { success: false, error: planError.message };
+          return { success: false, error: planError.message, subscriptionPlan: null };
      }
+     console.log('subscriptionPlans', subscriptionPlan);
+     console.log('planError', planError);
 
-     return { success: true, subscriptionPlans };
+
+     return { success: true, subscriptionPlan };
 }

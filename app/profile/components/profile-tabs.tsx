@@ -45,7 +45,7 @@ interface ProfileTabsProps {
      userData: { client: Client, session: User }
      editMode: boolean
      setEditMode: (value: boolean) => void
-     subscriptionData?: SubscriptionPlan
+     subscriptionData: SubscriptionPlan | null
      paymentMethods: any[]
      allClientBillingInformation: ClientBillingInformation[]
      notificationSettings: any[]
@@ -62,6 +62,9 @@ export default function ProfileTabs({
      notificationSettings,
      setNotificationSettings,
 }: ProfileTabsProps) {
+     console.log('paymentMethods', paymentMethods);
+     console.log('subscriptionData', subscriptionData);
+
 
      const [tabValue, setTabValue] = useState(0)
 

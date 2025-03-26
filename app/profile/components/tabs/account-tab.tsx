@@ -144,7 +144,15 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                    <Typography variant="subtitle2" color="text.secondary">
                                         Member Since
                                    </Typography>
-                                   <Typography variant="body1">{userData.session.created_at}</Typography>
+                                   <Typography variant="body1">
+                                        {new Intl.DateTimeFormat("en-US", {
+                                             year: "numeric",
+                                             month: "short",
+                                             day: "numeric",
+                                             hour: "2-digit",
+                                             minute: "2-digit",
+                                        }).format(new Date(userData.session.created_at))}
+                                   </Typography>
                               </Grid>
 
                               <Grid size={{ xs: 12, md: 6 }}>

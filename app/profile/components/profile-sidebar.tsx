@@ -50,7 +50,7 @@ export interface ActivityItem {
 
 interface ProfileSidebarProps {
      userData: { client: Client; session: User }
-     subscriptionData?: SubscriptionPlan
+     subscriptionData: SubscriptionPlan | null
      recentActivity: ActivityItem[]
      onEditProfile: () => void
 }

@@ -50,7 +50,7 @@ const recentActivity = [
 
 type ProfilePageProps = {
      sessionAndClientDataCombined?: { client: Client, session: User }
-     subscriptionPlan?: SubscriptionPlan
+     subscriptionPlan: SubscriptionPlan | null
      paymentMethods: BaseEntity[]
      allClientBillingInformation: ClientBillingInformation[]
 }
