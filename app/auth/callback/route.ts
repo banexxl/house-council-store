@@ -4,9 +4,6 @@ import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
 
-     console.log('Entered callback route');
-
-
      const cookieStore = await cookies();
      const supabase = createServerClient(
           process.env.SUPABASE_URL!,
@@ -33,14 +30,6 @@ export async function GET(request: Request) {
      const error = requestUrl.searchParams.get('error');
      const errorCode = requestUrl.searchParams.get('error_code');
      const errorDescription = requestUrl.searchParams.get('error_description');
-
-     console.log('Login data: ');
-     console.log('code', code);
-     console.log('error', error);
-     console.log('errorCode', errorCode);
-     console.log('errorDescription', errorDescription);
-
-
 
      if (error) {
           // Redirect to error page with absolute URL

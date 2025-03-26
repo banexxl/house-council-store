@@ -1,14 +1,7 @@
 'use server'
 
+import { BaseEntity } from "../types/base-entity";
 import { useServerSideSupabaseServiceRoleClient } from "./ss-supabase-service-role-client";
-
-export interface BaseEntity {
-     id?: string;
-     created_at?: string;
-     updated_at?: string;
-     name: string;
-     description?: string;
-}
 
 export const readEntity = async <T extends BaseEntity>(table: string, id: string): Promise<{ success: boolean, entity?: T, error?: string }> => {
 

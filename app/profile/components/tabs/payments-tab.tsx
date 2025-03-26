@@ -14,12 +14,14 @@ import {
      Chip,
 } from "@mui/material"
 import DownloadIcon from "@mui/icons-material/Download"
+import { ClientBillingInformation } from "@/app/types/billing-information"
 
 interface PaymentsTabProps {
-     paymentHistory: any[]
+     allClientBillingInformation: ClientBillingInformation[]
 }
 
-export default function PaymentsTab({ paymentHistory }: PaymentsTabProps) {
+export default function PaymentsTab({ allClientBillingInformation }: PaymentsTabProps) {
+
      const getPaymentStatusColor = (status: string) => {
           switch (status.toLowerCase()) {
                case "paid":
@@ -52,22 +54,28 @@ export default function PaymentsTab({ paymentHistory }: PaymentsTabProps) {
                               </TableRow>
                          </TableHead>
                          <TableBody>
-                              {paymentHistory.map((payment) => (
-                                   <TableRow key={payment.id}>
-                                        <TableCell>{payment.id}</TableCell>
-                                        <TableCell>{payment.date}</TableCell>
-                                        <TableCell>{payment.amount}</TableCell>
-                                        <TableCell>
-                                             <Chip label={payment.status} color={getPaymentStatusColor(payment.status)} size="small" />
-                                        </TableCell>
-                                        <TableCell>{payment.method}</TableCell>
-                                        <TableCell align="right">
-                                             <Button variant="text" size="small" startIcon={<DownloadIcon />}>
-                                                  Receipt
-                                             </Button>
-                                        </TableCell>
+                              {allClientBillingInformation && allClientBillingInformation.length > 0
+                                   ? allClientBillingInformation.map((payment) => (
+                                        <TableRow key={payment.id}>
+                                             <TableCell>{payment.id}</TableCell>
+                                             <TableCell>{payment.expiration_date!.toLocaleDateString()}</TableCell>
+                                             <TableCell>{payment.cash_amount}</TableCell>
+                                             <TableCell>
+                                                  <Chip label={payment.billing_status_id} color={getPaymentStatusColor(payment.billing_status_id)} size="small" />
+                                             </TableCell>
+                                             <TableCell>{payment.id}</TableCell>
+                                             <TableCell align="right">
+                                                  <Button variant="text" size="small" startIcon={<DownloadIcon />}>
+                                                       Receipt
+                                                  </Button>
+                                             </TableCell>
+                                        </TableRow>
+                                   ))
+                                   :
+                                   <TableRow>
+                                        <TableCell colSpan={6}>No payments found.</TableCell>
                                    </TableRow>
-                              ))}
+                              }
                          </TableBody>
                     </Table>
                </TableContainer>

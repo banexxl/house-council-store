@@ -102,7 +102,6 @@ export const LoginPage = () => {
                          signInUserResponse.error.message : signInUserResponse.error.hint ?
                               signInUserResponse.error.hint : signInUserResponse.error.details
                     )
-                    console.log(signInUserResponse.error)
                }
           },
      })

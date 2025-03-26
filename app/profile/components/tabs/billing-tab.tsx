@@ -9,11 +9,26 @@ import CreditCardIcon from "@mui/icons-material/CreditCard"
 import { getStatusColor } from "../profile-sidebar"
 
 interface BillingTabProps {
-     subscriptionData: any
+     subscriptionData?: any
      paymentMethods: any[]
 }
 
 export default function BillingTab({ subscriptionData, paymentMethods }: BillingTabProps) {
+
+     if (!subscriptionData) {
+          return (
+               <Box sx={{ mb: 4 }}>
+                    <Typography variant="h5" gutterBottom>
+                         Subscription Details
+                    </Typography>
+
+                    <Typography variant="body2" color="text.secondary">
+                         No subscription data available.
+                    </Typography>
+               </Box>
+          )
+     }
+
      return (
           <>
                <Box sx={{ mb: 4 }}>
@@ -87,43 +102,49 @@ export default function BillingTab({ subscriptionData, paymentMethods }: Billing
                          Payment Methods
                     </Typography>
 
-                    {paymentMethods.map((method) => (
-                         <Card
-                              key={method.id}
-                              variant="outlined"
-                              sx={{
-                                   mb: 2,
-                                   borderColor: method.default ? "primary.main" : "divider",
-                                   position: "relative",
-                              }}
-                         >
-                              {method.default && (
-                                   <Chip
-                                        label="Default"
-                                        color="primary"
-                                        size="small"
-                                        sx={{
-                                             position: "absolute",
-                                             top: 12,
-                                             right: 12,
-                                        }}
-                                   />
-                              )}
-                              <CardContent>
-                                   <Box sx={{ display: "flex", alignItems: "center" }}>
-                                        <CreditCardIcon sx={{ mr: 2 }} />
-                                        <Box>
-                                             <Typography variant="subtitle1">
-                                                  {method.type} •••• {method.last4}
-                                             </Typography>
-                                             <Typography variant="body2" color="text.secondary">
-                                                  Expires {method.expiry}
-                                             </Typography>
+                    {paymentMethods?.length ? (
+                         paymentMethods.map((method) => (
+                              <Card
+                                   key={method.id}
+                                   variant="outlined"
+                                   sx={{
+                                        mb: 2,
+                                        borderColor: method.default ? "primary.main" : "divider",
+                                        position: "relative",
+                                   }}
+                              >
+                                   {method.default && (
+                                        <Chip
+                                             label="Default"
+                                             color="primary"
+                                             size="small"
+                                             sx={{
+                                                  position: "absolute",
+                                                  top: 12,
+                                                  right: 12,
+                                             }}
+                                        />
+                                   )}
+                                   <CardContent>
+                                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                                             <CreditCardIcon sx={{ mr: 2 }} />
+                                             <Box>
+                                                  <Typography variant="subtitle1">
+                                                       {method.type} •••• {method.last4}
+                                                  </Typography>
+                                                  <Typography variant="body2" color="text.secondary">
+                                                       Expires {method.expiry}
+                                                  </Typography>
+                                             </Box>
                                         </Box>
-                                   </Box>
-                              </CardContent>
-                         </Card>
-                    ))}
+                                   </CardContent>
+                              </Card>
+                         ))
+                    ) : (
+                         <Typography variant="body2" color="text.secondary">
+                              No payment methods available.
+                         </Typography>
+                    )}
 
                     <Button variant="outlined" sx={{ mt: 1 }}>
                          Add Payment Method

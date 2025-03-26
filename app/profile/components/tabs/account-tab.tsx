@@ -34,8 +34,6 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                confirmButtonText: "Yes, delete it!",
                preConfirm: async () => {
                     const deleteAccount = await deleteAccountAction(userData.session.id, userData.client.email);
-                    console.log('deleteAccount', deleteAccount);
-
                     if (deleteAccount.success) {
                          Swal.fire({
                               title: "Deleted!",

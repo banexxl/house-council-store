@@ -6,7 +6,8 @@ import { readAccountByEmailAction } from "./account-action";
 import { User } from "@supabase/supabase-js";
 import { clientInitialValues } from "../types/client";
 import { readEntity } from "@/app/lib/base-entity-actions";
-import { readSubscriptionPlan } from "./subscription-plan-actions";
+import { readSubscriptionPlan, readSubscriptionPlansFromClientId } from "./subscription-plan-actions";
+import { readAllClientsBillingInformation } from "./client-billing-information-actions";
 
 export default async function Page() {
      // Fetch user session
@@ -24,11 +25,12 @@ export default async function Page() {
      }
 
      // Fetch related data in parallel
-     const [subscriptionPlanReturnObject, role, client_status, client_type] = await Promise.all([
-          readSubscriptionPlan(client.subscription_plan ?? undefined),
+     const [subscriptionPlanReturnObject, role, client_status, client_type, billingInformation] = await Promise.all([
+          readSubscriptionPlan(client.subscription_plan || null),
           readEntity("tblClientRoles", client.role_id),
           readEntity("tblClientStatuses", client.client_status),
           readEntity("tblClientTypes", client.type),
+          readAllClientsBillingInformation(client.id),
      ]);
 
      // Merge session and client data
@@ -47,7 +49,12 @@ export default async function Page() {
      return (
           <>
                <Header user={user} />
-               <ProfilePage sessionAndClientDataCombined={sessionAndClientDataCombined} subscriptionPlan={subscriptionPlanReturnObject?.subscriptionPlan} />
+               <ProfilePage
+                    sessionAndClientDataCombined={sessionAndClientDataCombined}
+                    subscriptionPlan={subscriptionPlanReturnObject?.subscriptionPlan}
+                    allClientBillingInformation={billingInformation.readAllClientBillingInformationData ?? []}
+                    paymentMethods={[]}
+               />
                <Footer />
           </>
      );

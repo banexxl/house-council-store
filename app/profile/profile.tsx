@@ -9,21 +9,9 @@ import ProfileTabs from "./components/profile-tabs"
 import { Client } from "../types/client"
 import { User } from "@supabase/supabase-js"
 import { SubscriptionPlan } from "../types/subscription-plan"
+import { BaseEntity } from "../types/base-entity"
+import { ClientBillingInformation } from "../types/billing-information"
 
-// Mock data for payment history
-const paymentHistory = [
-     { id: "inv_8765", date: "January 15, 2024", amount: "$59.00", status: "Paid", method: "Visa •••• 4242" },
-     { id: "inv_7654", date: "December 15, 2023", amount: "$59.00", status: "Paid", method: "Visa •••• 4242" },
-     { id: "inv_6543", date: "November 15, 2023", amount: "$59.00", status: "Paid", method: "Visa •••• 4242" },
-     { id: "inv_5432", date: "October 15, 2023", amount: "$59.00", status: "Paid", method: "Visa •••• 4242" },
-     { id: "inv_4321", date: "September 15, 2023", amount: "$59.00", status: "Paid", method: "Visa •••• 4242" },
-]
-
-// Mock data for payment methods
-const paymentMethods = [
-     { id: "pm_1234", type: "Visa", last4: "4242", expiry: "12/25", default: true },
-     { id: "pm_5678", type: "Mastercard", last4: "5555", expiry: "09/24", default: false },
-]
 
 // Mock data for notification preferences
 const notificationPreferences = [
@@ -63,11 +51,10 @@ const recentActivity = [
 type ProfilePageProps = {
      sessionAndClientDataCombined?: { client: Client, session: User }
      subscriptionPlan?: SubscriptionPlan
+     paymentMethods: BaseEntity[]
+     allClientBillingInformation: ClientBillingInformation[]
 }
-export const ProfilePage = ({ sessionAndClientDataCombined, subscriptionPlan }: ProfilePageProps) => {
-
-     console.log('sessionAndClientDataCombined', sessionAndClientDataCombined);
-
+export const ProfilePage = ({ sessionAndClientDataCombined, subscriptionPlan, paymentMethods, allClientBillingInformation }: ProfilePageProps) => {
 
      const [editMode, setEditMode] = useState(false)
      const [notificationSettings, setNotificationSettings] = useState(notificationPreferences)
@@ -96,7 +83,7 @@ export const ProfilePage = ({ sessionAndClientDataCombined, subscriptionPlan }: 
                                         setEditMode={setEditMode}
                                         subscriptionData={subscriptionPlan}
                                         paymentMethods={paymentMethods}
-                                        paymentHistory={paymentHistory}
+                                        allClientBillingInformation={allClientBillingInformation}
                                         notificationSettings={notificationSettings}
                                         setNotificationSettings={setNotificationSettings}
                                    />

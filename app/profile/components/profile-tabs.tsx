@@ -16,6 +16,8 @@ import SecurityTab from "./tabs/security-tab"
 import PaymentsTab from "./tabs/payments-tab"
 import { Session, User } from "@supabase/supabase-js"
 import { Client } from "@/app/types/client"
+import { SubscriptionPlan } from "@/app/types/subscription-plan"
+import { ClientBillingInformation } from "@/app/types/billing-information"
 
 interface TabPanelProps {
      children?: React.ReactNode
@@ -43,9 +45,9 @@ interface ProfileTabsProps {
      userData: { client: Client, session: User }
      editMode: boolean
      setEditMode: (value: boolean) => void
-     subscriptionData: any
+     subscriptionData?: SubscriptionPlan
      paymentMethods: any[]
-     paymentHistory: any[]
+     allClientBillingInformation: ClientBillingInformation[]
      notificationSettings: any[]
      setNotificationSettings: (value: any) => void
 }
@@ -56,10 +58,11 @@ export default function ProfileTabs({
      setEditMode,
      subscriptionData,
      paymentMethods,
-     paymentHistory,
+     allClientBillingInformation,
      notificationSettings,
      setNotificationSettings,
 }: ProfileTabsProps) {
+
      const [tabValue, setTabValue] = useState(0)
 
      const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -106,7 +109,7 @@ export default function ProfileTabs({
 
                          {/* Payments Tab */}
                          <TabPanel value={tabValue} index={2}>
-                              <PaymentsTab paymentHistory={paymentHistory} />
+                              <PaymentsTab allClientBillingInformation={allClientBillingInformation} />
                          </TabPanel>
 
                          {/* Notifications Tab */}

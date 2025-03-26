@@ -12,10 +12,9 @@ import { SubscriptionPlan } from "../types/subscription-plan";
  * - `subscriptionPlan`: The subscription plan that was read, if successful.
  * - `readSubscriptionPlanError`: The error that occurred, if any.
  */
-export const readSubscriptionPlan = async (id?: string): Promise<{
+export const readSubscriptionPlan = async (id: string | null): Promise<{
      readSubscriptionPlanSuccess: boolean; subscriptionPlan?: SubscriptionPlan; readSubscriptionPlanError?: string;
 }> => {
-
      if (!id) {
           return { readSubscriptionPlanSuccess: false, readSubscriptionPlanError: "Subscription plan ID is required" };
      }
@@ -90,4 +89,21 @@ export const unubscribeAction = async (id: string): Promise<{ success: boolean, 
           return { success: false, error: error.message }
      }
      return { success: true }
+}
+
+export const readSubscriptionPlansFromClientId = async (clientId: string): Promise<{ success: boolean, subscriptionPlans?: SubscriptionPlan[], error?: string }> => {
+
+     if (!clientId) {         // Check if clientId is provided
+          return { success: false, error: "Client ID is required" };
+     }     // Fetch the subscription plan for the client
+     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const { data: subscriptionPlans, error: planError } = await supabase
+          .from("tblSubscriptionPlans")
+          .select(`*`)
+          .eq("client_id", clientId)
+     if (planError) {
+          return { success: false, error: planError.message };
+     }
+
+     return { success: true, subscriptionPlans };
 }
