@@ -53,19 +53,11 @@ export const readSubscriptionPlanById = async (id: string | null): Promise<{
      };
 };
 
-/**
- * Reads all subscription plans from the database.
- * @returns {Promise<{readAllSubscriptionPlansSuccess: boolean, subscriptionPlanData?: SubscriptionPlan[], readAllSubscriptionPlansError?: string}>}
- * A promise that resolves to an object with the following properties:
- * - `readAllSubscriptionPlansSuccess`: A boolean indicating whether the subscription plans were read successfully.
- * - `subscriptionPlanData`: An array of subscription plans, if successful.
- * - `readAllSubscriptionPlansError`: The error message, if any occurred during the reading process.
- */
-
 export const readAllSubscriptionPlans = async (): Promise<{
-     readAllSubscriptionPlansSuccess: boolean; subscriptionPlanData?: SubscriptionPlan[]; readAllSubscriptionPlansError?: string;
+     readAllSubscriptionPlansSuccess: boolean;
+     subscriptionPlanData?: (SubscriptionPlan & { features: any[] })[];
+     readAllSubscriptionPlansError?: string;
 }> => {
-
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
      const { data: subscriptionPlans, error: planError } = await supabase
@@ -78,12 +70,30 @@ export const readAllSubscriptionPlans = async (): Promise<{
       )
     `);
 
+     console.log("subscriptionPlans", subscriptionPlans);
+     console.log("planError", planError);
+
      if (planError) {
-          return { readAllSubscriptionPlansSuccess: false, readAllSubscriptionPlansError: planError.message };
+          return {
+               readAllSubscriptionPlansSuccess: false,
+               readAllSubscriptionPlansError: planError.message,
+          };
      }
 
-     return { readAllSubscriptionPlansSuccess: true, subscriptionPlanData: subscriptionPlans };  // Return the subscription plans
+     // Flatten features into a simple `features` array
+     const plansWithFeatures = subscriptionPlans?.map((plan) => ({
+          ...plan,
+          features: plan.tblSubscriptionPlans_Features.map(
+               (pf: any) => pf.tblFeatures
+          ),
+     }));
+
+     return {
+          readAllSubscriptionPlansSuccess: true,
+          subscriptionPlanData: plansWithFeatures,
+     };
 };
+
 
 export const unubscribeAction = async (id: string): Promise<{ success: boolean, error?: string }> => {
      const supabase = await useServerSideSupabaseServiceRoleClient();

@@ -44,8 +44,6 @@ export const registerUser = async (values: RegisterFormValues): Promise<{ succes
           has_accepted_privacy_policy: values.has_accepted_privacy_policy,
           has_accepted_marketing: values.has_accepted_marketing
      }).select().single();
-     console.log('data', data);
-     console.log('error', error);
 
      if (error) {
           if (error.code === '23505') {

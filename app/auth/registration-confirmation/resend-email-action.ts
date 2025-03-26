@@ -11,9 +11,7 @@ export const resendRegistrationEmail = async (email: string): Promise<boolean> =
      })
 
      if (error) {
-          console.log('error', error)
           return false
      }
-     console.log('data', data)
      return true
 }

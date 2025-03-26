@@ -25,8 +25,6 @@ export const signInUser = async (values: SignInFormValues): Promise<{ success: b
           .select('password')
           .eq('email', values.email)
           .single();
-     console.log('data iz tblClients', data);
-     console.log('error iz tblClients', error);
 
      if (error) {
           switch (error.code) {

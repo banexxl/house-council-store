@@ -33,7 +33,6 @@ export const deleteAccountAction = async (clientId: string, clientEmail: string)
           return { success: false, error: deleteClientError.message }
      }
 
-     console.log('data', data);
      return { success: true }
 }
 
@@ -46,8 +45,6 @@ export const readAccountByEmailAction = async (email: string): Promise<{ client?
           .select('*')
           .eq('email', email)
           .single();
-     console.log('data', client);
-     console.log('error', error);
 
      if (error) {
           return { error: error.message }

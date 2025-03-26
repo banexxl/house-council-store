@@ -68,15 +68,11 @@ export async function GET(request: Request) {
           .from('tblClients')
           .select('*')
           .eq('email', userEmail)
-     console.log('data', data);
-     console.log('clientError', clientError);
 
      if (clientError) {
           console.error('Error checking email in database:', clientError);
           supabase.auth.signOut();
           const { data, error } = await supabase.auth.admin.deleteUser(sessionData.session.user.id);
-          console.log('data', data);
-          console.log('error', error);
 
           // Remove cookies
           cookieStore.getAll().forEach(cookie => cookieStore.delete(cookie.name));
@@ -87,8 +83,6 @@ export async function GET(request: Request) {
      if (!data || data.length === 0) {
           supabase.auth.signOut();
           const { data, error } = await supabase.auth.admin.deleteUser(sessionData.session.user.id);
-          console.log('data', data);
-          console.log('error', error);
           console.log('Email not registered. Consider triggering a sign-up process.');
 
           // Remove cookies

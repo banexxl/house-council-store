@@ -11,8 +11,6 @@ export const readEntity = async <T extends BaseEntity>(table: string, id: string
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
      const { data, error } = await supabase.from(table).select('*').eq('id', id).single();
-     console.log('data', data);
-     console.log('error', error);
 
      if (error) {
           return { success: false, error: error.message };
