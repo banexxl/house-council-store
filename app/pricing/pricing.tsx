@@ -1,8 +1,6 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
+import React, { useState } from "react"
 import Link from "next/link"
 import {
      Box,
@@ -27,97 +25,39 @@ import Grid from "@mui/material/Grid2"
 import CheckIcon from "@mui/icons-material/Check"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import { Toaster } from "react-hot-toast"
+import { SubscriptionPlan } from "../types/subscription-plan"
+import { Feature } from "../types/feature"
 
-interface PricingOption {
-     title: string
-     price: {
-          monthly: number
-          annually: number
-     }
-     description: string
-     features: string[]
-     popular?: boolean
+
+interface PricingPageProps {
+     subscriptionPlans: SubscriptionPlan[]
 }
 
-const pricingOptions: PricingOption[] = [
-     {
-          title: "Basic",
-          price: {
-               monthly: 29,
-               annually: 23,
-          },
-          description: "For small communities",
-          features: [
-               "Up to 50 units/residents",
-               "Community announcements",
-               "Document storage",
-               "Basic financial tracking",
-               "Email support",
-          ],
-     },
-     {
-          title: "Standard",
-          price: {
-               monthly: 59,
-               annually: 47,
-          },
-          description: "For medium-sized communities",
-          features: [
-               "Up to 150 units/residents",
-               "All Basic features",
-               "Advanced financial tools",
-               "Voting system",
-               "Maintenance requests",
-               "Priority email support",
-          ],
-          popular: true,
-     },
-     {
-          title: "Premium",
-          price: {
-               monthly: 99,
-               annually: 79,
-          },
-          description: "For large communities",
-          features: [
-               "Unlimited units/residents",
-               "All Standard features",
-               "Custom branding",
-               "API access",
-               "Advanced analytics",
-               "Dedicated account manager",
-               "24/7 phone & email support",
-          ],
-     },
-]
-
-const faqs = [
-     {
-          question: "Can I switch plans later?",
-          answer:
-               "Yes, you can upgrade or downgrade your plan at any time. Changes will be reflected in your next billing cycle.",
-     },
-     {
-          question: "Is there a setup fee?",
-          answer: "No, there are no setup fees or hidden charges. The price you see is the price you pay.",
-     },
-     {
-          question: "Do you offer discounts for non-profits?",
-          answer:
-               "Yes, we offer special pricing for non-profit organizations. Please contact our sales team for more information.",
-     },
-     {
-          question: "What payment methods do you accept?",
-          answer: "We accept all major credit cards, PayPal, and bank transfers for annual plans.",
-     },
-]
-
-export const PricingPage = () => {
+export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans }) => {
      const [billingCycle, setBillingCycle] = useState<"monthly" | "annually">("monthly")
 
      const handleBillingCycleChange = (event: React.SyntheticEvent, newValue: "monthly" | "annually") => {
           setBillingCycle(newValue)
      }
+
+     const faqs = [
+          {
+               question: "Can I switch plans later?",
+               answer: "Yes, you can upgrade or downgrade your plan at any time. Changes will be reflected in your next billing cycle.",
+          },
+          {
+               question: "Is there a setup fee?",
+               answer: "No, there are no setup fees or hidden charges. The price you see is the price you pay.",
+          },
+          {
+               question: "Do you offer discounts for non-profits?",
+               answer: "Yes, we offer special pricing for non-profit organizations. Please contact our sales team for more information.",
+          },
+          {
+               question: "What payment methods do you accept?",
+               answer: "We accept all major credit cards, PayPal, and bank transfers for annual plans.",
+          },
+     ]
 
      return (
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
@@ -133,100 +73,79 @@ export const PricingPage = () => {
                          </Box>
 
                          <Box sx={{ display: "flex", justifyContent: "center", mb: 6 }}>
-                              <Tabs value={billingCycle} onChange={handleBillingCycleChange} aria-label="billing cycle tabs">
+                              <Tabs value={billingCycle} onChange={handleBillingCycleChange}>
                                    <Tab label="Monthly" value="monthly" />
-                                   <Tab label="Annually (Save 20%)" value="annually" />
+                                   <Tab label="Annually (Save more)" value="annually" />
                               </Tabs>
                          </Box>
 
                          <Grid container spacing={4} justifyContent="center">
-                              {pricingOptions.map((option) => (
-                                   <Grid size={{ xs: 12, md: 6, lg: 4 }} key={option.title}>
-                                        <Card
-                                             sx={{
-                                                  height: "100%",
-                                                  display: "flex",
-                                                  flexDirection: "column",
-                                                  ...(option.popular
-                                                       ? {
-                                                            border: 2,
-                                                            borderColor: "primary.main",
-                                                            position: "relative",
-                                                       }
-                                                       : {}),
-                                             }}
-                                        >
-                                             {option.popular && (
-                                                  <Box
-                                                       sx={{
-                                                            position: "absolute",
-                                                            top: 12,
-                                                            left: 0,
-                                                            right: 0,
-                                                            textAlign: "center",
-                                                       }}
-                                                  >
-                                                       <Typography
-                                                            variant="caption"
-                                                            sx={{
-                                                                 bgcolor: "primary.main",
-                                                                 color: "primary.contrastText",
-                                                                 py: 0.5,
-                                                                 px: 2,
-                                                                 borderRadius: 10,
-                                                            }}
-                                                       >
-                                                            Popular
+                              {subscriptionPlans.map((plan) => {
+                                   const price =
+                                        billingCycle === "monthly" || !plan.can_bill_yearly
+                                             ? plan.total_price_per_month
+                                             : Math.round(plan.total_price_per_month * 12 * (1 - plan.yearly_discount_percentage / 100))
+
+                                   const isAnnual = billingCycle === "annually" && plan.can_bill_yearly
+
+                                   return (
+                                        <Grid key={plan.id} size={{ xs: 12, sm: 6, md: 4 }}>
+                                             <Card
+                                                  sx={{
+                                                       height: "100%",
+                                                       display: "flex",
+                                                       flexDirection: "column",
+                                                  }}
+                                             >
+                                                  <CardContent sx={{ flexGrow: 1 }}>
+                                                       <Typography variant="h5" gutterBottom>
+                                                            {plan.name}
                                                        </Typography>
-                                                  </Box>
-                                             )}
-
-                                             <CardContent sx={{ pt: option.popular ? 5 : 2, flexGrow: 1 }}>
-                                                  <Typography variant="h5" component="div" gutterBottom>
-                                                       {option.title}
-                                                  </Typography>
-                                                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                                                       {option.description}
-                                                  </Typography>
-
-                                                  <Box sx={{ my: 3 }}>
-                                                       <Typography variant="h3" component="div">
-                                                            ${billingCycle === "monthly" ? option.price.monthly : option.price.annually}
-                                                            <Typography variant="body2" component="span" color="text.secondary" sx={{ ml: 1 }}>
-                                                                 /month
-                                                            </Typography>
+                                                       <Typography variant="body2" color="text.secondary" gutterBottom>
+                                                            {plan.description}
                                                        </Typography>
-                                                       {billingCycle === "annually" && (
-                                                            <Typography variant="caption" color="text.secondary">
-                                                                 Billed annually (${option.price.annually * 12})
+
+                                                       <Box sx={{ my: 3 }}>
+                                                            <Typography variant="h3">
+                                                                 ${price}
+                                                                 <Typography
+                                                                      component="span"
+                                                                      variant="body2"
+                                                                      color="text.secondary"
+                                                                      sx={{ ml: 1 }}
+                                                                 >
+                                                                      /month
+                                                                 </Typography>
                                                             </Typography>
-                                                       )}
-                                                  </Box>
+                                                            {isAnnual && (
+                                                                 <Typography variant="caption" color="text.secondary">
+                                                                      Billed annually (${price * 12})
+                                                                 </Typography>
+                                                            )}
+                                                       </Box>
 
-                                                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                                                       {option.features[0]}
-                                                  </Typography>
+                                                       <List dense>
+                                                            {
+                                                                 plan.features?.map((feature: Feature) => (
+                                                                      <ListItem key={feature.id} disablePadding sx={{ py: 0.5 }}>
+                                                                           <ListItemIcon sx={{ minWidth: 32 }}>
+                                                                                <CheckIcon color="primary" fontSize="small" />
+                                                                           </ListItemIcon>
+                                                                           <ListItemText primary={feature.name} />
+                                                                      </ListItem>
+                                                                 ))}
+                                                       </List>
+                                                  </CardContent>
 
-                                                  <List dense>
-                                                       {option.features.slice(1).map((feature, index) => (
-                                                            <ListItem key={index} disablePadding sx={{ py: 0.5 }}>
-                                                                 <ListItemIcon sx={{ minWidth: 32 }}>
-                                                                      <CheckIcon color="primary" fontSize="small" />
-                                                                 </ListItemIcon>
-                                                                 <ListItemText primary={feature} />
-                                                            </ListItem>
-                                                       ))}
-                                                  </List>
-                                             </CardContent>
-
-                                             <CardActions sx={{ p: 2, pt: 0 }}>
-                                                  <Button variant="contained" fullWidth>
-                                                       Start Free Trial
-                                                  </Button>
-                                             </CardActions>
-                                        </Card>
-                                   </Grid>
-                              ))}
+                                                  <CardActions sx={{ p: 2, pt: 0 }}>
+                                                       <Button variant="contained" fullWidth>
+                                                            Start Free Trial
+                                                       </Button>
+                                                  </CardActions>
+                                             </Card>
+                                        </Grid>
+                                   )
+                              })}
                          </Grid>
 
                          <Box sx={{ mt: 10, mb: 6, textAlign: "center" }}>
@@ -278,4 +197,3 @@ export const PricingPage = () => {
           </Box>
      )
 }
-

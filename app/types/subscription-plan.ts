@@ -1,4 +1,5 @@
 import * as Yup from 'yup';
+import { Feature } from './feature';
 
 export type SubscriptionPlan = {
      id?: string;
@@ -11,7 +12,7 @@ export type SubscriptionPlan = {
      yearly_discount_percentage: number;
      is_discounted: boolean;
      discount_percentage: number;
-     features?: string[];
+     features?: Feature[];
      base_price_per_month: number;
      total_price_per_month: number;
 };

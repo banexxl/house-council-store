@@ -18,7 +18,7 @@ export default async function Page() {
   return (
     <>
       <Header user={user ? user : null} />
-      <PricingPage />
+      <PricingPage subscriptionPlans={subscriptionPlanData || []} />
       <Footer />
     </>
 
