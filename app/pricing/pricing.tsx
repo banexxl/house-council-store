@@ -28,36 +28,36 @@ import { Toaster } from "react-hot-toast"
 import { SubscriptionPlan } from "../types/subscription-plan"
 import { Feature } from "../types/feature"
 
+const faqs = [
+     {
+          question: "Can I switch plans later?",
+          answer: "Yes, you can upgrade or downgrade your plan at any time. Changes will be reflected in your next billing cycle.",
+     },
+     {
+          question: "Is there a setup fee?",
+          answer: "No, there are no setup fees or hidden charges. The price you see is the price you pay.",
+     },
+     {
+          question: "Do you offer discounts for non-profits?",
+          answer: "Yes, we offer special pricing for non-profit organizations. Please contact our sales team for more information.",
+     },
+     {
+          question: "What payment methods do you accept?",
+          answer: "We accept all major credit cards, PayPal, and bank transfers for annual plans.",
+     },
+]
 
 interface PricingPageProps {
      subscriptionPlans: SubscriptionPlan[]
 }
 
 export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans }) => {
+
      const [billingCycle, setBillingCycle] = useState<"monthly" | "annually">("monthly")
 
      const handleBillingCycleChange = (event: React.SyntheticEvent, newValue: "monthly" | "annually") => {
           setBillingCycle(newValue)
      }
-
-     const faqs = [
-          {
-               question: "Can I switch plans later?",
-               answer: "Yes, you can upgrade or downgrade your plan at any time. Changes will be reflected in your next billing cycle.",
-          },
-          {
-               question: "Is there a setup fee?",
-               answer: "No, there are no setup fees or hidden charges. The price you see is the price you pay.",
-          },
-          {
-               question: "Do you offer discounts for non-profits?",
-               answer: "Yes, we offer special pricing for non-profit organizations. Please contact our sales team for more information.",
-          },
-          {
-               question: "What payment methods do you accept?",
-               answer: "We accept all major credit cards, PayPal, and bank transfers for annual plans.",
-          },
-     ]
 
      return (
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>

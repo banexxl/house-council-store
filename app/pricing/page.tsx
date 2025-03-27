@@ -12,9 +12,6 @@ export default async function Page() {
 
   const { subscriptionPlanData } = await readAllSubscriptionPlans()
 
-  console.log('subscriptionPlanData', subscriptionPlanData);
-
-
   return (
     <>
       <Header user={user ? user : null} />
