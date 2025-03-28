@@ -1,7 +1,6 @@
 "use client"
 
 import React, { useState } from "react"
-import Link from "next/link"
 import {
      Box,
      Button,
@@ -27,6 +26,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import { Toaster } from "react-hot-toast"
 import { SubscriptionPlan } from "../types/subscription-plan"
 import { Feature } from "../types/feature"
+import { useRouter } from "next/navigation"
 
 const faqs = [
      {
@@ -53,10 +53,23 @@ interface PricingPageProps {
 
 export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans }) => {
 
+     const router = useRouter()
      const [billingCycle, setBillingCycle] = useState<"monthly" | "annually">("monthly")
+     const [loading, setLoading] = useState(false)
 
      const handleBillingCycleChange = (event: React.SyntheticEvent, newValue: "monthly" | "annually") => {
           setBillingCycle(newValue)
+     }
+
+     const handleStartFreeTrial = (plan: SubscriptionPlan) => {
+          setLoading(true)
+          router.push(`/pricing/subscription-plan?plan_id=${plan.id}`, {
+               scroll: false,
+          })
+
+          setTimeout(() => {
+               setLoading(false)
+          }, 3000)
      }
 
      return (
@@ -82,11 +95,11 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans }) =
                          <Grid container spacing={4} justifyContent="center">
                               {subscriptionPlans.map((plan) => {
                                    const price =
-                                        billingCycle === "monthly" || !plan.can_bill_yearly
+                                        billingCycle === "monthly" || !plan.is_billed_yearly
                                              ? plan.total_price_per_month
                                              : Math.round(plan.total_price_per_month * 12 * (1 - plan.yearly_discount_percentage / 100))
 
-                                   const isAnnual = billingCycle === "annually" && plan.can_bill_yearly
+                                   const isAnnual = billingCycle === "annually" && plan.is_billed_yearly
 
                                    return (
                                         <Grid key={plan.id} size={{ xs: 12, sm: 6, md: 4 }}>
@@ -138,7 +151,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans }) =
                                                   </CardContent>
 
                                                   <CardActions sx={{ p: 2, pt: 0 }}>
-                                                       <Button variant="contained" fullWidth>
+                                                       <Button variant="contained" fullWidth onClick={() => handleStartFreeTrial(plan)} loading={loading}>
                                                             Start Free Trial
                                                        </Button>
                                                   </CardActions>
@@ -185,11 +198,9 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans }) =
                               <Typography variant="body1" color="text.secondary" paragraph>
                                    Contact our sales team for custom pricing and features tailored to your specific needs.
                               </Typography>
-                              <Link href="/contact" style={{ textDecoration: "none" }}>
-                                   <Button variant="contained" size="large">
-                                        Contact Sales
-                                   </Button>
-                              </Link>
+                              <Button variant="contained" size="large" onClick={() => router.push("/contact")}>
+                                   Contact Sales
+                              </Button>
                          </Paper>
                     </Container>
                </Box>

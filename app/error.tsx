@@ -1,31 +1,22 @@
 "use client"
 
-import { useEffect } from "react"
-import Link from "next/link"
 import { Box, Button, Container, Typography, Paper } from "@mui/material"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
 import ReplayIcon from "@mui/icons-material/Replay"
 import HomeIcon from "@mui/icons-material/Home"
-import { Header } from "@/app/components/header"
-import { getSessionUser } from "@/app/lib/get-session"
+import { useRouter } from "next/navigation"
 
-export default async function Error({
+export default function Error({
      error,
-     reset,
 }: {
      error: Error & { digest?: string }
-     reset: () => void
 }) {
-     useEffect(() => {
-          // Log the error to an error reporting service
-          console.error(error)
-     }, [error])
 
-     const user = await getSessionUser();
+     const router = useRouter()
 
      return (
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-               <Header user={user ? user : null} />
+               {/* <Header user={user ? user : null} /> */}
                <Box
                     component="main"
                     sx={{
@@ -95,11 +86,11 @@ export default async function Error({
                                         gap: 2,
                                    }}
                               >
-                                   <Button variant="contained" onClick={reset} startIcon={<ReplayIcon />} sx={{ minWidth: 200 }}>
+                                   <Button variant="contained" onClick={() => router.push("/pricing")} startIcon={<ReplayIcon />} sx={{ minWidth: 200 }}>
                                         Try Again
                                    </Button>
 
-                                   <Button variant="outlined" component={Link} href="/" startIcon={<HomeIcon />} sx={{ minWidth: 200 }}>
+                                   <Button variant="outlined" onClick={() => router.push("/")} startIcon={<HomeIcon />} sx={{ minWidth: 200 }}>
                                         Back to Home
                                    </Button>
                               </Box>

@@ -8,13 +8,14 @@ import { clientInitialValues } from "../types/client";
 import { readEntity } from "@/app/lib/base-entity-actions";
 import { readSubscriptionPlanFromClientId } from "./subscription-plan-actions";
 import { readAllClientsBillingInformation } from "./client-billing-information-actions";
+import { redirect } from "next/navigation";
 
 export default async function Page() {
      // Fetch user session
      const user: User | null = await getSessionUser();
 
      if (!user?.email) {
-          return <div>Error: No user session</div>;
+          redirect("/auth/sign-in");
      }
 
      // Fetch client data

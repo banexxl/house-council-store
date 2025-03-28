@@ -1,0 +1,32 @@
+import { getSessionUser } from "@/app/lib/get-session";
+import FreeTrialConfirmation from "./free-trial-confirmation";
+import { readSubscriptionPlanById } from "@/app/profile/subscription-plan-actions";
+import { Header } from "@/app/components/header";
+import { Footer } from "@/app/components/footer";
+import { readAccountByEmailAction } from "@/app/profile/account-action";
+
+
+export default async function FreeTrialPage({ searchParams, }: { searchParams: Promise<{ plan_id: string }> }) {
+
+     const { plan_id } = await searchParams;
+
+     // Get the user session
+     const user = await getSessionUser()
+
+     const { subscriptionPlan } = await readSubscriptionPlanById(plan_id)
+
+     const { client } = await readAccountByEmailAction(user?.email!)
+
+     return (
+          <>
+               <Header user={user ? user : null} />
+               <FreeTrialConfirmation
+                    subscriptionPlan={subscriptionPlan!}
+                    userEmail={user?.email!}
+                    client={client!}
+               />
+               <Footer />
+          </>
+     )
+}
+

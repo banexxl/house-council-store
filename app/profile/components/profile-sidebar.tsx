@@ -224,7 +224,7 @@ export default function ProfileSidebar({ userData, subscriptionData, recentActiv
                               </Box>
 
                               <Typography variant="body2" color="text.secondary">
-                                   {subscriptionData.base_price_per_month} billed {subscriptionData.can_bill_yearly ? "annually" : "monthly"}
+                                   {subscriptionData.base_price_per_month} billed {subscriptionData.is_billed_yearly ? "annually" : "monthly"}
                               </Typography>
 
                               <Box sx={{ bgcolor: "background.default", p: 2, borderRadius: 1, mb: 2 }}>

@@ -52,3 +52,22 @@ export const readAccountByEmailAction = async (email: string): Promise<{ client?
 
      return { client }
 }
+
+export const updateAccountAction = async (id: string, update: Partial<Client>): Promise<{ success: boolean, error?: string, data?: Client }> => {
+
+     const supabase = await useServerSideSupabaseServiceRoleClient();
+
+     const { data, error } = await supabase
+          .from('tblClients')
+          .update(update)
+          .eq('id', id)
+          .single();
+     console.log('updateAccountData', data);
+     console.log('updateAccountError', error);
+
+     if (error) {
+          return { success: false, error: error.message }
+     }
+
+     return { success: true, data }
+}
