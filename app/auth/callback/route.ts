@@ -81,14 +81,32 @@ export async function GET(request: Request) {
      }
 
      if (!data || data.length === 0) {
-          supabase.auth.signOut();
-          const { data, error } = await supabase.auth.admin.deleteUser(sessionData.session.user.id);
-          console.log('Email not registered. Consider triggering a sign-up process.');
+          const user = sessionData.session.user;
 
-          // Remove cookies
-          cookieStore.getAll().forEach(cookie => cookieStore.delete(cookie.name));
+          const { error: insertError } = await supabase.from('tblClients').insert({
+               name: user.user_metadata.full_name || user.user_metadata.name || user.email,
+               email: user.email,
+               type: '3cb057f5-32c1-423b-a549-5c28a89c6907',
+               client_status: '6f0f38ed-bd14-4f84-9718-1e37fe0b7027',
+               role_id: '01054864-19ab-4d52-ba1e-59ab35858349',
+               password: '',
+               has_accepted_terms_and_conditions: false,
+               has_accepted_privacy_policy: false,
+               has_accepted_marketing: false,
+          });
 
-          return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=Email not registered. Please sign up.`);
+          if (insertError) {
+               console.error('Failed to insert new user into tblClients:', insertError);
+
+               // Clean up
+               await supabase.auth.signOut();
+               await supabase.auth.admin.deleteUser(user.id);
+               cookieStore.getAll().forEach(cookie => cookieStore.delete(cookie.name));
+
+               return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=Failed to create user in tblClients.`);
+          }
+
+          console.log('New user added to tblClients.');
      }
 
      if (data.length > 1) {

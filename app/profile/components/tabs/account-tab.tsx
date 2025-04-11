@@ -14,6 +14,7 @@ import { Client } from "@/app/types/client"
 import { User } from "@supabase/supabase-js"
 import { logoutUserAction } from "../../logout-action"
 import { useRouter } from "next/navigation"
+import { useState } from "react"
 
 interface AccountTabProps {
      userData: { client: Client; session: User }
@@ -24,42 +25,28 @@ interface AccountTabProps {
 
 export default function AccountTab({ userData, editMode, setEditMode }: AccountTabProps) {
 
+     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+     const [confirmText, setConfirmText] = useState("");
      const router = useRouter()
 
-     const onDeleteAccountClick = () => {
-
-          Swal.fire({
-               title: "Are you sure?",
-               text: "You won't be able to revert this!",
-               icon: "warning",
-               showCancelButton: true,
-               confirmButtonColor: "#3085d6",
-               showLoaderOnConfirm: true,
-               cancelButtonColor: "#d33",
-               confirmButtonText: "Yes, delete it!",
-               preConfirm: async () => {
-                    const deleteAccount = await deleteAccountAction(userData.session.id, userData.client.email);
-                    if (deleteAccount.success) {
-                         Swal.fire({
-                              title: "Deleted!",
-                              text: "Your file has been deleted.",
-                              icon: "success"
-                         });
-                    } else {
-                         Swal.fire({
-                              title: "Error!",
-                              text: "Error deleting account. Please contact support.",
-                              icon: "error"
-                         });
-                    }
-               }
-          }).then(async (result: any) => {
-               if (result.isConfirmed) {
-
-               }
-          });
-     }
-
+     const handleConfirmDelete = async () => {
+          const deleteAccount = await deleteAccountAction(userData.session.id, userData.client.email);
+          if (deleteAccount.success) {
+               Swal.fire({
+                    title: "Deleted!",
+                    text: "Your account has been deleted.",
+                    icon: "success"
+               });
+               logoutUserAction();
+               router.push("/"); // or login screen
+          } else {
+               Swal.fire({
+                    title: "Error!",
+                    text: "There was a problem deleting your account.",
+                    icon: "error"
+               });
+          }
+     };
      const handleSignOut = async () => {
           try {
                logoutUserAction();
@@ -185,12 +172,9 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                    Account Actions
                               </Typography>
 
-                              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                              <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mb: 2 }}>
                                    <Button variant="outlined" component={Link} href="/auth/reset-password" startIcon={<LockIcon />}>
                                         Change Password
-                                   </Button>
-                                   <Button variant="outlined" color="error" onClick={onDeleteAccountClick}>
-                                        Delete Account
                                    </Button>
                                    <Button
                                         variant="outlined"
@@ -200,10 +184,52 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                    >
                                         Sign out
                                    </Button>
+
                               </Stack>
-                         </Box>
-                    </Box>
-               )}
+                              <Box >
+                                   {showDeleteConfirm ? (
+                                        <Stack spacing={2} sx={{ mt: 2 }}>
+                                             <Typography color="error">
+                                                  Type <strong>delete</strong> below to confirm account deletion:
+                                             </Typography>
+                                             <TextField
+                                                  fullWidth
+                                                  variant="outlined"
+                                                  value={confirmText}
+                                                  onChange={(e) => setConfirmText(e.target.value)}
+                                                  placeholder="Type 'delete' to confirm"
+                                                  size="small"
+                                             />
+                                             <Stack direction="row" spacing={2}>
+                                                  <Button
+                                                       variant="contained"
+                                                       color="error"
+                                                       disabled={confirmText !== "delete"}
+                                                       onClick={handleConfirmDelete}
+                                                  >
+                                                       Confirm Delete
+                                                  </Button>
+                                                  <Button
+                                                       variant="outlined"
+                                                       onClick={() => {
+                                                            setShowDeleteConfirm(false);
+                                                            setConfirmText("");
+                                                       }}
+                                                  >
+                                                       Cancel
+                                                  </Button>
+                                             </Stack>
+                                        </Stack>
+                                   ) : (
+                                        <Button variant="outlined" color="error" onClick={() => setShowDeleteConfirm(true)}>
+                                             Delete Account
+                                        </Button>
+                                   )}
+                              </Box>
+                         </Box >
+                    </Box >
+               )
+               }
           </>
      )
 }
