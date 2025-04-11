@@ -2,7 +2,7 @@ import { redirect } from "next/navigation"
 import { getSessionUser } from "@/app/lib/get-session"
 import { Header } from "@/app/components/header"
 import { Footer } from "@/app/components/footer"
-import FreeTrialError from "./free-trial-error"
+import SubscriptionErrorPage from "./subscription-plan-error.tsx"
 
 export default async function FreeTrialErrorPage() {
      // Get the user session
@@ -16,7 +16,7 @@ export default async function FreeTrialErrorPage() {
      return (
           <>
                <Header user={session ? session : null} />
-               <FreeTrialError userEmail={session.email!} />
+               <SubscriptionErrorPage userEmail={session.email!} />
                <Footer />
           </>
      )

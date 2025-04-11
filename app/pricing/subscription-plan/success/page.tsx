@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation"
-import FreeTrialSuccess from "./free-trial-success"
 import { getSessionUser } from "@/app/lib/get-session"
 import { Header } from "@/app/components/header"
 import { Footer } from "@/app/components/footer"
+import SubscriptionSuccessPage from "./subscription-plan-success"
 
 export default async function FreeTrialSuccessPage() {
      // Get the user session
@@ -16,7 +16,7 @@ export default async function FreeTrialSuccessPage() {
      return (
           <>
                <Header user={session ? session : null} />
-               <FreeTrialSuccess userEmail={session.email!} />
+               <SubscriptionSuccessPage userEmail={session.email!} planId={""} planName={""} isTrial={false} />
                <Footer />
           </>
      )

@@ -24,7 +24,6 @@ import CreditCardIcon from "@mui/icons-material/CreditCard"
 import toast, { Toaster } from "react-hot-toast"
 import { updateAccountAction } from "@/app/profile/account-action"
 import { SubscriptionPlan } from "@/app/types/subscription-plan"
-import { readAccountByEmailAction } from "@/app/profile/account-action";
 import { Client } from "@/app/types/client"
 
 interface FreeTrialConfirmationProps {

@@ -20,7 +20,7 @@ interface FreeTrialErrorProps {
      userEmail: string
 }
 
-export default function FreeTrialError({ userEmail }: FreeTrialErrorProps) {
+export default function SubscriptionErrorPage({ userEmail }: FreeTrialErrorProps) {
      const router = useRouter()
 
      return (
