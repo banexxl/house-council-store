@@ -1,7 +1,8 @@
 'use client'
 
 import React from 'react';
-import { Box, Button, Container, Grid, Typography, Avatar, Link, Card, CardContent } from '@mui/material';
+import { Box, Button, Container, Typography, Avatar, Link, Card, CardContent } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import PeopleIcon from '@mui/icons-material/People';
 import ShieldIcon from '@mui/icons-material/Shield';
@@ -15,7 +16,7 @@ const LandingPage = () => {
                <ParallaxSection backgroundImage="https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=1973&auto=format&fit=crop">
                     <Container maxWidth="lg">
                          <Grid container spacing={6} alignItems="center">
-                              <Grid item xs={12} md={6}>
+                              <Grid size={{ xs: 12, md: 6 }} >
                                    <Box
                                         sx={{
                                              backgroundColor: 'rgba(255, 255, 255, 0.85)',
@@ -80,7 +81,7 @@ const LandingPage = () => {
                                    description: 'Keep everyone informed with instant updates on important matters.',
                               },
                          ].map((feature, index) => (
-                              <Grid item xs={12} md={4} key={index}>
+                              <Grid size={{ xs: 12, md: 4 }} key={index}>
                                    <Box
                                         sx={{
                                              backgroundColor: 'rgba(255,255,255,0.9)',
@@ -138,7 +139,7 @@ const LandingPage = () => {
                                              "Setting up voting for important decisions used to be a nightmare. Now it's just a few clicks away!",
                                    },
                               ].map((testimonial, index) => (
-                                   <Grid item xs={12} md={4} key={index}>
+                                   <Grid size={{ xs: 12, md: 4 }} key={index}>
                                         <Card
                                              sx={{
                                                   height: '100%',
@@ -166,6 +167,16 @@ const LandingPage = () => {
                          </Grid>
                     </Container>
                </ParallaxSection>
+
+               <Box sx={{ textAlign: 'center', my: 6, height: '80px' }} >
+                    <Typography variant="h2" gutterBottom>
+                         Effortless Community Management
+                    </Typography>
+                    <Typography variant="h6" color="text.secondary">
+                         HouseCouncil helps you streamline communication, automate tasks, and build a stronger community.
+                    </Typography>
+               </Box>
+
 
                {/* CTA Parallax Section */}
                <ParallaxSection backgroundImage="https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop" height="60vh">
@@ -195,7 +206,7 @@ const LandingPage = () => {
                          </Box>
                     </Container>
                </ParallaxSection>
-          </Box>
+          </Box >
      );
 };
 

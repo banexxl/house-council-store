@@ -115,9 +115,6 @@ export const Header = ({ user }: HeaderProps) => {
                   <Link href="/profile" style={{ textDecoration: "none" }}>
                     <Button color="inherit">Profile</Button>
                   </Link>
-                  <Button variant="outlined" onClick={handleSignOut}>
-                    Sign Out
-                  </Button>
                 </>
               ) : (
                 <Link href="/auth/sign-in" style={{ textDecoration: "none" }}>

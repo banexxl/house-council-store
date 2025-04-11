@@ -6,11 +6,14 @@ import Link from "next/link"
 import EditIcon from "@mui/icons-material/Edit"
 import LockIcon from "@mui/icons-material/Lock"
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser"
+import LogoutIcon from "@mui/icons-material/Logout"
 import { getStatusColor } from "../profile-sidebar"
 import { deleteAccountAction } from "../../account-action"
 import Swal from 'sweetalert2'
 import { Client } from "@/app/types/client"
 import { User } from "@supabase/supabase-js"
+import { logoutUserAction } from "../../logout-action"
+import { useRouter } from "next/navigation"
 
 interface AccountTabProps {
      userData: { client: Client; session: User }
@@ -20,6 +23,8 @@ interface AccountTabProps {
 
 
 export default function AccountTab({ userData, editMode, setEditMode }: AccountTabProps) {
+
+     const router = useRouter()
 
      const onDeleteAccountClick = () => {
 
@@ -54,6 +59,16 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                }
           });
      }
+
+     const handleSignOut = async () => {
+          try {
+               logoutUserAction();
+               router.refresh();
+
+          } catch (error) {
+               console.error("Error signing out:", error);
+          }
+     };
 
      return (
           <>
@@ -176,6 +191,14 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                    </Button>
                                    <Button variant="outlined" color="error" onClick={onDeleteAccountClick}>
                                         Delete Account
+                                   </Button>
+                                   <Button
+                                        variant="outlined"
+                                        color="error"
+                                        startIcon={<LogoutIcon />}
+                                        onClick={handleSignOut}
+                                   >
+                                        Sign out
                                    </Button>
                               </Stack>
                          </Box>
