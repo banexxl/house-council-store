@@ -93,6 +93,7 @@ export async function GET(request: Request) {
                has_accepted_terms_and_conditions: false,
                has_accepted_privacy_policy: false,
                has_accepted_marketing: false,
+               is_verified: true
           });
 
           if (insertError) {

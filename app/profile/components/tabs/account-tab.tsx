@@ -15,6 +15,7 @@ import { User } from "@supabase/supabase-js"
 import { logoutUserAction } from "../../logout-action"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import toast from "react-hot-toast"
 
 interface AccountTabProps {
      userData: { client: Client; session: User }
@@ -32,11 +33,7 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
      const handleConfirmDelete = async () => {
           const deleteAccount = await deleteAccountAction(userData.session.id, userData.client.email);
           if (deleteAccount.success) {
-               Swal.fire({
-                    title: "Deleted!",
-                    text: "Your account has been deleted.",
-                    icon: "success"
-               });
+               toast.success("Account deleted successfully.");
                logoutUserAction();
                router.push("/"); // or login screen
           } else {
@@ -76,10 +73,6 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
 
                               <Grid size={{ xs: 12, md: 6 }}>
                                    <TextField fullWidth label="Phone Number" defaultValue={userData.client.phone} />
-                              </Grid>
-
-                              <Grid size={{ xs: 12, md: 6 }}>
-                                   <TextField fullWidth label="Role" defaultValue={userData.client.role_id} />
                               </Grid>
 
                               <Grid size={{ xs: 12 }}>
@@ -157,18 +150,12 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                    </Typography>
                               </Grid>
 
-                              <Grid size={{ xs: 12, md: 6 }}>
-                                   <Typography variant="subtitle2" color="text.secondary">
-                                        Role
-                                   </Typography>
-                                   <Typography variant="body1">{userData.client.role_id}</Typography>
-                              </Grid>
                          </Grid>
 
                          <Divider sx={{ my: 3 }} />
 
                          <Box>
-                              <Typography variant="h6" gutterBottom>
+                              <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
                                    Account Actions
                               </Typography>
 
@@ -228,8 +215,7 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                               </Box>
                          </Box >
                     </Box >
-               )
-               }
+               )}
           </>
      )
 }
