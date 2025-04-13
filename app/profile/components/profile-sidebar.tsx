@@ -220,17 +220,17 @@ export default function ProfileSidebar({ userData, subscriptionData, recentActiv
                                    <Typography variant="h5" color="primary.main">
                                         {subscriptionData.name}
                                    </Typography>
-                                   <Chip label={subscriptionData.status_id} color={getStatusColor(subscriptionData.status_id)} size="small" />
+                                   {/* <Chip label={subscriptionData.status_id} color={getStatusColor(subscriptionData.status_id)} size="small" /> */}
                               </Box>
 
                               <Typography variant="body2" color="text.secondary">
                                    {subscriptionData.base_price_per_month} billed {subscriptionData.is_billed_yearly ? "annually" : "monthly"}
                               </Typography>
 
-                              <Box sx={{ bgcolor: "background.default", p: 2, borderRadius: 1, mb: 2 }}>
-                                   {clientInitialValues.next_billing_date ? (
+                              <Box sx={{ bgcolor: "background.default", borderRadius: 1, mb: 2 }}>
+                                   {userData.client.next_billing_date ? (
                                         <Typography variant="subtitle2" gutterBottom>
-                                             Next billing date: {new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(clientInitialValues.next_billing_date))}
+                                             Next billing date: {new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(userData.client.next_billing_date))}
                                         </Typography>
                                    ) : (
                                         <Typography variant="subtitle2" gutterBottom>
@@ -246,16 +246,16 @@ export default function ProfileSidebar({ userData, subscriptionData, recentActiv
                                    Plan Features:
                               </Typography>
 
-                              {/* <List dense disablePadding>
-                              {subscriptionData.features.map((feature, index) => (
-                                   <ListItem key={index} disablePadding sx={{ py: 0.5 }}>
-                                        <ListItemIcon sx={{ minWidth: 28 }}>
-                                             <CheckCircleIcon color="success" fontSize="small" />
-                                        </ListItemIcon>
-                                        <ListItemText primary={feature} />
-                                   </ListItem>
-                              ))}
-                         </List> */}
+                              <List dense disablePadding>
+                                   {subscriptionData.features && subscriptionData.features!.map((feature, index) => (
+                                        <ListItem key={index} disablePadding sx={{ py: 0.5 }}>
+                                             <ListItemIcon sx={{ minWidth: 28 }}>
+                                                  <CheckCircleIcon color="success" fontSize="small" />
+                                             </ListItemIcon>
+                                             <ListItemText primary={String(feature)} />
+                                        </ListItem>
+                                   ))}
+                              </List>
 
                               <Button variant="outlined" fullWidth sx={{ mt: 2 }} component={Link} href="/pricing">
                                    Manage Subscription

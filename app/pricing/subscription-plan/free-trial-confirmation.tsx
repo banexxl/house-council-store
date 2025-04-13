@@ -67,6 +67,7 @@ export default function FreeTrialConfirmation({ subscriptionPlan, userEmail, cli
                const updateClientResponse = await updateAccountAction(
                     client?.id!,
                     {
+                         subscription_plan: subscriptionPlan.id,
                          next_billing_date: trialEndDate,
                     },
                );

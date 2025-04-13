@@ -15,7 +15,6 @@ export default function NotFound() {
           // In a real app, you would implement search functionality here
           const formData = new FormData(event.currentTarget)
           const searchQuery = formData.get("search") as string
-          console.log("Search query:", searchQuery)
           // Redirect to search results page or implement search logic
      }
 

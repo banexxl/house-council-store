@@ -5,9 +5,6 @@ import { useServerSideSupabaseServiceRoleClient } from "./ss-supabase-service-ro
 
 export const readEntity = async <T extends BaseEntity>(table: string, id: string): Promise<{ success: boolean, entity?: T, error?: string }> => {
 
-     console.log('table', table);
-     console.log('id', id);
-
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
      const { data, error } = await supabase.from(table).select('*').eq('id', id).single();

@@ -37,22 +37,10 @@ export const signInUser = async (values: SignInFormValues): Promise<{ success: b
           }
      }
 
-     // const isValid = await verifyPassword(values.password, data.password);
-     // console.log('values.password', values.password);
-     // console.log('data.password', data.password);
-     // console.log('isValid', isValid);
-
-     // if (!isValid) {
-     //      return { success: false, error: { code: 'INVALID_PASSWORD', details: 'Invalid password', hint: 'Please correct the password', message: 'Invalid password' } };
-     // }
-
      const { data: signInSession, error: signInError } = await supabase.auth.signInWithPassword({
           email: values.email,
           password: values.password,
      });
-     console.log('signInSession', signInSession);
-     console.log('signInError', signInError);
-
 
      if (signInError) {
           return { success: false, error: { code: signInError.code!, details: signInError.message } };
@@ -72,8 +60,6 @@ export const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: 
                redirectTo: `${process.env.BASE_URL}/auth/callback`
           },
      });
-     console.log('Google authData', authData);
-     console.log('Google authError', authError);
 
      if (!authError == null) {
           console.error('Error during Google sign in:', authError);

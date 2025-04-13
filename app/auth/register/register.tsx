@@ -57,9 +57,6 @@ export const RegisterPage = () => {
           validationSchema: registrationSchema,
           onSubmit: async (values: RegisterFormValues) => {
                const { success, error }: { success: boolean, error?: ErrorType } = await registerUser(values);
-               console.log('success', success);
-               console.log('error', error);
-
 
                if (success) {
                     toast.success("Registration successful!");

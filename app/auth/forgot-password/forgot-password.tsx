@@ -22,8 +22,6 @@ export const ForgotPasswordPage = () => {
           validationSchema: validationSchema,
           onSubmit: async (values) => {
                // In a real application, you would handle the password reset request here
-               console.log("Password reset requested for:", values.email)
-
                // Simulate API call
                await new Promise((resolve) => setTimeout(resolve, 1500))
 

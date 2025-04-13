@@ -62,9 +62,6 @@ export default function ProfileTabs({
      notificationSettings,
      setNotificationSettings,
 }: ProfileTabsProps) {
-     console.log('paymentMethods', paymentMethods);
-     console.log('subscriptionData', subscriptionData);
-
 
      const [tabValue, setTabValue] = useState(0)
 

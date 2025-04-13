@@ -106,9 +106,6 @@ export const readAllClientsBillingInformation = async (clientId: string): Promis
           .from('tblBillingInformation')
           .select('*')
           .eq('client_id', clientId);
-     console.log('readAllClientsBillingInformation', data);
-     console.log('error', error);
-
 
      if (error) {
           return { readAllClientBillingInformationSuccess: false, readAllClientBillingInformationError: error.message };

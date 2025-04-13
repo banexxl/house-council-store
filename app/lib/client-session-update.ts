@@ -31,8 +31,6 @@ export const useCookieTokenUpdater = () => {
           };
 
           const handleStorageChange = () => {
-               console.log('usao u handleStorageChange');
-
                const currentCookieValues = {
                     [COOKIE_NAME]: getCookieValue(COOKIE_NAME) ?? undefined,
                     [COOKIE_NAME_0]: getCookieValue(COOKIE_NAME_0) ?? undefined,
@@ -47,9 +45,6 @@ export const useCookieTokenUpdater = () => {
                               currentCookieValues[key] !== "",
                     )
                ) {
-                    console.log(
-                         `Cookie(s) modified - reloading page`,
-                    );
                     prevCookieValues.current = {
                          ...prevCookieValues.current,
                          ...currentCookieValues,

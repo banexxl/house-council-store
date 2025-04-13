@@ -2,6 +2,7 @@
 
 import { useServerSideSupabaseServiceRoleClient } from "@/app/lib/ss-supabase-service-role-client";
 import { SubscriptionPlan } from "../types/subscription-plan";
+import { Feature } from "../types/feature";
 
 /**
  * Reads a subscription plan from the database.
@@ -43,9 +44,6 @@ export const readSubscriptionPlanById = async (id: string | null): Promise<{
 
      // Return the subscription plan without tblSubscriptionPlans_Features
      const { tblSubscriptionPlans_Features, ...restOfSubscriptionPlan } = subscriptionPlan;
-     console.log('restOfSubscriptionPlan', restOfSubscriptionPlan);
-     console.log('features', features);
-
 
      return {
           readSubscriptionPlanSuccess: true,
@@ -71,9 +69,6 @@ export const readAllSubscriptionPlans = async (): Promise<{
     `)
           .order("total_price_per_month", { ascending: true });
 
-     console.log("subscriptionPlans", subscriptionPlans);
-     console.log("planError", planError);
-
      if (planError) {
           return {
                readAllSubscriptionPlansSuccess: false,
@@ -95,7 +90,6 @@ export const readAllSubscriptionPlans = async (): Promise<{
      };
 };
 
-
 export const unubscribeAction = async (id: string): Promise<{ success: boolean, error?: string }> => {
      const supabase = await useServerSideSupabaseServiceRoleClient();
      const { data, error } = await supabase.from('tblSubscriptionPlans').delete().eq('id', id);
@@ -111,17 +105,60 @@ export const readSubscriptionPlanFromClientId = async (clientId: string): Promis
           return { success: false, error: "Client ID is required" };
      }     // Fetch the subscription plan for the client
      const supabase = await useServerSideSupabaseServiceRoleClient();
+     const { data: clientData, error: clientError } = await supabase
+          .from("tblClients")
+          .select("subscription_plan")
+          .eq("id", clientId)
+          .single();
+
+     if (clientError || !clientData?.subscription_plan) {
+          return { success: false, error: clientError ? clientError.message : "Client does not have a subscription plan", subscriptionPlan: null };
+     }
+
      const { data: subscriptionPlan, error: planError } = await supabase
           .from("tblSubscriptionPlans")
-          .select(`*`)
-          .eq("client_id", clientId)
+          .select("*")
+          .eq("id", clientData.subscription_plan)
           .single();
+
      if (planError) {
           return { success: false, error: planError.message, subscriptionPlan: null };
      }
-     console.log('subscriptionPlans', subscriptionPlan);
-     console.log('planError', planError);
+
+     return { success: true, subscriptionPlan };
 
 
      return { success: true, subscriptionPlan };
+}
+
+export const readFeaturesFromSubscriptionPlanId = async (subscriptionPlanId: string | null): Promise<{ success: boolean, features?: Feature[], error?: string }> => {
+
+     if (!subscriptionPlanId) {
+          return { success: false, error: "Subscription plan ID is required" };
+     }
+
+     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const { data: subscriptionPlan, error: planError } = await supabase
+          .from("tblSubscriptionPlans")
+          .select(`
+      *,
+          tblSubscriptionPlans_Features (
+          feature_id,
+          tblFeatures (*)
+          )
+    `)
+          .eq("id", subscriptionPlanId)
+          .single();
+
+     if (planError) {
+          return { success: false, error: planError.message };
+     }
+     if (!subscriptionPlan) {
+          return { success: false, error: "Subscription plan not found" };
+     }
+     // Extract features from the subscription plan and exclude tblSubscriptionPlans_Features
+     const features = subscriptionPlan.tblSubscriptionPlans_Features.map((relation: any) => relation.tblFeatures);
+     // Return the subscription plan without tblSubscriptionPlans_Features
+     const { tblSubscriptionPlans_Features, ...restOfSubscriptionPlan } = subscriptionPlan;
+     return { success: true, features };
 }
