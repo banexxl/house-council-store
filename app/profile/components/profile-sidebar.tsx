@@ -40,6 +40,7 @@ import { useRouter } from "next/navigation"
 import { Client, clientInitialValues } from "@/app/types/client"
 import { User } from "@supabase/supabase-js"
 import { SubscriptionPlan } from "@/app/types/subscription-plan"
+import { Feature } from "@/app/types/feature"
 
 export interface ActivityItem {
      id: string
@@ -53,6 +54,7 @@ interface ProfileSidebarProps {
      subscriptionData: SubscriptionPlan | null
      recentActivity: ActivityItem[]
      onEditProfile: () => void
+     subscriptionFeatures?: Feature[]
 }
 
 export const getStatusColor = (status: string) => {
@@ -68,7 +70,8 @@ export const getStatusColor = (status: string) => {
      }
 }
 
-export default function ProfileSidebar({ userData, subscriptionData, recentActivity, onEditProfile, }: ProfileSidebarProps) {
+export default function ProfileSidebar({ userData, subscriptionData, recentActivity, onEditProfile, subscriptionFeatures }: ProfileSidebarProps) {
+     console.log('subscriptionFeatures', subscriptionFeatures);
 
      const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null)
      const router = useRouter()
@@ -247,12 +250,13 @@ export default function ProfileSidebar({ userData, subscriptionData, recentActiv
                               </Typography>
 
                               <List dense disablePadding>
-                                   {subscriptionData.features && subscriptionData.features!.map((feature, index) => (
+                                   {subscriptionFeatures && subscriptionFeatures?.length > 0 && subscriptionFeatures!.map((feature, index) => (
                                         <ListItem key={index} disablePadding sx={{ py: 0.5 }}>
                                              <ListItemIcon sx={{ minWidth: 28 }}>
                                                   <CheckCircleIcon color="success" fontSize="small" />
                                              </ListItemIcon>
-                                             <ListItemText primary={String(feature)} />
+                                             <ListItemText primary={`${feature.name}`} />
+                                             <ListItemText primary={`${feature.base_price_per_month} / Monthly`} />
                                         </ListItem>
                                    ))}
                               </List>

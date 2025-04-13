@@ -11,6 +11,7 @@ import { User } from "@supabase/supabase-js"
 import { SubscriptionPlan } from "../types/subscription-plan"
 import { BaseEntity } from "../types/base-entity"
 import { ClientBillingInformation } from "../types/billing-information"
+import { Feature } from "../types/feature"
 
 
 // Mock data for notification preferences
@@ -53,8 +54,9 @@ type ProfilePageProps = {
      subscriptionPlan: SubscriptionPlan | null
      paymentMethods: BaseEntity[]
      allClientBillingInformation: ClientBillingInformation[]
+     subscriptionFeatures?: Feature[]
 }
-export const ProfilePage = ({ sessionAndClientDataCombined, subscriptionPlan, paymentMethods, allClientBillingInformation }: ProfilePageProps) => {
+export const ProfilePage = ({ sessionAndClientDataCombined, subscriptionPlan, paymentMethods, allClientBillingInformation, subscriptionFeatures }: ProfilePageProps) => {
 
      const [editMode, setEditMode] = useState(false)
      const [notificationSettings, setNotificationSettings] = useState(notificationPreferences)
@@ -72,6 +74,7 @@ export const ProfilePage = ({ sessionAndClientDataCombined, subscriptionPlan, pa
                                         subscriptionData={subscriptionPlan}
                                         recentActivity={recentActivity}
                                         onEditProfile={() => setEditMode(true)}
+                                        subscriptionFeatures={subscriptionFeatures}
                                    />
                               </Grid>
 

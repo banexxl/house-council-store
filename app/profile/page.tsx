@@ -26,7 +26,7 @@ export default async function Page() {
      }
 
      // Fetch related data in parallel
-     const [subscriptionPlanReturnObject, role, client_status, client_type, billingInformation, features] = await Promise.all([
+     const [subscriptionPlanReturnObject, role, client_status, client_type, billingInformation, subscriptionFeatures] = await Promise.all([
           readSubscriptionPlanFromClientId(client.id),
           readEntity("tblClientRoles", client.role_id),
           readEntity("tblClientStatuses", client.client_status),
@@ -56,6 +56,7 @@ export default async function Page() {
                     subscriptionPlan={subscriptionPlanReturnObject?.subscriptionPlan ?? null}
                     allClientBillingInformation={billingInformation.readAllClientBillingInformationData ?? []}
                     paymentMethods={[]}
+                    subscriptionFeatures={subscriptionFeatures?.features ?? []}
                />
                <Footer />
           </>
