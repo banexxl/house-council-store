@@ -93,7 +93,7 @@ export default function SubscriptionSuccessPage({
                          </Box>
 
                          <Grid container spacing={4}>
-                              <Grid item xs={12} md={6}>
+                              <Grid size={{ xs: 12, md: 6 }}>
                                    <Box sx={{ mb: 4 }}>
                                         <Typography variant="h5" gutterBottom>
                                              {isTrial ? "Trial Details" : "Subscription Details"}
@@ -170,7 +170,7 @@ export default function SubscriptionSuccessPage({
                                    </Box>
                               </Grid>
 
-                              <Grid item xs={12} md={6}>
+                              <Grid size={{ xs: 12, md: 6 }}>
                                    <Box sx={{ position: "relative", height: 300, mb: 4 }}>
                                         <Image
                                              src="/images/dashboard-mockup.png"
