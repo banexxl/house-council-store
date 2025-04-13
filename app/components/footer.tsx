@@ -1,8 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Box, Container, Typography, Divider, List, ListItem, ListItemText } from "@mui/material"
-import Grid from "@mui/material/Grid2"
+import { Box, Container, Typography, Divider, List, ListItem, ListItemText, Grid } from "@mui/material"
 import ApartmentIcon from "@mui/icons-material/Apartment"
 
 export const Footer = () => {

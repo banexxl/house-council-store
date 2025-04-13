@@ -19,8 +19,8 @@ import {
      Accordion,
      AccordionSummary,
      AccordionDetails,
+     Grid,
 } from "@mui/material"
-import Grid from "@mui/material/Grid2"
 import CheckIcon from "@mui/icons-material/Check"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import { Toaster } from "react-hot-toast"

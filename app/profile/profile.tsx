@@ -1,8 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Box, Container } from "@mui/material"
-import Grid from "@mui/material/Grid2"
+import { Box, Container, Grid } from "@mui/material"
 import { Toaster } from "react-hot-toast"
 import ProfileSidebar from "./components/profile-sidebar"
 import ProfileTabs from "./components/profile-tabs"

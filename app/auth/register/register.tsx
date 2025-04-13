@@ -12,13 +12,13 @@ import {
      FormControl,
      FormControlLabel,
      FormHelperText,
+     Grid,
      IconButton,
      InputAdornment,
      Paper,
      TextField,
      Typography,
 } from "@mui/material"
-import Grid from "@mui/material/Grid2"
 import Visibility from "@mui/icons-material/Visibility"
 import VisibilityOff from "@mui/icons-material/VisibilityOff"
 import { registrationSchema } from "./register-schema"

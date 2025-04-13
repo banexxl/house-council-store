@@ -1,8 +1,7 @@
 'use client'
 
 import React from 'react';
-import { Box, Button, Container, Typography, Avatar, Link, Card, CardContent } from '@mui/material';
-import Grid from '@mui/material/Grid2';
+import { Box, Button, Container, Typography, Avatar, Link, Card, CardContent, Grid } from '@mui/material';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import PeopleIcon from '@mui/icons-material/People';
 import ShieldIcon from '@mui/icons-material/Shield';

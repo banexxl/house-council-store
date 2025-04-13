@@ -1,7 +1,6 @@
 "use client"
 
-import { Box, Button, Card, Container, Divider, MenuItem, Paper, TextField, Typography } from "@mui/material"
-import Grid from '@mui/material/Grid2';
+import { Box, Button, Card, Container, Divider, Grid, MenuItem, Paper, TextField, Typography } from "@mui/material"
 import EmailIcon from "@mui/icons-material/Email"
 import PhoneIcon from "@mui/icons-material/Phone"
 import LocationOnIcon from "@mui/icons-material/LocationOn"
