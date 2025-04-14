@@ -71,7 +71,6 @@ export const getStatusColor = (status: string) => {
 }
 
 export default function ProfileSidebar({ userData, subscriptionData, recentActivity, onEditProfile, subscriptionFeatures }: ProfileSidebarProps) {
-     console.log('subscriptionFeatures', subscriptionFeatures);
 
      const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null)
      const router = useRouter()
@@ -256,7 +255,7 @@ export default function ProfileSidebar({ userData, subscriptionData, recentActiv
                                                   <CheckCircleIcon color="success" fontSize="small" />
                                              </ListItemIcon>
                                              <ListItemText primary={`${feature.name}`} />
-                                             <ListItemText primary={`${feature.base_price_per_month} / Monthly`} />
+                                             {/* <ListItemText primary={`${feature.base_price_per_month} / Monthly`} /> */}
                                         </ListItem>
                                    ))}
                               </List>

@@ -3,6 +3,7 @@
 import { useServerSideSupabaseServiceRoleClient } from "@/app/lib/ss-supabase-service-role-client";
 import { logoutUserAction } from "./logout-action";
 import { Client } from "../types/client";
+import { revalidatePath } from "next/cache";
 
 export const deleteAccountAction = async (clientId: string, clientEmail: string): Promise<{ success: boolean, error?: string }> => {
 
@@ -57,6 +58,8 @@ export const updateAccountAction = async (id: string, update: Partial<Client>): 
      if (error) {
           return { success: false, error: error.message }
      }
+
+     revalidatePath('/profile');
 
      return { success: true, data }
 }

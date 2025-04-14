@@ -7,14 +7,16 @@ import LockIcon from "@mui/icons-material/Lock"
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser"
 import LogoutIcon from "@mui/icons-material/Logout"
 import { getStatusColor } from "../profile-sidebar"
-import { deleteAccountAction } from "../../account-action"
+import { deleteAccountAction, updateAccountAction } from "../../account-action"
 import Swal from 'sweetalert2'
 import { Client } from "@/app/types/client"
 import { User } from "@supabase/supabase-js"
 import { logoutUserAction } from "../../logout-action"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import toast from "react-hot-toast"
+import { Form, Formik } from "formik"
+import * as Yup from "yup"
 
 interface AccountTabProps {
      userData: { client: Client; session: User }
@@ -22,6 +24,10 @@ interface AccountTabProps {
      setEditMode: (value: boolean) => void
 }
 
+const accountSchema = Yup.object().shape({
+     fullName: Yup.string().min(2, "Name must be at least 2 characters").required("Name is required"),
+     phoneNumber: Yup.string().min(8, "Phone number must be at least 8 characters").required("Phone number is required"),
+});
 
 export default function AccountTab({ userData, editMode, setEditMode }: AccountTabProps) {
 
@@ -34,7 +40,7 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
           if (deleteAccount.success) {
                toast.success("Account deleted successfully.");
                logoutUserAction();
-               router.push("/"); // or login screen
+               router.push("/");
           } else {
                Swal.fire({
                     title: "Error!",
@@ -56,36 +62,99 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
      return (
           <>
                {editMode ? (
-                    <Box component="form">
+                    <Box>
                          <Alert severity="info" sx={{ mb: 3 }}>
                               Edit your profile information below. Fields marked with * are required.
                          </Alert>
 
-                         <Grid container spacing={3}>
-                              <Grid size={{ xs: 12, md: 6 }}>
-                                   <TextField fullWidth label="Full Name" defaultValue={userData.client.name} required />
-                              </Grid>
+                         <Formik
+                              initialValues={{
+                                   fullName: userData.client.name || '',
+                                   phoneNumber: userData.client.phone || ''
+                              }}
+                              onSubmit={async (values, { setSubmitting }) => {
+                                   setSubmitting(true);
+                                   try {
+                                        const updateAccountActionResponse = await updateAccountAction(userData.client.id, {
+                                             name: values.fullName,
+                                             phone: values.phoneNumber
+                                        });
 
-                              <Grid size={{ xs: 12, md: 6 }}>
-                                   <TextField fullWidth label="Email" type="email" defaultValue={userData.client.email} required />
-                              </Grid>
+                                        if (updateAccountActionResponse.success) {
+                                             toast.success("Account updated successfully.", { position: "top-center" });
+                                        } else {
+                                             toast.error("Error updating account: " + updateAccountActionResponse.error);
+                                        }
+                                   } catch (error) {
+                                        toast.error("Error updating account: " + error);
+                                   } finally {
+                                        setSubmitting(false);
+                                   }
+                              }}
+                              validationSchema={
+                                   accountSchema
+                              }
+                         >
+                              {({ values, handleChange, isSubmitting, errors }) => (
+                                   <Form>
+                                        <Grid container spacing={3}>
+                                             <Grid size={{ xs: 12, md: 6 }}>
+                                                  <TextField
+                                                       fullWidth
+                                                       label="Email"
+                                                       type="email"
+                                                       name="email"
+                                                       value={userData.client.email}
+                                                       disabled
+                                                       required
+                                                  />
+                                             </Grid>
 
-                              <Grid size={{ xs: 12, md: 6 }}>
-                                   <TextField fullWidth label="Phone Number" defaultValue={userData.client.phone} />
-                              </Grid>
+                                             <Grid size={{ xs: 12, md: 6 }}>
+                                                  <TextField
+                                                       fullWidth
+                                                       label="Full Name"
+                                                       name="fullName"
+                                                       value={values.fullName}
+                                                       onChange={handleChange}
+                                                       error={!!errors.fullName}
+                                                       helperText={errors.fullName || ""}
+                                                       required
+                                                  />
+                                             </Grid>
 
-                              <Grid size={{ xs: 12 }}>
-                                   <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
-                                        <Button variant="outlined" onClick={() => setEditMode(false)}>
-                                             Cancel
-                                        </Button>
-                                        <Button variant="contained" onClick={() => setEditMode(false)}>
-                                             Save Changes
-                                        </Button>
-                                   </Box>
-                              </Grid>
-                         </Grid>
-                    </Box>
+                                             <Grid size={{ xs: 12, md: 6 }}>
+                                                  <TextField
+                                                       fullWidth
+                                                       label="Phone Number"
+                                                       name="phoneNumber"
+                                                       value={values.phoneNumber}
+                                                       onChange={handleChange}
+                                                       error={!!errors.phoneNumber}
+                                                       helperText={errors.phoneNumber || ""}
+                                                  />
+                                             </Grid>
+
+                                             <Grid size={{ xs: 12, md: 6 }}>
+                                                  <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
+                                                       <Button variant="outlined" onClick={() => setEditMode(false)}>
+                                                            Cancel
+                                                       </Button>
+                                                       <Button
+                                                            variant="contained"
+                                                            disabled={isSubmitting}
+                                                            type="submit"
+                                                       >
+                                                            {isSubmitting ? "Saving..." : "Save Changes"}
+                                                       </Button>
+
+                                                  </Box>
+                                             </Grid>
+                                        </Grid>
+                                   </Form>
+                              )}
+                         </Formik>
+                    </Box >
                ) : (
                     <Box>
                          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
@@ -214,7 +283,8 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                               </Box>
                          </Box >
                     </Box >
-               )}
+               )
+               }
           </>
      )
 }
