@@ -6,14 +6,8 @@ import { Header } from "@/app/components/header";
 import { ResetPasswordPage } from "./reset-password";
 import { verifyRecoveryToken } from "./reset-password-actions";
 
-interface ResetPasswordPageProps {
-     searchParams: {
-          token?: string;
-          email?: string;
-     };
-}
 
-export default async function Page({ searchParams }: ResetPasswordPageProps) {
+export default async function Page({ searchParams }: any) {
      const user = await getSessionUser();
 
      const tokenHash = searchParams.token;
