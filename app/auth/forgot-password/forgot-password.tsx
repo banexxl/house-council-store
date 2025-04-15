@@ -1,19 +1,21 @@
 "use client"
 
 import { useState } from "react"
-import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useFormik } from "formik"
 import * as Yup from "yup"
-import { Box, Button, Container, Paper, TextField, Typography, Alert, CircularProgress } from "@mui/material"
+import { Box, Button, Container, Paper, Typography, TextField, CircularProgress, Divider } from "@mui/material"
 import LockResetIcon from "@mui/icons-material/LockReset"
+import { sendPasswordResetEmail } from "./forgot-password-actions"
 
 // Validation schema using Yup
 const validationSchema = Yup.object({
-     email: Yup.string().email("Enter a valid email").required("Email is required"),
+     email: Yup.string().email("Please enter a valid email address").required("Email is required"),
 })
 
-export const ForgotPasswordPage = () => {
-     const [isSubmitted, setIsSubmitted] = useState(false)
+export default function ForgotPasswordPage() {
+     const router = useRouter()
+     const [isSubmitting, setIsSubmitting] = useState(false)
 
      const formik = useFormik({
           initialValues: {
@@ -21,95 +23,102 @@ export const ForgotPasswordPage = () => {
           },
           validationSchema: validationSchema,
           onSubmit: async (values) => {
-               // In a real application, you would handle the password reset request here
-               // Simulate API call
-               await new Promise((resolve) => setTimeout(resolve, 1500))
-
-               // Show success message
-               setIsSubmitted(true)
+               setIsSubmitting(true)
+               try {
+                    const result = await sendPasswordResetEmail(values.email)
+               } catch (error) {
+                    console.error("Error in forgot password submission:", error)
+               } finally {
+                    setIsSubmitting(false)
+               }
           },
      })
 
      return (
-          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-               <Box component="main" sx={{ flexGrow: 1, py: { xs: 6, md: 10 } }}>
-                    <Container maxWidth="sm">
-                         <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
-                              <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", mb: 4 }}>
-                                   <Box
-                                        sx={{
-                                             bgcolor: "primary.main",
-                                             color: "primary.contrastText",
-                                             borderRadius: "50%",
-                                             p: 1,
-                                             mb: 2,
-                                        }}
-                                   >
-                                        <LockResetIcon />
-                                   </Box>
-                                   <Typography variant="h4" component="h1" gutterBottom>
-                                        Forgot Password
-                                   </Typography>
-                                   <Typography variant="body2" color="text.secondary" textAlign="center">
-                                        Enter your email address and we'll send you a link to reset your password
-                                   </Typography>
+          <Box
+               sx={{
+                    display: "flex",
+                    minHeight: "calc(100vh - 200px)",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    bgcolor: "grey.50",
+                    px: 2,
+                    py: 6,
+               }}
+          >
+               <Container maxWidth="sm">
+                    <Paper
+                         elevation={3}
+                         sx={{
+                              p: 4,
+                              borderRadius: 2,
+                         }}
+                    >
+                         <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", mb: 4 }}>
+                              <Box
+                                   sx={{
+                                        bgcolor: "primary.main",
+                                        color: "primary.contrastText",
+                                        borderRadius: "50%",
+                                        p: 1,
+                                        mb: 2,
+                                   }}
+                              >
+                                   <LockResetIcon />
                               </Box>
+                              <Typography variant="h4" component="h1" gutterBottom>
+                                   Forgot Password
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary" textAlign="center">
+                                   Enter your email address and we'll send you instructions to reset your password.
+                              </Typography>
+                         </Box>
 
-                              {isSubmitted ? (
-                                   <Box>
-                                        <Alert severity="success" sx={{ mb: 3 }}>
-                                             Password reset link has been sent to your email!
-                                        </Alert>
-                                        <Typography variant="body2" paragraph>
-                                             Please check your inbox and follow the instructions in the email to reset your password. If you don't
-                                             see the email, please check your spam folder.
-                                        </Typography>
-                                        <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
-                                             <Button variant="outlined" component={Link} href="/auth/forgot-password">
-                                                  Return to Login
-                                             </Button>
-                                        </Box>
-                                   </Box>
-                              ) : (
-                                   <Box component="form" onSubmit={formik.handleSubmit} noValidate>
-                                        <TextField
-                                             fullWidth
-                                             id="email"
-                                             name="email"
-                                             label="Email Address"
-                                             autoComplete="email"
-                                             margin="normal"
-                                             value={formik.values.email}
-                                             onChange={formik.handleChange}
-                                             onBlur={formik.handleBlur}
-                                             error={formik.touched.email && Boolean(formik.errors.email)}
-                                             helperText={formik.touched.email && formik.errors.email}
-                                        />
+                         <Box component="form" onSubmit={formik.handleSubmit} noValidate>
+                              <TextField
+                                   fullWidth
+                                   id="email"
+                                   name="email"
+                                   label="Email Address"
+                                   type="email"
+                                   autoComplete="email"
+                                   margin="normal"
+                                   value={formik.values.email}
+                                   onChange={formik.handleChange}
+                                   onBlur={formik.handleBlur}
+                                   error={formik.touched.email && Boolean(formik.errors.email)}
+                                   helperText={formik.touched.email && formik.errors.email}
+                                   disabled={isSubmitting}
+                              />
 
-                                        <Button
-                                             type="submit"
-                                             fullWidth
-                                             variant="contained"
-                                             size="large"
-                                             disabled={formik.isSubmitting}
-                                             sx={{ mt: 3, mb: 2 }}
-                                        >
-                                             {formik.isSubmitting ? <CircularProgress size={24} color="inherit" /> : "Reset Password"}
-                                        </Button>
+                              <Button
+                                   type="submit"
+                                   fullWidth
+                                   variant="contained"
+                                   size="large"
+                                   disabled={isSubmitting}
+                                   sx={{ mt: 3, mb: 2 }}
+                              >
+                                   {isSubmitting ? (
+                                        <>
+                                             <CircularProgress size={24} sx={{ mr: 1 }} color="inherit" />
+                                             Sending...
+                                        </>
+                                   ) : (
+                                        "Send Reset Instructions"
+                                   )}
+                              </Button>
+                         </Box>
 
-                                        <Box sx={{ textAlign: "center", mt: 2 }}>
-                                             <Link href="/auth/sign-in" style={{ textDecoration: "none" }}>
-                                                  <Typography variant="body2" color="primary">
-                                                       Back to Login
-                                                  </Typography>
-                                             </Link>
-                                        </Box>
-                                   </Box>
-                              )}
-                         </Paper>
-                    </Container>
-               </Box>
+                         <Divider sx={{ my: 3 }} />
+
+                         <Box sx={{ textAlign: "center" }}>
+                              <Button variant="text" onClick={() => router.push("/login")} disabled={isSubmitting}>
+                                   Back to Login
+                              </Button>
+                         </Box>
+                    </Paper>
+               </Container>
           </Box>
      )
 }
-

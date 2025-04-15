@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 const COOKIE_NAME = "sb-sorklznvftjmhkaejkej-auth-token";
 const COOKIE_NAME_0 = `${COOKIE_NAME}.0`;
 const COOKIE_NAME_1 = `${COOKIE_NAME}.1`;
-const COOKIE_NAME_2 = `sb-sorklznvftjmhkaejkej-auth-token-code-verifier`;
+const COOKIE_NAME_2 = `${COOKIE_NAME}-code-verifier`;
 
-const otherCookies = [COOKIE_NAME, COOKIE_NAME_0, COOKIE_NAME_1]; // At least one must be present
-const POLLING_INTERVAL = 1000; // Check for cookie changes every second
+const otherCookies = [COOKIE_NAME, COOKIE_NAME_0, COOKIE_NAME_1];
+const POLLING_INTERVAL = 1000; // Check every 1 second
 
 export const CheckCookiesOnFocus = () => {
      const getCookies = (): Record<string, string> => {
@@ -27,35 +27,31 @@ export const CheckCookiesOnFocus = () => {
      };
 
      useEffect(() => {
+          const hasOtpToken = typeof window !== "undefined" && window.location.hash.includes("token=");
+          const initialCookiesPresent = cookiesExist();
+
           const handleCheck = () => {
+               if (hasOtpToken) return; // 🔐 Prevent reload if token is in hash
+
                const cookiesNowPresent = cookiesExist();
                const hasReloadedForLogin = sessionStorage.getItem("reloadedForLogin");
                const hasReloadedForLogout = sessionStorage.getItem("reloadedForLogout");
 
-               // First reload when cookies appear (Login)
-               if (cookiesNowPresent && !hasReloadedForLogin) {
+               if (cookiesNowPresent && !initialCookiesPresent && !hasReloadedForLogin) {
                     sessionStorage.setItem("reloadedForLogin", "true");
-                    sessionStorage.removeItem("reloadedForLogout"); // Reset logout state
+                    sessionStorage.removeItem("reloadedForLogout");
                     window.location.reload();
                }
 
-               // Second reload when cookies disappear (Logout)
-               if (!cookiesNowPresent && !hasReloadedForLogout) {
+               if (!cookiesNowPresent && hasReloadedForLogin && !hasReloadedForLogout) {
                     sessionStorage.setItem("reloadedForLogout", "true");
-                    sessionStorage.removeItem("reloadedForLogin"); // Reset login state
+                    sessionStorage.removeItem("reloadedForLogin");
                     window.location.reload();
                }
           };
 
-          // Focus listener
-          const handleFocus = () => {
-               handleCheck();
-          };
-
-          // Cookie change detection via polling
-          const cookieInterval = setInterval(() => {
-               handleCheck();
-          }, POLLING_INTERVAL);
+          const handleFocus = () => handleCheck();
+          const cookieInterval = setInterval(handleCheck, POLLING_INTERVAL);
 
           window.addEventListener("focus", handleFocus);
 

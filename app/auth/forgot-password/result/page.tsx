@@ -2,7 +2,7 @@ import { getSessionUser } from "@/app/lib/get-session";
 
 import { Footer } from "@/app/components/footer";
 import { Header } from "@/app/components/header";
-import ForgotPasswordPage from "./forgot-password";
+import { ForgotPasswordResult } from "./forgot-passowrd-result";
 
 export default async function Page() {
 
@@ -11,7 +11,7 @@ export default async function Page() {
      return (
           <>
                <Header user={user ? user : null} />
-               <ForgotPasswordPage />
+               <ForgotPasswordResult />
                <Footer />
           </>
 

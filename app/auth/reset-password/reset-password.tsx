@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { useFormik } from "formik"
 import * as Yup from "yup"
@@ -27,6 +27,8 @@ import LockResetIcon from "@mui/icons-material/LockReset"
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
 import { Toaster } from "react-hot-toast"
+import { User } from "@supabase/supabase-js"
+import { resetPassword, verifyRecoveryToken } from "./reset-password-actions"
 
 // Validation schema using Yup
 const validationSchema = Yup.object({
@@ -74,16 +76,14 @@ const getStrengthLabel = (strength: number): string => {
      return "Strong"
 }
 
-export const ResetPasswordPage = () => {
-     const router = useRouter()
+type ResetPasswordProps = { isTokenValid: boolean }
+
+export const ResetPasswordPage = ({ isTokenValid }: ResetPasswordProps) => {
 
      const [showPassword, setShowPassword] = useState(false)
      const [showConfirmPassword, setShowConfirmPassword] = useState(false)
      const [isSubmitted, setIsSubmitted] = useState(false)
-     const [isTokenValid, setIsTokenValid] = useState<boolean | null>(null)
-     const [isTokenChecking, setIsTokenChecking] = useState(true)
      const [passwordStrength, setPasswordStrength] = useState(0)
-
 
      const handleClickShowPassword = () => {
           setShowPassword(!showPassword)
@@ -101,17 +101,19 @@ export const ResetPasswordPage = () => {
           validationSchema: validationSchema,
           onSubmit: async (values) => {
                try {
-                    // In a real application, you would send the new password and token to your backend
+                    // Call the server action to reset the password
+                    const result = await resetPassword(values.password)
 
-
-                    // Simulate API call
-                    await new Promise((resolve) => setTimeout(resolve, 1500))
+                    if (!result.success) {
+                         throw new Error(result.error || "Failed to reset password")
+                    }
 
                     // Show success message
                     setIsSubmitted(true)
                } catch (error) {
                     console.error("Error resetting password:", error)
-                    // Handle error (show error message, etc.)
+                    // Show error message
+                    formik.setErrors({ password: "Failed to reset password. Please try again." })
                }
           },
      })
@@ -121,27 +123,9 @@ export const ResetPasswordPage = () => {
           setPasswordStrength(calculatePasswordStrength(formik.values.password))
      }, [formik.values.password])
 
-     // Show loading state while checking token
-     if (isTokenChecking) {
-          return (
-               <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-                    <Box component="main" sx={{ flexGrow: 1, py: { xs: 6, md: 10 } }}>
-                         <Container maxWidth="sm">
-                              <Paper elevation={3} sx={{ p: 4, borderRadius: 2, textAlign: "center" }}>
-                                   <CircularProgress sx={{ mb: 2 }} />
-                                   <Typography variant="h6">Verifying your reset link...</Typography>
-                                   <Typography variant="body2" color="text.secondary">
-                                        Please wait while we validate your password reset link.
-                                   </Typography>
-                              </Paper>
-                         </Container>
-                    </Box>
-               </Box>
-          )
-     }
 
      // Show error if token is invalid
-     if (isTokenValid === false) {
+     if (!isTokenValid) {
           return (
                <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
                     <Box component="main" sx={{ flexGrow: 1, py: { xs: 6, md: 10 } }}>
@@ -191,10 +175,10 @@ export const ResetPasswordPage = () => {
                                         <Typography variant="h5" gutterBottom>
                                              Password Reset Successful
                                         </Typography>
-                                        <Typography variant="body1" paragraph>
+                                        <Typography variant="body1" >
                                              Your password has been successfully reset.
                                         </Typography>
-                                        <Typography variant="body2" color="text.secondary" paragraph>
+                                        <Typography variant="body2" color="text.secondary" >
                                              You can now log in to your account with your new password.
                                         </Typography>
                                         <Button variant="contained" component={Link} href="/auth/sign-in" sx={{ mt: 2 }}>

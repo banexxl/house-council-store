@@ -20,8 +20,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   const pathname = usePathname()
 
-  CheckCookiesOnFocus()
-
   return (
     <html lang="en">
       <head>
@@ -44,6 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </AnimatePresence>
           </Box>
         </ThemeProvider>
+        <CheckCookiesOnFocus />
         <Toaster />
       </body>
     </html>

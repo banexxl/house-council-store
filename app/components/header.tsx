@@ -20,9 +20,7 @@ export const Header = ({ user }: HeaderProps) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const router = useRouter();
 
-
   useCookieTokenUpdater();
-
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
