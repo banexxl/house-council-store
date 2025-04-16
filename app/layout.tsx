@@ -43,7 +43,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </Box>
         </ThemeProvider>
         <CheckCookiesOnFocus />
-        <Toaster />
+        <Toaster position="top-center" />
       </body>
     </html>
   )

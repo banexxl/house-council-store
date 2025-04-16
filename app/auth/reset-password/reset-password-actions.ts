@@ -2,26 +2,35 @@
 
 import { useServerSideSupabaseAnonClient } from "@/app/lib/ss-supabase-anon-client";
 
-export async function resetPassword(newPassword: string) {
+export async function resetPassword(email: string, newPassword: string): Promise<{ success: boolean, error?: string }> {
+     console.log('newPassword', newPassword);
+     console.log('email', email);
 
      const supabase = await useServerSideSupabaseAnonClient();
 
+     if (!email || !email.includes("@") || !newPassword) {
+          return {
+               success: false,
+               error: "Please enter a valid email address and password.",
+          }
+     }
+
      try {
           // Get the current session
-          const {
-               data: { session },
-               error: sessionError,
-          } = await supabase.auth.getSession()
+          // const { data: { session }, error: sessionError, } = await supabase.auth.getSession()
+          // console.log('session', session);
+          // console.log('sessionError', sessionError);
 
-          if (sessionError || !session) {
-               return {
-                    success: false,
-                    error: sessionError?.message || "No active session found",
-               }
-          }
+          // if (sessionError || !session) {
+          //      return {
+          //           success: false,
+          //           error: sessionError?.message || "No active session found",
+          //      }
+          // }
 
           // Update the user's password
-          const { error } = await supabase.auth.admin.updateUserById(session.user.id, { password: newPassword })
+          const { error } = await supabase.auth.updateUser({ password: newPassword })
+          console.log('error', error);
 
           if (error) {
                throw error
@@ -38,6 +47,7 @@ export async function resetPassword(newPassword: string) {
           }
      }
 }
+
 export const verifyRecoveryToken = async (email: string, token: string): Promise<{ success: boolean, data?: any, error?: string }> => {
 
      if (!email || !email.includes("@")) {
@@ -60,13 +70,11 @@ export const verifyRecoveryToken = async (email: string, token: string): Promise
      console.log('Error:', error);
 
      if (error) {
-          console.error('Invalid token:', error.message);
           return {
                success: false,
                error: error?.message || "Invalid token",
           }
      } else {
-          console.log('Token is valid:', data);
           return {
                success: true,
                data,

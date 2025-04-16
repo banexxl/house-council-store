@@ -27,8 +27,8 @@ import LockResetIcon from "@mui/icons-material/LockReset"
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
 import { Toaster } from "react-hot-toast"
-import { User } from "@supabase/supabase-js"
-import { resetPassword, verifyRecoveryToken } from "./reset-password-actions"
+import { resetPassword } from "./reset-password-actions"
+import { createBrowserClient } from '@supabase/ssr'
 
 // Validation schema using Yup
 const validationSchema = Yup.object({
@@ -76,14 +76,49 @@ const getStrengthLabel = (strength: number): string => {
      return "Strong"
 }
 
-type ResetPasswordProps = { isTokenValid: boolean }
+export const ResetPasswordPage = () => {
 
-export const ResetPasswordPage = ({ isTokenValid }: ResetPasswordProps) => {
+     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+     const email = useSearchParams().get("email") || ""
+     const token = useSearchParams().get("token") || ""
+
+     const supabase = createBrowserClient(supabaseUrl, supabaseKey);
+
 
      const [showPassword, setShowPassword] = useState(false)
      const [showConfirmPassword, setShowConfirmPassword] = useState(false)
      const [isSubmitted, setIsSubmitted] = useState(false)
      const [passwordStrength, setPasswordStrength] = useState(0)
+     const [isVerifying, setVerifying] = useState(true)
+     const [isTokenValid, setIsTokenValid] = useState(true)
+
+     useEffect(() => {
+          const verify = async () => {
+               if (!email || !token) {
+                    setVerifying(false)
+                    setIsTokenValid(false)
+                    return
+               }
+
+               const { data, error } = await supabase.auth.verifyOtp({
+                    email,
+                    token,
+                    type: "recovery",
+               })
+
+               if (error) {
+                    setIsTokenValid(false)
+               } else {
+                    const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
+                    setIsTokenValid(!!sessionData.session)
+               }
+
+               setVerifying(false)
+          }
+
+          verify()
+     }, [email, token])
 
      const handleClickShowPassword = () => {
           setShowPassword(!showPassword)
@@ -102,17 +137,13 @@ export const ResetPasswordPage = ({ isTokenValid }: ResetPasswordProps) => {
           onSubmit: async (values) => {
                try {
                     // Call the server action to reset the password
-                    const result = await resetPassword(values.password)
+                    const result = await resetPassword(email, values.password)
 
                     if (!result.success) {
                          throw new Error(result.error || "Failed to reset password")
                     }
-
-                    // Show success message
                     setIsSubmitted(true)
                } catch (error) {
-                    console.error("Error resetting password:", error)
-                    // Show error message
                     formik.setErrors({ password: "Failed to reset password. Please try again." })
                }
           },
@@ -220,19 +251,22 @@ export const ResetPasswordPage = ({ isTokenValid }: ResetPasswordProps) => {
                                                   onBlur={formik.handleBlur}
                                                   error={formik.touched.password && Boolean(formik.errors.password)}
                                                   helperText={formik.touched.password && formik.errors.password}
-                                                  InputProps={{
-                                                       endAdornment: (
-                                                            <InputAdornment position="end">
-                                                                 <IconButton
-                                                                      aria-label="toggle password visibility"
-                                                                      onClick={handleClickShowPassword}
-                                                                      edge="end"
-                                                                 >
-                                                                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                                                                 </IconButton>
-                                                            </InputAdornment>
-                                                       ),
+                                                  slotProps={{
+                                                       input: {
+                                                            endAdornment: (
+                                                                 <InputAdornment position="end">
+                                                                      <IconButton
+                                                                           aria-label="toggle password visibility"
+                                                                           onClick={handleClickShowPassword}
+                                                                           edge="end"
+                                                                      >
+                                                                           {showPassword ? <VisibilityOff /> : <Visibility />}
+                                                                      </IconButton>
+                                                                 </InputAdornment>
+                                                            )
+                                                       }
                                                   }}
+
                                              />
 
                                              {formik.values.password && (
@@ -270,18 +304,20 @@ export const ResetPasswordPage = ({ isTokenValid }: ResetPasswordProps) => {
                                                   onBlur={formik.handleBlur}
                                                   error={formik.touched.confirmPassword && Boolean(formik.errors.confirmPassword)}
                                                   helperText={formik.touched.confirmPassword && formik.errors.confirmPassword}
-                                                  InputProps={{
-                                                       endAdornment: (
-                                                            <InputAdornment position="end">
-                                                                 <IconButton
-                                                                      aria-label="toggle confirm password visibility"
-                                                                      onClick={handleClickShowConfirmPassword}
-                                                                      edge="end"
-                                                                 >
-                                                                      {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                                                                 </IconButton>
-                                                            </InputAdornment>
-                                                       ),
+                                                  slotProps={{
+                                                       input: {
+                                                            endAdornment: (
+                                                                 <InputAdornment position="end">
+                                                                      <IconButton
+                                                                           aria-label="toggle confirm password visibility"
+                                                                           onClick={handleClickShowConfirmPassword}
+                                                                           edge="end"
+                                                                      >
+                                                                           {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                                                                      </IconButton>
+                                                                 </InputAdornment>
+                                                            ),
+                                                       },
                                                   }}
                                              />
 
