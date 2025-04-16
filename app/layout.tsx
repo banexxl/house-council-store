@@ -11,7 +11,7 @@ import { usePathname } from "next/navigation"
 import { AnimatePresence } from "framer-motion"
 import Animate from "@/app/components/animation-framer-motion"
 import { Toaster } from "react-hot-toast"
-import { CheckCookiesOnFocus } from "@/app/components/cookie-checker"
+// import { useCookieFocusChecker } from "@/app/components/cookie-checker"
 
 
 const inter = Inter({ subsets: ["latin"] })
@@ -19,6 +19,8 @@ const inter = Inter({ subsets: ["latin"] })
 export default function RootLayout({ children }: { children: React.ReactNode }) {
 
   const pathname = usePathname()
+
+  // useCookieFocusChecker()
 
   return (
     <html lang="en">
@@ -41,9 +43,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </Animate>
             </AnimatePresence>
           </Box>
+          <Toaster position="top-center" />
         </ThemeProvider>
-        <CheckCookiesOnFocus />
-        <Toaster position="top-center" />
       </body>
     </html>
   )

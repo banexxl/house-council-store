@@ -10,7 +10,7 @@ const COOKIE_NAME_2 = `${COOKIE_NAME}-code-verifier`;
 const otherCookies = [COOKIE_NAME, COOKIE_NAME_0, COOKIE_NAME_1];
 const POLLING_INTERVAL = 1000; // Check every 1 second
 
-export const CheckCookiesOnFocus = () => {
+export function useCookieFocusChecker() {
      const getCookies = (): Record<string, string> => {
           return document.cookie.split("; ").reduce<Record<string, string>>((acc, cookie) => {
                const [name, value] = cookie.split("=");
