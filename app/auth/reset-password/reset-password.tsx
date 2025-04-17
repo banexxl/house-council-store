@@ -95,7 +95,7 @@ export const ResetPasswordPage = () => {
                     const result = await resetPassword(email, values.password)
 
                     if (!result.success) {
-                         throw new Error(result.error || "Failed to reset password")
+                         formik.setErrors({ password: result.error })
                     }
                     setIsSubmitted(true)
                } catch (error) {

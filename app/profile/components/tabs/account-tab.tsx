@@ -51,6 +51,7 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
      const [showConfirmPassword, setShowConfirmPassword] = useState(false)
      const [isSubmitted, setIsSubmitted] = useState(false)
      const [passwordStrength, setPasswordStrength] = useState(0)
+     const [signoutLoading, setSignoutLoading] = useState(false)
      const [isVerifying, setVerifying] = useState(true)
 
      const router = useRouter()
@@ -70,6 +71,7 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
           }
      };
      const handleSignOut = async () => {
+          setSignoutLoading(true)
           try {
                logoutUserAction();
                router.refresh();
@@ -85,17 +87,24 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                confirmPassword: "",
           },
           validationSchema: validationSchema,
+
           onSubmit: async (values) => {
                setResetingPassword(true)
                try {
                     const resetPasswordResponse = await resetPassword(userData.client.email, values.password);
                     if (resetPasswordResponse.success) {
-                         toast.success("Password reset successfully.");
+                         toast.success("Password reset successfully.", {
+                              position: "top-center",
+                         });
                     } else {
-                         toast.error("Error resetting password: " + resetPasswordResponse.error);
+                         toast.error("Error resetting password: " + resetPasswordResponse.error, {
+                              position: "top-center",
+                         });
                     }
                } catch (error) {
-                    toast.error("Error resetting password: " + error);
+                    toast.error("Error resetting password: " + error, {
+                         position: "top-center",
+                    });
                     formik.setErrors({ password: "Failed to reset password. Please try again." })
                } finally {
                     setIsSubmitted(true)
@@ -279,7 +288,10 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
 
                               <Stack direction="row" spacing={2} justifyContent="space-between">
                                    <Box sx={{ display: "flex", justifyContent: "flex-start", gap: 2 }}>
-                                        <Button variant="outlined" onClick={() => setShowPasswordChange(!showPasswordChange)} startIcon={<LockIcon />}>
+                                        <Button variant="outlined" onClick={() => {
+                                             setShowPasswordChange(!showPasswordChange)
+                                             setShowDeleteConfirm(false)
+                                        }} startIcon={<LockIcon />}>
                                              Change Password
                                         </Button>
                                    </Box>
@@ -289,47 +301,17 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                              color="error"
                                              startIcon={<LogoutIcon />}
                                              onClick={handleSignOut}
+                                             loading={signoutLoading}
                                         >
                                              Sign out
                                         </Button>
-                                        {showDeleteConfirm ? (
-                                             <Stack spacing={2}>
-                                                  <Typography color="error">
-                                                       Type <strong>delete</strong> below to confirm account deletion:
-                                                  </Typography>
-                                                  <TextField
-                                                       fullWidth
-                                                       variant="outlined"
-                                                       value={confirmText}
-                                                       onChange={(e) => setConfirmText(e.target.value)}
-                                                       placeholder="Type 'delete' to confirm"
-                                                       size="small"
-                                                  />
-                                                  <Stack direction="row" spacing={2}>
-                                                       <Button
-                                                            variant="contained"
-                                                            color="error"
-                                                            disabled={confirmText !== "delete"}
-                                                            onClick={handleConfirmDelete}
-                                                       >
-                                                            Confirm Delete
-                                                       </Button>
-                                                       <Button
-                                                            variant="outlined"
-                                                            onClick={() => {
-                                                                 setShowDeleteConfirm(false);
-                                                                 setConfirmText("");
-                                                            }}
-                                                       >
-                                                            Cancel
-                                                       </Button>
-                                                  </Stack>
-                                             </Stack>
-                                        ) : (
-                                             <Button variant="outlined" color="error" onClick={() => setShowDeleteConfirm(true)}>
-                                                  Delete Account
-                                             </Button>
-                                        )}
+                                        <Button variant="outlined" color="error" onClick={() => {
+                                             setShowDeleteConfirm(!showDeleteConfirm)
+                                             setShowPasswordChange(false)
+                                        }}>
+                                             Delete Account
+                                        </Button>
+
                                    </Box>
                               </Stack>
 
@@ -438,7 +420,40 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                    </Box>
                                    // </Box>
                               )}
-
+                              {showDeleteConfirm && (
+                                   <Stack spacing={2} sx={{ mt: 2 }}>
+                                        <Typography color="error">
+                                             Type <strong>delete</strong> below to confirm account deletion:
+                                        </Typography>
+                                        <TextField
+                                             fullWidth
+                                             variant="outlined"
+                                             value={confirmText}
+                                             onChange={(e) => setConfirmText(e.target.value)}
+                                             placeholder="Type 'delete' to confirm"
+                                             size="small"
+                                        />
+                                        <Stack direction="row" spacing={2}>
+                                             <Button
+                                                  variant="contained"
+                                                  color="error"
+                                                  disabled={confirmText !== "delete"}
+                                                  onClick={handleConfirmDelete}
+                                             >
+                                                  Confirm Delete
+                                             </Button>
+                                             <Button
+                                                  variant="outlined"
+                                                  onClick={() => {
+                                                       setShowDeleteConfirm(false);
+                                                       setConfirmText("");
+                                                  }}
+                                             >
+                                                  Cancel
+                                             </Button>
+                                        </Stack>
+                                   </Stack>
+                              )}
 
                          </Box >
                     </Box >
