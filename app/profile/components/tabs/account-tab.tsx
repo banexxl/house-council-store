@@ -1,7 +1,6 @@
 "use client"
 
-import { Box, Button, Divider, TextField, Typography, Chip, Alert, Stack, Grid } from "@mui/material"
-import Link from "next/link"
+import { Box, Button, Divider, TextField, Typography, Chip, Alert, Stack, Grid, InputAdornment, IconButton, LinearProgress, CircularProgress, Paper } from "@mui/material"
 import EditIcon from "@mui/icons-material/Edit"
 import LockIcon from "@mui/icons-material/Lock"
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser"
@@ -15,8 +14,14 @@ import { logoutUserAction } from "../../logout-action"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import toast from "react-hot-toast"
-import { Form, Formik } from "formik"
+import { Form, Formik, useFormik } from "formik"
 import * as Yup from "yup"
+import { resetPassword } from "@/app/auth/reset-password/reset-password-actions"
+import { calculatePasswordStrength, getStrengthColor, getStrengthLabel, validationSchema } from "@/app/auth/reset-password/reset-password-utils";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import Visibility from "@mui/icons-material/Visibility";
+import CheckIcon from "@mui/icons-material/Check";
+import CloseIcon from "@mui/icons-material/Close";
 
 interface AccountTabProps {
      userData: { client: Client; session: User }
@@ -33,6 +38,21 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
 
      const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
      const [confirmText, setConfirmText] = useState("");
+     const [showPasswordChange, setShowPasswordChange] = useState(false);
+     const [resetingPassword, setResetingPassword] = useState(false);
+     const handleClickShowPassword = () => {
+          setShowPassword(!showPassword)
+     }
+
+     const handleClickShowConfirmPassword = () => {
+          setShowConfirmPassword(!showConfirmPassword)
+     }
+     const [showPassword, setShowPassword] = useState(false)
+     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+     const [isSubmitted, setIsSubmitted] = useState(false)
+     const [passwordStrength, setPasswordStrength] = useState(0)
+     const [isVerifying, setVerifying] = useState(true)
+
      const router = useRouter()
 
      const handleConfirmDelete = async () => {
@@ -58,6 +78,36 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                console.error("Error signing out:", error);
           }
      };
+
+     const formik = useFormik({
+          initialValues: {
+               password: "",
+               confirmPassword: "",
+          },
+          validationSchema: validationSchema,
+          onSubmit: async (values) => {
+               setResetingPassword(true)
+               try {
+                    const resetPasswordResponse = await resetPassword(userData.client.email, values.password);
+                    if (resetPasswordResponse.success) {
+                         toast.success("Password reset successfully.");
+                    } else {
+                         toast.error("Error resetting password: " + resetPasswordResponse.error);
+                    }
+               } catch (error) {
+                    toast.error("Error resetting password: " + error);
+                    formik.setErrors({ password: "Failed to reset password. Please try again." })
+               } finally {
+                    setIsSubmitted(true)
+                    setResetingPassword(false)
+               }
+          },
+     })
+
+     // Update password strength when password changes
+     useEffect(() => {
+          setPasswordStrength(calculatePasswordStrength(formik.values.password))
+     }, [formik.values.password])
 
      return (
           <>
@@ -227,60 +277,169 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                    Account Actions
                               </Typography>
 
-                              <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mb: 2 }}>
-                                   <Button variant="outlined" component={Link} href="/auth/reset-password" startIcon={<LockIcon />}>
-                                        Change Password
-                                   </Button>
-                                   <Button
-                                        variant="outlined"
-                                        color="error"
-                                        startIcon={<LogoutIcon />}
-                                        onClick={handleSignOut}
-                                   >
-                                        Sign out
-                                   </Button>
-
+                              <Stack direction="row" spacing={2} justifyContent="space-between">
+                                   <Box sx={{ display: "flex", justifyContent: "flex-start", gap: 2 }}>
+                                        <Button variant="outlined" onClick={() => setShowPasswordChange(!showPasswordChange)} startIcon={<LockIcon />}>
+                                             Change Password
+                                        </Button>
+                                   </Box>
+                                   <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}>
+                                        <Button
+                                             variant="outlined"
+                                             color="error"
+                                             startIcon={<LogoutIcon />}
+                                             onClick={handleSignOut}
+                                        >
+                                             Sign out
+                                        </Button>
+                                        {showDeleteConfirm ? (
+                                             <Stack spacing={2}>
+                                                  <Typography color="error">
+                                                       Type <strong>delete</strong> below to confirm account deletion:
+                                                  </Typography>
+                                                  <TextField
+                                                       fullWidth
+                                                       variant="outlined"
+                                                       value={confirmText}
+                                                       onChange={(e) => setConfirmText(e.target.value)}
+                                                       placeholder="Type 'delete' to confirm"
+                                                       size="small"
+                                                  />
+                                                  <Stack direction="row" spacing={2}>
+                                                       <Button
+                                                            variant="contained"
+                                                            color="error"
+                                                            disabled={confirmText !== "delete"}
+                                                            onClick={handleConfirmDelete}
+                                                       >
+                                                            Confirm Delete
+                                                       </Button>
+                                                       <Button
+                                                            variant="outlined"
+                                                            onClick={() => {
+                                                                 setShowDeleteConfirm(false);
+                                                                 setConfirmText("");
+                                                            }}
+                                                       >
+                                                            Cancel
+                                                       </Button>
+                                                  </Stack>
+                                             </Stack>
+                                        ) : (
+                                             <Button variant="outlined" color="error" onClick={() => setShowDeleteConfirm(true)}>
+                                                  Delete Account
+                                             </Button>
+                                        )}
+                                   </Box>
                               </Stack>
-                              <Box >
-                                   {showDeleteConfirm ? (
-                                        <Stack spacing={2} sx={{ mt: 2 }}>
-                                             <Typography color="error">
-                                                  Type <strong>delete</strong> below to confirm account deletion:
-                                             </Typography>
+
+                              {showPasswordChange && (
+                                   // <Box sx={{ display: "flex", flexDirection: "column" }}>
+                                   <Box component="main" sx={{ flexGrow: 1, py: { xs: 6, md: 5 } }}>
+                                        <Box component="form" onSubmit={formik.handleSubmit} noValidate>
                                              <TextField
                                                   fullWidth
-                                                  variant="outlined"
-                                                  value={confirmText}
-                                                  onChange={(e) => setConfirmText(e.target.value)}
-                                                  placeholder="Type 'delete' to confirm"
-                                                  size="small"
+                                                  id="password"
+                                                  name="password"
+                                                  label="New Password"
+                                                  type={showPassword ? "text" : "password"}
+                                                  margin="normal"
+                                                  value={formik.values.password}
+                                                  onChange={formik.handleChange}
+                                                  onBlur={formik.handleBlur}
+                                                  error={formik.touched.password && Boolean(formik.errors.password)}
+                                                  helperText={formik.touched.password && formik.errors.password}
+                                                  slotProps={{
+                                                       input: {
+                                                            endAdornment: (
+                                                                 <InputAdornment position="end">
+                                                                      <IconButton
+                                                                           aria-label="toggle password visibility"
+                                                                           onClick={handleClickShowPassword}
+                                                                           edge="end"
+                                                                      >
+                                                                           {showPassword ? <VisibilityOff /> : <Visibility />}
+                                                                      </IconButton>
+                                                                 </InputAdornment>
+                                                            ),
+                                                       },
+                                                  }}
                                              />
-                                             <Stack direction="row" spacing={2}>
-                                                  <Button
-                                                       variant="contained"
-                                                       color="error"
-                                                       disabled={confirmText !== "delete"}
-                                                       onClick={handleConfirmDelete}
-                                                  >
-                                                       Confirm Delete
-                                                  </Button>
-                                                  <Button
-                                                       variant="outlined"
-                                                       onClick={() => {
-                                                            setShowDeleteConfirm(false);
-                                                            setConfirmText("");
-                                                       }}
-                                                  >
-                                                       Cancel
-                                                  </Button>
-                                             </Stack>
-                                        </Stack>
-                                   ) : (
-                                        <Button variant="outlined" color="error" onClick={() => setShowDeleteConfirm(true)}>
-                                             Delete Account
-                                        </Button>
-                                   )}
-                              </Box>
+
+                                             {formik.values.password && (
+                                                  <Box sx={{ mt: 1, mb: 2 }}>
+                                                       <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
+                                                            <Typography variant="caption">Password strength:</Typography>
+                                                            <Typography variant="caption" sx={{ color: getStrengthColor(passwordStrength) }}>
+                                                                 {getStrengthLabel(passwordStrength)}
+                                                            </Typography>
+                                                       </Box>
+                                                       <LinearProgress
+                                                            variant="determinate"
+                                                            value={passwordStrength}
+                                                            sx={{
+                                                                 height: 8,
+                                                                 borderRadius: 4,
+                                                                 bgcolor: "grey.200",
+                                                                 "& .MuiLinearProgress-bar": {
+                                                                      bgcolor: getStrengthColor(passwordStrength),
+                                                                 },
+                                                            }}
+                                                       />
+                                                  </Box>
+                                             )}
+
+                                             <TextField
+                                                  fullWidth
+                                                  id="confirmPassword"
+                                                  name="confirmPassword"
+                                                  label="Confirm New Password"
+                                                  type={showConfirmPassword ? "text" : "password"}
+                                                  margin="normal"
+                                                  value={formik.values.confirmPassword}
+                                                  onChange={formik.handleChange}
+                                                  onBlur={formik.handleBlur}
+                                                  error={formik.touched.confirmPassword && Boolean(formik.errors.confirmPassword)}
+                                                  helperText={formik.touched.confirmPassword && formik.errors.confirmPassword}
+                                                  slotProps={{
+                                                       input: {
+                                                            endAdornment: (
+                                                                 <InputAdornment position="end">
+                                                                      <IconButton
+                                                                           aria-label="toggle confirm password visibility"
+                                                                           onClick={handleClickShowConfirmPassword}
+                                                                           edge="end"
+                                                                      >
+                                                                           {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                                                                      </IconButton>
+                                                                 </InputAdornment>
+                                                            ),
+                                                       },
+                                                  }}
+                                             />
+
+                                             <Alert severity="info" sx={{ mt: 2, mb: 3 }}>
+                                                  Your password must be at least 8 characters long and include uppercase letters, lowercase letters,
+                                                  and numbers.
+                                             </Alert>
+
+                                             <Button
+                                                  type="submit"
+                                                  fullWidth
+                                                  variant="contained"
+                                                  size="large"
+                                                  disabled={formik.isSubmitting}
+                                                  sx={{ mt: 2 }}
+                                                  loading={resetingPassword}
+                                             >
+                                                  {formik.isSubmitting ? <CircularProgress size={24} color="inherit" /> : "Reset Password"}
+                                             </Button>
+                                        </Box>
+                                   </Box>
+                                   // </Box>
+                              )}
+
+
                          </Box >
                     </Box >
                )
