@@ -12,7 +12,7 @@ const LandingPage = () => {
      return (
           <Box>
                {/* Hero Parallax Section */}
-               <ParallaxSection backgroundImage="https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=1973&auto=format&fit=crop">
+               <ParallaxSection backgroundImage="/background-images/background-image-3.png">
                     <Container maxWidth="lg">
                          <Grid container spacing={6} alignItems="center">
                               <Grid size={{ xs: 12, md: 6 }} >
@@ -53,7 +53,7 @@ const LandingPage = () => {
                <Box sx={{ height: '80px', backgroundColor: '#f7f7f7' }} />
 
                {/* Features Section */}
-               <Container maxWidth="lg" sx={{ py: 10 }}>
+               <Container maxWidth="lg" sx={{ py: 10, }}>
                     <Box sx={{ textAlign: 'center', mb: 6 }}>
                          <Typography variant="h2" gutterBottom>
                               Key Features
@@ -104,7 +104,7 @@ const LandingPage = () => {
                </Container>
 
                {/* Parallax Testimonials Section */}
-               <ParallaxSection backgroundImage="https://images.unsplash.com/photo-1573497620053-ea5300f94f21?q=80&w=2070&auto=format&fit=crop">
+               <ParallaxSection backgroundImage="/background-images/background-image-1.png">
                     <Container maxWidth="lg">
                          <Box sx={{ textAlign: 'center', mb: 6, backgroundColor: 'rgba(255,255,255,0.85)', p: 4, borderRadius: 2 }}>
                               <Typography variant="h2" gutterBottom>
@@ -178,7 +178,7 @@ const LandingPage = () => {
 
 
                {/* CTA Parallax Section */}
-               <ParallaxSection backgroundImage="https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop" height="60vh">
+               <ParallaxSection backgroundImage="/background-images/background-image-4.png" height="80vh">
                     <Container maxWidth="sm" sx={{ textAlign: 'center' }}>
                          <Box
                               sx={{
@@ -186,12 +186,17 @@ const LandingPage = () => {
                                    p: 4,
                                    borderRadius: 2,
                                    backdropFilter: 'blur(5px)',
+                                   display: 'flex',
+                                   flexDirection: 'column',
+                                   alignItems: 'center',
+                                   justifyContent: 'space-between',
+                                   gap: 2,
                               }}
                          >
                               <Typography variant="h3" gutterBottom>
                                    Ready to Get Started?
                               </Typography>
-                              <Typography variant="h6" color="text.secondary" paragraph>
+                              <Typography variant="h6" color="text.secondary">
                                    Join hundreds of communities already using HouseCouncil
                               </Typography>
                               <Link href="/pricing" style={{ textDecoration: 'none' }}>

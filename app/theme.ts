@@ -1,22 +1,25 @@
 "use client"
 
 import { createTheme } from "@mui/material/styles"
-import { blue } from "@mui/material/colors"
 
 const theme = createTheme({
   palette: {
     primary: {
-      main: blue[600],
+      main: "#f79622",
+      light: "#f7a22c",
+      dark: "#f68a00",
     },
     secondary: {
-      main: "#f5f5f5",
+      main: "#4a1005",
+      light: "#6b2a1a",
+      dark: "#370b03",
     },
     background: {
       default: "#ffffff",
     },
   },
   typography: {
-    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Montserrat", "Roboto", "Helvetica", "Arial", sans-serif',
     h1: {
       fontWeight: 700,
       fontSize: "3rem",
