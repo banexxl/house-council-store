@@ -3,14 +3,13 @@
 import { AppBar, Toolbar, Button, Box, Container, IconButton, Drawer, List, ListItem, ListItemButton, ListItemText, Typography, useTheme } from "@mui/material";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import MenuIcon from '@mui/icons-material/Menu';
 import ApartmentIcon from '@mui/icons-material/Apartment';
 import { User } from "@supabase/supabase-js";
 import { logoutUserAction } from "@/app/profile/logout-action";
 import { useRouter } from "next/navigation";
 import { useCookieTokenUpdater } from "@/app/lib/client-session-update";
-// import other dependencies as needed
 
 type HeaderProps = {
   user: User | null;
@@ -49,16 +48,16 @@ export const Header = ({ user }: HeaderProps) => {
   const drawer = (
     <Box onClick={handleDrawerToggle} sx={{ textAlign: "center", backgroundColor: theme.palette.primary.main, height: "100vh" }} >
       <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", p: 2 }}>
-        <ApartmentIcon sx={{ mr: 1 }} />
-        <Typography variant="h6" component="div">
-          HouseCouncil
+        <Image src="/logo-icons/1-02.png" alt="Logo" width={80} height={80} style={{ transform: "scale(1.5)", marginTop: "10px" }} />
+        <Typography variant="h6" component="div" sx={{ textAlign: "center", color: theme.palette.secondary.main, textDecoration: "none" }}>
+          Nest Link
         </Typography>
       </Box>
       <List>
         {navItems.map((item) => (
           <ListItem key={item.name} disablePadding>
             <ListItemButton sx={{ textAlign: "center" }}>
-              <Link href={item.path} style={{ color: theme.palette.primary.main, width: "100%" }}>
+              <Link href={item.path} style={{ textDecoration: "none", color: theme.palette.secondary.main, width: "100%" }}>
                 <ListItemText primary={item.name} />
               </Link>
             </ListItemButton>
@@ -68,14 +67,14 @@ export const Header = ({ user }: HeaderProps) => {
           <>
             <ListItem disablePadding>
               <Link href="/profile" style={{ color: theme.palette.primary.main, width: "100%" }}>
-                <ListItemButton sx={{ textAlign: "center" }}>
-                  <ListItemText primary="Profile" />
+                <ListItemButton >
+                  <ListItemText primary="Profile" sx={{ textAlign: "center", color: theme.palette.secondary.main, textDecoration: "none" }} />
                 </ListItemButton>
               </Link>
             </ListItem>
             <ListItem disablePadding>
               <ListItemButton sx={{ textAlign: "center" }} onClick={handleSignOut}>
-                <ListItemText primary="Sign Out" />
+                <ListItemText primary="Sign Out" sx={{ color: theme.palette.secondary.main }} />
               </ListItemButton>
             </ListItem>
           </>
@@ -131,7 +130,7 @@ export const Header = ({ user }: HeaderProps) => {
                 </Button>
               </Link>
               <IconButton color="inherit" aria-label="open drawer" edge="end" onClick={handleDrawerToggle}>
-                <MenuIcon />
+                <MenuIcon sx={{ textAlign: "center", color: theme.palette.primary.main, textDecoration: "none" }} />
               </IconButton>
             </Box>
           </Toolbar>

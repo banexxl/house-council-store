@@ -20,6 +20,7 @@ import {
      AccordionSummary,
      AccordionDetails,
      Grid,
+     useTheme,
 } from "@mui/material"
 import CheckIcon from "@mui/icons-material/Check"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
@@ -56,6 +57,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans }) =
      const router = useRouter()
      const [billingCycle, setBillingCycle] = useState<"monthly" | "annually">("monthly")
      const [loading, setLoading] = useState(false)
+     const theme = useTheme()
 
      const handleBillingCycleChange = (event: React.SyntheticEvent, newValue: "monthly" | "annually") => {
           setBillingCycle(newValue)
@@ -190,12 +192,13 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans }) =
                                    bgcolor: "secondary.main",
                                    maxWidth: 800,
                                    mx: "auto",
+                                   justifyContent: 'space-between'
                               }}
                          >
-                              <Typography variant="h4" gutterBottom>
+                              <Typography variant="h4" gutterBottom sx={{ color: theme.palette.primary.main }}>
                                    Need a custom solution?
                               </Typography>
-                              <Typography variant="body1" color="text.secondary" paragraph>
+                              <Typography variant="body1" color="text.secondary" sx={{ color: theme.palette.primary.main, mb: 2 }}>
                                    Contact our sales team for custom pricing and features tailored to your specific needs.
                               </Typography>
                               <Button variant="contained" size="large" onClick={() => router.push("/contact")}>
