@@ -82,7 +82,7 @@ export const Header = ({ user }: HeaderProps) => {
           <ListItem disablePadding>
             <Link href="/auth/sign-in" style={{ color: theme.palette.primary.main, width: "100%" }}>
               <ListItemButton sx={{ textAlign: "center" }}>
-                <ListItemText primary="Sign In" />
+                <ListItemText primary="Sign In" sx={{ color: theme.palette.secondary.main }} />
               </ListItemButton>
             </Link>
           </ListItem>
@@ -117,18 +117,22 @@ export const Header = ({ user }: HeaderProps) => {
                   <Button color="inherit">Sign In</Button>
                 </Link>
               )}
-              <Link href="https://house-council-app-v2-plum.vercel.app/" target="_blank" style={{ color: theme.palette.primary.main }}>
-                <Button variant="contained" color="primary">
-                  Dashboard
-                </Button>
-              </Link>
+              {user && (
+                <Link href="https://house-council-app-v2-plum.vercel.app/" target="_blank" style={{ color: theme.palette.primary.main }}>
+                  <Button variant="contained" color="primary">
+                    Dashboard
+                  </Button>
+                </Link>
+              )}
             </Box>
             <Box sx={{ display: { xs: "flex", md: "none" } }}>
-              <Link href="https://house-council-app-v2-plum.vercel.app/" style={{ color: theme.palette.primary.main, marginRight: "8px" }}>
-                <Button variant="contained" color="primary" size="small">
-                  Dashboard
-                </Button>
-              </Link>
+              {user && (
+                <Link href="https://house-council-app-v2-plum.vercel.app/" style={{ color: theme.palette.primary.main, marginRight: "8px" }}>
+                  <Button variant="contained" color="primary" size="small">
+                    Dashboard
+                  </Button>
+                </Link>
+              )}
               <IconButton color="inherit" aria-label="open drawer" edge="end" onClick={handleDrawerToggle}>
                 <MenuIcon sx={{ textAlign: "center", color: theme.palette.primary.main, textDecoration: "none" }} />
               </IconButton>
