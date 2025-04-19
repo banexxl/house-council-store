@@ -230,7 +230,7 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                    <Typography variant="subtitle2" color="text.secondary">
                                         User ID
                                    </Typography>
-                                   <Typography variant="body1">{userData.client.id}</Typography>
+                                   <Typography variant="body1">{userData.client.id.slice(-12)}</Typography>
                               </Grid>
 
                               <Grid size={{ xs: 12, md: 6 }}>
