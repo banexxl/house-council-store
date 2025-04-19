@@ -168,7 +168,7 @@ export const PrivacyPage = () => {
                                              Introduction
                                         </Typography>
                                         <Typography paragraph>
-                                             HouseCouncil ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website and use our services, including our mobile application (collectively, the "Service").
+                                             NestLink ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website and use our services, including our mobile application (collectively, the "Service").
                                         </Typography>
                                         <Typography paragraph>
                                              Please read this Privacy Policy carefully. By accessing or using our Service, you acknowledge that you have read, understood, and agree to be bound by all the terms of this Privacy Policy. If you do not agree with our policies and practices, please do not use our Service.
@@ -527,13 +527,13 @@ export const PrivacyPage = () => {
                                              <ListItem>
                                                   <ListItemText
                                                        primary="By email:"
-                                                       secondary="privacy@housecouncil.com"
+                                                       secondary="privacy@NestLink.com"
                                                   />
                                              </ListItem>
                                              <ListItem>
                                                   <ListItemText
                                                        primary="By mail:"
-                                                       secondary="HouseCouncil, 123 Community Lane, Suite 456, Boston, MA 02110, United States"
+                                                       secondary="NestLink, 123 Community Lane, Suite 456, Boston, MA 02110, United States"
                                                   />
                                              </ListItem>
                                         </List>

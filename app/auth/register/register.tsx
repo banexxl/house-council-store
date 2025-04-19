@@ -90,7 +90,7 @@ export const RegisterPage = () => {
                                         Create an Account
                                    </Typography>
                                    <Typography variant="body2" color="text.secondary">
-                                        Join HouseCouncil to manage your residential community efficiently
+                                        Join NestLink to manage your residential community efficiently
                                    </Typography>
                               </Box>
 

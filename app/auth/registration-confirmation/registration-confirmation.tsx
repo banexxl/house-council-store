@@ -76,7 +76,7 @@ export const RegistrationConfirmationPage = () => {
                               </Typography>
 
                               <Typography variant="body1" sx={{ mb: 3, maxWidth: 600, mx: "auto" }}>
-                                   Thank you for registering with HouseCouncil! We've sent a confirmation email to your inbox. Please check
+                                   Thank you for registering with NestLink! We've sent a confirmation email to your inbox. Please check
                                    your email and click on the verification link to activate your account.
                               </Typography>
 
@@ -100,7 +100,7 @@ export const RegistrationConfirmationPage = () => {
                                    <Typography variant="body2">
                                         • The confirmation link will expire in 24 hours
                                         <br />• If you don't see the email, please check your spam or junk folder
-                                        <br />• Make sure to add <strong>noreply@housecouncil.com</strong> to your contacts
+                                        <br />• Make sure to add <strong>noreply@NestLink.com</strong> to your contacts
                                    </Typography>
                               </Box>
 

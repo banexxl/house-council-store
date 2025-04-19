@@ -153,8 +153,8 @@ export const TermsPage = () => {
                                              Introduction
                                         </Typography>
                                         <Typography paragraph>
-                                             Welcome to HouseCouncil. These Terms and Conditions ("Terms", "Terms and Conditions") govern your use
-                                             of our website and mobile application (collectively, the "Service") operated by HouseCouncil ("us",
+                                             Welcome to NestLink. These Terms and Conditions ("Terms", "Terms and Conditions") govern your use
+                                             of our website and mobile application (collectively, the "Service") operated by NestLink ("us",
                                              "we", or "our").
                                         </Typography>
                                         <Typography paragraph>
@@ -178,7 +178,7 @@ export const TermsPage = () => {
                                              <ListItem>
                                                   <ListItemText
                                                        primary="Service"
-                                                       secondary="Refers to the HouseCouncil website and mobile application."
+                                                       secondary="Refers to the NestLink website and mobile application."
                                                   />
                                              </ListItem>
                                              <ListItem>
@@ -297,10 +297,10 @@ export const TermsPage = () => {
                                         </Typography>
                                         <Typography paragraph>
                                              The Service and its original content (excluding Content provided by users), features, and
-                                             functionality are and will remain the exclusive property of HouseCouncil and its licensors. The
+                                             functionality are and will remain the exclusive property of NestLink and its licensors. The
                                              Service is protected by copyright, trademark, and other laws of both the United States and foreign
                                              countries. Our trademarks and trade dress may not be used in connection with any product or service
-                                             without the prior written consent of HouseCouncil.
+                                             without the prior written consent of NestLink.
                                         </Typography>
                                         <Typography paragraph>
                                              You acknowledge and agree that the Service may contain proprietary and confidential information that
@@ -378,7 +378,7 @@ export const TermsPage = () => {
                                              Limitation of Liability
                                         </Typography>
                                         <Typography paragraph>
-                                             In no event shall HouseCouncil, nor its directors, employees, partners, agents, suppliers, or
+                                             In no event shall NestLink, nor its directors, employees, partners, agents, suppliers, or
                                              affiliates, be liable for any indirect, incidental, special, consequential, or punitive damages,
                                              including without limitation, loss of profits, data, use, goodwill, or other intangible losses,
                                              resulting from (i) your access to or use of or inability to access or use the Service; (ii) any
@@ -401,7 +401,7 @@ export const TermsPage = () => {
                                              Indemnification
                                         </Typography>
                                         <Typography paragraph>
-                                             You agree to defend, indemnify, and hold harmless HouseCouncil, its parent, subsidiaries, affiliates,
+                                             You agree to defend, indemnify, and hold harmless NestLink, its parent, subsidiaries, affiliates,
                                              and their respective directors, officers, employees, agents, service providers, contractors,
                                              licensors, suppliers, successors, and assigns from and against any claims, liabilities, damages,
                                              judgments, awards, losses, costs, expenses, or fees (including reasonable attorneys' fees) arising out
@@ -475,12 +475,12 @@ export const TermsPage = () => {
                                         <Typography paragraph>If you have any questions about these Terms, please contact us:</Typography>
                                         <List>
                                              <ListItem>
-                                                  <ListItemText primary="By email:" secondary="legal@housecouncil.com" />
+                                                  <ListItemText primary="By email:" secondary="legal@NestLink.com" />
                                              </ListItem>
                                              <ListItem>
                                                   <ListItemText
                                                        primary="By mail:"
-                                                       secondary="HouseCouncil, 123 Community Lane, Suite 456, Boston, MA 02110, United States"
+                                                       secondary="NestLink, 123 Community Lane, Suite 456, Boston, MA 02110, United States"
                                                   />
                                              </ListItem>
                                         </List>

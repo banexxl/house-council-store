@@ -103,7 +103,7 @@ export const Footer = () => {
         <Divider sx={{ my: 4 }} />
 
         <Typography variant="body2" color="primary" align="center" sx={{ color: theme.palette.primary.main }}>
-          © 2023 HouseCouncil. All rights reserved.
+          © 2023 NestLink. All rights reserved.
         </Typography>
       </Container>
     </Box>

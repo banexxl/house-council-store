@@ -41,7 +41,7 @@ export const RegistrationConfirmedPage = () => {
                               </Typography>
 
                               <Typography variant="h6" sx={{ mb: 3 }}>
-                                   Welcome to HouseCouncil!
+                                   Welcome to NestLink!
                               </Typography>
 
                               <Typography variant="body1" paragraph sx={{ maxWidth: 600, mx: "auto" }}>

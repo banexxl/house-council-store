@@ -124,7 +124,7 @@ const LandingPage = () => {
                                         title: 'Council President, Oakwood Residences',
                                         avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1974&auto=format&fit=crop',
                                         quote:
-                                             'HouseCouncil has transformed how we manage our building. Communication is seamless, and our residents are more engaged than ever.',
+                                             'NestLink has transformed how we manage our building. Communication is seamless, and our residents are more engaged than ever.',
                                    },
                                    {
                                         name: 'Michael Chen',
@@ -175,7 +175,7 @@ const LandingPage = () => {
                          Effortless Community Management
                     </Typography>
                     <Typography variant="h6" color="text.secondary">
-                         HouseCouncil helps you streamline communication, automate tasks, and build a stronger community.
+                         NestLink helps you streamline communication, automate tasks, and build a stronger community.
                     </Typography>
                </Box>
 
@@ -200,7 +200,7 @@ const LandingPage = () => {
                                    Ready to Get Started?
                               </Typography>
                               <Typography variant="h6" color="text.secondary">
-                                   Join hundreds of communities already using HouseCouncil
+                                   Join hundreds of communities already using NestLink
                               </Typography>
                               <Link href="/pricing" style={{ textDecoration: 'none' }}>
                                    <Button variant="contained" size="large" fullWidth sx={{ maxWidth: 300, mb: 2 }}>

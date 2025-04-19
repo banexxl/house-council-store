@@ -131,10 +131,10 @@ export const ContactPage = ({ mapKey }: ContactProps) => {
                                                        Email
                                                   </Typography>
                                                   <Typography variant="body2" color="text.secondary">
-                                                       support@housecouncil.com
+                                                       support@NestLink.com
                                                   </Typography>
                                                   <Typography variant="body2" color="text.secondary">
-                                                       sales@housecouncil.com
+                                                       sales@NestLink.com
                                                   </Typography>
                                              </Box>
                                         </Box>

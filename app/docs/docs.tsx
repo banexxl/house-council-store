@@ -178,7 +178,7 @@ export const DocsPage = () => {
                                                   Getting Started
                                              </Typography>
                                              <Typography paragraph>
-                                                  Welcome to the HouseCouncil documentation. This guide will help you get started with our platform
+                                                  Welcome to the NestLink documentation. This guide will help you get started with our platform
                                                   and make the most of its features.
                                              </Typography>
 
@@ -186,7 +186,7 @@ export const DocsPage = () => {
                                                   Installation
                                              </Typography>
                                              <Typography paragraph>
-                                                  HouseCouncil is a web-based platform, so there's no installation required. Simply sign up for an
+                                                  NestLink is a web-based platform, so there's no installation required. Simply sign up for an
                                                   account and you can access it from any modern web browser.
                                              </Typography>
 

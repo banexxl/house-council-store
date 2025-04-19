@@ -25,7 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
-        <title>HouseCouncil - Residential Community Management</title>
+        <title>NestLink - Residential Community Management</title>
         <meta
           name="description"
           content="Simplify your house council management with our comprehensive platform."

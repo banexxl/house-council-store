@@ -15,7 +15,7 @@ export default function NotificationsTab({ notificationSettings, handleNotificat
                </Typography>
 
                <Typography variant="body2" color="text.secondary" paragraph>
-                    Manage how you receive notifications and updates from HouseCouncil.
+                    Manage how you receive notifications and updates from NestLink.
                </Typography>
 
                <List>
