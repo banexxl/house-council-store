@@ -19,7 +19,7 @@ export default function NotFound() {
      }
 
      return (
-          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
                <Box
                     component="main"
                     sx={{

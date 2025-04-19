@@ -52,7 +52,7 @@ export const DocsPage = () => {
      }
 
      return (
-          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
                <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
                     <Container maxWidth="lg">
                          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", py: 2 }}>

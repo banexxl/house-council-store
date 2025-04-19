@@ -10,7 +10,7 @@ export default async function Page() {
      const user = await getSessionUser();
 
      return (
-          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
                <Header user={user ? user : null} />
                <NotFound />
                <Footer />

@@ -28,7 +28,7 @@ export const RegistrationConfirmedPage = () => {
 
 
      return (
-          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
                <Box component="main" sx={{ flexGrow: 1, py: { xs: 6, md: 10 } }}>
                     <Container maxWidth="md">
                          <Paper elevation={3} sx={{ p: { xs: 3, md: 5 }, textAlign: "center" }}>

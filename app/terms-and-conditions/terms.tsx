@@ -54,7 +54,7 @@ export const TermsPage = () => {
      const lastUpdated = "January 15, 2024"
 
      return (
-          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
                <Box component="main" sx={{ flexGrow: 1, py: { xs: 4, md: 6 } }}>
                     <Container maxWidth="lg">
                          {/* Breadcrumbs */}

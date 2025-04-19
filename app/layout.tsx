@@ -34,7 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={inter.className}>
         <ThemeProvider theme={theme}>
           <CssBaseline />
-          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
             <AnimatePresence mode="wait">
               <Animate key={pathname}>
                 <Box component="main" sx={{ flexGrow: 1 }}>

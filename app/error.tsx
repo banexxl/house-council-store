@@ -15,7 +15,7 @@ export default function Error({
      const router = useRouter()
 
      return (
-          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
                {/* <Header user={user ? user : null} /> */}
                <Box
                     component="main"

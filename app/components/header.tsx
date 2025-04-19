@@ -39,7 +39,7 @@ export const Header = ({ user }: HeaderProps) => {
     }
   };
 
-  const useShrinkOnScroll = () => {
+  const useShrinkOnScroll = (): boolean => {
     return useScrollTrigger({
       disableHysteresis: true,
       threshold: 10,
@@ -115,23 +115,32 @@ export const Header = ({ user }: HeaderProps) => {
         backgroundColor: theme.palette.secondary.dark,
         top: 0,
         transition: "all 0.3s ease",
-        height: shrinkOnScroll ? 56 : 80,
+        // height: shrinkOnScroll ? 56 : 80,
+        maxWidth: "100%",
       }}>
-        <Container maxWidth="lg" sx={{
-          minHeight: shrinkOnScroll ? 56 : 80,
-          transition: "all 0.3s ease",
-        }}>
-          <Toolbar disableGutters >
+        <Container maxWidth="lg" >
+          <Toolbar disableGutters
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              height: shrinkOnScroll ? 56 : 80,
+              transition: "all 0.3s ease",
+            }}
+          >
+
             <Link href="/" >
               <Image
                 src="/logo-icons/1-01.png"
                 alt="Logo"
                 width={shrinkOnScroll ? 50 : 80}
-                height={shrinkOnScroll ? 50 : 80}
+                height={shrinkOnScroll ? 50 : 70}
                 style={{ transform: `scale(${shrinkOnScroll ? 1.2 : 1.5})`, marginTop: "10px", transition: "all 0.3s ease" }}
               />
             </Link>
+
             <Box sx={{ flexGrow: 1 }} />
+
             <Box sx={{ display: { xs: "none", md: "flex" }, gap: 2 }}>
               {navItems.map((item) => (
                 <Link key={item.name} href={item.path} >
@@ -157,14 +166,8 @@ export const Header = ({ user }: HeaderProps) => {
                 </Link>
               )}
             </Box>
+
             <Box sx={{ display: { xs: "flex", md: "none" } }}>
-              {/* {user && (
-                <Link href="https://house-council-app-v2-plum.vercel.app/" style={{ color: theme.palette.primary.main, marginRight: "8px" }}>
-                  <Button variant="contained" color="primary" size="small">
-                    Dashboard
-                  </Button>
-                </Link>
-              )} */}
               <IconButton color="inherit" aria-label="open drawer" edge="end" onClick={handleDrawerToggle}>
                 <MenuIcon sx={{ textAlign: "center", color: theme.palette.primary.main, textDecoration: "none" }} />
               </IconButton>

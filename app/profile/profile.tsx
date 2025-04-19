@@ -61,7 +61,7 @@ export const ProfilePage = ({ sessionAndClientDataCombined, subscriptionPlan, pa
      const [notificationSettings, setNotificationSettings] = useState(notificationPreferences)
 
      return (
-          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
                <Box component="main" sx={{ flexGrow: 1, py: { xs: 4, md: 6 } }}>
                     <Container maxWidth="lg">
                          <Grid container spacing={4}>
