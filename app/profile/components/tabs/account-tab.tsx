@@ -94,16 +94,16 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                     const resetPasswordResponse = await resetPassword(userData.client.email, values.password);
                     if (resetPasswordResponse.success) {
                          toast.success("Password reset successfully.", {
-                              position: "top-center",
+                              // position: "top-center",
                          });
                     } else {
                          toast.error("Error resetting password: " + resetPasswordResponse.error, {
-                              position: "top-center",
+                              // position: "top-center",
                          });
                     }
                } catch (error) {
                     toast.error("Error resetting password: " + error, {
-                         position: "top-center",
+                         // position: "top-center",
                     });
                     formik.setErrors({ password: "Failed to reset password. Please try again." })
                } finally {
@@ -140,7 +140,9 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                         });
 
                                         if (updateAccountActionResponse.success) {
-                                             toast.success("Account updated successfully.", { position: "top-center" });
+                                             toast.success("Account updated successfully.",
+                                                  // { position: "top-center" }
+                                             );
                                         } else {
                                              toast.error("Error updating account: " + updateAccountActionResponse.error);
                                         }

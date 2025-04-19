@@ -73,6 +73,13 @@ export const Header = ({ user }: HeaderProps) => {
               </Link>
             </ListItem>
             <ListItem disablePadding>
+              <Link href="/https://house-council-app-v2-plum.vercel.app/" style={{ color: theme.palette.primary.main, width: "100%" }}>
+                <ListItemButton sx={{ textAlign: "center" }}>
+                  <ListItemText primary="Dashboard" sx={{ color: theme.palette.secondary.main }} />
+                </ListItemButton>
+              </Link>
+            </ListItem>
+            <ListItem disablePadding>
               <ListItemButton sx={{ textAlign: "center" }} onClick={handleSignOut}>
                 <ListItemText primary="Sign Out" sx={{ color: theme.palette.secondary.main }} />
               </ListItemButton>

@@ -62,7 +62,6 @@ export const ProfilePage = ({ sessionAndClientDataCombined, subscriptionPlan, pa
 
      return (
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-               <Toaster position="top-right" />
                <Box component="main" sx={{ flexGrow: 1, py: { xs: 4, md: 6 } }}>
                     <Container maxWidth="lg">
                          <Grid container spacing={4}>

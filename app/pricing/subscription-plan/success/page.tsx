@@ -10,7 +10,7 @@ export default async function FreeTrialSuccessPage() {
 
      if (!session) {
           // Redirect to login if not authenticated
-          redirect("/login")
+          redirect("/auth/sign-in")
      }
 
      return (

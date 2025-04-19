@@ -118,7 +118,6 @@ export default function FreeTrialConfirmation({ subscriptionPlan, userEmail, cli
 
      return (
           <Container maxWidth="md" sx={{ py: 8 }}>
-               <Toaster position="top-right" />
                <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
                     <Box sx={{ textAlign: "center", mb: 4 }}>
                          <Typography variant="h4" gutterBottom>

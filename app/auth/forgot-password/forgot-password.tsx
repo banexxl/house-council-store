@@ -113,7 +113,7 @@ export default function ForgotPasswordPage() {
                          <Divider sx={{ my: 3 }} />
 
                          <Box sx={{ textAlign: "center" }}>
-                              <Button variant="text" onClick={() => router.push("/login")} disabled={isSubmitting}>
+                              <Button variant="text" onClick={() => router.push("/auth/sign-in")} disabled={isSubmitting}>
                                    Back to Login
                               </Button>
                          </Box>
