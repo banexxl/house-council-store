@@ -10,6 +10,8 @@ import { User } from "@supabase/supabase-js";
 import { logoutUserAction } from "@/app/profile/logout-action";
 import { useRouter } from "next/navigation";
 import { useCookieTokenUpdater } from "@/app/lib/client-session-update";
+import useScrollTrigger from "@mui/material/useScrollTrigger";
+
 
 type HeaderProps = {
   user: User | null;
@@ -36,6 +38,15 @@ export const Header = ({ user }: HeaderProps) => {
       console.error("Error signing out:", error);
     }
   };
+
+  const useShrinkOnScroll = () => {
+    return useScrollTrigger({
+      disableHysteresis: true,
+      threshold: 10,
+    });
+  };
+
+  const shrinkOnScroll = useShrinkOnScroll();
 
   const navItems = [
     { name: "Home", path: "/" },
@@ -100,11 +111,25 @@ export const Header = ({ user }: HeaderProps) => {
 
   return (
     <Box sx={{ flexGrow: 1, }}>
-      <AppBar position="static" color="default" elevation={1} sx={{ backgroundColor: theme.palette.secondary.dark }}>
-        <Container maxWidth="lg" >
+      <AppBar position="fixed" color="default" elevation={1} sx={{
+        backgroundColor: theme.palette.secondary.dark,
+        top: 0,
+        transition: "all 0.3s ease",
+        height: shrinkOnScroll ? 56 : 80,
+      }}>
+        <Container maxWidth="lg" sx={{
+          minHeight: shrinkOnScroll ? 56 : 80,
+          transition: "all 0.3s ease",
+        }}>
           <Toolbar disableGutters >
             <Link href="/" >
-              <Image src="/logo-icons/1-01.png" alt="Logo" width={80} height={80} style={{ transform: "scale(1.5)", marginTop: "10px" }} />
+              <Image
+                src="/logo-icons/1-01.png"
+                alt="Logo"
+                width={shrinkOnScroll ? 50 : 80}
+                height={shrinkOnScroll ? 50 : 80}
+                style={{ transform: `scale(${shrinkOnScroll ? 1.2 : 1.5})`, marginTop: "10px", transition: "all 0.3s ease" }}
+              />
             </Link>
             <Box sx={{ flexGrow: 1 }} />
             <Box sx={{ display: { xs: "none", md: "flex" }, gap: 2 }}>
