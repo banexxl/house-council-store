@@ -1,7 +1,7 @@
 'use client'
 
-import React from 'react';
-import { Box, Button, Container, Typography, Avatar, Link, Card, CardContent, Grid } from '@mui/material';
+import React, { use } from 'react';
+import { Box, Button, Container, Typography, Avatar, Link, Card, CardContent, Grid, useMediaQuery } from '@mui/material';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import PeopleIcon from '@mui/icons-material/People';
 import ShieldIcon from '@mui/icons-material/Shield';
@@ -9,6 +9,9 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import ParallaxSection from './components/paralax-section';
 
 const LandingPage = () => {
+
+     const isMobile = useMediaQuery(theme => theme.breakpoints.down('sm'));
+
      return (
           <Box>
                {/* Hero Parallax Section */}
@@ -27,7 +30,7 @@ const LandingPage = () => {
                                         <Typography variant="h1" gutterBottom>
                                              Simplify Your House Council Management
                                         </Typography>
-                                        <Typography variant="h6" color="text.secondary" paragraph sx={{ mb: 4 }}>
+                                        <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
                                              Our app streamlines communication, decision-making, and financial management for residential
                                              communities.
                                         </Typography>
@@ -106,8 +109,8 @@ const LandingPage = () => {
                {/* Parallax Testimonials Section */}
                <ParallaxSection backgroundImage="/background-images/background-image-1.png">
                     <Container maxWidth="lg">
-                         <Box sx={{ textAlign: 'center', mb: 6, backgroundColor: 'rgba(255,255,255,0.85)', p: 4, borderRadius: 2 }}>
-                              <Typography variant="h2" gutterBottom>
+                         <Box sx={{ textAlign: 'center', mb: 6, backgroundColor: 'rgba(255,255,255,0.85)', p: 2, borderRadius: 2 }}>
+                              <Typography variant="h4" gutterBottom>
                                    Trusted by Communities
                               </Typography>
                               <Typography variant="h6" color="text.secondary">
@@ -147,7 +150,7 @@ const LandingPage = () => {
                                              }}
                                         >
                                              <CardContent>
-                                                  <Typography variant="body1" color="text.secondary" paragraph>
+                                                  <Typography variant="body1" color="text.secondary">
                                                        "{testimonial.quote}"
                                                   </Typography>
                                                   <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
@@ -167,7 +170,7 @@ const LandingPage = () => {
                     </Container>
                </ParallaxSection>
 
-               <Box sx={{ textAlign: 'center', my: 6, height: '80px' }} >
+               <Box sx={{ textAlign: 'center', my: 6, height: isMobile ? 'auto' : '80px' }} >
                     <Typography variant="h2" gutterBottom>
                          Effortless Community Management
                     </Typography>

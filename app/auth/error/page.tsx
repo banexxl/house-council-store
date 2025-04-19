@@ -5,7 +5,7 @@ import AuthErrorPage from "./auth-error-page"
 import { getSessionUser } from "@/app/lib/get-session"
 
 export const metadata: Metadata = {
-     title: "Authentication Error | House Council",
+     title: "Authentication Error | Nest Link",
      description: "An error occurred during authentication",
 }
 

@@ -126,13 +126,13 @@ export const Header = ({ user }: HeaderProps) => {
               )}
             </Box>
             <Box sx={{ display: { xs: "flex", md: "none" } }}>
-              {user && (
+              {/* {user && (
                 <Link href="https://house-council-app-v2-plum.vercel.app/" style={{ color: theme.palette.primary.main, marginRight: "8px" }}>
                   <Button variant="contained" color="primary" size="small">
                     Dashboard
                   </Button>
                 </Link>
-              )}
+              )} */}
               <IconButton color="inherit" aria-label="open drawer" edge="end" onClick={handleDrawerToggle}>
                 <MenuIcon sx={{ textAlign: "center", color: theme.palette.primary.main, textDecoration: "none" }} />
               </IconButton>
