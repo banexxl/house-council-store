@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import MenuIcon from '@mui/icons-material/Menu';
-import ApartmentIcon from '@mui/icons-material/Apartment';
 import { User } from "@supabase/supabase-js";
 import { logoutUserAction } from "@/app/profile/logout-action";
 import { useRouter } from "next/navigation";
