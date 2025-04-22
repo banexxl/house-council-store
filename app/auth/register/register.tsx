@@ -25,7 +25,7 @@ import { registrationSchema } from "./register-schema"
 import { ErrorType, RegisterFormValues, registerUser } from "./register-action"
 import toast, { Toaster } from "react-hot-toast"
 import { useRouter } from "next/navigation"
-
+import Animate from "@/app/components/animation-framer-motion"
 
 export const RegisterPage = () => {
 
@@ -82,248 +82,250 @@ export const RegisterPage = () => {
 
      return (
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
-               <Box component="main" sx={{ flexGrow: 1, py: { xs: 6, md: 10 } }}>
-                    <Container maxWidth="sm">
-                         <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
-                              <Box sx={{ textAlign: "center", mb: 4 }}>
-                                   <Typography variant="h4" component="h1" gutterBottom>
-                                        Create an Account
-                                   </Typography>
-                                   <Typography variant="body2" color="text.secondary">
-                                        Join NestLink to manage your residential community efficiently
-                                   </Typography>
-                              </Box>
+               <Animate>
+                    <Box component="main" sx={{ flexGrow: 1, py: { xs: 6, md: 10 } }}>
+                         <Container maxWidth="sm">
+                              <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
+                                   <Box sx={{ textAlign: "center", mb: 4 }}>
+                                        <Typography variant="h4" component="h1" gutterBottom>
+                                             Create an Account
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                             Join NestLink to manage your residential community efficiently
+                                        </Typography>
+                                   </Box>
 
-                              <Box component="form" onSubmit={formik.handleSubmit}>
-                                   <Grid container spacing={3}>
-                                        {/* Each field container has a fixed height to prevent layout shifts */}
-                                        <Grid size={{ xs: 12 }}>
-                                             <Box sx={{ height: "65px" }}>
-                                                  <TextField
-                                                       fullWidth
-                                                       id="contact_person"
-                                                       name="contact_person"
-                                                       label="Full Name"
-                                                       value={formik.values.contact_person}
-                                                       onChange={formik.handleChange}
-                                                       onBlur={formik.handleBlur}
-                                                       error={formik.touched.contact_person && Boolean(formik.errors.contact_person)}
-                                                       helperText={formik.touched.contact_person && formik.errors.contact_person}
-                                                  />
-                                             </Box>
-                                        </Grid>
-
-                                        <Grid size={{ xs: 12 }}>
-                                             <Box sx={{ height: "65px" }}>
-                                                  <TextField
-                                                       fullWidth
-                                                       id="email"
-                                                       name="email"
-                                                       label="Email Address"
-                                                       type="email"
-                                                       value={formik.values.email}
-                                                       onChange={formik.handleChange}
-                                                       onBlur={formik.handleBlur}
-                                                       error={formik.touched.email && Boolean(formik.errors.email)}
-                                                       helperText={formik.touched.email && formik.errors.email}
-                                                  />
-                                             </Box>
-                                        </Grid>
-
-                                        <Grid size={{ xs: 12 }}>
-                                             <Box sx={{ height: "65px" }}>
-                                                  <TextField
-                                                       fullWidth
-                                                       id="confirm_email"
-                                                       name="confirm_email"
-                                                       label="Confirm Email Address"
-                                                       type="email"
-                                                       value={formik.values.confirm_email}
-                                                       onChange={formik.handleChange}
-                                                       onBlur={formik.handleBlur}
-                                                       error={formik.touched.confirm_email && Boolean(formik.errors.confirm_email)}
-                                                       helperText={formik.touched.confirm_email && formik.errors.confirm_email}
-                                                  />
-                                             </Box>
-                                        </Grid>
-
-                                        <Grid size={{ xs: 12 }}>
-                                             <Box sx={{ height: "65px" }}>
-                                                  <TextField
-                                                       fullWidth
-                                                       id="password"
-                                                       name="password"
-                                                       label="Password"
-                                                       type={showPassword ? "text" : "password"}
-                                                       value={formik.values.password}
-                                                       onChange={formik.handleChange}
-                                                       onBlur={formik.handleBlur}
-                                                       error={formik.touched.password && Boolean(formik.errors.password)}
-                                                       helperText={formik.touched.password && formik.errors.password}
-                                                       slotProps={{
-                                                            input: {
-                                                                 endAdornment: (
-                                                                      <InputAdornment position="end">
-                                                                           <IconButton aria-label="toggle password visibility" onClick={handleClickShowPassword} edge="end">
-                                                                                {showPassword ? <VisibilityOff /> : <Visibility />}
-                                                                           </IconButton>
-                                                                      </InputAdornment>
-                                                                 ),
-                                                            }
-                                                       }}
-                                                  />
-                                             </Box>
-                                        </Grid>
-
-                                        <Grid size={{ xs: 12 }}>
-                                             <Box sx={{ height: "65px" }}>
-                                                  <TextField
-                                                       fullWidth
-                                                       id="confirm_password"
-                                                       name="confirm_password"
-                                                       label="Confirm Password"
-                                                       type={showConfirmPassword ? "text" : "password"}
-                                                       value={formik.values.confirm_password}
-                                                       onChange={formik.handleChange}
-                                                       onBlur={formik.handleBlur}
-                                                       error={formik.touched.confirm_password && Boolean(formik.errors.confirm_password)}
-                                                       helperText={formik.touched.confirm_password && formik.errors.confirm_password}
-                                                       slotProps={{
-                                                            input: {
-                                                                 endAdornment: (
-                                                                      <InputAdornment position="end">
-                                                                           <IconButton
-                                                                                aria-label="toggle confirm password visibility"
-                                                                                onClick={handleClickShowConfirmPassword}
-                                                                                edge="end"
-                                                                           >
-                                                                                {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                                                                           </IconButton>
-                                                                      </InputAdornment>
-                                                                 ),
-                                                            }
-                                                       }}
-                                                  />
-                                             </Box>
-                                        </Grid>
-
-                                        <Grid size={{ xs: 12 }}>
-                                             <Box sx={{ height: "50px" }}>
-                                                  <FormControl
-                                                       error={
-                                                            formik.touched.has_accepted_terms_and_conditions &&
-                                                            Boolean(formik.errors.has_accepted_terms_and_conditions)}
-                                                       fullWidth
-                                                  >
-                                                       <FormControlLabel
-                                                            control={
-                                                                 <Checkbox
-                                                                      id="has_accepted_terms_and_conditions"
-                                                                      name="has_accepted_terms_and_conditions"
-                                                                      checked={formik.values.has_accepted_terms_and_conditions}
-                                                                      onChange={formik.handleChange}
-                                                                      color="primary"
-                                                                 />
-                                                            }
-                                                            label={
-                                                                 <Typography variant="body2">
-                                                                      I agree to the{" "}
-                                                                      <Link href="#" color="primary">
-                                                                           Terms and Conditions
-                                                                      </Link>
-                                                                 </Typography>
-                                                            }
+                                   <Box component="form" onSubmit={formik.handleSubmit}>
+                                        <Grid container spacing={3}>
+                                             {/* Each field container has a fixed height to prevent layout shifts */}
+                                             <Grid size={{ xs: 12 }}>
+                                                  <Box sx={{ height: "65px" }}>
+                                                       <TextField
+                                                            fullWidth
+                                                            id="contact_person"
+                                                            name="contact_person"
+                                                            label="Full Name"
+                                                            value={formik.values.contact_person}
+                                                            onChange={formik.handleChange}
+                                                            onBlur={formik.handleBlur}
+                                                            error={formik.touched.contact_person && Boolean(formik.errors.contact_person)}
+                                                            helperText={formik.touched.contact_person && formik.errors.contact_person}
                                                        />
-                                                       {formik.touched.has_accepted_terms_and_conditions && formik.errors.has_accepted_terms_and_conditions && (
-                                                            <FormHelperText error>{formik.errors.has_accepted_terms_and_conditions}</FormHelperText>
-                                                       )}
-                                                  </FormControl>
-                                             </Box>
-                                        </Grid>
+                                                  </Box>
+                                             </Grid>
 
-                                        <Grid size={{ xs: 12 }}>
-                                             <Box sx={{ height: "50px" }}>
-                                                  <FormControl
-                                                       error={formik.touched.has_accepted_privacy_policy &&
-                                                            Boolean(formik.errors.has_accepted_privacy_policy)}
-                                                       fullWidth
-                                                  >
-                                                       <FormControlLabel
-                                                            control={
-                                                                 <Checkbox
-                                                                      id="has_accepted_privacy_policy"
-                                                                      name="has_accepted_privacy_policy"
-                                                                      checked={formik.values.has_accepted_privacy_policy}
-                                                                      onChange={formik.handleChange}
-                                                                      color="primary"
-                                                                 />
-                                                            }
-                                                            label={
-                                                                 <Typography variant="body2">
-                                                                      I agree to the{" "}
-                                                                      <Link href="#" color="primary">
-                                                                           Privacy Policy
-                                                                      </Link>
-                                                                 </Typography>
-                                                            }
+                                             <Grid size={{ xs: 12 }}>
+                                                  <Box sx={{ height: "65px" }}>
+                                                       <TextField
+                                                            fullWidth
+                                                            id="email"
+                                                            name="email"
+                                                            label="Email Address"
+                                                            type="email"
+                                                            value={formik.values.email}
+                                                            onChange={formik.handleChange}
+                                                            onBlur={formik.handleBlur}
+                                                            error={formik.touched.email && Boolean(formik.errors.email)}
+                                                            helperText={formik.touched.email && formik.errors.email}
                                                        />
-                                                       {formik.touched.has_accepted_privacy_policy && formik.errors.has_accepted_privacy_policy && (
-                                                            <FormHelperText error>{formik.errors.has_accepted_privacy_policy}</FormHelperText>
-                                                       )}
-                                                  </FormControl>
-                                             </Box>
-                                        </Grid>
+                                                  </Box>
+                                             </Grid>
 
-                                        <Grid size={{ xs: 12 }}>
-                                             <Box sx={{ height: "65px" }}>
-                                                  <FormControlLabel
-                                                       control={
-                                                            <Checkbox
-                                                                 id="has_accepted_marketing"
-                                                                 name="has_accepted_marketing"
-                                                                 checked={formik.values.has_accepted_marketing}
-                                                                 onChange={formik.handleChange}
-                                                                 color="primary"
+                                             <Grid size={{ xs: 12 }}>
+                                                  <Box sx={{ height: "65px" }}>
+                                                       <TextField
+                                                            fullWidth
+                                                            id="confirm_email"
+                                                            name="confirm_email"
+                                                            label="Confirm Email Address"
+                                                            type="email"
+                                                            value={formik.values.confirm_email}
+                                                            onChange={formik.handleChange}
+                                                            onBlur={formik.handleBlur}
+                                                            error={formik.touched.confirm_email && Boolean(formik.errors.confirm_email)}
+                                                            helperText={formik.touched.confirm_email && formik.errors.confirm_email}
+                                                       />
+                                                  </Box>
+                                             </Grid>
+
+                                             <Grid size={{ xs: 12 }}>
+                                                  <Box sx={{ height: "65px" }}>
+                                                       <TextField
+                                                            fullWidth
+                                                            id="password"
+                                                            name="password"
+                                                            label="Password"
+                                                            type={showPassword ? "text" : "password"}
+                                                            value={formik.values.password}
+                                                            onChange={formik.handleChange}
+                                                            onBlur={formik.handleBlur}
+                                                            error={formik.touched.password && Boolean(formik.errors.password)}
+                                                            helperText={formik.touched.password && formik.errors.password}
+                                                            slotProps={{
+                                                                 input: {
+                                                                      endAdornment: (
+                                                                           <InputAdornment position="end">
+                                                                                <IconButton aria-label="toggle password visibility" onClick={handleClickShowPassword} edge="end">
+                                                                                     {showPassword ? <VisibilityOff /> : <Visibility />}
+                                                                                </IconButton>
+                                                                           </InputAdornment>
+                                                                      ),
+                                                                 }
+                                                            }}
+                                                       />
+                                                  </Box>
+                                             </Grid>
+
+                                             <Grid size={{ xs: 12 }}>
+                                                  <Box sx={{ height: "65px" }}>
+                                                       <TextField
+                                                            fullWidth
+                                                            id="confirm_password"
+                                                            name="confirm_password"
+                                                            label="Confirm Password"
+                                                            type={showConfirmPassword ? "text" : "password"}
+                                                            value={formik.values.confirm_password}
+                                                            onChange={formik.handleChange}
+                                                            onBlur={formik.handleBlur}
+                                                            error={formik.touched.confirm_password && Boolean(formik.errors.confirm_password)}
+                                                            helperText={formik.touched.confirm_password && formik.errors.confirm_password}
+                                                            slotProps={{
+                                                                 input: {
+                                                                      endAdornment: (
+                                                                           <InputAdornment position="end">
+                                                                                <IconButton
+                                                                                     aria-label="toggle confirm password visibility"
+                                                                                     onClick={handleClickShowConfirmPassword}
+                                                                                     edge="end"
+                                                                                >
+                                                                                     {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                                                                                </IconButton>
+                                                                           </InputAdornment>
+                                                                      ),
+                                                                 }
+                                                            }}
+                                                       />
+                                                  </Box>
+                                             </Grid>
+
+                                             <Grid size={{ xs: 12 }}>
+                                                  <Box sx={{ height: "50px" }}>
+                                                       <FormControl
+                                                            error={
+                                                                 formik.touched.has_accepted_terms_and_conditions &&
+                                                                 Boolean(formik.errors.has_accepted_terms_and_conditions)}
+                                                            fullWidth
+                                                       >
+                                                            <FormControlLabel
+                                                                 control={
+                                                                      <Checkbox
+                                                                           id="has_accepted_terms_and_conditions"
+                                                                           name="has_accepted_terms_and_conditions"
+                                                                           checked={formik.values.has_accepted_terms_and_conditions}
+                                                                           onChange={formik.handleChange}
+                                                                           color="primary"
+                                                                      />
+                                                                 }
+                                                                 label={
+                                                                      <Typography variant="body2">
+                                                                           I agree to the{" "}
+                                                                           <Link href="#" color="primary">
+                                                                                Terms and Conditions
+                                                                           </Link>
+                                                                      </Typography>
+                                                                 }
                                                             />
-                                                       }
-                                                       label={
-                                                            <Typography variant="body2">
-                                                                 I would like to receive marketing emails about product updates and offers
-                                                            </Typography>
-                                                       }
-                                                  />
-                                             </Box>
+                                                            {formik.touched.has_accepted_terms_and_conditions && formik.errors.has_accepted_terms_and_conditions && (
+                                                                 <FormHelperText error>{formik.errors.has_accepted_terms_and_conditions}</FormHelperText>
+                                                            )}
+                                                       </FormControl>
+                                                  </Box>
+                                             </Grid>
+
+                                             <Grid size={{ xs: 12 }}>
+                                                  <Box sx={{ height: "50px" }}>
+                                                       <FormControl
+                                                            error={formik.touched.has_accepted_privacy_policy &&
+                                                                 Boolean(formik.errors.has_accepted_privacy_policy)}
+                                                            fullWidth
+                                                       >
+                                                            <FormControlLabel
+                                                                 control={
+                                                                      <Checkbox
+                                                                           id="has_accepted_privacy_policy"
+                                                                           name="has_accepted_privacy_policy"
+                                                                           checked={formik.values.has_accepted_privacy_policy}
+                                                                           onChange={formik.handleChange}
+                                                                           color="primary"
+                                                                      />
+                                                                 }
+                                                                 label={
+                                                                      <Typography variant="body2">
+                                                                           I agree to the{" "}
+                                                                           <Link href="#" color="primary">
+                                                                                Privacy Policy
+                                                                           </Link>
+                                                                      </Typography>
+                                                                 }
+                                                            />
+                                                            {formik.touched.has_accepted_privacy_policy && formik.errors.has_accepted_privacy_policy && (
+                                                                 <FormHelperText error>{formik.errors.has_accepted_privacy_policy}</FormHelperText>
+                                                            )}
+                                                       </FormControl>
+                                                  </Box>
+                                             </Grid>
+
+                                             <Grid size={{ xs: 12 }}>
+                                                  <Box sx={{ height: "65px" }}>
+                                                       <FormControlLabel
+                                                            control={
+                                                                 <Checkbox
+                                                                      id="has_accepted_marketing"
+                                                                      name="has_accepted_marketing"
+                                                                      checked={formik.values.has_accepted_marketing}
+                                                                      onChange={formik.handleChange}
+                                                                      color="primary"
+                                                                 />
+                                                            }
+                                                            label={
+                                                                 <Typography variant="body2">
+                                                                      I would like to receive marketing emails about product updates and offers
+                                                                 </Typography>
+                                                            }
+                                                       />
+                                                  </Box>
+                                             </Grid>
+
+                                             <Grid size={{ xs: 12 }}>
+                                                  <Button
+                                                       type="submit"
+                                                       fullWidth
+                                                       variant="contained"
+                                                       size="large"
+                                                       sx={{ mt: 2 }}
+                                                       disabled={formik.isSubmitting}
+                                                  >
+                                                       {formik.isSubmitting ? "Creating Account..." : "Create Account"}
+                                                  </Button>
+                                             </Grid>
                                         </Grid>
+                                   </Box>
 
-                                        <Grid size={{ xs: 12 }}>
-                                             <Button
-                                                  type="submit"
-                                                  fullWidth
-                                                  variant="contained"
-                                                  size="large"
-                                                  sx={{ mt: 2 }}
-                                                  disabled={formik.isSubmitting}
-                                             >
-                                                  {formik.isSubmitting ? "Creating Account..." : "Create Account"}
-                                             </Button>
-                                        </Grid>
-                                   </Grid>
-                              </Box>
+                                   <Divider sx={{ my: 4 }} />
 
-                              <Divider sx={{ my: 4 }} />
-
-                              <Box sx={{ textAlign: "center" }}>
-                                   <Typography variant="body2">
-                                        Already have an account?{" "}
-                                        <Link href="/auth/sign-in" style={{ color: "primary" }}>
-                                             Sign in
-                                        </Link>
-                                   </Typography>
-                              </Box>
-                         </Paper>
-                    </Container>
-               </Box>
-               <Toaster />
+                                   <Box sx={{ textAlign: "center" }}>
+                                        <Typography variant="body2">
+                                             Already have an account?{" "}
+                                             <Link href="/auth/sign-in" style={{ color: "primary" }}>
+                                                  Sign in
+                                             </Link>
+                                        </Typography>
+                                   </Box>
+                              </Paper>
+                         </Container>
+                    </Box>
+                    <Toaster />
+               </Animate>
           </Box >
      )
 }

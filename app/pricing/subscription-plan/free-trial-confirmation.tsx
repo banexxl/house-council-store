@@ -25,6 +25,7 @@ import toast, { Toaster } from "react-hot-toast"
 import { updateAccountAction } from "@/app/profile/account-action"
 import { SubscriptionPlan } from "@/app/types/subscription-plan"
 import { Client } from "@/app/types/client"
+import Animate from "@/app/components/animation-framer-motion"
 
 interface FreeTrialConfirmationProps {
      subscriptionPlan: SubscriptionPlan
@@ -118,97 +119,99 @@ export default function FreeTrialConfirmation({ subscriptionPlan, userEmail, cli
 
      return (
           <Container maxWidth="md" sx={{ py: 8 }}>
-               <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
-                    <Box sx={{ textAlign: "center", mb: 4 }}>
-                         <Typography variant="h4" gutterBottom>
-                              Start Your Free Trial
-                         </Typography>
-                         <Typography variant="body1" color="text.secondary">
-                              You're about to start a 14-day free trial of our {subscriptionPlan.name} subscriptionPlan. No payment required during the trial period.
-                         </Typography>
-                    </Box>
-
-                    <Divider sx={{ my: 3 }} />
-
-                    <Box sx={{ mb: 4 }}>
-                         <Typography variant="h5" gutterBottom>
-                              Plan Details
-                         </Typography>
-
-                         <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                              <Typography variant="h6" sx={{ mr: 2 }}>
-                                   {subscriptionPlan.name} Plan
+               <Animate>
+                    <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
+                         <Box sx={{ textAlign: "center", mb: 4 }}>
+                              <Typography variant="h4" gutterBottom>
+                                   Start Your Free Trial
                               </Typography>
-                              <Chip label="14-day free trial" color="primary" size="small" />
+                              <Typography variant="body1" color="text.secondary">
+                                   You're about to start a 14-day free trial of our {subscriptionPlan.name} subscriptionPlan. No payment required during the trial period.
+                              </Typography>
                          </Box>
 
-                         <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 4, mb: 3 }}>
-                              <Box>
-                                   <Typography variant="subtitle2" color="text.secondary">
-                                        Price after trial
+                         <Divider sx={{ my: 3 }} />
+
+                         <Box sx={{ mb: 4 }}>
+                              <Typography variant="h5" gutterBottom>
+                                   Plan Details
+                              </Typography>
+
+                              <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                                   <Typography variant="h6" sx={{ mr: 2 }}>
+                                        {subscriptionPlan.name} Plan
                                    </Typography>
-                                   <Typography variant="h6">
-                                        ${subscriptionPlan.base_price_per_month.toFixed(2)}/{formattedCycle}
-                                   </Typography>
+                                   <Chip label="14-day free trial" color="primary" size="small" />
                               </Box>
 
-                              <Box>
-                                   <Typography variant="subtitle2" color="text.secondary">
-                                        Billing cycle
-                                   </Typography>
-                                   <Typography variant="h6">{formattedCycle}</Typography>
+                              <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 4, mb: 3 }}>
+                                   <Box>
+                                        <Typography variant="subtitle2" color="text.secondary">
+                                             Price after trial
+                                        </Typography>
+                                        <Typography variant="h6">
+                                             ${subscriptionPlan.base_price_per_month.toFixed(2)}/{formattedCycle}
+                                        </Typography>
+                                   </Box>
+
+                                   <Box>
+                                        <Typography variant="subtitle2" color="text.secondary">
+                                             Billing cycle
+                                        </Typography>
+                                        <Typography variant="h6">{formattedCycle}</Typography>
+                                   </Box>
                               </Box>
+
+                              <List>
+                                   <ListItem>
+                                        <ListItemIcon>
+                                             <CalendarTodayIcon color="primary" />
+                                        </ListItemIcon>
+                                        <ListItemText
+                                             primary="Trial End Date"
+                                             secondary={`Your free trial will end on ${formattedTrialEndDate}`}
+                                        />
+                                   </ListItem>
+                                   <ListItem>
+                                        <ListItemIcon>
+                                             <CreditCardIcon color="primary" />
+                                        </ListItemIcon>
+                                        <ListItemText
+                                             primary="First Billing Date"
+                                             secondary={`You will be billed on ${formattedBillingDate} unless you cancel before the trial ends`}
+                                        />
+                                   </ListItem>
+                              </List>
                          </Box>
 
-                         <List>
-                              <ListItem>
-                                   <ListItemIcon>
-                                        <CalendarTodayIcon color="primary" />
-                                   </ListItemIcon>
-                                   <ListItemText
-                                        primary="Trial End Date"
-                                        secondary={`Your free trial will end on ${formattedTrialEndDate}`}
-                                   />
-                              </ListItem>
-                              <ListItem>
-                                   <ListItemIcon>
-                                        <CreditCardIcon color="primary" />
-                                   </ListItemIcon>
-                                   <ListItemText
-                                        primary="First Billing Date"
-                                        secondary={`You will be billed on ${formattedBillingDate} unless you cancel before the trial ends`}
-                                   />
-                              </ListItem>
-                         </List>
-                    </Box>
-
-                    <Alert severity="info" sx={{ mb: 4 }}>
-                         <Box sx={{ display: "flex", alignItems: "flex-start" }}>
-                              <InfoIcon sx={{ mr: 1, mt: 0.5 }} />
-                              <Box>
-                                   <Typography variant="subtitle2">No payment required now</Typography>
-                                   <Typography variant="body2">
-                                        You won't be charged during the free trial period. You can cancel anytime before the trial ends to avoid
-                                        any charges.
-                                   </Typography>
+                         <Alert severity="info" sx={{ mb: 4 }}>
+                              <Box sx={{ display: "flex", alignItems: "flex-start" }}>
+                                   <InfoIcon sx={{ mr: 1, mt: 0.5 }} />
+                                   <Box>
+                                        <Typography variant="subtitle2">No payment required now</Typography>
+                                        <Typography variant="body2">
+                                             You won't be charged during the free trial period. You can cancel anytime before the trial ends to avoid
+                                             any charges.
+                                        </Typography>
+                                   </Box>
                               </Box>
-                         </Box>
-                    </Alert>
+                         </Alert>
 
-                    <Box sx={{ display: "flex", justifyContent: "space-between", mt: 4 }}>
-                         <Button variant="outlined" onClick={() => router.push("/pricing")}>
-                              Back to Pricing
-                         </Button>
-                         <Button
-                              variant="contained"
-                              onClick={handleStartFreeTrial}
-                              disabled={isLoading}
-                              startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <CheckCircleIcon />}
-                         >
-                              {isLoading ? "Processing..." : "Confirm Free Trial"}
-                         </Button>
-                    </Box>
-               </Paper>
+                         <Box sx={{ display: "flex", justifyContent: "space-between", mt: 4 }}>
+                              <Button variant="outlined" onClick={() => router.push("/pricing")}>
+                                   Back to Pricing
+                              </Button>
+                              <Button
+                                   variant="contained"
+                                   onClick={handleStartFreeTrial}
+                                   disabled={isLoading}
+                                   startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <CheckCircleIcon />}
+                              >
+                                   {isLoading ? "Processing..." : "Confirm Free Trial"}
+                              </Button>
+                         </Box>
+                    </Paper>
+               </Animate>
           </Container>
      )
 }

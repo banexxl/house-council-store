@@ -8,8 +8,6 @@ import CssBaseline from "@mui/material/CssBaseline"
 import { Box } from "@mui/material"
 import theme from "@/app/theme"
 import { usePathname } from "next/navigation"
-import { AnimatePresence } from "framer-motion"
-import Animate from "@/app/components/animation-framer-motion"
 import { Toaster } from "react-hot-toast"
 // import { useCookieFocusChecker } from "@/app/components/cookie-checker"
 
@@ -35,13 +33,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider theme={theme}>
           <CssBaseline />
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
-            <AnimatePresence mode="wait">
-              <Animate key={pathname}>
-                <Box component="main" sx={{ flexGrow: 1 }}>
-                  {children}
-                </Box>
-              </Animate>
-            </AnimatePresence>
+            <Box component="main" sx={{ flexGrow: 1 }}>
+              {children}
+            </Box>
           </Box>
           <Toaster position="top-center" />
         </ThemeProvider>

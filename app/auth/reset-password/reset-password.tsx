@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { useFormik } from "formik"
-import * as Yup from "yup"
+import Animate from "@/app/components/animation-framer-motion"
 import {
      Box,
      Button,
@@ -141,162 +141,164 @@ export const ResetPasswordPage = () => {
 
      return (
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
-               <Box component="main" sx={{ flexGrow: 1, py: { xs: 6, md: 10 } }}>
-                    <Container maxWidth="sm">
-                         <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
-                              <Stepper activeStep={isSubmitted ? 1 : 0} sx={{ mb: 4 }}>
-                                   <Step>
-                                        <StepLabel>Reset Password</StepLabel>
-                                   </Step>
-                                   <Step>
-                                        <StepLabel>Complete</StepLabel>
-                                   </Step>
-                              </Stepper>
+               <Animate>
+                    <Box component="main" sx={{ flexGrow: 1, py: { xs: 6, md: 10 } }}>
+                         <Container maxWidth="sm">
+                              <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
+                                   <Stepper activeStep={isSubmitted ? 1 : 0} sx={{ mb: 4 }}>
+                                        <Step>
+                                             <StepLabel>Reset Password</StepLabel>
+                                        </Step>
+                                        <Step>
+                                             <StepLabel>Complete</StepLabel>
+                                        </Step>
+                                   </Stepper>
 
-                              {isSubmitted ? (
-                                   <Box sx={{ textAlign: "center" }}>
-                                        <Box sx={{ color: "success.main", mb: 2 }}>
-                                             <CheckCircleOutlineIcon sx={{ fontSize: 60 }} />
-                                        </Box>
-                                        <Typography variant="h5" gutterBottom>
-                                             Password Reset Successful
-                                        </Typography>
-                                        <Typography variant="body1" >
-                                             Your password has been successfully reset.
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary" >
-                                             You can now log in to your account with your new password.
-                                        </Typography>
-                                        <Button variant="contained" component={Link} href="/auth/sign-in" sx={{ mt: 2 }}>
-                                             Login
-                                        </Button>
-                                   </Box>
-                              ) : (
-                                   <>
-                                        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", mb: 4 }}>
-                                             <Box
-                                                  sx={{
-                                                       bgcolor: "primary.main",
-                                                       color: "primary.contrastText",
-                                                       borderRadius: "50%",
-                                                       p: 1,
-                                                       mb: 2,
-                                                  }}
-                                             >
-                                                  <LockResetIcon />
+                                   {isSubmitted ? (
+                                        <Box sx={{ textAlign: "center" }}>
+                                             <Box sx={{ color: "success.main", mb: 2 }}>
+                                                  <CheckCircleOutlineIcon sx={{ fontSize: 60 }} />
                                              </Box>
-                                             <Typography variant="h4" component="h1" gutterBottom>
-                                                  Reset Your Password
+                                             <Typography variant="h5" gutterBottom>
+                                                  Password Reset Successful
                                              </Typography>
-                                             <Typography variant="body2" color="text.secondary" textAlign="center">
-                                                  Please enter your new password below
+                                             <Typography variant="body1" >
+                                                  Your password has been successfully reset.
                                              </Typography>
-                                        </Box>
-
-                                        <Box component="form" onSubmit={formik.handleSubmit} noValidate>
-                                             <TextField
-                                                  fullWidth
-                                                  id="password"
-                                                  name="password"
-                                                  label="New Password"
-                                                  type={showPassword ? "text" : "password"}
-                                                  margin="normal"
-                                                  value={formik.values.password}
-                                                  onChange={formik.handleChange}
-                                                  onBlur={formik.handleBlur}
-                                                  error={formik.touched.password && Boolean(formik.errors.password)}
-                                                  helperText={formik.touched.password && formik.errors.password}
-                                                  slotProps={{
-                                                       input: {
-                                                            endAdornment: (
-                                                                 <InputAdornment position="end">
-                                                                      <IconButton
-                                                                           aria-label="toggle password visibility"
-                                                                           onClick={handleClickShowPassword}
-                                                                           edge="end"
-                                                                      >
-                                                                           {showPassword ? <VisibilityOff /> : <Visibility />}
-                                                                      </IconButton>
-                                                                 </InputAdornment>
-                                                            )
-                                                       }
-                                                  }}
-
-                                             />
-
-                                             {formik.values.password && (
-                                                  <Box sx={{ mt: 1, mb: 2 }}>
-                                                       <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
-                                                            <Typography variant="caption">Password strength:</Typography>
-                                                            <Typography variant="caption" sx={{ color: getStrengthColor(passwordStrength) }}>
-                                                                 {getStrengthLabel(passwordStrength)}
-                                                            </Typography>
-                                                       </Box>
-                                                       <LinearProgress
-                                                            variant="determinate"
-                                                            value={passwordStrength}
-                                                            sx={{
-                                                                 height: 8,
-                                                                 borderRadius: 4,
-                                                                 bgcolor: "grey.200",
-                                                                 "& .MuiLinearProgress-bar": {
-                                                                      bgcolor: getStrengthColor(passwordStrength),
-                                                                 },
-                                                            }}
-                                                       />
-                                                  </Box>
-                                             )}
-
-                                             <TextField
-                                                  fullWidth
-                                                  id="confirmPassword"
-                                                  name="confirmPassword"
-                                                  label="Confirm New Password"
-                                                  type={showConfirmPassword ? "text" : "password"}
-                                                  margin="normal"
-                                                  value={formik.values.confirmPassword}
-                                                  onChange={formik.handleChange}
-                                                  onBlur={formik.handleBlur}
-                                                  error={formik.touched.confirmPassword && Boolean(formik.errors.confirmPassword)}
-                                                  helperText={formik.touched.confirmPassword && formik.errors.confirmPassword}
-                                                  slotProps={{
-                                                       input: {
-                                                            endAdornment: (
-                                                                 <InputAdornment position="end">
-                                                                      <IconButton
-                                                                           aria-label="toggle confirm password visibility"
-                                                                           onClick={handleClickShowConfirmPassword}
-                                                                           edge="end"
-                                                                      >
-                                                                           {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                                                                      </IconButton>
-                                                                 </InputAdornment>
-                                                            ),
-                                                       },
-                                                  }}
-                                             />
-
-                                             <Alert severity="info" sx={{ mt: 2, mb: 3 }}>
-                                                  Your password must be at least 8 characters long and include uppercase letters, lowercase letters,
-                                                  and numbers.
-                                             </Alert>
-
-                                             <Button
-                                                  type="submit"
-                                                  fullWidth
-                                                  variant="contained"
-                                                  size="large"
-                                                  disabled={formik.isSubmitting}
-                                                  sx={{ mt: 2 }}
-                                             >
-                                                  {formik.isSubmitting ? <CircularProgress size={24} color="inherit" /> : "Reset Password"}
+                                             <Typography variant="body2" color="text.secondary" >
+                                                  You can now log in to your account with your new password.
+                                             </Typography>
+                                             <Button variant="contained" component={Link} href="/auth/sign-in" sx={{ mt: 2 }}>
+                                                  Login
                                              </Button>
                                         </Box>
-                                   </>
-                              )}
-                         </Paper>
-                    </Container>
-               </Box>
+                                   ) : (
+                                        <>
+                                             <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", mb: 4 }}>
+                                                  <Box
+                                                       sx={{
+                                                            bgcolor: "primary.main",
+                                                            color: "primary.contrastText",
+                                                            borderRadius: "50%",
+                                                            p: 1,
+                                                            mb: 2,
+                                                       }}
+                                                  >
+                                                       <LockResetIcon />
+                                                  </Box>
+                                                  <Typography variant="h4" component="h1" gutterBottom>
+                                                       Reset Your Password
+                                                  </Typography>
+                                                  <Typography variant="body2" color="text.secondary" textAlign="center">
+                                                       Please enter your new password below
+                                                  </Typography>
+                                             </Box>
+
+                                             <Box component="form" onSubmit={formik.handleSubmit} noValidate>
+                                                  <TextField
+                                                       fullWidth
+                                                       id="password"
+                                                       name="password"
+                                                       label="New Password"
+                                                       type={showPassword ? "text" : "password"}
+                                                       margin="normal"
+                                                       value={formik.values.password}
+                                                       onChange={formik.handleChange}
+                                                       onBlur={formik.handleBlur}
+                                                       error={formik.touched.password && Boolean(formik.errors.password)}
+                                                       helperText={formik.touched.password && formik.errors.password}
+                                                       slotProps={{
+                                                            input: {
+                                                                 endAdornment: (
+                                                                      <InputAdornment position="end">
+                                                                           <IconButton
+                                                                                aria-label="toggle password visibility"
+                                                                                onClick={handleClickShowPassword}
+                                                                                edge="end"
+                                                                           >
+                                                                                {showPassword ? <VisibilityOff /> : <Visibility />}
+                                                                           </IconButton>
+                                                                      </InputAdornment>
+                                                                 )
+                                                            }
+                                                       }}
+
+                                                  />
+
+                                                  {formik.values.password && (
+                                                       <Box sx={{ mt: 1, mb: 2 }}>
+                                                            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
+                                                                 <Typography variant="caption">Password strength:</Typography>
+                                                                 <Typography variant="caption" sx={{ color: getStrengthColor(passwordStrength) }}>
+                                                                      {getStrengthLabel(passwordStrength)}
+                                                                 </Typography>
+                                                            </Box>
+                                                            <LinearProgress
+                                                                 variant="determinate"
+                                                                 value={passwordStrength}
+                                                                 sx={{
+                                                                      height: 8,
+                                                                      borderRadius: 4,
+                                                                      bgcolor: "grey.200",
+                                                                      "& .MuiLinearProgress-bar": {
+                                                                           bgcolor: getStrengthColor(passwordStrength),
+                                                                      },
+                                                                 }}
+                                                            />
+                                                       </Box>
+                                                  )}
+
+                                                  <TextField
+                                                       fullWidth
+                                                       id="confirmPassword"
+                                                       name="confirmPassword"
+                                                       label="Confirm New Password"
+                                                       type={showConfirmPassword ? "text" : "password"}
+                                                       margin="normal"
+                                                       value={formik.values.confirmPassword}
+                                                       onChange={formik.handleChange}
+                                                       onBlur={formik.handleBlur}
+                                                       error={formik.touched.confirmPassword && Boolean(formik.errors.confirmPassword)}
+                                                       helperText={formik.touched.confirmPassword && formik.errors.confirmPassword}
+                                                       slotProps={{
+                                                            input: {
+                                                                 endAdornment: (
+                                                                      <InputAdornment position="end">
+                                                                           <IconButton
+                                                                                aria-label="toggle confirm password visibility"
+                                                                                onClick={handleClickShowConfirmPassword}
+                                                                                edge="end"
+                                                                           >
+                                                                                {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                                                                           </IconButton>
+                                                                      </InputAdornment>
+                                                                 ),
+                                                            },
+                                                       }}
+                                                  />
+
+                                                  <Alert severity="info" sx={{ mt: 2, mb: 3 }}>
+                                                       Your password must be at least 8 characters long and include uppercase letters, lowercase letters,
+                                                       and numbers.
+                                                  </Alert>
+
+                                                  <Button
+                                                       type="submit"
+                                                       fullWidth
+                                                       variant="contained"
+                                                       size="large"
+                                                       disabled={formik.isSubmitting}
+                                                       sx={{ mt: 2 }}
+                                                  >
+                                                       {formik.isSubmitting ? <CircularProgress size={24} color="inherit" /> : "Reset Password"}
+                                                  </Button>
+                                             </Box>
+                                        </>
+                                   )}
+                              </Paper>
+                         </Container>
+                    </Box>
+               </Animate>
                <Toaster />
           </Box>
      )

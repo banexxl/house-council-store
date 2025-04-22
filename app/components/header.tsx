@@ -65,7 +65,7 @@ export const Header = ({ user }: HeaderProps) => {
       </Box>
       <List>
         {navItems.map((item) => (
-          <ListItem key={item.name} disablePadding>
+          <ListItem key={item.name} >
             <ListItemButton sx={{ textAlign: "center" }}>
               <Link href={item.path} style={{ textDecoration: "none", color: theme.palette.secondary.main, width: "100%" }}>
                 <ListItemText primary={item.name} />
@@ -75,28 +75,28 @@ export const Header = ({ user }: HeaderProps) => {
         ))}
         {user ? (
           <>
-            <ListItem disablePadding>
+            <ListItem >
               <Link href="/profile" style={{ color: theme.palette.primary.main, width: "100%" }}>
                 <ListItemButton >
                   <ListItemText primary="Profile" sx={{ textAlign: "center", color: theme.palette.secondary.main, textDecoration: "none" }} />
                 </ListItemButton>
               </Link>
             </ListItem>
-            <ListItem disablePadding>
+            <ListItem >
               <Link href="/https://house-council-app-v2-plum.vercel.app/" style={{ color: theme.palette.primary.main, width: "100%" }}>
                 <ListItemButton sx={{ textAlign: "center" }}>
                   <ListItemText primary="Dashboard" sx={{ color: theme.palette.secondary.main }} />
                 </ListItemButton>
               </Link>
             </ListItem>
-            <ListItem disablePadding>
+            <ListItem >
               <ListItemButton sx={{ textAlign: "center" }} onClick={handleSignOut}>
                 <ListItemText primary="Sign Out" sx={{ color: theme.palette.secondary.main }} />
               </ListItemButton>
             </ListItem>
           </>
         ) : (
-          <ListItem disablePadding>
+          <ListItem >
             <Link href="/auth/sign-in" style={{ color: theme.palette.primary.main, width: "100%" }}>
               <ListItemButton sx={{ textAlign: "center" }}>
                 <ListItemText primary="Sign In" sx={{ color: theme.palette.secondary.main }} />
@@ -112,9 +112,6 @@ export const Header = ({ user }: HeaderProps) => {
     <Box sx={{ flexGrow: 1, }}>
       <AppBar position="fixed" color="default" elevation={1} sx={{
         backgroundColor: theme.palette.secondary.dark,
-        top: 0,
-        transition: "all 0.3s ease",
-        // height: shrinkOnScroll ? 56 : 80,
         maxWidth: "100%",
       }}>
         <Container maxWidth="lg" >

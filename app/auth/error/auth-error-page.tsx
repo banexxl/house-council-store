@@ -5,6 +5,7 @@ import { Box, Container, Typography, Paper, Button, Alert, AlertTitle } from "@m
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
+import Animate from "@/app/components/animation-framer-motion"
 
 export default function AuthErrorPage() {
      const [isMounted, setIsMounted] = useState(false)
@@ -65,51 +66,53 @@ export default function AuthErrorPage() {
 
      return (
           <Container maxWidth="md" sx={{ py: 8 }}>
-               <Paper
-                    elevation={3}
-                    sx={{
-                         p: 4,
-                         display: "flex",
-                         flexDirection: "column",
-                         alignItems: "center",
-                         borderRadius: 2,
-                    }}
-               >
-                    <ErrorOutlineIcon color="error" sx={{ fontSize: 64, mb: 2 }} />
-
-                    <Typography variant="h4" component="h1" gutterBottom align="center" sx={{ fontWeight: "bold" }}>
-                         {errorTitle}
-                    </Typography>
-
-                    <Alert
-                         severity="error"
-                         variant="outlined"
+               <Animate>
+                    <Paper
+                         elevation={3}
                          sx={{
-                              width: "100%",
-                              my: 3,
-                              "& .MuiAlert-message": {
-                                   width: "100%",
-                              },
+                              p: 4,
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "center",
+                              borderRadius: 2,
                          }}
                     >
-                         <AlertTitle>Error Details</AlertTitle>
-                         {errorMessage}
-                    </Alert>
+                         <ErrorOutlineIcon color="error" sx={{ fontSize: 64, mb: 2 }} />
 
-                    <Typography variant="body1" color="text.secondary" align="center" sx={{ mb: 4 }}>
-                         Please try again or contact support if the problem persists.
-                    </Typography>
+                         <Typography variant="h4" component="h1" gutterBottom align="center" sx={{ fontWeight: "bold" }}>
+                              {errorTitle}
+                         </Typography>
 
-                    <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "center" }}>
-                         <Button variant="outlined" component={Link} href="/auth/sign-in">
-                              Back to Login
-                         </Button>
+                         <Alert
+                              severity="error"
+                              variant="outlined"
+                              sx={{
+                                   width: "100%",
+                                   my: 3,
+                                   "& .MuiAlert-message": {
+                                        width: "100%",
+                                   },
+                              }}
+                         >
+                              <AlertTitle>Error Details</AlertTitle>
+                              {errorMessage}
+                         </Alert>
 
-                         <Button variant="contained" component={Link} href="/auth/register">
-                              Sign Up
-                         </Button>
-                    </Box>
-               </Paper>
+                         <Typography variant="body1" color="text.secondary" align="center" sx={{ mb: 4 }}>
+                              Please try again or contact support if the problem persists.
+                         </Typography>
+
+                         <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "center" }}>
+                              <Button variant="outlined" component={Link} href="/auth/sign-in">
+                                   Back to Login
+                              </Button>
+
+                              <Button variant="contained" component={Link} href="/auth/register">
+                                   Sign Up
+                              </Button>
+                         </Box>
+                    </Paper>
+               </Animate>
           </Container>
      )
 }

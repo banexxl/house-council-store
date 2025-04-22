@@ -11,7 +11,7 @@ import { SubscriptionPlan } from "../types/subscription-plan"
 import { BaseEntity } from "../types/base-entity"
 import { ClientBillingInformation } from "../types/billing-information"
 import { Feature } from "../types/feature"
-
+import Animate from "@/app/components/animation-framer-motion"
 
 // Mock data for notification preferences
 const notificationPreferences = [
@@ -62,36 +62,38 @@ export const ProfilePage = ({ sessionAndClientDataCombined, subscriptionPlan, pa
 
      return (
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
-               <Box component="main" sx={{ flexGrow: 1, py: { xs: 4, md: 6 } }}>
-                    <Container maxWidth="lg">
-                         <Grid container spacing={4}>
-                              {/* Profile Sidebar */}
-                              <Grid size={{ xs: 12, md: 4 }}>
-                                   <ProfileSidebar
-                                        userData={sessionAndClientDataCombined!}
-                                        subscriptionData={subscriptionPlan}
-                                        recentActivity={recentActivity}
-                                        onEditProfile={() => setEditMode(true)}
-                                        subscriptionFeatures={subscriptionFeatures}
-                                   />
-                              </Grid>
+               <Animate>
+                    <Box component="main" sx={{ flexGrow: 1, py: { xs: 4, md: 6 } }}>
+                         <Container maxWidth="lg">
+                              <Grid container spacing={4}>
+                                   {/* Profile Sidebar */}
+                                   <Grid size={{ xs: 12, md: 4 }}>
+                                        <ProfileSidebar
+                                             userData={sessionAndClientDataCombined!}
+                                             subscriptionData={subscriptionPlan}
+                                             recentActivity={recentActivity}
+                                             onEditProfile={() => setEditMode(true)}
+                                             subscriptionFeatures={subscriptionFeatures}
+                                        />
+                                   </Grid>
 
-                              {/* Main Content */}
-                              <Grid size={{ xs: 12, md: 8 }}>
-                                   <ProfileTabs
-                                        userData={sessionAndClientDataCombined!}
-                                        editMode={editMode}
-                                        setEditMode={setEditMode}
-                                        subscriptionData={subscriptionPlan}
-                                        paymentMethods={paymentMethods}
-                                        allClientBillingInformation={allClientBillingInformation}
-                                        notificationSettings={notificationSettings}
-                                        setNotificationSettings={setNotificationSettings}
-                                   />
+                                   {/* Main Content */}
+                                   <Grid size={{ xs: 12, md: 8 }}>
+                                        <ProfileTabs
+                                             userData={sessionAndClientDataCombined!}
+                                             editMode={editMode}
+                                             setEditMode={setEditMode}
+                                             subscriptionData={subscriptionPlan}
+                                             paymentMethods={paymentMethods}
+                                             allClientBillingInformation={allClientBillingInformation}
+                                             notificationSettings={notificationSettings}
+                                             setNotificationSettings={setNotificationSettings}
+                                        />
+                                   </Grid>
                               </Grid>
-                         </Grid>
-                    </Container>
-               </Box>
+                         </Container>
+                    </Box>
+               </Animate>
           </Box>
      )
 }
