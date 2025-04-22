@@ -1,6 +1,6 @@
 'use server';
 
-import { verifyPassword } from '@/app/lib/bcrypt';
+import { logServerAction } from '@/app/lib/server-logging';
 import { useServerSideSupabaseAnonClient } from '@/app/lib/ss-supabase-anon-client';
 import { redirect } from 'next/navigation';
 
@@ -18,6 +18,7 @@ export type ErrorType = {
 
 export const signInUser = async (values: SignInFormValues): Promise<{ success: boolean, error?: ErrorType }> => {
 
+     const start = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
 
      const { data, error } = await supabase
@@ -26,13 +27,48 @@ export const signInUser = async (values: SignInFormValues): Promise<{ success: b
           .eq('email', values.email)
           .single();
 
+     if (data) {
+          await logServerAction({
+               user_id: null,
+               action: 'Signing in with email and password - user found in tblClients',
+               payload: JSON.stringify(values),
+               status: 'success',
+               error: '',
+               duration_ms: Date.now() - start,
+          })
+     }
+
      if (error) {
           switch (error.code) {
                case 'PGRST116':
+                    await logServerAction({
+                         user_id: null,
+                         action: 'Signing in with email and password failed',
+                         payload: JSON.stringify(values),
+                         status: 'fail',
+                         error: error.message,
+                         duration_ms: Date.now() - start,
+                    })
                     return { success: false, error: { code: error.code, details: error.details, hint: 'Please try registering first', message: 'Email not found' } };
                case 'PGRS003':
+                    await logServerAction({
+                         user_id: null,
+                         action: 'Signing in with email and password failed',
+                         payload: JSON.stringify(values),
+                         status: 'fail',
+                         error: error.message,
+                         duration_ms: Date.now() - start,
+                    })
                     return { success: false, error: { code: error.code, details: error.details, hint: 'Please try resetting your password', message: 'Password is incorrect' } };
                default:
+                    await logServerAction({
+                         user_id: null,
+                         action: 'Signing in with email and password failed',
+                         payload: JSON.stringify(values),
+                         status: 'fail',
+                         error: error.message,
+                         duration_ms: Date.now() - start,
+                    })
                     return { success: false, error: { code: error.code, details: error.details, hint: error.hint, message: error.message } };
           }
      }
@@ -43,13 +79,32 @@ export const signInUser = async (values: SignInFormValues): Promise<{ success: b
      });
 
      if (signInError) {
+          await logServerAction({
+               user_id: null,
+               action: 'User with valid password found in tblClients but signing in with email and password failed',
+               payload: JSON.stringify(values),
+               status: 'fail',
+               error: signInError.message,
+               duration_ms: Date.now() - start,
+          })
           return { success: false, error: { code: signInError.code!, details: signInError.message } };
      }
 
+     await logServerAction({
+          user_id: null,
+          action: 'Signed in with email and password',
+          payload: JSON.stringify(values),
+          status: 'success',
+          error: '',
+          duration_ms: Date.now() - start,
+     })
      return { success: true };
 }
 
 export const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: any }> => {
+
+     const start = Date.now();
+
      const supabase = await useServerSideSupabaseAnonClient();
 
      // Initiate Google OAuth flow.
@@ -61,11 +116,26 @@ export const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: 
           },
      });
 
-     if (!authError == null) {
-          console.error('Error during Google sign in:', authError);
+     if (authError) {
+          await logServerAction({
+               user_id: null,
+               action: 'Signing in with Google failed',
+               payload: {},
+               status: 'fail',
+               error: authError ? authError.message : 'Unknown error',
+               duration_ms: Date.now() - start,
+          })
           return { success: false, error: authError };
      } else {
           if (authData.url) {
+               await logServerAction({
+                    user_id: null,
+                    action: 'Signed in with Google',
+                    payload: { authData },
+                    status: 'success',
+                    error: '',
+                    duration_ms: Date.now() - start,
+               })
                redirect(authData.url);
           } else {
                return { success: false, error: { message: 'Redirect URL is null.' } };

@@ -1,8 +1,11 @@
+import { logServerAction } from '@/app/lib/server-logging';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
+
+     const start = Date.now()
 
      const cookieStore = await cookies();
      const supabase = createServerClient(
@@ -32,6 +35,14 @@ export async function GET(request: Request) {
      const errorDescription = requestUrl.searchParams.get('error_description');
 
      if (error) {
+          await logServerAction({
+               action: 'Auth callback errored',
+               error,
+               duration_ms: Date.now() - start,
+               payload: { code, requestUrl, errorCode, errorDescription },
+               status: 'fail',
+               user_id: null,
+          });
           // Redirect to error page with absolute URL
           const errorPageUrl = `${requestUrl.origin}/auth/error?error=${error}&error_code=${errorCode}&error_description=${encodeURIComponent(errorDescription || '')}`;
           return NextResponse.redirect(errorPageUrl);
@@ -39,7 +50,23 @@ export async function GET(request: Request) {
 
      if (code) {
           const { data, error: authError } = await supabase.auth.exchangeCodeForSession(code);
+          data ?? await logServerAction({
+               action: 'Auth callback success',
+               error: authError ? authError.message : '',
+               duration_ms: Date.now() - start,
+               payload: { code, data },
+               status: 'success',
+               user_id: null,
+          });
           if (authError) {
+               data ?? await logServerAction({
+                    action: 'Auth callback errored',
+                    error: authError.message,
+                    duration_ms: Date.now() - start,
+                    payload: { code, requestUrl },
+                    status: 'fail',
+                    user_id: null,
+               });
                return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=${authError.message}`);
           }
      }
@@ -47,12 +74,26 @@ export async function GET(request: Request) {
      // Retrieve the session after OAuth to get the user details
      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
      if (sessionError) {
-          console.error('Error retrieving session:', sessionError);
+          sessionError ?? await logServerAction({
+               action: 'Auth callback errored',
+               error: sessionError ? sessionError : '',
+               duration_ms: Date.now() - start,
+               payload: { code, requestUrl },
+               status: 'fail',
+               user_id: null,
+          });
           return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=${sessionError.message}`);
      }
 
      if (!sessionData.session) {
-          console.error('No session available after sign in.');
+          sessionData.session ?? await logServerAction({
+               action: 'Auth callback errored',
+               error: 'No session found',
+               duration_ms: Date.now() - start,
+               payload: { code, requestUrl },
+               status: 'fail',
+               user_id: null,
+          });
           return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=No session found.`);
      }
 
@@ -65,10 +106,34 @@ export async function GET(request: Request) {
           .eq('email', userEmail)
 
      if (clientError) {
-          console.error('Error checking email in database:', clientError);
+          await logServerAction({
+               action: 'Auth callback errored',
+               error: clientError.message,
+               duration_ms: Date.now() - start,
+               payload: { code, requestUrl },
+               status: 'fail',
+               user_id: null,
+          })
           supabase.auth.signOut();
           const { data, error } = await supabase.auth.admin.deleteUser(sessionData.session.user.id);
 
+          error ?? await logServerAction({
+               action: 'Auth callback errored',
+               error: 'Failed to delete user',
+               duration_ms: Date.now() - start,
+               payload: { code, requestUrl },
+               status: 'fail',
+               user_id: null,
+          })
+
+          data ?? await logServerAction({
+               action: 'Auth callback errored',
+               error: 'User deleted successfully',
+               duration_ms: Date.now() - start,
+               payload: { code, requestUrl },
+               status: 'fail',
+               user_id: null,
+          })
           // Remove cookies
           cookieStore.getAll().forEach(cookie => cookieStore.delete(cookie.name));
 
@@ -78,7 +143,7 @@ export async function GET(request: Request) {
      if (!data || data.length === 0) {
           const user = sessionData.session.user;
 
-          const { error: insertError } = await supabase.from('tblClients').insert({
+          const { data, error: insertError } = await supabase.from('tblClients').insert({
                name: user.user_metadata.full_name || user.user_metadata.name || user.email,
                email: user.email,
                type: '3cb057f5-32c1-423b-a549-5c28a89c6907',
@@ -91,8 +156,25 @@ export async function GET(request: Request) {
                is_verified: true
           });
 
+          data ?? await logServerAction({
+               action: 'Auth callback success',
+               error: 'Successfully inserted new user into tblClients',
+               duration_ms: Date.now() - start,
+               payload: { code, requestUrl },
+               status: 'success',
+               user_id: null,
+          });
+
           if (insertError) {
-               console.error('Failed to insert new user into tblClients:', insertError);
+
+               insertError ?? await logServerAction({
+                    action: 'Auth callback errored',
+                    error: 'Failed to insert new user into tblClients',
+                    duration_ms: Date.now() - start,
+                    payload: { code, requestUrl },
+                    status: 'fail',
+                    user_id: null,
+               });
 
                // Clean up
                await supabase.auth.signOut();
@@ -104,8 +186,36 @@ export async function GET(request: Request) {
      }
 
      if (data.length > 1) {
+
+          await logServerAction({
+               action: 'Auth callback errored',
+               error: 'Duplicate email found in tblClients.',
+               duration_ms: Date.now() - start,
+               payload: { code, requestUrl },
+               status: 'fail',
+               user_id: null,
+          })
+
           supabase.auth.signOut();
           const { data, error } = await supabase.auth.admin.deleteUser(sessionData.session.user.id);
+
+          error ?? await logServerAction({
+               action: 'Auth callback errored',
+               error: 'Failed to delete user',
+               duration_ms: Date.now() - start,
+               payload: { code, requestUrl },
+               status: 'fail',
+               user_id: null,
+          })
+
+          data ?? await logServerAction({
+               action: 'Auth callback errored',
+               error: 'User deleted successfully',
+               duration_ms: Date.now() - start,
+               payload: { code, requestUrl },
+               status: 'fail',
+               user_id: null,
+          })
           // Remove cookies
           cookieStore.getAll().forEach(cookie => cookieStore.delete(cookie.name));
 

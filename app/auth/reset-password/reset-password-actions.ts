@@ -1,14 +1,51 @@
 "use server"
 
+import { logServerAction } from "@/app/lib/server-logging";
 import { useServerSideSupabaseAnonClient } from "@/app/lib/ss-supabase-anon-client";
 
 export async function resetPassword(email: string, newPassword: string): Promise<{ success: boolean, error?: string }> {
-     console.log('newPassword', newPassword);
-     console.log('email', email);
+
+     let userId = null;
 
      const supabase = await useServerSideSupabaseAnonClient();
 
+     const { data: user, error: userError } = await supabase
+          .from('tblClients')
+          .select('*')
+          .eq('email', email)
+          .single();
+     console.log('user', user);
+     console.log('userError', userError);
+
+     userId = user?.id || null;
+
+     if (userError || !user) {
+          await logServerAction({
+               user_id: null,
+               action: 'Reset password - user not found',
+               payload: { email },
+               status: 'fail',
+               error: userError?.message || 'User not found',
+               duration_ms: 0
+          });
+
+          return {
+               success: false,
+               error: userError?.message || "User not found with the provided email address.",
+          }
+     }
+
      if (!email || !email.includes("@") || !newPassword) {
+
+          await logServerAction({
+               user_id: null,
+               action: 'Reset password - invalid input',
+               payload: {},
+               status: 'fail',
+               error: '',
+               duration_ms: 0
+          })
+
           return {
                success: false,
                error: "Please enter a valid email address and password.",
@@ -30,17 +67,41 @@ export async function resetPassword(email: string, newPassword: string): Promise
 
           // Update the user's password
           const { error } = await supabase.auth.updateUser({ password: newPassword })
-          console.log('error', error);
+
 
           if (error) {
+               logServerAction({
+                    user_id: null,
+                    action: 'Reset password - password update failed',
+                    payload: { email },
+                    status: 'fail',
+                    error: error.message,
+                    duration_ms: 0
+               })
                throw error
           }
+
+          logServerAction({
+               user_id: userId,
+               action: 'Reset password - success',
+               payload: { email },
+               status: 'success',
+               error: '',
+               duration_ms: 0
+          })
 
           return {
                success: true,
           }
      } catch (error: any) {
-          console.error("Error resetting password:", error)
+          logServerAction({
+               user_id: null,
+               action: 'Reset password - error',
+               payload: { email },
+               status: 'fail',
+               error: error.message,
+               duration_ms: 0
+          })
           return {
                success: false,
                error: error?.message || "Failed to reset password",

@@ -1,6 +1,7 @@
 'use server';
 
 import { hashPassword } from '@/app/lib/bcrypt';
+import { logServerAction } from '@/app/lib/server-logging';
 import { useServerSideSupabaseServiceRoleClient } from '@/app/lib/ss-supabase-service-role-client';
 
 export type RegisterFormValues = {
@@ -30,6 +31,14 @@ export const registerUser = async (values: RegisterFormValues): Promise<{ succes
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
      if (values.password !== values.confirm_password) {
+          logServerAction({
+               user_id: null,
+               action: 'Register user - passwords do not match',
+               payload: { values },
+               status: 'fail',
+               error: 'Passwords do not match',
+               duration_ms: 0
+          })
           return { success: false, error: { code: 'PASSWORDS_DO_NOT_MATCH', details: 'Passwords do not match', hint: null, message: 'Passwords do not match' } };
      }
 
@@ -46,6 +55,14 @@ export const registerUser = async (values: RegisterFormValues): Promise<{ succes
      }).select().single();
 
      if (error) {
+          logServerAction({
+               user_id: null,
+               action: 'Register user - insert error',
+               payload: { values },
+               status: 'fail',
+               error: error.message,
+               duration_ms: 0
+          })
           if (error.code === '23505') {
                return { success: false, error: { code: '23505', details: 'Email already exists', hint: null, message: 'Email already exists' } };
           }
@@ -54,7 +71,15 @@ export const registerUser = async (values: RegisterFormValues): Promise<{ succes
 
      // If no error and data is returned, we want to add the user in the tblClients
      if (data) {
-          const { data, error } = await supabase.auth.signUp({
+          await logServerAction({
+               user_id: data.user?.id ?? null,
+               action: 'Register user - insert success -> Signing up...',
+               payload: { values },
+               status: 'success',
+               error: '',
+               duration_ms: 0
+          })
+          const { error } = await supabase.auth.signUp({
                email: values.email,
                password: values.password,
                options: {
@@ -63,11 +88,28 @@ export const registerUser = async (values: RegisterFormValues): Promise<{ succes
           });
 
           if (error) {
+               logServerAction({
+                    user_id: null,
+                    action: 'Register user - sign up error',
+                    payload: { values },
+                    status: 'fail',
+                    error: error.message,
+                    duration_ms: 0
+               })
                if (error.code === '23505') {
                     return { success: false, error: { code: '23505', details: 'Email already exists', hint: null, message: 'Email already exists' } };
                }
           }
      }
+
+     await logServerAction({
+          user_id: data.user?.id ?? null,
+          action: 'Register user - sign up success',
+          payload: { values },
+          status: 'success',
+          error: '',
+          duration_ms: 0
+     })
 
      return { success: true };
 }
