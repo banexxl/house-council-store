@@ -3,9 +3,12 @@
 import { revalidatePath } from "next/cache"
 import { useServerSideSupabaseServiceRoleClient } from "../lib/ss-supabase-service-role-client";
 import { ClientBillingInformation } from "../types/billing-information";
+import { logServerAction } from "../lib/server-logging";
 
 export const createOrUpdateClientBillingInformation = async (clientBillingInformation: ClientBillingInformation, paymentMethodTypeId: string, billingInformationStatusId: string, billingInformationId?: string)
      : Promise<{ createOrUpdateClientBillingInformationSuccess: boolean, createOrUpdateClientBillingInformation?: ClientBillingInformation, createOrUpdateClientBillingInformationError?: any }> => {
+
+     const startTime = Date.now();
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
      let result;
@@ -53,14 +56,33 @@ export const createOrUpdateClientBillingInformation = async (clientBillingInform
      const { data, error } = result;
 
      if (error) {
+          await logServerAction({
+               user_id: clientBillingInformation.client_id,
+               action: 'Create or Update Client Billing Information - Error.',
+               payload: { clientBillingInformation, paymentMethodTypeId, billingInformationStatusId },
+               status: 'fail',
+               error: error.message,
+               duration_ms: Date.now() - startTime
+          })
           return { createOrUpdateClientBillingInformationSuccess: false, createOrUpdateClientBillingInformationError: error };
      }
+
+     await logServerAction({
+          user_id: clientBillingInformation.client_id,
+          action: 'Create or Update Client Billing Information - Success.',
+          payload: { clientBillingInformation, paymentMethodTypeId, billingInformationStatusId },
+          status: 'success',
+          error: '',
+          duration_ms: Date.now() - startTime
+     })
 
      revalidatePath(`/dashboard/clients/billing-information/${clientBillingInformation.client_id}`);
      return { createOrUpdateClientBillingInformationSuccess: true, createOrUpdateClientBillingInformation: data };
 }
 
 export const readClientBillingInformation = async (id: string): Promise<{ readClientBillingInformationSuccess: boolean, readClientBillingInformationData?: ClientBillingInformation, readClientBillingInformationError?: string }> => {
+
+     const startTime = Date.now();
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
@@ -71,13 +93,31 @@ export const readClientBillingInformation = async (id: string): Promise<{ readCl
           .single();
 
      if (error) {
+          await logServerAction({
+               user_id: id,
+               action: 'Read Client Billing Information - Error.',
+               payload: { id },
+               status: 'fail',
+               error: error.message,
+               duration_ms: Date.now() - startTime
+          })
           return { readClientBillingInformationSuccess: false, readClientBillingInformationError: error.message };
      }
 
+     await logServerAction({
+          user_id: id,
+          action: 'Read Client Billing Information - Success.',
+          payload: { id },
+          status: 'success',
+          error: '',
+          duration_ms: Date.now() - startTime
+     })
      return { readClientBillingInformationSuccess: true, readClientBillingInformationData: data ?? undefined };
 }
 
 export const deleteClientBillingInformation = async (ids: string[] | undefined): Promise<{ deleteClientBillingInformationSuccess: boolean, deleteClientBillingInformationError?: string }> => {
+
+     const startTime = Date.now();
 
      if (ids?.length == 0) {
           return { deleteClientBillingInformationSuccess: false, deleteClientBillingInformationError: "No IDs provided" };
@@ -91,6 +131,14 @@ export const deleteClientBillingInformation = async (ids: string[] | undefined):
           .in('id', ids!);
 
      if (error) {
+          // await logServerAction({
+          //      user_id: ids?.[0],
+          //      action: 'Delete Client Billing Information - Error.',
+          //      payload: { ids },
+          //      status: 'fail',
+          //      error: error.message,
+          //      duration_ms: Date.now() - startTime
+          // })
           return { deleteClientBillingInformationSuccess: false, deleteClientBillingInformationError: error.message };
      }
 
@@ -100,6 +148,8 @@ export const deleteClientBillingInformation = async (ids: string[] | undefined):
 
 export const readAllClientsBillingInformation = async (clientId: string): Promise<{ readAllClientBillingInformationSuccess: boolean, readAllClientBillingInformationData?: ClientBillingInformation[], readAllClientBillingInformationError?: string }> => {
 
+     const startTime = Date.now();
+
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
      const { data, error } = await supabase
@@ -108,8 +158,25 @@ export const readAllClientsBillingInformation = async (clientId: string): Promis
           .eq('client_id', clientId);
 
      if (error) {
+          await logServerAction({
+               user_id: clientId,
+               action: 'Read All Client Billing Information - Error.',
+               payload: { clientId },
+               status: 'fail',
+               error: error.message,
+               duration_ms: Date.now() - startTime
+          })
           return { readAllClientBillingInformationSuccess: false, readAllClientBillingInformationError: error.message };
      }
+
+     await logServerAction({
+          user_id: clientId,
+          action: 'Read All Client Billing Information - Success.',
+          payload: { clientId },
+          status: 'success',
+          error: '',
+          duration_ms: Date.now() - startTime
+     })
 
      return { readAllClientBillingInformationSuccess: true, readAllClientBillingInformationData: data ?? undefined };
 }
