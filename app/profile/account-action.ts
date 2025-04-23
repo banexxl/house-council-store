@@ -4,8 +4,11 @@ import { useServerSideSupabaseServiceRoleClient } from "@/app/lib/ss-supabase-se
 import { logoutUserAction } from "./logout-action";
 import { Client } from "../types/client";
 import { revalidatePath } from "next/cache";
+import { logServerAction } from "../lib/server-logging";
 
 export const deleteAccountAction = async (clientId: string, clientEmail: string): Promise<{ success: boolean, error?: string }> => {
+
+     const startTime = Date.now();
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
@@ -14,6 +17,14 @@ export const deleteAccountAction = async (clientId: string, clientEmail: string)
      const { data, error } = await supabase.auth.admin.deleteUser(clientId);
 
      if (error) {
+          await logServerAction({
+               user_id: clientId,
+               action: 'Delete Account - Error for auth table of users.',
+               payload: {},
+               status: 'fail',
+               error: error.message,
+               duration_ms: Date.now() - startTime
+          })
           return { success: false, error: error.message }
      }
 
@@ -22,13 +33,33 @@ export const deleteAccountAction = async (clientId: string, clientEmail: string)
           .delete()
           .eq('email', clientEmail);
      if (deleteClientError) {
+
+          await logServerAction({
+               user_id: clientId,
+               action: 'Delete Account - Error for tblClients table.',
+               payload: {},
+               status: 'fail',
+               error: deleteClientError.message,
+               duration_ms: Date.now() - startTime
+          })
           return { success: false, error: deleteClientError.message }
      }
+
+     await logServerAction({
+          user_id: clientId,
+          action: 'Delete Account - Success.',
+          payload: {},
+          status: 'success',
+          error: '',
+          duration_ms: Date.now() - startTime
+     })
 
      return { success: true }
 }
 
 export const readAccountByEmailAction = async (email: string): Promise<{ client?: Client, error?: string }> => {
+
+     const startTime = Date.now();
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
@@ -39,13 +70,33 @@ export const readAccountByEmailAction = async (email: string): Promise<{ client?
           .single();
 
      if (error) {
+
+          await logServerAction({
+               user_id: null,
+               action: 'Read Account - Error for tblClients table.',
+               payload: { email },
+               status: 'fail',
+               error: error.message,
+               duration_ms: Date.now() - startTime
+          })
           return { error: error.message }
      }
+
+     await logServerAction({
+          user_id: client?.id,
+          action: 'Read Account - Success.',
+          payload: { email },
+          status: 'success',
+          error: '',
+          duration_ms: Date.now() - startTime
+     })
 
      return { client }
 }
 
 export const updateAccountAction = async (id: string, update: Partial<Client>): Promise<{ success: boolean, error?: string, data?: Client }> => {
+
+     const startTime = Date.now();
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
@@ -56,8 +107,26 @@ export const updateAccountAction = async (id: string, update: Partial<Client>): 
           .single();
 
      if (error) {
+
+          await logServerAction({
+               user_id: id,
+               action: 'Update Account - Error for tblClients table.',
+               payload: { update },
+               status: 'fail',
+               error: error.message,
+               duration_ms: Date.now() - startTime
+          })
           return { success: false, error: error.message }
      }
+
+     await logServerAction({
+          user_id: id,
+          action: 'Update Account - Success.',
+          payload: { update },
+          status: 'success',
+          error: '',
+          duration_ms: Date.now() - startTime
+     })
 
      revalidatePath('/profile');
 
