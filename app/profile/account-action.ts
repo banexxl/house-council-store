@@ -111,7 +111,7 @@ export const readAccountByEmailAction = async (email: string): Promise<{ client?
                status: 'fail',
                error: error.message,
                duration_ms: Date.now() - startTime,
-               type: 'action'
+               type: 'db'
           })
           return { error: error.message }
      }
@@ -123,7 +123,7 @@ export const readAccountByEmailAction = async (email: string): Promise<{ client?
           status: 'success',
           error: '',
           duration_ms: Date.now() - startTime,
-          type: 'action'
+          type: 'db'
      })
 
      return { client }
@@ -180,11 +180,11 @@ export const readClientRecentActivityAction = async (clientId: string): Promise<
           .from('tblServerLogs')
           .select('*')
           .eq('user_id', clientId)
+          .eq('type', 'action')
           .order('created_at', { ascending: false })
           .limit(10);
 
      if (error) {
-
           await logServerAction({
                user_id: clientId,
                action: 'Read Client Recent Activity - Error for tblActivityLogs table.',
@@ -192,7 +192,7 @@ export const readClientRecentActivityAction = async (clientId: string): Promise<
                status: 'fail',
                error: error.message,
                duration_ms: Date.now() - startTime,
-               type: 'action'
+               type: 'db'
           })
           return { success: false, error: error.message }
      }
@@ -203,7 +203,7 @@ export const readClientRecentActivityAction = async (clientId: string): Promise<
           status: 'success',
           error: '',
           duration_ms: Date.now() - startTime,
-          type: 'action'
+          type: 'db'
      })
 
      return { success: true, data }

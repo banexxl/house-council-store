@@ -102,7 +102,7 @@ export const readClientBillingInformation = async (id: string): Promise<{ readCl
                status: 'fail',
                error: error.message,
                duration_ms: Date.now() - startTime,
-               type: 'action'
+               type: 'db'
           })
           return { readClientBillingInformationSuccess: false, readClientBillingInformationError: error.message };
      }
@@ -114,7 +114,7 @@ export const readClientBillingInformation = async (id: string): Promise<{ readCl
           status: 'success',
           error: '',
           duration_ms: Date.now() - startTime,
-          type: 'action'
+          type: 'db'
      })
      return { readClientBillingInformationSuccess: true, readClientBillingInformationData: data ?? undefined };
 }
@@ -169,7 +169,7 @@ export const readAllClientsBillingInformation = async (clientId: string): Promis
                status: 'fail',
                error: error.message,
                duration_ms: Date.now() - startTime,
-               type: 'action'
+               type: 'db'
           })
           return { readAllClientBillingInformationSuccess: false, readAllClientBillingInformationError: error.message };
      }
@@ -181,7 +181,7 @@ export const readAllClientsBillingInformation = async (clientId: string): Promis
           status: 'success',
           error: '',
           duration_ms: Date.now() - startTime,
-          type: 'action'
+          type: 'db'
      })
 
      return { readAllClientBillingInformationSuccess: true, readAllClientBillingInformationData: data ?? undefined };
