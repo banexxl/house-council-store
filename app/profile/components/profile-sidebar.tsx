@@ -33,13 +33,13 @@ import VerifiedUserIcon from "@mui/icons-material/VerifiedUser"
 import EmailIcon from "@mui/icons-material/Email"
 import PhoneIcon from "@mui/icons-material/Phone"
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday"
-import { logoutUserAction } from "../logout-action"
 import toast from "react-hot-toast"
 import { useRouter } from "next/navigation"
 import { Client, clientInitialValues } from "@/app/types/client"
 import { User } from "@supabase/supabase-js"
 import { SubscriptionPlan } from "@/app/types/subscription-plan"
 import { Feature } from "@/app/types/feature"
+import { logoutUserAction } from "../account-action"
 
 export interface ActivityItem {
      id: string

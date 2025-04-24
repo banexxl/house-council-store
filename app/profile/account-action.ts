@@ -89,7 +89,7 @@ export const readAccountByEmailAction = async (email: string): Promise<{ client?
      const startTime = Date.now();
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
-
+     const userId = (await supabase.auth.getUser()).data.user?.id;
      const { data: client, error } = await supabase
           .from('tblClients')
           .select('*')
@@ -99,7 +99,7 @@ export const readAccountByEmailAction = async (email: string): Promise<{ client?
      if (error) {
 
           await logServerAction({
-               user_id: null,
+               user_id: userId ? userId : '',
                action: 'Read Account - Error for tblClients table.',
                payload: { email },
                status: 'fail',

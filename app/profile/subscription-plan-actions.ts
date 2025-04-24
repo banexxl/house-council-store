@@ -3,6 +3,7 @@
 import { useServerSideSupabaseServiceRoleClient } from "@/app/lib/ss-supabase-service-role-client";
 import { SubscriptionPlan } from "../types/subscription-plan";
 import { Feature } from "../types/feature";
+import { logServerAction } from "../lib/server-logging";
 
 /**
  * Reads a subscription plan from the database.
@@ -21,7 +22,7 @@ export const readSubscriptionPlanById = async (id: string | null): Promise<{
      }
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
-
+     const userId = (await supabase.auth.getUser()).data.user?.id;
      // Fetch the subscription plan along with its features using a join
      const { data: subscriptionPlan, error: planError } = await supabase
           .from("tblSubscriptionPlans")
@@ -36,6 +37,14 @@ export const readSubscriptionPlanById = async (id: string | null): Promise<{
           .single();
 
      if (planError) {
+          await logServerAction({
+               user_id: null,
+               action: 'Read Subscription Plan by ID',
+               payload: { id },
+               status: 'fail',
+               error: planError.message,
+               duration_ms: 0
+          })
           return { readSubscriptionPlanSuccess: false, readSubscriptionPlanError: planError.message };
      }
 
@@ -44,6 +53,15 @@ export const readSubscriptionPlanById = async (id: string | null): Promise<{
 
      // Return the subscription plan without tblSubscriptionPlans_Features
      const { tblSubscriptionPlans_Features, ...restOfSubscriptionPlan } = subscriptionPlan;
+
+     await logServerAction({
+          user_id: null,
+          action: 'Read Subscription Plan by ID',
+          payload: { id },
+          status: 'success',
+          error: '',
+          duration_ms: 0
+     })
 
      return {
           readSubscriptionPlanSuccess: true,
@@ -57,7 +75,7 @@ export const readAllSubscriptionPlans = async (): Promise<{
      readAllSubscriptionPlansError?: string;
 }> => {
      const supabase = await useServerSideSupabaseServiceRoleClient();
-
+     const userId = (await supabase.auth.getUser()).data.user?.id;
      const { data: subscriptionPlans, error: planError } = await supabase
           .from("tblSubscriptionPlans")
           .select(`
@@ -92,6 +110,7 @@ export const readAllSubscriptionPlans = async (): Promise<{
 
 export const unubscribeAction = async (id: string): Promise<{ success: boolean, error?: string }> => {
      const supabase = await useServerSideSupabaseServiceRoleClient();
+     const userId = (await supabase.auth.getUser()).data.user?.id;
      const { data, error } = await supabase.from('tblSubscriptionPlans').delete().eq('id', id);
      if (error) {
           return { success: false, error: error.message }
@@ -138,6 +157,7 @@ export const readFeaturesFromSubscriptionPlanId = async (subscriptionPlanId: str
      }
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
+     const userId = (await supabase.auth.getUser()).data.user?.id;
      const { data: subscriptionPlan, error: planError } = await supabase
           .from("tblSubscriptionPlans")
           .select(`
