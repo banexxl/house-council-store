@@ -170,23 +170,32 @@ export const updateAccountAction = async (id: string, update: Partial<Client>): 
      return { success: true, data }
 }
 
-export const readClientRecentActivityAction = async (clientId: string): Promise<{ success: boolean, error?: string, data?: ActivityItem[] }> => {
+export const readClientRecentActivityAction = async (clientEmail: string, clientAuthId: string): Promise<{ success: boolean, error?: string, data?: ActivityItem[] }> => {
 
      const startTime = Date.now();
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
+     const { data: clientId, error: clientError } = await supabase
+          .from('tblClients')
+          .select('id')
+          .eq('email', clientEmail)
+          .single();
+
+
      const { data, error } = await supabase
           .from('tblServerLogs')
           .select('*')
-          .eq('user_id', clientId)
-          .eq('type', 'action')
+          .eq('user_id', clientId?.id)
+          .eq('user_id', clientAuthId)
+          .or('type.eq.action,type.eq.auth')
           .order('created_at', { ascending: false })
           .limit(10);
+     console.log('aaaaaaaaaaaaa', data, clientId, clientAuthId, error);
 
      if (error) {
           await logServerAction({
-               user_id: clientId,
+               user_id: clientAuthId,
                action: 'Read Client Recent Activity - Error for tblActivityLogs table.',
                payload: {},
                status: 'fail',
@@ -197,7 +206,7 @@ export const readClientRecentActivityAction = async (clientId: string): Promise<
           return { success: false, error: error.message }
      }
      await logServerAction({
-          user_id: clientId,
+          user_id: clientAuthId,
           action: 'Read Client Recent Activity - Success.',
           payload: {},
           status: 'success',

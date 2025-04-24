@@ -44,7 +44,7 @@ export default async function Page() {
           readEntity("tblClientTypes", client.type),
           readAllClientsBillingInformation(client.id),
           readFeaturesFromSubscriptionPlanId(client.subscription_plan ?? null),
-          readClientRecentActivityAction(client.id),
+          readClientRecentActivityAction(user.email, client.id),
      ]);
 
      // Merge session and client data
