@@ -42,6 +42,7 @@ export async function GET(request: Request) {
                payload: { code, requestUrl, errorCode, errorDescription },
                status: 'fail',
                user_id: null,
+               type: 'auth'
           });
           // Redirect to error page with absolute URL
           const errorPageUrl = `${requestUrl.origin}/auth/error?error=${error}&error_code=${errorCode}&error_description=${encodeURIComponent(errorDescription || '')}`;
@@ -57,6 +58,7 @@ export async function GET(request: Request) {
                payload: { code, data },
                status: 'success',
                user_id: null,
+               type: 'auth'
           });
           if (authError) {
                data ?? await logServerAction({
@@ -66,6 +68,7 @@ export async function GET(request: Request) {
                     payload: { code, requestUrl },
                     status: 'fail',
                     user_id: null,
+                    type: 'auth'
                });
                return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=${authError.message}`);
           }
@@ -81,6 +84,7 @@ export async function GET(request: Request) {
                payload: { code, requestUrl },
                status: 'fail',
                user_id: null,
+               type: 'auth'
           });
           return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=${sessionError.message}`);
      }
@@ -93,6 +97,7 @@ export async function GET(request: Request) {
                payload: { code, requestUrl },
                status: 'fail',
                user_id: null,
+               type: 'auth'
           });
           return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=No session found.`);
      }
@@ -113,6 +118,7 @@ export async function GET(request: Request) {
                payload: { code, requestUrl },
                status: 'fail',
                user_id: null,
+               type: 'auth'
           })
           supabase.auth.signOut();
           const { data, error } = await supabase.auth.admin.deleteUser(sessionData.session.user.id);
@@ -124,6 +130,7 @@ export async function GET(request: Request) {
                payload: { code, requestUrl },
                status: 'fail',
                user_id: null,
+               type: 'auth'
           })
 
           data ?? await logServerAction({
@@ -133,6 +140,7 @@ export async function GET(request: Request) {
                payload: { code, requestUrl },
                status: 'fail',
                user_id: null,
+               type: 'auth'
           })
           // Remove cookies
           cookieStore.getAll().forEach(cookie => cookieStore.delete(cookie.name));
@@ -163,6 +171,7 @@ export async function GET(request: Request) {
                payload: { code, requestUrl },
                status: 'success',
                user_id: null,
+               type: 'auth'
           });
 
           if (insertError) {
@@ -174,6 +183,7 @@ export async function GET(request: Request) {
                     payload: { code, requestUrl },
                     status: 'fail',
                     user_id: null,
+                    type: 'auth'
                });
 
                // Clean up
@@ -194,6 +204,7 @@ export async function GET(request: Request) {
                payload: { code, requestUrl },
                status: 'fail',
                user_id: null,
+               type: 'auth'
           })
 
           supabase.auth.signOut();
@@ -206,6 +217,7 @@ export async function GET(request: Request) {
                payload: { code, requestUrl },
                status: 'fail',
                user_id: null,
+               type: 'auth'
           })
 
           data ?? await logServerAction({
@@ -215,6 +227,7 @@ export async function GET(request: Request) {
                payload: { code, requestUrl },
                status: 'fail',
                user_id: null,
+               type: 'auth'
           })
           // Remove cookies
           cookieStore.getAll().forEach(cookie => cookieStore.delete(cookie.name));

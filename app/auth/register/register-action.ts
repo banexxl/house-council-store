@@ -37,7 +37,8 @@ export const registerUser = async (values: RegisterFormValues): Promise<{ succes
                payload: { values },
                status: 'fail',
                error: 'Passwords do not match',
-               duration_ms: 0
+               duration_ms: 0,
+               type: 'auth'
           })
           return { success: false, error: { code: 'PASSWORDS_DO_NOT_MATCH', details: 'Passwords do not match', hint: null, message: 'Passwords do not match' } };
      }
@@ -61,7 +62,8 @@ export const registerUser = async (values: RegisterFormValues): Promise<{ succes
                payload: { values },
                status: 'fail',
                error: error.message,
-               duration_ms: 0
+               duration_ms: 0,
+               type: 'auth'
           })
           if (error.code === '23505') {
                return { success: false, error: { code: '23505', details: 'Email already exists', hint: null, message: 'Email already exists' } };
@@ -77,7 +79,8 @@ export const registerUser = async (values: RegisterFormValues): Promise<{ succes
                payload: { values },
                status: 'success',
                error: '',
-               duration_ms: 0
+               duration_ms: 0,
+               type: 'auth'
           })
           const { error } = await supabase.auth.signUp({
                email: values.email,
@@ -94,7 +97,8 @@ export const registerUser = async (values: RegisterFormValues): Promise<{ succes
                     payload: { values },
                     status: 'fail',
                     error: error.message,
-                    duration_ms: 0
+                    duration_ms: 0,
+                    type: 'auth'
                })
                if (error.code === '23505') {
                     return { success: false, error: { code: '23505', details: 'Email already exists', hint: null, message: 'Email already exists' } };
@@ -108,7 +112,8 @@ export const registerUser = async (values: RegisterFormValues): Promise<{ succes
           payload: { values },
           status: 'success',
           error: '',
-          duration_ms: 0
+          duration_ms: 0,
+          type: 'auth'
      })
 
      return { success: true };

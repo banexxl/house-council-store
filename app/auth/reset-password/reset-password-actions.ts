@@ -5,6 +5,8 @@ import { useServerSideSupabaseAnonClient } from "@/app/lib/ss-supabase-anon-clie
 
 export async function resetPassword(email: string, newPassword: string): Promise<{ success: boolean, error?: string }> {
 
+     const startTime = Date.now();
+
      let userId = null;
 
      const supabase = await useServerSideSupabaseAnonClient();
@@ -26,7 +28,8 @@ export async function resetPassword(email: string, newPassword: string): Promise
                payload: { email },
                status: 'fail',
                error: userError?.message || 'User not found',
-               duration_ms: 0
+               duration_ms: Date.now() - startTime,
+               type: 'auth'
           });
 
           return {
@@ -43,7 +46,8 @@ export async function resetPassword(email: string, newPassword: string): Promise
                payload: {},
                status: 'fail',
                error: '',
-               duration_ms: 0
+               duration_ms: Date.now() - startTime,
+               type: 'auth'
           })
 
           return {
@@ -76,7 +80,8 @@ export async function resetPassword(email: string, newPassword: string): Promise
                     payload: { email },
                     status: 'fail',
                     error: error.message,
-                    duration_ms: 0
+                    duration_ms: Date.now() - startTime,
+                    type: 'auth'
                })
                throw error
           }
@@ -87,7 +92,8 @@ export async function resetPassword(email: string, newPassword: string): Promise
                payload: { email },
                status: 'success',
                error: '',
-               duration_ms: 0
+               duration_ms: 0,
+               type: 'auth'
           })
 
           return {
@@ -100,7 +106,8 @@ export async function resetPassword(email: string, newPassword: string): Promise
                payload: { email },
                status: 'fail',
                error: error.message,
-               duration_ms: 0
+               duration_ms: Date.now() - startTime,
+               type: 'auth'
           })
           return {
                success: false,
@@ -111,7 +118,18 @@ export async function resetPassword(email: string, newPassword: string): Promise
 
 export const verifyRecoveryToken = async (email: string, token: string): Promise<{ success: boolean, data?: any, error?: string }> => {
 
+     const startTime = Date.now();
+
      if (!email || !email.includes("@")) {
+          await logServerAction({
+               user_id: null,
+               action: 'Verify recovery token - invalid input',
+               payload: {},
+               status: 'fail',
+               error: '',
+               duration_ms: Date.now() - startTime,
+               type: 'auth'
+          })
           return {
                success: false,
                error: "Please enter a valid email address.",
@@ -119,23 +137,37 @@ export const verifyRecoveryToken = async (email: string, token: string): Promise
      }
 
      const supabase = await useServerSideSupabaseAnonClient();
-     console.log('email', email);
-     console.log('token', token);
 
      const { data, error } = await supabase.auth.verifyOtp({
           email: email, // The email received from the URL
           token: token, // The token_hash received from the URL
           type: 'recovery' // Specify that this is for password recovery
      });
-     console.log('Verify OTP:', data);
-     console.log('Error:', error);
 
      if (error) {
+          await logServerAction({
+               user_id: null,
+               action: 'Verify recovery token - error',
+               payload: { email },
+               status: 'fail',
+               error: error.message,
+               duration_ms: Date.now() - startTime,
+               type: 'auth'
+          })
           return {
                success: false,
                error: error?.message || "Invalid token",
           }
      } else {
+          await logServerAction({
+               user_id: null,
+               action: 'Verify recovery token - success',
+               payload: { email },
+               status: 'success',
+               error: '',
+               duration_ms: Date.now() - startTime,
+               type: 'auth'
+          })
           return {
                success: true,
                data,

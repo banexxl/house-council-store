@@ -5,15 +5,6 @@ import { SubscriptionPlan } from "../types/subscription-plan";
 import { Feature } from "../types/feature";
 import { logServerAction } from "../lib/server-logging";
 
-/**
- * Reads a subscription plan from the database.
- * @param {string} id The id of the subscription plan to read.
- * @returns {Promise<{readSubscriptionPlanSuccess: boolean, subscriptionPlan?: SubscriptionPlan, readSubscriptionPlanError?: string}>}
- * A promise that resolves to an object with the following properties:
- * - `readSubscriptionPlanSuccess`: A boolean indicating whether the subscription plan was read successfully.
- * - `subscriptionPlan`: The subscription plan that was read, if successful.
- * - `readSubscriptionPlanError`: The error that occurred, if any.
- */
 export const readSubscriptionPlanById = async (id: string | null): Promise<{
      readSubscriptionPlanSuccess: boolean; subscriptionPlan?: SubscriptionPlan; readSubscriptionPlanError?: string;
 }> => {
@@ -38,12 +29,13 @@ export const readSubscriptionPlanById = async (id: string | null): Promise<{
 
      if (planError) {
           await logServerAction({
-               user_id: null,
+               user_id: userId ? userId : '',
                action: 'Read Subscription Plan by ID',
                payload: { id },
                status: 'fail',
                error: planError.message,
-               duration_ms: 0
+               duration_ms: 0,
+               type: 'db'
           })
           return { readSubscriptionPlanSuccess: false, readSubscriptionPlanError: planError.message };
      }
@@ -60,7 +52,8 @@ export const readSubscriptionPlanById = async (id: string | null): Promise<{
           payload: { id },
           status: 'success',
           error: '',
-          duration_ms: 0
+          duration_ms: 0,
+          type: 'db'
      })
 
      return {
@@ -88,6 +81,15 @@ export const readAllSubscriptionPlans = async (): Promise<{
           .order("total_price_per_month", { ascending: true });
 
      if (planError) {
+          await logServerAction({
+               user_id: userId ? userId : '',
+               action: 'Read All Subscription Plans',
+               payload: {},
+               status: 'fail',
+               error: planError.message,
+               duration_ms: 0,
+               type: 'db'
+          })
           return {
                readAllSubscriptionPlansSuccess: false,
                readAllSubscriptionPlansError: planError.message,
@@ -102,6 +104,16 @@ export const readAllSubscriptionPlans = async (): Promise<{
           ),
      }));
 
+     await logServerAction({
+          user_id: null,
+          action: 'Read All Subscription Plans',
+          payload: {},
+          status: 'success',
+          error: '',
+          duration_ms: 0,
+          type: 'db'
+     })
+
      return {
           readAllSubscriptionPlansSuccess: true,
           subscriptionPlanData: plansWithFeatures,
@@ -113,17 +125,46 @@ export const unubscribeAction = async (id: string): Promise<{ success: boolean, 
      const userId = (await supabase.auth.getUser()).data.user?.id;
      const { data, error } = await supabase.from('tblSubscriptionPlans').delete().eq('id', id);
      if (error) {
+          await logServerAction({
+               user_id: userId ? userId : '',
+               action: 'Unsubscribe Action',
+               payload: { id },
+               status: 'fail',
+               error: error.message,
+               duration_ms: 0,
+               type: 'action'
+          })
           return { success: false, error: error.message }
      }
+     await logServerAction({
+          user_id: null,
+          action: 'Unsubscribe Action',
+          payload: { id },
+          status: 'success',
+          error: '',
+          duration_ms: 0,
+          type: 'action'
+     })
      return { success: true }
 }
 
 export const readSubscriptionPlanFromClientId = async (clientId: string): Promise<{ success: boolean, subscriptionPlan?: SubscriptionPlan | null, error?: string }> => {
 
-     if (!clientId) {         // Check if clientId is provided
+     if (!clientId) {
+          await logServerAction({
+               user_id: null,
+               action: 'Read Subscription Plan from Client ID',
+               payload: { clientId },
+               status: 'fail',
+               error: "Client ID is required",
+               duration_ms: 0,
+               type: 'db'
+          })
           return { success: false, error: "Client ID is required" };
-     }     // Fetch the subscription plan for the client
+     }
+
      const supabase = await useServerSideSupabaseServiceRoleClient();
+
      const { data: clientData, error: clientError } = await supabase
           .from("tblClients")
           .select("subscription_plan")
@@ -131,6 +172,15 @@ export const readSubscriptionPlanFromClientId = async (clientId: string): Promis
           .single();
 
      if (clientError || !clientData?.subscription_plan) {
+          await logServerAction({
+               user_id: null,
+               action: 'Read Subscription Plan from Client ID',
+               payload: { clientId },
+               status: 'fail',
+               error: clientError ? clientError.message : "Client does not have a subscription plan",
+               duration_ms: 0,
+               type: 'db'
+          })
           return { success: false, error: clientError ? clientError.message : "Client does not have a subscription plan", subscriptionPlan: null };
      }
 
@@ -141,11 +191,27 @@ export const readSubscriptionPlanFromClientId = async (clientId: string): Promis
           .single();
 
      if (planError) {
+          await logServerAction({
+               user_id: null,
+               action: 'Read Subscription Plan from Client ID',
+               payload: { clientId },
+               status: 'fail',
+               error: planError.message,
+               duration_ms: 0,
+               type: 'db'
+          })
           return { success: false, error: planError.message, subscriptionPlan: null };
      }
 
-     return { success: true, subscriptionPlan };
-
+     await logServerAction({
+          user_id: null,
+          action: 'Read Subscription Plan from Client ID',
+          payload: { clientId },
+          status: 'success',
+          error: '',
+          duration_ms: 0,
+          type: 'db'
+     })
 
      return { success: true, subscriptionPlan };
 }
@@ -153,6 +219,15 @@ export const readSubscriptionPlanFromClientId = async (clientId: string): Promis
 export const readFeaturesFromSubscriptionPlanId = async (subscriptionPlanId: string | null): Promise<{ success: boolean, features?: Feature[], error?: string }> => {
 
      if (!subscriptionPlanId) {
+          await logServerAction({
+               user_id: null,
+               action: 'Read Features from Subscription Plan ID',
+               payload: { subscriptionPlanId },
+               status: 'fail',
+               error: "Subscription plan ID is required",
+               duration_ms: 0,
+               type: 'db'
+          })
           return { success: false, error: "Subscription plan ID is required" };
      }
 
@@ -171,14 +246,43 @@ export const readFeaturesFromSubscriptionPlanId = async (subscriptionPlanId: str
           .single();
 
      if (planError) {
+          await logServerAction({
+               user_id: userId ? userId : '',
+               action: 'Read Features from Subscription Plan ID',
+               payload: { subscriptionPlanId },
+               status: 'fail',
+               error: planError.message,
+               duration_ms: 0,
+               type: 'db'
+          })
           return { success: false, error: planError.message };
      }
      if (!subscriptionPlan) {
+          await logServerAction({
+               user_id: userId ? userId : '',
+               action: 'Read Features from Subscription Plan ID',
+               payload: { subscriptionPlanId },
+               status: 'fail',
+               error: "Subscription plan not found",
+               duration_ms: 0,
+               type: 'db'
+          })
           return { success: false, error: "Subscription plan not found" };
      }
      // Extract features from the subscription plan and exclude tblSubscriptionPlans_Features
      const features = subscriptionPlan.tblSubscriptionPlans_Features.map((relation: any) => relation.tblFeatures);
      // Return the subscription plan without tblSubscriptionPlans_Features
      const { tblSubscriptionPlans_Features, ...restOfSubscriptionPlan } = subscriptionPlan;
+
+     await logServerAction({
+          user_id: null,
+          action: 'Read Features from Subscription Plan ID',
+          payload: { subscriptionPlanId },
+          status: 'success',
+          error: '',
+          duration_ms: 0,
+          type: 'db'
+     })
+
      return { success: true, features };
 }

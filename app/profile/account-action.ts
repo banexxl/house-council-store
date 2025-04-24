@@ -19,7 +19,8 @@ export const logoutUserAction = async (): Promise<string | null> => {
                payload: {},
                status: 'fail',
                error: '',
-               duration_ms: Date.now() - startTime
+               duration_ms: Date.now() - startTime,
+               type: 'auth'
           })
           return error.message;
      }
@@ -29,7 +30,8 @@ export const logoutUserAction = async (): Promise<string | null> => {
           payload: {},
           status: 'success',
           error: '',
-          duration_ms: Date.now() - startTime
+          duration_ms: Date.now() - startTime,
+          type: 'auth'
      })
      return null;
 }
@@ -51,7 +53,8 @@ export const deleteAccountAction = async (clientId: string, clientEmail: string)
                payload: {},
                status: 'fail',
                error: error.message,
-               duration_ms: Date.now() - startTime
+               duration_ms: Date.now() - startTime,
+               type: 'auth'
           })
           return { success: false, error: error.message }
      }
@@ -68,7 +71,8 @@ export const deleteAccountAction = async (clientId: string, clientEmail: string)
                payload: {},
                status: 'fail',
                error: deleteClientError.message,
-               duration_ms: Date.now() - startTime
+               duration_ms: Date.now() - startTime,
+               type: 'auth'
           })
           return { success: false, error: deleteClientError.message }
      }
@@ -79,7 +83,8 @@ export const deleteAccountAction = async (clientId: string, clientEmail: string)
           payload: {},
           status: 'success',
           error: '',
-          duration_ms: Date.now() - startTime
+          duration_ms: Date.now() - startTime,
+          type: 'auth'
      })
 
      return { success: true }
@@ -105,7 +110,8 @@ export const readAccountByEmailAction = async (email: string): Promise<{ client?
                payload: { email },
                status: 'fail',
                error: error.message,
-               duration_ms: Date.now() - startTime
+               duration_ms: Date.now() - startTime,
+               type: 'action'
           })
           return { error: error.message }
      }
@@ -116,7 +122,8 @@ export const readAccountByEmailAction = async (email: string): Promise<{ client?
           payload: { email },
           status: 'success',
           error: '',
-          duration_ms: Date.now() - startTime
+          duration_ms: Date.now() - startTime,
+          type: 'action'
      })
 
      return { client }
@@ -142,7 +149,8 @@ export const updateAccountAction = async (id: string, update: Partial<Client>): 
                payload: { update },
                status: 'fail',
                error: error.message,
-               duration_ms: Date.now() - startTime
+               duration_ms: Date.now() - startTime,
+               type: 'action'
           })
           return { success: false, error: error.message }
      }
@@ -153,7 +161,8 @@ export const updateAccountAction = async (id: string, update: Partial<Client>): 
           payload: { update },
           status: 'success',
           error: '',
-          duration_ms: Date.now() - startTime
+          duration_ms: Date.now() - startTime,
+          type: 'action'
      })
 
      revalidatePath('/profile');
@@ -182,7 +191,8 @@ export const readClientRecentActivityAction = async (clientId: string): Promise<
                payload: {},
                status: 'fail',
                error: error.message,
-               duration_ms: Date.now() - startTime
+               duration_ms: Date.now() - startTime,
+               type: 'action'
           })
           return { success: false, error: error.message }
      }
@@ -192,7 +202,8 @@ export const readClientRecentActivityAction = async (clientId: string): Promise<
           payload: {},
           status: 'success',
           error: '',
-          duration_ms: Date.now() - startTime
+          duration_ms: Date.now() - startTime,
+          type: 'action'
      })
 
      return { success: true, data }

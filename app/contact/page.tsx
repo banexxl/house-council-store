@@ -15,7 +15,8 @@ export default async function Page() {
     payload: {},
     status: 'success',
     error: '',
-    duration_ms: 0
+    duration_ms: 0,
+    type: 'internal',
   })
 
   const mapKey = process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY

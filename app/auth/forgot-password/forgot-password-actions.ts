@@ -34,6 +34,7 @@ export async function sendPasswordResetEmail(email: string): Promise<void> {
                status: userCheckError ? "fail" : "success",
                error: '',
                duration_ms: Date.now() - startTime,
+               type: 'auth'
           })
      }
 
@@ -46,6 +47,7 @@ export async function sendPasswordResetEmail(email: string): Promise<void> {
                status: "fail",
                error: userCheckError ? userCheckError.message : "Send password request - User not found",
                duration_ms: Date.now() - startTime, // Placeholder for duration, you can calculate it if needed
+               type: 'auth'
           })
           redirect(
                `${process.env.BASE_URL}/auth/forgot-password/result?success=false&message=${encodeURIComponent(
@@ -61,7 +63,8 @@ export async function sendPasswordResetEmail(email: string): Promise<void> {
                payload: { email },
                status: "success",
                error: '',
-               duration_ms: Date.now() - startTime
+               duration_ms: Date.now() - startTime,
+               type: 'auth'
           })
           redirect(
                `${process.env.BASE_URL}/auth/forgot-password/result?success=true&message=${encodeURIComponent(
@@ -75,7 +78,8 @@ export async function sendPasswordResetEmail(email: string): Promise<void> {
                payload: { email },
                status: "fail",
                error: error ? error.message : "Failed to send password reset email.",
-               duration_ms: Date.now() - startTime
+               duration_ms: Date.now() - startTime,
+               type: 'auth'
           })
           redirect(
                `${process.env.BASE_URL}/auth/forgot-password/result?success=false&message=${encodeURIComponent(

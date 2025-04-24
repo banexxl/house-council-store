@@ -19,6 +19,7 @@ export type ErrorType = {
 export const signInUser = async (values: SignInFormValues): Promise<{ success: boolean, error?: ErrorType }> => {
 
      const start = Date.now();
+
      const supabase = await useServerSideSupabaseAnonClient();
 
      const { data, error } = await supabase
@@ -35,6 +36,7 @@ export const signInUser = async (values: SignInFormValues): Promise<{ success: b
                status: 'success',
                error: '',
                duration_ms: Date.now() - start,
+               type: 'auth'
           })
      }
 
@@ -48,6 +50,7 @@ export const signInUser = async (values: SignInFormValues): Promise<{ success: b
                          status: 'fail',
                          error: error.message,
                          duration_ms: Date.now() - start,
+                         type: 'auth'
                     })
                     return { success: false, error: { code: error.code, details: error.details, hint: 'Please try registering first', message: 'Email not found' } };
                case 'PGRS003':
@@ -58,6 +61,7 @@ export const signInUser = async (values: SignInFormValues): Promise<{ success: b
                          status: 'fail',
                          error: error.message,
                          duration_ms: Date.now() - start,
+                         type: 'auth'
                     })
                     return { success: false, error: { code: error.code, details: error.details, hint: 'Please try resetting your password', message: 'Password is incorrect' } };
                default:
@@ -68,6 +72,7 @@ export const signInUser = async (values: SignInFormValues): Promise<{ success: b
                          status: 'fail',
                          error: error.message,
                          duration_ms: Date.now() - start,
+                         type: 'auth'
                     })
                     return { success: false, error: { code: error.code, details: error.details, hint: error.hint, message: error.message } };
           }
@@ -86,6 +91,7 @@ export const signInUser = async (values: SignInFormValues): Promise<{ success: b
                status: 'fail',
                error: signInError.message,
                duration_ms: Date.now() - start,
+               type: 'auth'
           })
           return { success: false, error: { code: signInError.code!, details: signInError.message } };
      }
@@ -97,6 +103,7 @@ export const signInUser = async (values: SignInFormValues): Promise<{ success: b
           status: 'success',
           error: '',
           duration_ms: Date.now() - start,
+          type: 'auth'
      })
      return { success: true };
 }
@@ -124,6 +131,7 @@ export const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: 
                status: 'fail',
                error: authError ? authError.message : 'Unknown error',
                duration_ms: Date.now() - start,
+               type: 'auth'
           })
           return { success: false, error: authError };
      } else {
@@ -135,6 +143,7 @@ export const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: 
                     status: 'success',
                     error: '',
                     duration_ms: Date.now() - start,
+                    type: 'auth'
                })
                redirect(authData.url);
           } else {

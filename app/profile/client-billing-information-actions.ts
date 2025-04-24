@@ -62,7 +62,8 @@ export const createOrUpdateClientBillingInformation = async (clientBillingInform
                payload: { clientBillingInformation, paymentMethodTypeId, billingInformationStatusId },
                status: 'fail',
                error: error.message,
-               duration_ms: Date.now() - startTime
+               duration_ms: Date.now() - startTime,
+               type: 'action'
           })
           return { createOrUpdateClientBillingInformationSuccess: false, createOrUpdateClientBillingInformationError: error };
      }
@@ -73,7 +74,8 @@ export const createOrUpdateClientBillingInformation = async (clientBillingInform
           payload: { clientBillingInformation, paymentMethodTypeId, billingInformationStatusId },
           status: 'success',
           error: '',
-          duration_ms: Date.now() - startTime
+          duration_ms: Date.now() - startTime,
+          type: 'action'
      })
 
      revalidatePath(`/dashboard/clients/billing-information/${clientBillingInformation.client_id}`);
@@ -99,7 +101,8 @@ export const readClientBillingInformation = async (id: string): Promise<{ readCl
                payload: { id },
                status: 'fail',
                error: error.message,
-               duration_ms: Date.now() - startTime
+               duration_ms: Date.now() - startTime,
+               type: 'action'
           })
           return { readClientBillingInformationSuccess: false, readClientBillingInformationError: error.message };
      }
@@ -110,7 +113,8 @@ export const readClientBillingInformation = async (id: string): Promise<{ readCl
           payload: { id },
           status: 'success',
           error: '',
-          duration_ms: Date.now() - startTime
+          duration_ms: Date.now() - startTime,
+          type: 'action'
      })
      return { readClientBillingInformationSuccess: true, readClientBillingInformationData: data ?? undefined };
 }
@@ -164,7 +168,8 @@ export const readAllClientsBillingInformation = async (clientId: string): Promis
                payload: { clientId },
                status: 'fail',
                error: error.message,
-               duration_ms: Date.now() - startTime
+               duration_ms: Date.now() - startTime,
+               type: 'action'
           })
           return { readAllClientBillingInformationSuccess: false, readAllClientBillingInformationError: error.message };
      }
@@ -175,7 +180,8 @@ export const readAllClientsBillingInformation = async (clientId: string): Promis
           payload: { clientId },
           status: 'success',
           error: '',
-          duration_ms: Date.now() - startTime
+          duration_ms: Date.now() - startTime,
+          type: 'action'
      })
 
      return { readAllClientBillingInformationSuccess: true, readAllClientBillingInformationData: data ?? undefined };

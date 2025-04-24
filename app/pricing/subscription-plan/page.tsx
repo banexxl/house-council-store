@@ -4,6 +4,7 @@ import { readSubscriptionPlanById } from "@/app/profile/subscription-plan-action
 import { Header } from "@/app/components/header";
 import { Footer } from "@/app/components/footer";
 import { readAccountByEmailAction } from "@/app/profile/account-action";
+import { logServerAction } from "@/app/lib/server-logging";
 
 
 export default async function FreeTrialPage({ searchParams, }: { searchParams: Promise<{ plan_id: string }> }) {
@@ -16,6 +17,16 @@ export default async function FreeTrialPage({ searchParams, }: { searchParams: P
      const { subscriptionPlan } = await readSubscriptionPlanById(plan_id)
 
      const { client } = await readAccountByEmailAction(user?.email!)
+
+     await logServerAction({
+          user_id: user ? user.id : null,
+          action: 'Render Subscription Page',
+          payload: { plan_id },
+          status: 'success',
+          error: '',
+          duration_ms: 0,
+          type: 'internal',
+     })
 
      return (
           <>

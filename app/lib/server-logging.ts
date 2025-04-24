@@ -1,5 +1,18 @@
 import { useServerSideSupabaseServiceRoleClient } from "./ss-supabase-service-role-client";
 
+export type LogType =
+     | 'api'
+     | 'db'
+     | 'auth'
+     | 'cron'
+     | 'webhook'
+     | 'action'
+     | 'email'
+     | 'external'
+     | 'internal'
+     | 'system'
+     | 'unknown';
+
 export type ServerLog = {
      id?: string;
      user_id: string | null;
@@ -8,6 +21,7 @@ export type ServerLog = {
      status: 'success' | 'fail';
      error: string;
      duration_ms: number;
+     type: LogType;
 }
 
 export const logServerAction = async ({
@@ -17,6 +31,7 @@ export const logServerAction = async ({
      status,
      error,
      duration_ms,
+     type
 }: ServerLog) => {
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
@@ -28,6 +43,7 @@ export const logServerAction = async ({
           status,
           error,
           duration_ms,
+          type
      })
      console.log('Error from logServerAction', logInsertError);
 
