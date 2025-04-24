@@ -26,7 +26,7 @@ export const logoutUserAction = async (): Promise<string | null> => {
      }
      await logServerAction({
           user_id: userId ? userId : '',
-          action: 'Logout User - Success.',
+          action: 'Logged out successfully.',
           payload: {},
           status: 'success',
           error: '',
