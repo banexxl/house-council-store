@@ -191,7 +191,6 @@ export const readClientRecentActivityAction = async (clientEmail: string, client
           .or('type.eq.action,type.eq.auth')
           .order('created_at', { ascending: false })
           .limit(10);
-     console.log('aaaaaaaaaaaaa', data, clientId, clientAuthId, error);
 
      if (error) {
           await logServerAction({

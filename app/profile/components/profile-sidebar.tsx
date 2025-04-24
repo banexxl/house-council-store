@@ -293,7 +293,7 @@ export default function ProfileSidebar({ userData, subscriptionData, recentActiv
                                                        primary={activity.action}
                                                        secondary={
                                                             activity.created_at
-                                                                 ? new Date(activity.created_at.replace(' ', 'T').replace(/\+.*$/, '')).toLocaleString(undefined, {
+                                                                 ? new Date(activity.created_at.replace(' ', 'T')).toLocaleString(undefined, {
                                                                       year: 'numeric',
                                                                       month: '2-digit',
                                                                       day: '2-digit',
@@ -302,7 +302,7 @@ export default function ProfileSidebar({ userData, subscriptionData, recentActiv
                                                                       second: '2-digit',
                                                                       hour12: false,
                                                                  }).replace(',', '')
-                                                                 : "Invalid time value"
+                                                                 : 'Invalid time value'
                                                        }
                                                   />
                                              </ListItem>
