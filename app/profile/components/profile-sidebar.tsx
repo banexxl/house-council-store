@@ -46,7 +46,7 @@ export interface ActivityItem {
      user_id: string
      type: string
      action: string
-     date: string
+     created_at: string
 }
 
 interface ProfileSidebarProps {
@@ -289,7 +289,22 @@ export default function ProfileSidebar({ userData, subscriptionData, recentActiv
                                    ) : (
                                         recentActivity?.map((activity) => (
                                              <ListItem key={activity.id} sx={{ px: 3 }}>
-                                                  <ListItemText primary={activity.action} secondary={new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(activity.date))} />
+                                                  <ListItemText
+                                                       primary={activity.action}
+                                                       secondary={
+                                                            activity.created_at
+                                                                 ? new Date(activity.created_at.replace(' ', 'T').replace(/\+.*$/, '')).toLocaleString(undefined, {
+                                                                      year: 'numeric',
+                                                                      month: '2-digit',
+                                                                      day: '2-digit',
+                                                                      hour: '2-digit',
+                                                                      minute: '2-digit',
+                                                                      second: '2-digit',
+                                                                      hour12: false,
+                                                                 }).replace(',', '')
+                                                                 : "Invalid time value"
+                                                       }
+                                                  />
                                              </ListItem>
                                         ))
                                    )

@@ -45,6 +45,7 @@ export default async function Page() {
           readFeaturesFromSubscriptionPlanId(client.subscription_plan ?? null),
           readClientRecentActivityAction(client.id),
      ]);
+     console.log('recentActivity', recentActivity);
 
      // Merge session and client data
      const sessionAndClientDataCombined = {
