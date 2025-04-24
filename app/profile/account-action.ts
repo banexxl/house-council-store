@@ -4,6 +4,7 @@ import { useServerSideSupabaseServiceRoleClient } from "@/app/lib/ss-supabase-se
 import { Client } from "../types/client";
 import { revalidatePath } from "next/cache";
 import { logServerAction } from "../lib/server-logging";
+import { ActivityItem } from "./components/profile-sidebar";
 
 
 export const logoutUserAction = async (): Promise<string | null> => {
@@ -156,6 +157,43 @@ export const updateAccountAction = async (id: string, update: Partial<Client>): 
      })
 
      revalidatePath('/profile');
+
+     return { success: true, data }
+}
+
+export const readClientRecentActivityAction = async (clientId: string): Promise<{ success: boolean, error?: string, data?: ActivityItem[] }> => {
+
+     const startTime = Date.now();
+
+     const supabase = await useServerSideSupabaseServiceRoleClient();
+
+     const { data, error } = await supabase
+          .from('tblServerLogs')
+          .select('*')
+          .eq('user_id', clientId)
+          .order('created_at', { ascending: false })
+          .limit(10);
+
+     if (error) {
+
+          await logServerAction({
+               user_id: clientId,
+               action: 'Read Client Recent Activity - Error for tblActivityLogs table.',
+               payload: {},
+               status: 'fail',
+               error: error.message,
+               duration_ms: Date.now() - startTime
+          })
+          return { success: false, error: error.message }
+     }
+     await logServerAction({
+          user_id: clientId,
+          action: 'Read Client Recent Activity - Success.',
+          payload: {},
+          status: 'success',
+          error: '',
+          duration_ms: Date.now() - startTime
+     })
 
      return { success: true, data }
 }

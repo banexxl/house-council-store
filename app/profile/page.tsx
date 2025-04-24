@@ -2,7 +2,7 @@ import { getSessionUser } from "@/app/lib/get-session";
 import { Footer } from "@/app/components/footer";
 import { Header } from "@/app/components/header";
 import { ProfilePage } from "./profile";
-import { readAccountByEmailAction } from "./account-action";
+import { readAccountByEmailAction, readClientRecentActivityAction } from "./account-action";
 import { User } from "@supabase/supabase-js";
 import { clientInitialValues } from "../types/client";
 import { readEntity } from "@/app/lib/base-entity-actions";
@@ -36,13 +36,14 @@ export default async function Page() {
      }
 
      // Fetch related data in parallel
-     const [subscriptionPlanReturnObject, role, client_status, client_type, billingInformation, subscriptionFeatures] = await Promise.all([
+     const [subscriptionPlanReturnObject, role, client_status, client_type, billingInformation, subscriptionFeatures, recentActivity] = await Promise.all([
           readSubscriptionPlanFromClientId(client.id),
           readEntity("tblClientRoles", client.role_id),
           readEntity("tblClientStatuses", client.client_status),
           readEntity("tblClientTypes", client.type),
           readAllClientsBillingInformation(client.id),
           readFeaturesFromSubscriptionPlanId(client.subscription_plan ?? null),
+          readClientRecentActivityAction(client.id),
      ]);
 
      // Merge session and client data
@@ -67,6 +68,7 @@ export default async function Page() {
                     allClientBillingInformation={billingInformation.readAllClientBillingInformationData ?? []}
                     paymentMethods={[]}
                     subscriptionFeatures={subscriptionFeatures?.features ?? []}
+                    recentActivity={recentActivity.data ?? []}
                />
                <Footer />
           </>

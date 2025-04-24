@@ -2,8 +2,7 @@
 
 import { useState } from "react"
 import { Box, Container, Grid } from "@mui/material"
-import { Toaster } from "react-hot-toast"
-import ProfileSidebar from "./components/profile-sidebar"
+import ProfileSidebar, { ActivityItem } from "./components/profile-sidebar"
 import ProfileTabs from "./components/profile-tabs"
 import { Client } from "../types/client"
 import { User } from "@supabase/supabase-js"
@@ -39,23 +38,15 @@ const notificationPreferences = [
      },
 ]
 
-// Mock data for recent activity
-const recentActivity = [
-     { id: "act_1", type: "Payment", description: "Monthly subscription payment", date: "January 15, 2024" },
-     { id: "act_2", type: "Login", description: "Successful login from new device", date: "January 12, 2024" },
-     { id: "act_3", type: "Document", description: "Uploaded 'Community Guidelines.pdf'", date: "January 10, 2024" },
-     { id: "act_4", type: "Vote", description: "Voted on 'Playground Renovation'", date: "January 5, 2024" },
-     { id: "act_5", type: "Profile", description: "Updated profile information", date: "December 28, 2023" },
-]
-
 type ProfilePageProps = {
      sessionAndClientDataCombined?: { client: Client, session: User }
      subscriptionPlan: SubscriptionPlan | null
      paymentMethods: BaseEntity[]
      allClientBillingInformation: ClientBillingInformation[]
      subscriptionFeatures?: Feature[]
+     recentActivity?: ActivityItem[]
 }
-export const ProfilePage = ({ sessionAndClientDataCombined, subscriptionPlan, paymentMethods, allClientBillingInformation, subscriptionFeatures }: ProfilePageProps) => {
+export const ProfilePage = ({ sessionAndClientDataCombined, subscriptionPlan, paymentMethods, allClientBillingInformation, subscriptionFeatures, recentActivity }: ProfilePageProps) => {
 
      const [editMode, setEditMode] = useState(false)
      const [notificationSettings, setNotificationSettings] = useState(notificationPreferences)

@@ -35,7 +35,7 @@ import PhoneIcon from "@mui/icons-material/Phone"
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday"
 import toast from "react-hot-toast"
 import { useRouter } from "next/navigation"
-import { Client, clientInitialValues } from "@/app/types/client"
+import { Client } from "@/app/types/client"
 import { User } from "@supabase/supabase-js"
 import { SubscriptionPlan } from "@/app/types/subscription-plan"
 import { Feature } from "@/app/types/feature"
@@ -43,15 +43,16 @@ import { logoutUserAction } from "../account-action"
 
 export interface ActivityItem {
      id: string
+     user_id: string
      type: string
-     description: string
+     action: string
      date: string
 }
 
 interface ProfileSidebarProps {
      userData: { client: Client; session: User }
      subscriptionData: SubscriptionPlan | null
-     recentActivity: ActivityItem[]
+     recentActivity: ActivityItem[] | undefined
      onEditProfile: () => void
      subscriptionFeatures?: Feature[]
 }
@@ -278,11 +279,21 @@ export default function ProfileSidebar({ userData, subscriptionData, recentActiv
                     <CardHeader title={<Typography variant="h6">Recent Activity</Typography>} />
                     <CardContent sx={{ px: 0 }}>
                          <List dense>
-                              {recentActivity.map((activity) => (
-                                   <ListItem key={activity.id} sx={{ px: 3 }}>
-                                        <ListItemText primary={activity.description} secondary={activity.date} />
-                                   </ListItem>
-                              ))}
+                              {
+                                   recentActivity?.length === 0 || !recentActivity ? (
+                                        <ListItem sx={{ px: 3 }}>
+                                             <Typography variant="body2" color="text.secondary">
+                                                  No recent activity found.
+                                             </Typography>
+                                        </ListItem>
+                                   ) : (
+                                        recentActivity?.map((activity) => (
+                                             <ListItem key={activity.id} sx={{ px: 3 }}>
+                                                  <ListItemText primary={activity.action} secondary={new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(activity.date))} />
+                                             </ListItem>
+                                        ))
+                                   )
+                              }
                          </List>
 
                          <Divider />
