@@ -3,7 +3,7 @@ import { getSessionUser } from "@/app/lib/get-session"
 import { Header } from "@/app/components/header"
 import { Footer } from "@/app/components/footer"
 import SubscriptionErrorPage from "./subscription-plan-error.tsx"
-import { logServerAction } from "@/app/lib/server-logging.js"
+import { logServerAction } from "@/app/lib/server-logging"
 
 export default async function FreeTrialErrorPage() {
      // Get the user session
