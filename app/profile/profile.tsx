@@ -79,6 +79,7 @@ export const ProfilePage = ({ sessionAndClientDataCombined, subscriptionPlan, pa
                                              allClientBillingInformation={allClientBillingInformation}
                                              notificationSettings={notificationSettings}
                                              setNotificationSettings={setNotificationSettings}
+                                             recentActivity={recentActivity || []}
                                         />
                                    </Grid>
                               </Grid>

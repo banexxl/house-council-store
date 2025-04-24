@@ -176,19 +176,19 @@ export const readClientRecentActivityAction = async (clientEmail: string, client
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
-     const { data: clientId, error: clientError } = await supabase
-          .from('tblClients')
-          .select('id')
-          .eq('email', clientEmail)
-          .single();
+     const { data: authUser, error: authUserError } = await supabase.auth.admin.listUsers();
 
+     const userObject = authUser?.users.find((user: any) => user.email === clientEmail);
+
+
+     const userIds = [userObject?.id, clientAuthId].filter(Boolean);
+     const logTypes = ['action', 'auth'];
 
      const { data, error } = await supabase
           .from('tblServerLogs')
           .select('*')
-          .eq('user_id', clientId?.id)
-          .eq('user_id', clientAuthId)
-          .or('type.eq.action,type.eq.auth')
+          .in('user_id', userIds)
+          .in('type', logTypes)
           .order('created_at', { ascending: false })
           .limit(10);
 

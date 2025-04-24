@@ -91,13 +91,13 @@ export const signInUser = async (values: SignInFormValues): Promise<{ success: b
                status: 'fail',
                error: signInError.message,
                duration_ms: Date.now() - start,
-               type: 'auth'
+               type: 'db'
           })
           return { success: false, error: { code: signInError.code!, details: signInError.message } };
      }
 
      await logServerAction({
-          user_id: null,
+          user_id: signInSession.user.id,
           action: 'Signed in with email and password',
           payload: JSON.stringify(values),
           status: 'success',
@@ -136,6 +136,7 @@ export const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: 
           return { success: false, error: authError };
      } else {
           if (authData.url) {
+
                await logServerAction({
                     user_id: null,
                     action: 'Signed in with Google',

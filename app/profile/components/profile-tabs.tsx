@@ -18,6 +18,7 @@ import { Session, User } from "@supabase/supabase-js"
 import { Client } from "@/app/types/client"
 import { SubscriptionPlan } from "@/app/types/subscription-plan"
 import { ClientBillingInformation } from "@/app/types/billing-information"
+import { ActivityItem } from "./profile-sidebar"
 
 interface TabPanelProps {
      children?: React.ReactNode
@@ -50,6 +51,7 @@ interface ProfileTabsProps {
      allClientBillingInformation: ClientBillingInformation[]
      notificationSettings: any[]
      setNotificationSettings: (value: any) => void
+     recentActivity: ActivityItem[]
 }
 
 export default function ProfileTabs({
@@ -61,6 +63,7 @@ export default function ProfileTabs({
      allClientBillingInformation,
      notificationSettings,
      setNotificationSettings,
+     recentActivity
 }: ProfileTabsProps) {
 
      const [tabValue, setTabValue] = useState(0)
@@ -74,6 +77,10 @@ export default function ProfileTabs({
                prevSettings.map((setting) => (setting.id === id ? { ...setting, enabled: !setting.enabled } : setting)),
           )
      }
+
+     const lastAction = recentActivity
+          .filter(activity => activity.type === 'action')
+          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
 
      return (
           <>
@@ -129,7 +136,14 @@ export default function ProfileTabs({
 
                <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
                     <Typography variant="caption" color="text.secondary">
-                         Last updated: January 15, 2024
+                         Last updated:{' '}
+                         {lastAction?.created_at
+                              ? new Intl.DateTimeFormat(undefined, {
+                                   dateStyle: 'medium',
+                                   timeStyle: 'short',
+                                   hour12: false,
+                              }).format(new Date(lastAction.created_at))
+                              : 'No recent activity'}
                     </Typography>
                </Box>
           </>

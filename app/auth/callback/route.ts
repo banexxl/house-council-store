@@ -77,9 +77,9 @@ export async function GET(request: Request) {
      // Retrieve the session after OAuth to get the user details
      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
      if (sessionError) {
-          sessionError ?? await logServerAction({
+          await logServerAction({
                action: 'Auth callback errored',
-               error: sessionError ? sessionError : '',
+               error: sessionError.message,
                duration_ms: Date.now() - start,
                payload: { code, requestUrl },
                status: 'fail',
@@ -90,7 +90,7 @@ export async function GET(request: Request) {
      }
 
      if (!sessionData.session) {
-          sessionData.session ?? await logServerAction({
+          await logServerAction({
                action: 'Auth callback errored',
                error: 'No session found',
                duration_ms: Date.now() - start,
@@ -234,6 +234,16 @@ export async function GET(request: Request) {
 
           return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=Duplicate email found in tblClients. Please contact support.`);
      }
+
+     await logServerAction({
+          action: 'Signed in with Google account',
+          error: '',
+          duration_ms: Date.now() - start,
+          payload: { code, requestUrl },
+          status: 'success',
+          user_id: sessionData.session.user.id,
+          type: 'auth'
+     })
 
      // Redirect to dashboard with absolute URL
      const dashboardUrl = `${requestUrl.origin}/profile`;
