@@ -1,10 +1,37 @@
 'use server';
 
 import { useServerSideSupabaseServiceRoleClient } from "@/app/lib/ss-supabase-service-role-client";
-import { logoutUserAction } from "./logout-action";
 import { Client } from "../types/client";
 import { revalidatePath } from "next/cache";
 import { logServerAction } from "../lib/server-logging";
+
+
+export const logoutUserAction = async (): Promise<string | null> => {
+     const startTime = Date.now();
+     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const userId = (await supabase.auth.getUser()).data.user?.id;
+     const { error } = await supabase.auth.signOut();
+     if (error) {
+          await logServerAction({
+               user_id: userId ? userId : '',
+               action: 'Logout User - Error during supabase logout.',
+               payload: {},
+               status: 'fail',
+               error: '',
+               duration_ms: Date.now() - startTime
+          })
+          return error.message;
+     }
+     await logServerAction({
+          user_id: userId ? userId : '',
+          action: 'Logout User - Success.',
+          payload: {},
+          status: 'success',
+          error: '',
+          duration_ms: Date.now() - startTime
+     })
+     return null;
+}
 
 export const deleteAccountAction = async (clientId: string, clientEmail: string): Promise<{ success: boolean, error?: string }> => {
 
@@ -132,3 +159,4 @@ export const updateAccountAction = async (id: string, update: Partial<Client>): 
 
      return { success: true, data }
 }
+

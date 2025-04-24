@@ -6,10 +6,10 @@ import Link from "next/link";
 import { useState } from "react";
 import MenuIcon from '@mui/icons-material/Menu';
 import { User } from "@supabase/supabase-js";
-import { logoutUserAction } from "@/app/profile/logout-action";
 import { useRouter } from "next/navigation";
 import { useCookieTokenUpdater } from "@/app/lib/client-session-update";
 import useScrollTrigger from "@mui/material/useScrollTrigger";
+import { logoutUserAction } from "../profile/account-action";
 
 
 type HeaderProps = {

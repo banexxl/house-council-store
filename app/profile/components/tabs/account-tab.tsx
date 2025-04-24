@@ -6,11 +6,10 @@ import LockIcon from "@mui/icons-material/Lock"
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser"
 import LogoutIcon from "@mui/icons-material/Logout"
 import { getStatusColor } from "../profile-sidebar"
-import { deleteAccountAction, updateAccountAction } from "../../account-action"
+import { deleteAccountAction, logoutUserAction, updateAccountAction } from "../../account-action"
 import Swal from 'sweetalert2'
 import { Client } from "@/app/types/client"
 import { User } from "@supabase/supabase-js"
-import { logoutUserAction } from "../../logout-action"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import toast from "react-hot-toast"
@@ -20,8 +19,6 @@ import { resetPassword } from "@/app/auth/reset-password/reset-password-actions"
 import { calculatePasswordStrength, getStrengthColor, getStrengthLabel, validationSchema } from "@/app/auth/reset-password/reset-password-utils";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import Visibility from "@mui/icons-material/Visibility";
-import CheckIcon from "@mui/icons-material/Check";
-import CloseIcon from "@mui/icons-material/Close";
 
 interface AccountTabProps {
      userData: { client: Client; session: User }
