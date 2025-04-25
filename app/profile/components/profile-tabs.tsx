@@ -19,6 +19,7 @@ import { Client } from "@/app/types/client"
 import { SubscriptionPlan } from "@/app/types/subscription-plan"
 import { ClientBillingInformation } from "@/app/types/billing-information"
 import { ActivityItem } from "./profile-sidebar"
+import { Feature } from "@/app/types/feature"
 
 interface TabPanelProps {
      children?: React.ReactNode
@@ -52,6 +53,7 @@ interface ProfileTabsProps {
      notificationSettings: any[]
      setNotificationSettings: (value: any) => void
      recentActivity: ActivityItem[]
+     subscriptionFeatures?: Feature[]
 }
 
 export default function ProfileTabs({
@@ -63,7 +65,8 @@ export default function ProfileTabs({
      allClientBillingInformation,
      notificationSettings,
      setNotificationSettings,
-     recentActivity
+     recentActivity,
+     subscriptionFeatures
 }: ProfileTabsProps) {
 
      const [tabValue, setTabValue] = useState(0)
@@ -111,7 +114,7 @@ export default function ProfileTabs({
 
                          {/* Billing Tab */}
                          <TabPanel value={tabValue} index={1}>
-                              <BillingTab subscriptionData={subscriptionData} paymentMethods={paymentMethods} />
+                              <BillingTab subscriptionData={subscriptionData} paymentMethods={paymentMethods} userData={userData} subscriptionFeatures={subscriptionFeatures} />
                          </TabPanel>
 
                          {/* Payments Tab */}

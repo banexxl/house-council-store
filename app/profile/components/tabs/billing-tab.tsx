@@ -1,6 +1,6 @@
 "use client"
 
-import { Box, Button, Card, CardContent, Chip, Divider, Grid, Typography } from "@mui/material"
+import { Box, Button, Card, CardContent, CardHeader, Chip, Divider, Grid, List, ListItem, ListItemIcon, ListItemText, Typography } from "@mui/material"
 import Link from "next/link"
 import EditIcon from "@mui/icons-material/Edit"
 import CheckCircleIcon from "@mui/icons-material/CheckCircle"
@@ -9,13 +9,18 @@ import { getStatusColor } from "../profile-sidebar"
 import { useRouter } from "next/navigation"
 import { SubscriptionPlan } from "@/app/types/subscription-plan"
 import { BaseEntity } from "@/app/types/base-entity"
+import { Client } from "@/app/types/client"
+import { User } from "@supabase/supabase-js"
+import { Feature } from "@/app/types/feature"
 
 interface BillingTabProps {
      subscriptionData?: SubscriptionPlan | null
      paymentMethods: BaseEntity[]
+     userData: { client: Client; session: User; }
+     subscriptionFeatures?: Feature[]
 }
 
-export default function BillingTab({ subscriptionData, paymentMethods }: BillingTabProps) {
+export default function BillingTab({ subscriptionData, paymentMethods, userData, subscriptionFeatures }: BillingTabProps) {
 
      const router = useRouter();
 
@@ -40,73 +45,62 @@ export default function BillingTab({ subscriptionData, paymentMethods }: Billing
      return (
           <>
                <Box sx={{ mb: 4 }}>
-                    <Typography variant="h5" gutterBottom>
-                         Subscription Details
-                    </Typography>
-
                     {subscriptionData ? (
-                         <Card variant="outlined" sx={{ mb: 3 }}>
+                         <Card elevation={2} sx={{ my: 3 }}>
+                              <CardHeader title="Subscription" sx={{ variant: "h6" }} />
                               <CardContent>
                                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                                        <Box>
-                                             <Typography variant="h6" color="primary.main">
-                                                  {subscriptionData.name} Plan
-                                             </Typography>
-                                             <Typography variant="body2" color="text.secondary">
-                                                  {subscriptionData.base_price_per_month} / Monthly
-                                             </Typography>
-                                        </Box>
-                                        <Chip label={subscriptionData.status_id} color={getStatusColor(subscriptionData.status_id)} />
-                                   </Box>
-
-                                   <Divider sx={{ my: 2 }} />
-
-                                   <Grid container spacing={2}>
-                                        <Grid size={{ xs: 12, md: 6 }}>
-                                             <Typography variant="subtitle2" color="text.secondary">
-                                                  Next billing date
-                                             </Typography>
-                                             {/* <Typography variant="body2">{subscriptionData.}</Typography> */}
-                                        </Grid>
-
-                                        <Grid size={{ xs: 12, md: 6 }}>
-                                             <Typography variant="subtitle2" color="text.secondary">
-                                                  Auto-renewal
-                                             </Typography>
-                                             {/* <Typography variant="body2">{subscriptionData.autoRenew ? "Enabled" : "Disabled"}</Typography> */}
-                                        </Grid>
-                                   </Grid>
-
-                                   <Box sx={{ mt: 3 }}>
-                                        <Typography variant="subtitle2" gutterBottom>
-                                             Plan Features:
+                                        <Typography variant="h5" color="primary.main">
+                                             {subscriptionData.name}
                                         </Typography>
-
-                                        <Grid container spacing={1}>
-                                             {/* {subscriptionData.features.map((feature: string, index: number) => (
-                                                  <Grid size={{ xs: 12, md: 6 }} key={index}>
-                                                       <Box sx={{ display: "flex", alignItems: "center" }}>
-                                                            <CheckCircleIcon color="success" fontSize="small" sx={{ mr: 1 }} />
-                                                            <Typography variant="body2">{feature}</Typography>
-                                                       </Box>
-                                                  </Grid>
-                                             ))} */}
-                                        </Grid>
+                                        {/* <Chip label={subscriptionData.status_id} color={getStatusColor(subscriptionData.status_id)} size="small" /> */}
                                    </Box>
+
+                                   <Typography variant="body2" color="text.secondary">
+                                        {subscriptionData.base_price_per_month} billed {subscriptionData.is_billed_yearly ? "annually" : "monthly"}
+                                   </Typography>
+
+                                   <Box sx={{ bgcolor: "background.default", borderRadius: 1, mb: 2 }}>
+                                        {userData.client.next_billing_date ? (
+                                             <Typography variant="subtitle2" gutterBottom>
+                                                  Next billing date: {new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(userData.client.next_billing_date))}
+                                             </Typography>
+                                        ) : (
+                                             <Typography variant="subtitle2" gutterBottom>
+                                                  Next billing date: N/A
+                                             </Typography>
+                                        )}
+                                        {/* <Typography variant="body2" color="text.secondary">
+                                   Auto-renewal: {subscriptionData.autoRenew ? "Enabled" : "Disabled"}
+                              </Typography> */}
+                                   </Box>
+
+                                   <Typography variant="subtitle2" gutterBottom>
+                                        Plan Features:
+                                   </Typography>
+
+                                   <List dense disablePadding>
+                                        {subscriptionFeatures && subscriptionFeatures?.length > 0 && subscriptionFeatures!.map((feature, index) => (
+                                             <ListItem key={index} disablePadding sx={{ py: 0.5 }}>
+                                                  <ListItemIcon sx={{ minWidth: 28 }}>
+                                                       <CheckCircleIcon color="success" fontSize="small" />
+                                                  </ListItemIcon>
+                                                  <ListItemText primary={`${feature.name}`} />
+                                                  {/* <ListItemText primary={`${feature.base_price_per_month} / Monthly`} /> */}
+                                             </ListItem>
+                                        ))}
+                                   </List>
                               </CardContent>
                          </Card>
                     ) : (
-                         <Box sx={{ mb: 4 }}>
-                              <Typography variant="h5" gutterBottom>
-                                   Subscription Details
-                              </Typography>
-                              <Typography variant="body2" color="text.secondary">
-                                   No subscription data available.
-                              </Typography>
-                              <Button variant="outlined" startIcon={<EditIcon />} onClick={() => router.push("/pricing")} sx={{ mt: 2 }}>
-                                   Add Subscription
-                              </Button>
-                         </Box>
+                         <Card elevation={2} sx={{ my: 3 }}>
+                              <CardHeader title="Subscription" sx={{ variant: "h6" }} />
+                              <CardContent>
+                                   <Typography variant="body2" color="text.secondary">
+                                        No active subscription found.
+                                   </Typography>
+                              </CardContent>
+                         </Card>
                     )}
 
                     <Box sx={{ display: "flex", gap: 2 }}>

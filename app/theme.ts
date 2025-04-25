@@ -74,7 +74,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 12,
-          boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.05)",
+          // boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.05)",
         },
       },
     },

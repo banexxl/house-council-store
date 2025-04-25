@@ -214,67 +214,7 @@ export default function ProfileSidebar({ userData, subscriptionData, recentActiv
                     </CardContent>
                </Card>
 
-               {subscriptionData ? (
-                    <Card elevation={2} sx={{ mt: 3 }}>
-                         <CardHeader title="Subscription" sx={{ variant: "h6" }} />
-                         <CardContent>
-                              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                                   <Typography variant="h5" color="primary.main">
-                                        {subscriptionData.name}
-                                   </Typography>
-                                   {/* <Chip label={subscriptionData.status_id} color={getStatusColor(subscriptionData.status_id)} size="small" /> */}
-                              </Box>
 
-                              <Typography variant="body2" color="text.secondary">
-                                   {subscriptionData.base_price_per_month} billed {subscriptionData.is_billed_yearly ? "annually" : "monthly"}
-                              </Typography>
-
-                              <Box sx={{ bgcolor: "background.default", borderRadius: 1, mb: 2 }}>
-                                   {userData.client.next_billing_date ? (
-                                        <Typography variant="subtitle2" gutterBottom>
-                                             Next billing date: {new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(userData.client.next_billing_date))}
-                                        </Typography>
-                                   ) : (
-                                        <Typography variant="subtitle2" gutterBottom>
-                                             Next billing date: N/A
-                                        </Typography>
-                                   )}
-                                   {/* <Typography variant="body2" color="text.secondary">
-                                   Auto-renewal: {subscriptionData.autoRenew ? "Enabled" : "Disabled"}
-                              </Typography> */}
-                              </Box>
-
-                              <Typography variant="subtitle2" gutterBottom>
-                                   Plan Features:
-                              </Typography>
-
-                              <List dense disablePadding>
-                                   {subscriptionFeatures && subscriptionFeatures?.length > 0 && subscriptionFeatures!.map((feature, index) => (
-                                        <ListItem key={index} disablePadding sx={{ py: 0.5 }}>
-                                             <ListItemIcon sx={{ minWidth: 28 }}>
-                                                  <CheckCircleIcon color="success" fontSize="small" />
-                                             </ListItemIcon>
-                                             <ListItemText primary={`${feature.name}`} />
-                                             {/* <ListItemText primary={`${feature.base_price_per_month} / Monthly`} /> */}
-                                        </ListItem>
-                                   ))}
-                              </List>
-
-                              <Button variant="outlined" fullWidth sx={{ mt: 2 }} component={Link} href="/pricing">
-                                   Manage Subscription
-                              </Button>
-                         </CardContent>
-                    </Card>
-               ) : (
-                    <Card elevation={2} sx={{ mt: 3 }}>
-                         <CardHeader title="Subscription" sx={{ variant: "h6" }} />
-                         <CardContent>
-                              <Typography variant="body2" color="text.secondary">
-                                   No active subscription found.
-                              </Typography>
-                         </CardContent>
-                    </Card>
-               )}
                <Card elevation={2} sx={{ mt: 3 }}>
                     <CardHeader title={<Typography variant="h6">Recent Activity</Typography>} />
                     <CardContent sx={{ px: 0 }}>
