@@ -91,6 +91,7 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                     const resetPasswordResponse = await resetPassword(userData.client.email, values.password);
                     if (resetPasswordResponse.success) {
                          toast.success("Password reset successfully.")
+                         formik.resetForm()
                          setShowPasswordChange(false)
                     } else {
                          toast.error("Error resetting password: " + resetPasswordResponse.error, {
@@ -225,7 +226,7 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                    <Typography variant="subtitle2" color="text.secondary">
                                         User ID
                                    </Typography>
-                                   <Typography variant="body1">{userData.client.id.slice(-12)}</Typography>
+                                   <Typography variant="body1">{userData.client.id.slice(-12).toUpperCase()}</Typography>
                               </Grid>
 
                               <Grid size={{ xs: 12, md: 6 }}>

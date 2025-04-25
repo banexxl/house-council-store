@@ -10,7 +10,6 @@ import ReceiptIcon from "@mui/icons-material/Receipt"
 import NotificationsIcon from "@mui/icons-material/Notifications"
 import SecurityIcon from "@mui/icons-material/Security"
 import AccountTab from "./tabs/account-tab"
-import BillingTab from "./tabs/billing-tab"
 import NotificationsTab from "./tabs/notifications-tab"
 import SecurityTab from "./tabs/security-tab"
 import PaymentsTab from "./tabs/payments-tab"
@@ -20,6 +19,7 @@ import { SubscriptionPlan } from "@/app/types/subscription-plan"
 import { ClientBillingInformation } from "@/app/types/billing-information"
 import { ActivityItem } from "./profile-sidebar"
 import { Feature } from "@/app/types/feature"
+import { BillingTab } from "./tabs/billing-tab"
 
 interface TabPanelProps {
      children?: React.ReactNode
@@ -114,7 +114,13 @@ export default function ProfileTabs({
 
                          {/* Billing Tab */}
                          <TabPanel value={tabValue} index={1}>
-                              <BillingTab subscriptionData={subscriptionData} paymentMethods={paymentMethods} userData={userData} subscriptionFeatures={subscriptionFeatures} />
+                              <BillingTab
+                                   subscriptionData={subscriptionData}
+                                   paymentMethods={paymentMethods}
+                                   userData={userData}
+                                   subscriptionFeatures={subscriptionFeatures}
+                                   allClientBillingInformation={allClientBillingInformation}
+                              />
                          </TabPanel>
 
                          {/* Payments Tab */}

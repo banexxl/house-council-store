@@ -93,7 +93,7 @@ export async function resetPassword(email: string, newPassword: string): Promise
                status: 'success',
                error: '',
                duration_ms: 0,
-               type: 'auth'
+               type: 'action'
           })
 
           return {

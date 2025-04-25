@@ -1,193 +1,245 @@
-"use client"
+'use client';
 
-import { Box, Button, Card, CardContent, CardHeader, Chip, Divider, Grid, List, ListItem, ListItemIcon, ListItemText, Typography } from "@mui/material"
-import Link from "next/link"
-import EditIcon from "@mui/icons-material/Edit"
-import CheckCircleIcon from "@mui/icons-material/CheckCircle"
-import CreditCardIcon from "@mui/icons-material/CreditCard"
-import { getStatusColor } from "../profile-sidebar"
-import { useRouter } from "next/navigation"
-import { SubscriptionPlan } from "@/app/types/subscription-plan"
-import { BaseEntity } from "@/app/types/base-entity"
-import { Client } from "@/app/types/client"
-import { User } from "@supabase/supabase-js"
-import { Feature } from "@/app/types/feature"
+import {
+     Box,
+     Button,
+     Checkbox,
+     Divider,
+     FormControlLabel,
+     Grid,
+     MenuItem,
+     Paper,
+     Stack,
+     TextField,
+     Typography,
+} from '@mui/material';
+import CreditCardIcon from '@mui/icons-material/CreditCard';
+import React, { useState } from 'react';
+import { SubscriptionPlan } from '@/app/types/subscription-plan';
+import { BaseEntity } from '@/app/types/base-entity';
+import { Client } from '@/app/types/client';
+import { User } from '@supabase/supabase-js';
+import { Feature } from '@/app/types/feature';
+import { ClientBillingInformation } from '@/app/types/billing-information';
+
+const countries = ['United States', 'Germany', 'Serbia'];
+const states = ['New York', 'California', 'Texas'];
+const languages = ['English', 'German', 'Serbian'];
+
 
 interface BillingTabProps {
      subscriptionData?: SubscriptionPlan | null
      paymentMethods: BaseEntity[]
      userData: { client: Client; session: User; }
-     subscriptionFeatures?: Feature[]
+     subscriptionFeatures?: Feature[],
+     allClientBillingInformation: ClientBillingInformation[]
 }
 
-export default function BillingTab({ subscriptionData, paymentMethods, userData, subscriptionFeatures }: BillingTabProps) {
-
-     const router = useRouter();
-
-     if (subscriptionData === null || subscriptionData === undefined) {
-          return (
-               <Box sx={{ mb: 4 }}>
-                    <Typography variant="h5" gutterBottom>
-                         Subscription Details
-                    </Typography>
-
-                    <Typography variant="body2" color="text.secondary">
-                         No subscription data available.
-                    </Typography>
-
-                    <Button variant="outlined" startIcon={<EditIcon />} onClick={() => router.push("/pricing")} sx={{ mt: 2 }}>
-                         Add Subscription
-                    </Button>
-               </Box>
-          )
-     }
+export const BillingTab = ({ paymentMethods, subscriptionData, userData, subscriptionFeatures }: BillingTabProps) => {
+     const [emailRecipient, setEmailRecipient] = useState('');
+     const [companyName, setCompanyName] = useState('Branislav');
+     const [address, setAddress] = useState({
+          line1: '',
+          line2: '',
+          city: '',
+          state: 'New York',
+          zip: '',
+          country: 'United States',
+     });
+     const [invoiceLang, setInvoiceLang] = useState('English');
+     const [purchaseOrder, setPurchaseOrder] = useState('TEST');
+     const [taxId, setTaxId] = useState('');
 
      return (
-          <>
-               <Box sx={{ mb: 4 }}>
-                    {subscriptionData ? (
-                         <Card elevation={2} sx={{ my: 3 }}>
-                              <CardHeader title="Subscription" sx={{ variant: "h6" }} />
-                              <CardContent>
-                                   <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                                        <Typography variant="h5" color="primary.main">
-                                             {subscriptionData.name}
-                                        </Typography>
-                                        {/* <Chip label={subscriptionData.status_id} color={getStatusColor(subscriptionData.status_id)} size="small" /> */}
-                                   </Box>
-
-                                   <Typography variant="body2" color="text.secondary">
-                                        {subscriptionData.base_price_per_month} billed {subscriptionData.is_billed_yearly ? "annually" : "monthly"}
-                                   </Typography>
-
-                                   <Box sx={{ bgcolor: "background.default", borderRadius: 1, mb: 2 }}>
-                                        {userData.client.next_billing_date ? (
-                                             <Typography variant="subtitle2" gutterBottom>
-                                                  Next billing date: {new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(userData.client.next_billing_date))}
-                                             </Typography>
-                                        ) : (
-                                             <Typography variant="subtitle2" gutterBottom>
-                                                  Next billing date: N/A
-                                             </Typography>
-                                        )}
-                                        {/* <Typography variant="body2" color="text.secondary">
-                                   Auto-renewal: {subscriptionData.autoRenew ? "Enabled" : "Disabled"}
-                              </Typography> */}
-                                   </Box>
-
-                                   <Typography variant="subtitle2" gutterBottom>
-                                        Plan Features:
-                                   </Typography>
-
-                                   <List dense disablePadding>
-                                        {subscriptionFeatures && subscriptionFeatures?.length > 0 && subscriptionFeatures!.map((feature, index) => (
-                                             <ListItem key={index} disablePadding sx={{ py: 0.5 }}>
-                                                  <ListItemIcon sx={{ minWidth: 28 }}>
-                                                       <CheckCircleIcon color="success" fontSize="small" />
-                                                  </ListItemIcon>
-                                                  <ListItemText primary={`${feature.name}`} />
-                                                  {/* <ListItemText primary={`${feature.base_price_per_month} / Monthly`} /> */}
-                                             </ListItem>
-                                        ))}
-                                   </List>
-                              </CardContent>
-                         </Card>
-                    ) : (
-                         <Card elevation={2} sx={{ my: 3 }}>
-                              <CardHeader title="Subscription" sx={{ variant: "h6" }} />
-                              <CardContent>
-                                   <Typography variant="body2" color="text.secondary">
-                                        No active subscription found.
-                                   </Typography>
-                              </CardContent>
-                         </Card>
-                    )}
-
-                    <Box sx={{ display: "flex", gap: 2 }}>
-                         <Button variant="contained" component={Link} href="/pricing">
-                              Upgrade Plan
-                         </Button>
-                         <Button variant="outlined">Cancel Subscription</Button>
-                    </Box>
-               </Box>
-
-               <Divider sx={{ my: 4 }} />
-
-               <Box>
-                    <Typography variant="h5" gutterBottom>
-                         Payment Methods
+          <Stack spacing={4} p={4} maxWidth="800px" mx="auto">
+               {/* Payment Method */}
+               <Paper variant="outlined" sx={{ p: 3 }}>
+                    <Typography variant="h6" gutterBottom>
+                         Payment Method
                     </Typography>
-
-                    {paymentMethods?.length ? (
-                         paymentMethods.map((method) => (
-                              <Card
-                                   key={method.id}
-                                   variant="outlined"
-                                   sx={{
-                                        mb: 2,
-                                        borderColor: method.name ? "primary.main" : "divider",
-                                        position: "relative",
-                                   }}
-                              >
-                                   {method.name && (
-                                        <Chip
-                                             label="Default"
-                                             color="primary"
-                                             size="small"
-                                             sx={{
-                                                  position: "absolute",
-                                                  top: 12,
-                                                  right: 12,
-                                             }}
-                                        />
-                                   )}
-                                   <CardContent>
-                                        <Box sx={{ display: "flex", alignItems: "center" }}>
-                                             <CreditCardIcon sx={{ mr: 2 }} />
-                                             <Box>
-                                                  <Typography variant="subtitle1">
-                                                       {/* {method.name} •••• {method.last4} */}
-                                                  </Typography>
-                                                  <Typography variant="body2" color="text.secondary">
-                                                       {/* Expires {method.expiry} */}
-                                                  </Typography>
-                                             </Box>
-                                        </Box>
-                                   </CardContent>
-                              </Card>
-                         ))
-                    ) : (
-                         <Typography variant="body2" color="text.secondary">
-                              No payment methods available.
+                    <FormControlLabel
+                         control={<Checkbox defaultChecked />}
+                         label="Visa debit —•••• 1985"
+                    />
+                    <Typography variant="body2" color="text.secondary">
+                         Valid until 7/2025
+                    </Typography>
+                    <Box mt={2}>
+                         <Button variant="outlined" startIcon={<CreditCardIcon />}>
+                              Add Card
+                         </Button>
+                         <Typography variant="caption" color="text.secondary" display="block">
+                              At most, three credit cards can be added.
                          </Typography>
-                    )}
+                    </Box>
+               </Paper>
 
-                    <Button variant="outlined" sx={{ mt: 1 }}>
-                         Add Payment Method
-                    </Button>
-               </Box>
+               {/* Invoice Email Recipient */}
+               <Paper variant="outlined" sx={{ p: 3 }}>
+                    <Typography variant="h6" gutterBottom>
+                         Invoice Email Recipient
+                    </Typography>
+                    <TextField
+                         fullWidth
+                         placeholder="john@doe.com"
+                         value={emailRecipient}
+                         onChange={(e) => setEmailRecipient(e.target.value)}
+                    />
+                    <Typography variant="caption" color="text.secondary">
+                         Max 254 characters.
+                    </Typography>
+                    <Box mt={2}>
+                         <Button variant="contained">Save</Button>
+                    </Box>
+               </Paper>
 
-               <Divider sx={{ my: 4 }} />
+               {/* Company Name */}
+               <Paper variant="outlined" sx={{ p: 3 }}>
+                    <Typography variant="h6" gutterBottom>
+                         Company Name
+                    </Typography>
+                    <TextField
+                         fullWidth
+                         value={companyName}
+                         onChange={(e) => setCompanyName(e.target.value)}
+                    />
+                    <Typography variant="caption" color="text.secondary">
+                         Max 64 characters.
+                    </Typography>
+                    <Box mt={2}>
+                         <Button variant="contained">Save</Button>
+                    </Box>
+               </Paper>
 
-               <Box>
-                    <Typography variant="h5" gutterBottom>
+               {/* Billing Address */}
+               <Paper variant="outlined" sx={{ p: 3 }}>
+                    <Typography variant="h6" gutterBottom>
                          Billing Address
                     </Typography>
+                    <Stack spacing={2}>
+                         <TextField
+                              label="Address Line 1"
+                              fullWidth
+                              value={address.line1}
+                              onChange={(e) => setAddress({ ...address, line1: e.target.value })}
+                         />
+                         <TextField
+                              label="Address Line 2"
+                              fullWidth
+                              value={address.line2}
+                              onChange={(e) => setAddress({ ...address, line2: e.target.value })}
+                         />
+                         <TextField
+                              label="City"
+                              fullWidth
+                              value={address.city}
+                              onChange={(e) => setAddress({ ...address, city: e.target.value })}
+                         />
+                         <Grid container spacing={2}>
+                              <Grid size={6}>
+                                   <TextField
+                                        label="State"
+                                        select
+                                        fullWidth
+                                        value={address.state}
+                                        onChange={(e) => setAddress({ ...address, state: e.target.value })}
+                                   >
+                                        {states.map((state) => (
+                                             <MenuItem key={state} value={state}>
+                                                  {state}
+                                             </MenuItem>
+                                        ))}
+                                   </TextField>
+                              </Grid>
+                              <Grid size={6}>
+                                   <TextField
+                                        label="ZIP / Postal Code"
+                                        fullWidth
+                                        value={address.zip}
+                                        onChange={(e) => setAddress({ ...address, zip: e.target.value })}
+                                   />
+                              </Grid>
+                         </Grid>
+                         <TextField
+                              label="Country"
+                              select
+                              fullWidth
+                              value={address.country}
+                              onChange={(e) => setAddress({ ...address, country: e.target.value })}
+                         >
+                              {countries.map((c) => (
+                                   <MenuItem key={c} value={c}>
+                                        {c}
+                                   </MenuItem>
+                              ))}
+                         </TextField>
+                         <Box>
+                              <Button variant="contained">Save</Button>
+                         </Box>
+                    </Stack>
+               </Paper>
 
-                    <Card variant="outlined">
-                         <CardContent>
-                              <Typography variant="body1">Sarah Johnson</Typography>
-                              <Typography variant="body2">123 Community Lane, Apt 302</Typography>
-                              <Typography variant="body2">Boston, MA 02110</Typography>
-                              <Typography variant="body2">United States</Typography>
+               {/* Invoice Language */}
+               <Paper variant="outlined" sx={{ p: 3 }}>
+                    <Typography variant="h6" gutterBottom>
+                         Invoice Language
+                    </Typography>
+                    <TextField
+                         select
+                         fullWidth
+                         value={invoiceLang}
+                         onChange={(e) => setInvoiceLang(e.target.value)}
+                    >
+                         {languages.map((lang) => (
+                              <MenuItem key={lang} value={lang}>
+                                   {lang}
+                              </MenuItem>
+                         ))}
+                    </TextField>
+                    <Typography variant="caption" color="text.secondary">
+                         This field determines the language of your invoices.
+                    </Typography>
+                    <Box mt={2}>
+                         <Button variant="contained">Save</Button>
+                    </Box>
+               </Paper>
 
-                              <Button variant="text" sx={{ mt: 2 }} startIcon={<EditIcon />}>
-                                   Edit Address
-                              </Button>
-                         </CardContent>
-                    </Card>
-               </Box>
-          </>
-     )
+               {/* Invoice Purchase Order */}
+               <Paper variant="outlined" sx={{ p: 3 }}>
+                    <Typography variant="h6" gutterBottom>
+                         Invoice Purchase Order
+                    </Typography>
+                    <TextField
+                         fullWidth
+                         value={purchaseOrder}
+                         onChange={(e) => setPurchaseOrder(e.target.value)}
+                    />
+                    <Typography variant="caption" color="text.secondary">
+                         Max 64 characters.
+                    </Typography>
+                    <Box mt={2}>
+                         <Button variant="contained">Save</Button>
+                    </Box>
+               </Paper>
+
+               {/* Tax ID */}
+               <Paper variant="outlined" sx={{ p: 3 }}>
+                    <Typography variant="h6" gutterBottom>
+                         Tax ID
+                    </Typography>
+                    <TextField
+                         fullWidth
+                         placeholder="EU VAT number"
+                         value={taxId}
+                         onChange={(e) => setTaxId(e.target.value)}
+                    />
+                    <Typography variant="caption" color="text.secondary">
+                         Countries that do not use Tax IDs can leave this blank.
+                    </Typography>
+                    <Box mt={2}>
+                         <Button variant="contained">Save</Button>
+                    </Box>
+               </Paper>
+          </Stack>
+     );
 }
-

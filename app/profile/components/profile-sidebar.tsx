@@ -179,7 +179,7 @@ export default function ProfileSidebar({ userData, subscriptionData, recentActiv
                                    <ListItemIcon>
                                         <EmailIcon fontSize="small" />
                                    </ListItemIcon>
-                                   <ListItemText primary={userData.client.email} secondary={userData.client.is_verified ? "Verified" : "Not verified"} />
+                                   <ListItemText primary={userData.client.email} secondary={userData.session.confirmed_at ? "Verified" : "Not verified"} />
                                    {userData.client.is_verified && <VerifiedUserIcon color="success" fontSize="small" />}
                               </ListItem>
 
