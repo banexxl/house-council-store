@@ -152,7 +152,7 @@ export const readSubscriptionPlanFromClientId = async (clientId: string): Promis
 
      if (!clientId) {
           await logServerAction({
-               user_id: null,
+               user_id: clientId ? clientId : null,
                action: 'Read Subscription Plan from Client ID',
                payload: { clientId },
                status: 'fail',
@@ -173,7 +173,7 @@ export const readSubscriptionPlanFromClientId = async (clientId: string): Promis
 
      if (clientError || !clientData?.subscription_plan) {
           await logServerAction({
-               user_id: null,
+               user_id: clientId ? clientId : null,
                action: 'Read Subscription Plan from Client ID',
                payload: { clientId },
                status: 'fail',
@@ -192,7 +192,7 @@ export const readSubscriptionPlanFromClientId = async (clientId: string): Promis
 
      if (planError) {
           await logServerAction({
-               user_id: null,
+               user_id: clientId ? clientId : null,
                action: 'Read Subscription Plan from Client ID',
                payload: { clientId },
                status: 'fail',
@@ -204,7 +204,7 @@ export const readSubscriptionPlanFromClientId = async (clientId: string): Promis
      }
 
      await logServerAction({
-          user_id: null,
+          user_id: clientId ? clientId : null,
           action: 'Read Subscription Plan from Client ID',
           payload: { clientId },
           status: 'success',
