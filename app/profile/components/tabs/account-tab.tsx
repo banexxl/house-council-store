@@ -90,9 +90,8 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                try {
                     const resetPasswordResponse = await resetPassword(userData.client.email, values.password);
                     if (resetPasswordResponse.success) {
-                         toast.success("Password reset successfully.", {
-                              // position: "top-center",
-                         });
+                         toast.success("Password reset successfully.")
+                         setShowPasswordChange(false)
                     } else {
                          toast.error("Error resetting password: " + resetPasswordResponse.error, {
                               // position: "top-center",
