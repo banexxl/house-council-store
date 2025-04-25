@@ -137,9 +137,8 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                         });
 
                                         if (updateAccountActionResponse.success) {
-                                             toast.success("Account updated successfully.",
-                                                  // { position: "top-center" }
-                                             );
+                                             toast.success("Account updated successfully.");
+                                             setEditMode(false);
                                         } else {
                                              toast.error("Error updating account: " + updateAccountActionResponse.error);
                                         }
