@@ -4,6 +4,7 @@ import {
      Box,
      Button,
      Checkbox,
+     Chip,
      Divider,
      FormControlLabel,
      Grid,
@@ -21,10 +22,10 @@ import { User } from '@supabase/supabase-js';
 import { Feature } from '@/app/types/feature';
 import { ClientBillingInformation } from '@/app/types/billing-information';
 import { AddCardModal } from '../add-card-modal';
-import { recognizeCardManufacturer } from '@/app/lib/card-manufacturer';
 import { deleteClientBillingInformation } from '../../client-billing-information-actions';
 import toast from 'react-hot-toast';
-
+import { luhnCheck } from '@/app/lib/card-validator';
+import { formatExpirationDate, parseExpirationDate } from '@/app/lib/date-helpers';
 const countries = ['United States', 'Germany', 'Serbia'];
 const states = ['New York', 'California', 'Texas'];
 const languages = ['English', 'German', 'Serbian'];
@@ -33,9 +34,10 @@ const languages = ['English', 'German', 'Serbian'];
 interface BillingTabProps {
      userData: { client: Client; session: User; }
      allClientBillingInformation: ClientBillingInformation[]
+     binCheckerAPIKey?: string
 }
 
-export const BillingTab = ({ userData, allClientBillingInformation }: BillingTabProps) => {
+export const BillingTab = ({ userData, allClientBillingInformation, binCheckerAPIKey }: BillingTabProps) => {
      const [emailRecipient, setEmailRecipient] = useState('');
      const [companyName, setCompanyName] = useState('');
      const [address, setAddress] = useState({
@@ -73,20 +75,33 @@ export const BillingTab = ({ userData, allClientBillingInformation }: BillingTab
                     {
                          allClientBillingInformation.length > 0 ? (
                               allClientBillingInformation.map((billingInformation) => (
-                                   <Box key={billingInformation.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                                        <Box>
-                                             <FormControlLabel
-                                                  control={<Checkbox defaultChecked={billingInformation.id === userData.client.id} />}
-                                                  label={`${recognizeCardManufacturer(billingInformation.card_number!)} —•••• ${billingInformation.card_number?.slice(-4)}`}
-                                             />
-                                             <Typography variant="body2" color="text.secondary">
-                                                  Valid until {billingInformation.expiration_date?.toLocaleString('default', { month: 'short', year: 'numeric' })}
-                                             </Typography>
+                                   <>
+                                        <Box key={billingInformation.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                                             <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+
+                                                  <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                                       <Typography variant="body2" color="text.secondary">
+                                                            Card number ending with: {billingInformation.card_number?.slice(-4)}
+                                                       </Typography>
+                                                       <Typography variant="body2" color="text.secondary">
+                                                            Valid until {billingInformation.expiration_date
+                                                                 ? formatExpirationDate(billingInformation.expiration_date)
+                                                                 : 'Unknown'}
+                                                       </Typography>
+                                                  </Box>
+
+                                                  {billingInformation.default_payment_method && (
+                                                       <Box sx={{ display: 'inline-flex', alignItems: 'center', ml: 1 }}>
+                                                            <Chip label="Default" color="success" variant="outlined" size="small" />
+                                                       </Box>
+                                                  )}
+                                             </Box>
+                                             <Button variant="outlined" color="error" onClick={() => handleDeleteCard(billingInformation.id!)}>
+                                                  Delete
+                                             </Button>
                                         </Box>
-                                        <Button variant="outlined" color="error" onClick={() => handleDeleteCard(billingInformation.id!)}>
-                                             Delete
-                                        </Button>
-                                   </Box>
+                                        <Divider sx={{ mb: 2 }} />
+                                   </>
                               ))
                          ) : (
                               <Typography variant="body2" color="text.secondary">
@@ -260,6 +275,7 @@ export const BillingTab = ({ userData, allClientBillingInformation }: BillingTab
                     open={openAddCardModal}
                     onClose={() => setOpenAddCardModal(false)}
                     userData={userData}
+                    binCheckerAPIKey={binCheckerAPIKey}
                />
           </Box >
      );

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
      Dialog, DialogTitle, DialogContent, DialogActions,
      Button, TextField, FormControlLabel, Checkbox,
@@ -12,37 +12,74 @@ import { createOrUpdateClientBillingInformation } from '../client-billing-inform
 import { Client } from '@/app/types/client';
 import { User } from '@supabase/supabase-js';
 import toast from 'react-hot-toast';
+import { parseExpirationDate } from '@/app/lib/date-helpers';
+import { luhnCheck } from '@/app/lib/card-validator';
+import { BinLookupResult } from '@/app/types/bin-lookup';
+import { clientBillingInformationInitialValues } from '@/app/types/billing-information';
 
 type AddCardModalProps = {
      open: boolean;
      onClose: () => void;
      userData: { client: Client; session: User; }
+     binCheckerAPIKey?: string;
 };
 
-export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userData }) => {
+export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userData, binCheckerAPIKey }) => {
 
-     const parseExpirationDate = (value: string) => {
-          const [monthStr, yearStr] = value.split('/');
-          if (!monthStr || !yearStr) return null;
+     const [isValidCardNumber, setIsValidCardNumber] = useState(false);
+     const [binData, setBinData] = useState<BinLookupResult | null>(null);
 
-          const month = parseInt(monthStr, 10) - 1; // JS months are 0-based
-          const year = parseInt('20' + yearStr, 10); // assume 20XX
+     const handleCardNumberChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+          const formattedValue = e.target.value
+               .replace(/[^\d]/g, '')
+               .replace(/(\d{4})(?=\d)/g, '$1 ')
+               .trim();
 
-          if (isNaN(month) || isNaN(year)) return null;
+          formik.setFieldValue('card_number', formattedValue);
 
-          return new Date(year, month);
+          const plainCardNumber = formattedValue.replace(/\s/g, '');
+
+          // Check Luhn validity for full card number
+          if (plainCardNumber.length >= 13) {
+               setIsValidCardNumber(luhnCheck(plainCardNumber));
+          } else {
+               setIsValidCardNumber(false);
+          }
+
+          // BIN lookup when at least 6 digits
+          if (plainCardNumber.length >= 6 && !binData) {
+               try {
+                    const response = await fetch(
+                         `https://api.apilayer.com/bincheck/${plainCardNumber.slice(0, 8)}`,
+                         {
+                              method: 'GET',
+                              headers: {
+                                   'Content-Type': 'application/json',
+                                   'apikey': binCheckerAPIKey || ''
+                              },
+                              redirect: 'follow'
+                         }
+                    );
+
+                    if (response.ok) {
+                         const data: BinLookupResult = await response.json();
+                         setBinData(data);
+                         console.log('BIN Lookup result:', data);
+                    } else {
+                         setBinData(null);
+                         console.error('Failed to lookup BIN info');
+                    }
+               } catch (error) {
+                    setBinData(null);
+                    console.error('Error during BIN lookup:', error);
+               }
+          }
      };
 
+     const cardScheme = binData?.scheme?.toLowerCase() || '';
+
      const formik = useFormik({
-          initialValues: {
-               card_number: '',
-               expiration_date: new Date(),
-               cvc: 0,
-               full_name: '',
-               country: '',
-               billing_address: '',
-               default_payment_method: false,
-          },
+          initialValues: clientBillingInformationInitialValues,
           validationSchema: Yup.object({
                card_number: Yup.string().required('Card number is required'),
                expiration_date: Yup.string()
@@ -67,6 +104,7 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userD
                billing_address: Yup.string().required('Address is required'),
           }),
           onSubmit: async (values) => {
+               formik.resetForm();
                const {
                     createOrUpdateClientBillingInformationSuccess,
                     createOrUpdateClientBillingInformationError,
@@ -107,20 +145,37 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userD
                               fullWidth
                               margin="normal"
                               value={formik.values.card_number}
-                              onChange={(e) => {
-                                   const formattedValue = e.target.value.replace(/[^\d]/g, '').replace(/(\d{4})/g, '$1 ').trim();
-                                   formik.setFieldValue('card_number', formattedValue);
-                              }}
+                              onChange={handleCardNumberChange}
                               onBlur={formik.handleBlur}
-                              error={formik.touched.card_number && Boolean(formik.errors.card_number)}
-                              helperText={formik.touched.card_number && formik.errors.card_number}
+                              error={formik.touched.card_number && (!isValidCardNumber || Boolean(formik.errors.card_number))}
+                              helperText={
+                                   formik.touched.card_number &&
+                                   (!isValidCardNumber ? 'Invalid card number' : formik.errors.card_number)
+                              }
                               slotProps={{
                                    input: {
                                         endAdornment: (
                                              <InputAdornment position="end">
-                                                  <img src="https://img.icons8.com/color/24/000000/visa.png" alt="Visa" style={{ marginRight: 4 }} />
-                                                  <img src="https://img.icons8.com/color/24/000000/mastercard-logo.png" alt="MasterCard" style={{ marginRight: 4 }} />
-                                                  <img src="https://img.icons8.com/color/24/000000/amex.png" alt="Amex" />
+                                                  {cardScheme === 'visa' && (
+                                                       <img
+                                                            src="https://img.icons8.com/color/24/000000/visa.png"
+                                                            alt="Visa"
+                                                            style={{ marginRight: 4 }}
+                                                       />
+                                                  )}
+                                                  {cardScheme === 'mastercard' && (
+                                                       <img
+                                                            src="https://img.icons8.com/color/24/000000/mastercard-logo.png"
+                                                            alt="MasterCard"
+                                                            style={{ marginRight: 4 }}
+                                                       />
+                                                  )}
+                                                  {cardScheme === 'amex' && (
+                                                       <img
+                                                            src="https://img.icons8.com/color/24/000000/amex.png"
+                                                            alt="Amex"
+                                                       />
+                                                  )}
                                              </InputAdornment>
                                         )
                                    },
@@ -129,6 +184,14 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userD
                                    }
                               }}
                          />
+                         <Box mt={1}>
+                              <Typography variant="body2">
+                                   🏦 Bank: {binData ? (binData.bank_name || 'Unknown') : '...'}
+                              </Typography>
+                              <Typography variant="body2">
+                                   🌍 Country: {binData ? (binData.country || 'Unknown') : '...'}
+                              </Typography>
+                         </Box>
 
                          <Box display="flex" gap={2}>
                               <TextField
@@ -137,31 +200,39 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userD
                                    placeholder="MM/YY"
                                    fullWidth
                                    margin="normal"
-                                   value={
-                                        formik.values.expiration_date
-                                             ? typeof formik.values.expiration_date === 'string'
-                                                  ? formik.values.expiration_date
-                                                  : new Date(formik.values.expiration_date).toLocaleDateString('en-GB', {
-                                                       month: '2-digit',
-                                                       year: '2-digit',
-                                                  }).replace('/', '/')
-                                             : ''
-                                   }
+                                   value={formik.values.expiration_date}
                                    onChange={(e) => {
-                                        const formattedValue = e.target.value
-                                             .replace(/[^0-9]/g, '')    // remove non-numbers
-                                             .replace(/(\d{2})(\d{1,2})/, '$1/$2'); // format MM/YY
-                                        formik.setFieldValue('expiration_date', formattedValue);
+                                        let value = e.target.value.replace(/[^\d]/g, '');
+
+                                        // If typing 1 digit only
+                                        if (value.length === 1 && parseInt(value) > 1) {
+                                             value = '0' + value; // e.g. user types "5" ➔ becomes "05"
+                                        }
+
+                                        if (value.length > 2) {
+                                             value = value.slice(0, 2) + '/' + value.slice(2, 4);
+                                        }
+
+                                        if (value.length > 5) {
+                                             value = value.slice(0, 5); // Prevent extra typing
+                                        }
+
+                                        formik.setFieldValue('expiration_date', value);
                                    }}
                                    onBlur={formik.handleBlur}
                                    error={formik.touched.expiration_date && Boolean(formik.errors.expiration_date)}
-                                   helperText={formik.touched.expiration_date && typeof formik.errors.expiration_date === 'string' ? formik.errors.expiration_date : ''}
+                                   helperText={
+                                        formik.touched.expiration_date && typeof formik.errors.expiration_date === 'string'
+                                             ? formik.errors.expiration_date
+                                             : ''
+                                   }
                                    slotProps={{
                                         htmlInput: {
-                                             maxLength: 5,
+                                             maxLength: 5
                                         }
                                    }}
                               />
+
 
                               <TextField
                                    name="cvc"
@@ -206,7 +277,7 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userD
                               helperText={formik.touched.full_name && formik.errors.full_name}
                          />
 
-                         <CountryAutocomplete value={formik.values.country}
+                         <CountryAutocomplete value={formik.values.country!}
                               onChange={(value) => formik.setFieldValue('country', value)}
                          />
 
@@ -235,7 +306,15 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userD
 
                          <DialogActions sx={{ mt: 2 }}>
                               <Button onClick={onClose}>Cancel</Button>
-                              <Button type="submit" variant="contained" loading={formik.isSubmitting}>
+                              <Typography variant="caption" color="textSecondary">
+                                   {JSON.stringify(formik.errors)}
+                              </Typography>
+                              <Button
+                                   type="submit"
+                                   variant="contained"
+                                   loading={formik.isSubmitting}
+                                   disabled={!formik.isValid || !formik.dirty || !luhnCheck(formik.values.card_number!.replace(/\s/g, ''))}
+                              >
                                    Add Card
                               </Button>
                          </DialogActions>

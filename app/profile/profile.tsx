@@ -45,8 +45,9 @@ type ProfilePageProps = {
      allClientBillingInformation: ClientBillingInformation[]
      subscriptionFeatures?: Feature[]
      recentActivity?: ActivityItem[]
+     binCheckerAPIKey?: string
 }
-export const ProfilePage = ({ sessionAndClientDataCombined, subscriptionPlan, paymentMethods, allClientBillingInformation, subscriptionFeatures, recentActivity }: ProfilePageProps) => {
+export const ProfilePage = ({ sessionAndClientDataCombined, subscriptionPlan, paymentMethods, allClientBillingInformation, subscriptionFeatures, recentActivity, binCheckerAPIKey }: ProfilePageProps) => {
 
      const [editMode, setEditMode] = useState(false)
      const [notificationSettings, setNotificationSettings] = useState(notificationPreferences)
@@ -81,6 +82,7 @@ export const ProfilePage = ({ sessionAndClientDataCombined, subscriptionPlan, pa
                                              setNotificationSettings={setNotificationSettings}
                                              recentActivity={recentActivity || []}
                                              subscriptionFeatures={subscriptionFeatures}
+                                             binCheckerAPIKey={binCheckerAPIKey}
                                         />
                                    </Grid>
                               </Grid>

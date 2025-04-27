@@ -60,6 +60,9 @@ export default async function Page() {
           session: { ...user },
      };
 
+     const binCheckerAPIKey = process.env.NEXT_PUBLIC_BIN_CHECKER_API_KEY
+
+
      return (
           <>
                <Header user={user} />
@@ -70,6 +73,7 @@ export default async function Page() {
                     paymentMethods={[]}
                     subscriptionFeatures={subscriptionFeatures?.features ?? []}
                     recentActivity={recentActivity.data ?? []}
+                    binCheckerAPIKey={binCheckerAPIKey ?? ""}
                />
                <Footer />
           </>

@@ -53,7 +53,8 @@ interface ProfileTabsProps {
      notificationSettings: any[]
      setNotificationSettings: (value: any) => void
      recentActivity: ActivityItem[]
-     subscriptionFeatures?: Feature[]
+     subscriptionFeatures?: Feature[],
+     binCheckerAPIKey?: string
 }
 
 export default function ProfileTabs({
@@ -66,7 +67,8 @@ export default function ProfileTabs({
      notificationSettings,
      setNotificationSettings,
      recentActivity,
-     subscriptionFeatures
+     subscriptionFeatures,
+     binCheckerAPIKey
 }: ProfileTabsProps) {
 
      const [tabValue, setTabValue] = useState(0)
@@ -117,6 +119,7 @@ export default function ProfileTabs({
                               <BillingTab
                                    userData={userData}
                                    allClientBillingInformation={allClientBillingInformation}
+                                   binCheckerAPIKey={binCheckerAPIKey}
                               />
                          </TabPanel>
 
