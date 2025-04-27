@@ -58,7 +58,7 @@ export default function PaymentsTab({ allClientBillingInformation }: PaymentsTab
                                    ? allClientBillingInformation.map((payment) => (
                                         <TableRow key={payment.id}>
                                              <TableCell>{payment.id}</TableCell>
-                                             <TableCell>{payment.expiration_date!.toLocaleDateString()}</TableCell>
+                                             <TableCell>{payment.expiration_date}</TableCell>
                                              <TableCell>{payment.cash_amount}</TableCell>
                                              <TableCell>
                                                   <Chip label={payment.billing_status_id} color={getPaymentStatusColor(payment.billing_status_id)} size="small" />
