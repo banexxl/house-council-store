@@ -9,6 +9,7 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { CountryAutocomplete } from './countries-autocomplete';
 import { createOrUpdateClientBillingInformation } from '../client-billing-information-actions';
+import HelpIcon from '@mui/icons-material/Help';
 import { Client } from '@/app/types/client';
 import { User } from '@supabase/supabase-js';
 import toast from 'react-hot-toast';
@@ -28,6 +29,7 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userD
 
      const [isValidCardNumber, setIsValidCardNumber] = useState(false);
      const [binData, setBinData] = useState<BinLookupResult | null>(null);
+     const [cardScheme, setCardScheme] = useState<string>('');
 
      const handleCardNumberChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
           const formattedValue = e.target.value
@@ -46,8 +48,15 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userD
                setIsValidCardNumber(false);
           }
 
+          // Reset everything if card number becomes too short
+          if (plainCardNumber.length < 6) {
+               setBinData(null);
+               setCardScheme('');
+               return;
+          }
+
           // BIN lookup when at least 6 digits
-          if (plainCardNumber.length >= 6 && !binData) {
+          if (!binData || (binData && !plainCardNumber.startsWith(binData.bin))) {
                try {
                     const response = await fetch(
                          `https://api.apilayer.com/bincheck/${plainCardNumber.slice(0, 8)}`,
@@ -64,19 +73,22 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userD
                     if (response.ok) {
                          const data: BinLookupResult = await response.json();
                          setBinData(data);
+
+                         // 🛠 Set cardScheme immediately after new binData
+                         setCardScheme(data.scheme?.toLowerCase() || '');
                          console.log('BIN Lookup result:', data);
                     } else {
                          setBinData(null);
+                         setCardScheme('');
                          console.error('Failed to lookup BIN info');
                     }
                } catch (error) {
                     setBinData(null);
+                    setCardScheme('');
                     console.error('Error during BIN lookup:', error);
                }
           }
      };
-
-     const cardScheme = binData?.scheme?.toLowerCase() || '';
 
      const formik = useFormik({
           initialValues: clientBillingInformationInitialValues,
@@ -122,7 +134,13 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userD
                if (createOrUpdateClientBillingInformationSuccess) {
                     toast.success('Card added successfully!');
                } else {
-                    toast.error(`Error adding card: ${createOrUpdateClientBillingInformationError.message}`);
+                    const errorMessage = createOrUpdateClientBillingInformationError?.message || '';
+
+                    if (errorMessage.toLowerCase().includes('duplicate key')) {
+                         toast.error('This card already exists in your billing information.');
+                    } else {
+                         toast.error(`Error adding card: ${errorMessage}`);
+                    }
                }
                onClose();
           }
@@ -175,6 +193,57 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userD
                                                             src="https://img.icons8.com/color/24/000000/amex.png"
                                                             alt="Amex"
                                                        />
+                                                  )}
+                                                  {cardScheme === 'discover' && (
+                                                       <img
+                                                            src="https://img.icons8.com/color/24/000000/discover.png"
+                                                            alt="Discover"
+                                                       />
+                                                  )}
+                                                  {cardScheme === 'diners-club' && (
+                                                       <img
+                                                            src="https://img.icons8.com/color/24/000000/diners-club.png"
+                                                            alt="Diners Club"
+                                                       />
+                                                  )}
+                                                  {cardScheme === 'jcb' && (
+                                                       <img
+                                                            src="https://img.icons8.com/color/24/000000/jcb.png"
+                                                            alt="JCB"
+                                                       />
+                                                  )}
+                                                  {cardScheme === 'unionpay' && (
+                                                       <img
+                                                            src="https://img.icons8.com/color/24/000000/unionpay.png"
+                                                            alt="UnionPay"
+                                                       />
+                                                  )}
+                                                  {cardScheme === 'maestro' && (
+                                                       <img
+                                                            src="https://img.icons8.com/color/24/000000/maestro.png"
+                                                            alt="Maestro"
+                                                       />
+                                                  )}
+                                                  {cardScheme === 'mir' && (
+                                                       <img
+                                                            src="https://img.icons8.com/color/24/000000/mir.png"
+                                                            alt="Mir"
+                                                       />
+                                                  )}
+                                                  {cardScheme === 'rupay' && (
+                                                       <img
+                                                            src="https://img.icons8.com/color/24/000000/rupay.png"
+                                                            alt="RuPay"
+                                                       />
+                                                  )}
+                                                  {cardScheme === 'interac' && (
+                                                       <img
+                                                            src="https://img.icons8.com/color/24/000000/interac.png"
+                                                            alt="Interac"
+                                                       />
+                                                  )}
+                                                  {cardScheme === '' && (
+                                                       <HelpIcon style={{ backgroundColor: 'primary' }} titleAccess="Card type not recognized" />
                                                   )}
                                              </InputAdornment>
                                         )
@@ -306,9 +375,6 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userD
 
                          <DialogActions sx={{ mt: 2 }}>
                               <Button onClick={onClose}>Cancel</Button>
-                              <Typography variant="caption" color="textSecondary">
-                                   {JSON.stringify(formik.errors)}
-                              </Typography>
                               <Button
                                    type="submit"
                                    variant="contained"

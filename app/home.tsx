@@ -14,21 +14,40 @@ const LandingPage = () => {
      const isMobile = useMediaQuery(theme => theme.breakpoints.down('sm'));
      // Can be used to fetch the user's IP address if needed
      // const [ipAddress, setIpAddress] = useState<string | null>(null)
-     // console.log("IP Address:", ipAddress);
 
      // const fetchIpAddress = async () => {
      //      try {
      //           const response = await fetch("https://api.ipify.org?format=json")
      //           const data = await response.json()
+     //           console.log("IP Address:", data.ip);
+
      //           setIpAddress(data.ip)
      //      } catch (error) {
      //           console.error("Error fetching IP address:", error)
      //      }
      // }
 
+
+
+     // // After getting the IP address, you can use it to fetch location data or any other information you need.
+
+     // const fetchLocationData = async (ip: string) => {
+     //      try {
+     //           const response = await fetch(`http://api.ipstack.com/${ip}?access_key=b333afda57700085d46d65472c09f0d9`)
+     //           const data = await response.json()
+     //           console.log("Location Data:", data)
+     //      } catch (error) {
+     //           console.error("Error fetching location data:", error)
+     //      }
+     // }
+
      // useEffect(() => {
      //      fetchIpAddress()
-     // }, [])
+     //      if (ipAddress) {
+     //           fetchLocationData(ipAddress)
+     //      }
+     // }, [ipAddress])
+
      return (
           <Box>
                <Animate>
