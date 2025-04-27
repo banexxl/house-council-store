@@ -5,15 +5,15 @@ import { useServerSideSupabaseServiceRoleClient } from "../lib/ss-supabase-servi
 import { ClientBillingInformation } from "../types/billing-information";
 import { logServerAction } from "../lib/server-logging";
 
-export const createOrUpdateClientBillingInformation = async (clientBillingInformation: ClientBillingInformation, paymentMethodTypeId: string, billingInformationStatusId: string, billingInformationId?: string)
-     : Promise<{ createOrUpdateClientBillingInformationSuccess: boolean, createOrUpdateClientBillingInformation?: ClientBillingInformation, createOrUpdateClientBillingInformationError?: any }> => {
+export const createOrUpdateClientBillingInformation = async (clientBillingInformation: ClientBillingInformation)
+     : Promise<{ createOrUpdateClientBillingInformationSuccess: boolean, createOrUpdateClientBillingInformationData?: ClientBillingInformation, createOrUpdateClientBillingInformationError?: any }> => {
 
      const startTime = Date.now();
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
      let result;
 
-     if (billingInformationId && billingInformationId !== "") {
+     if (clientBillingInformation.id && clientBillingInformation.id && clientBillingInformation.id !== "") {
           // Update existing client billing information
           result = await supabase
                .from('tblBillingInformation')
@@ -24,12 +24,13 @@ export const createOrUpdateClientBillingInformation = async (clientBillingInform
                     card_number: clientBillingInformation.card_number,
                     cvc: clientBillingInformation.cvc,
                     expiration_date: clientBillingInformation.expiration_date,
-                    payment_method_id: paymentMethodTypeId,
-                    billing_status_id: billingInformationStatusId,
+                    payment_method_id: clientBillingInformation.payment_method_id,
+                    billing_status_id: clientBillingInformation.billing_status_id,
+                    default_payment_method: clientBillingInformation.default_payment_method,
                     /////////////////////////////
                     cash_amount: Number(clientBillingInformation.cash_amount)
                })
-               .eq('id', billingInformationId)
+               .eq('id', clientBillingInformation.id)
                .select()
                .single();
      } else {
@@ -45,8 +46,8 @@ export const createOrUpdateClientBillingInformation = async (clientBillingInform
                     card_number: clientBillingInformation.card_number,
                     cvc: clientBillingInformation.cvc,
                     expiration_date: clientBillingInformation.expiration_date,
-                    payment_method_id: paymentMethodTypeId,
-                    billing_status_id: billingInformationStatusId,
+                    payment_method_id: clientBillingInformation.payment_method_id,
+                    billing_status_id: clientBillingInformation.billing_status_id,
                     cash_amount: Number(clientBillingInformation.cash_amount)
                })
                .select()
@@ -54,12 +55,13 @@ export const createOrUpdateClientBillingInformation = async (clientBillingInform
      }
 
      const { data, error } = result;
+     console.log("createOrUpdateClientBillingInformation", { data, error });
 
      if (error) {
           await logServerAction({
                user_id: clientBillingInformation.client_id,
                action: 'Create or Update Client Billing Information - Error.',
-               payload: { clientBillingInformation, paymentMethodTypeId, billingInformationStatusId },
+               payload: { clientBillingInformation },
                status: 'fail',
                error: error.message,
                duration_ms: Date.now() - startTime,
@@ -71,7 +73,7 @@ export const createOrUpdateClientBillingInformation = async (clientBillingInform
      await logServerAction({
           user_id: clientBillingInformation.client_id,
           action: 'Create or Update Client Billing Information - Success.',
-          payload: { clientBillingInformation, paymentMethodTypeId, billingInformationStatusId },
+          payload: { clientBillingInformation },
           status: 'success',
           error: '',
           duration_ms: Date.now() - startTime,
@@ -79,7 +81,7 @@ export const createOrUpdateClientBillingInformation = async (clientBillingInform
      })
 
      revalidatePath(`/dashboard/clients/billing-information/${clientBillingInformation.client_id}`);
-     return { createOrUpdateClientBillingInformationSuccess: true, createOrUpdateClientBillingInformation: data };
+     return { createOrUpdateClientBillingInformationSuccess: true, createOrUpdateClientBillingInformationData: data };
 }
 
 export const readClientBillingInformation = async (id: string): Promise<{ readClientBillingInformationSuccess: boolean, readClientBillingInformationData?: ClientBillingInformation, readClientBillingInformationError?: string }> => {
@@ -119,7 +121,7 @@ export const readClientBillingInformation = async (id: string): Promise<{ readCl
      return { readClientBillingInformationSuccess: true, readClientBillingInformationData: data ?? undefined };
 }
 
-export const deleteClientBillingInformation = async (ids: string[] | undefined): Promise<{ deleteClientBillingInformationSuccess: boolean, deleteClientBillingInformationError?: string }> => {
+export const deleteClientBillingInformation = async (client_id: string, ids: string[] | undefined): Promise<{ deleteClientBillingInformationSuccess: boolean, deleteClientBillingInformationError?: any }> => {
 
      const startTime = Date.now();
 
@@ -128,6 +130,7 @@ export const deleteClientBillingInformation = async (ids: string[] | undefined):
      }
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
+     console.log("deleteClientBillingInformation", { client_id, ids });
 
      const { error } = await supabase
           .from('tblBillingInformation')
@@ -135,18 +138,29 @@ export const deleteClientBillingInformation = async (ids: string[] | undefined):
           .in('id', ids!);
 
      if (error) {
-          // await logServerAction({
-          //      user_id: ids?.[0],
-          //      action: 'Delete Client Billing Information - Error.',
-          //      payload: { ids },
-          //      status: 'fail',
-          //      error: error.message,
-          //      duration_ms: Date.now() - startTime
-          // })
+          await logServerAction({
+               user_id: client_id,
+               action: 'Delete Client Billing Information - Error.',
+               payload: { ids },
+               status: 'fail',
+               error: error.message,
+               duration_ms: Date.now() - startTime,
+               type: 'action'
+          })
           return { deleteClientBillingInformationSuccess: false, deleteClientBillingInformationError: error.message };
      }
 
-     revalidatePath('/dashboard/clients/billing-information');
+     await logServerAction({
+          user_id: client_id,
+          action: 'Delete Client Billing Information - Success.',
+          payload: { ids },
+          status: 'success',
+          error: '',
+          duration_ms: Date.now() - startTime,
+          type: 'action'
+     })
+
+     revalidatePath('/profile');
      return { deleteClientBillingInformationSuccess: true };
 }
 

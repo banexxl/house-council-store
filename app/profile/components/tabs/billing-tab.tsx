@@ -8,7 +8,6 @@ import {
      FormControlLabel,
      Grid,
      MenuItem,
-     Paper,
      Stack,
      TextField,
      Typography,
@@ -21,6 +20,10 @@ import { Client } from '@/app/types/client';
 import { User } from '@supabase/supabase-js';
 import { Feature } from '@/app/types/feature';
 import { ClientBillingInformation } from '@/app/types/billing-information';
+import { AddCardModal } from '../add-card-modal';
+import { recognizeCardManufacturer } from '@/app/lib/card-manufacturer';
+import { deleteClientBillingInformation } from '../../client-billing-information-actions';
+import toast from 'react-hot-toast';
 
 const countries = ['United States', 'Germany', 'Serbia'];
 const states = ['New York', 'California', 'Texas'];
@@ -28,16 +31,13 @@ const languages = ['English', 'German', 'Serbian'];
 
 
 interface BillingTabProps {
-     subscriptionData?: SubscriptionPlan | null
-     paymentMethods: BaseEntity[]
      userData: { client: Client; session: User; }
-     subscriptionFeatures?: Feature[],
      allClientBillingInformation: ClientBillingInformation[]
 }
 
-export const BillingTab = ({ paymentMethods, subscriptionData, userData, subscriptionFeatures }: BillingTabProps) => {
+export const BillingTab = ({ userData, allClientBillingInformation }: BillingTabProps) => {
      const [emailRecipient, setEmailRecipient] = useState('');
-     const [companyName, setCompanyName] = useState('Branislav');
+     const [companyName, setCompanyName] = useState('');
      const [address, setAddress] = useState({
           line1: '',
           line2: '',
@@ -46,36 +46,75 @@ export const BillingTab = ({ paymentMethods, subscriptionData, userData, subscri
           zip: '',
           country: 'United States',
      });
-     const [invoiceLang, setInvoiceLang] = useState('English');
-     const [purchaseOrder, setPurchaseOrder] = useState('TEST');
+     const [purchaseOrder, setPurchaseOrder] = useState('');
      const [taxId, setTaxId] = useState('');
+     const [openAddCardModal, setOpenAddCardModal] = useState(false);
+
+     const handleDeleteCard = async (billingInformationId: string) => {
+
+          const { deleteClientBillingInformationSuccess, deleteClientBillingInformationError } = await deleteClientBillingInformation(userData.client.id, [billingInformationId])
+
+          if (deleteClientBillingInformationSuccess) {
+               toast.success('Card deleted successfully!');
+          } else {
+               toast.error(`Error deleting card: ${deleteClientBillingInformationError!}`);
+          }
+     }
 
      return (
-          <Stack spacing={4} p={4} maxWidth="800px" mx="auto">
+          <Box>
                {/* Payment Method */}
-               <Paper variant="outlined" sx={{ p: 3 }}>
-                    <Typography variant="h6" gutterBottom>
-                         Payment Method
-                    </Typography>
-                    <FormControlLabel
-                         control={<Checkbox defaultChecked />}
-                         label="Visa debit —•••• 1985"
-                    />
-                    <Typography variant="body2" color="text.secondary">
-                         Valid until 7/2025
-                    </Typography>
+               <Box >
+                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+                         <Typography variant="h5">
+                              Payment Method
+                         </Typography>
+                    </Box>
+                    {
+                         allClientBillingInformation.length > 0 ? (
+                              allClientBillingInformation.map((billingInformation) => (
+                                   <Box key={billingInformation.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                                        <Box>
+                                             <FormControlLabel
+                                                  control={<Checkbox defaultChecked={billingInformation.id === userData.client.id} />}
+                                                  label={`${recognizeCardManufacturer(billingInformation.card_number!)} —•••• ${billingInformation.card_number?.slice(-4)}`}
+                                             />
+                                             <Typography variant="body2" color="text.secondary">
+                                                  Valid until {billingInformation.expiration_date?.toLocaleString('default', { month: 'short', year: 'numeric' })}
+                                             </Typography>
+                                        </Box>
+                                        <Button variant="outlined" color="error" onClick={() => handleDeleteCard(billingInformation.id!)}>
+                                             Delete
+                                        </Button>
+                                   </Box>
+                              ))
+                         ) : (
+                              <Typography variant="body2" color="text.secondary">
+                                   No payment methods available.
+                              </Typography>
+                         )
+                    }
                     <Box mt={2}>
-                         <Button variant="outlined" startIcon={<CreditCardIcon />}>
+                         <Button
+                              variant="outlined"
+                              startIcon={<CreditCardIcon />}
+                              onClick={() => setOpenAddCardModal(true)}
+                              disabled={allClientBillingInformation.length >= 3}
+                         >
                               Add Card
                          </Button>
                          <Typography variant="caption" color="text.secondary" display="block">
                               At most, three credit cards can be added.
                          </Typography>
                     </Box>
-               </Paper>
+               </Box>
+
+               <Divider sx={{ my: 3 }} />
+
+               {/* Subscription Plan */}
 
                {/* Invoice Email Recipient */}
-               <Paper variant="outlined" sx={{ p: 3 }}>
+               <Box >
                     <Typography variant="h6" gutterBottom>
                          Invoice Email Recipient
                     </Typography>
@@ -91,10 +130,10 @@ export const BillingTab = ({ paymentMethods, subscriptionData, userData, subscri
                     <Box mt={2}>
                          <Button variant="contained">Save</Button>
                     </Box>
-               </Paper>
+               </Box>
 
                {/* Company Name */}
-               <Paper variant="outlined" sx={{ p: 3 }}>
+               <Box >
                     <Typography variant="h6" gutterBottom>
                          Company Name
                     </Typography>
@@ -109,10 +148,10 @@ export const BillingTab = ({ paymentMethods, subscriptionData, userData, subscri
                     <Box mt={2}>
                          <Button variant="contained">Save</Button>
                     </Box>
-               </Paper>
+               </Box>
 
                {/* Billing Address */}
-               <Paper variant="outlined" sx={{ p: 3 }}>
+               <Box >
                     <Typography variant="h6" gutterBottom>
                          Billing Address
                     </Typography>
@@ -177,35 +216,12 @@ export const BillingTab = ({ paymentMethods, subscriptionData, userData, subscri
                               <Button variant="contained">Save</Button>
                          </Box>
                     </Stack>
-               </Paper>
+               </Box>
 
-               {/* Invoice Language */}
-               <Paper variant="outlined" sx={{ p: 3 }}>
-                    <Typography variant="h6" gutterBottom>
-                         Invoice Language
-                    </Typography>
-                    <TextField
-                         select
-                         fullWidth
-                         value={invoiceLang}
-                         onChange={(e) => setInvoiceLang(e.target.value)}
-                    >
-                         {languages.map((lang) => (
-                              <MenuItem key={lang} value={lang}>
-                                   {lang}
-                              </MenuItem>
-                         ))}
-                    </TextField>
-                    <Typography variant="caption" color="text.secondary">
-                         This field determines the language of your invoices.
-                    </Typography>
-                    <Box mt={2}>
-                         <Button variant="contained">Save</Button>
-                    </Box>
-               </Paper>
+               <Divider sx={{ my: 3 }} />
 
                {/* Invoice Purchase Order */}
-               <Paper variant="outlined" sx={{ p: 3 }}>
+               <Box >
                     <Typography variant="h6" gutterBottom>
                          Invoice Purchase Order
                     </Typography>
@@ -220,10 +236,10 @@ export const BillingTab = ({ paymentMethods, subscriptionData, userData, subscri
                     <Box mt={2}>
                          <Button variant="contained">Save</Button>
                     </Box>
-               </Paper>
+               </Box>
 
                {/* Tax ID */}
-               <Paper variant="outlined" sx={{ p: 3 }}>
+               <Box >
                     <Typography variant="h6" gutterBottom>
                          Tax ID
                     </Typography>
@@ -239,7 +255,12 @@ export const BillingTab = ({ paymentMethods, subscriptionData, userData, subscri
                     <Box mt={2}>
                          <Button variant="contained">Save</Button>
                     </Box>
-               </Paper>
-          </Stack>
+               </Box>
+               <AddCardModal
+                    open={openAddCardModal}
+                    onClose={() => setOpenAddCardModal(false)}
+                    userData={userData}
+               />
+          </Box >
      );
 }

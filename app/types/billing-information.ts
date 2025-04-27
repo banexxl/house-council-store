@@ -1,12 +1,13 @@
 export type ClientBillingInformation = {
-     id: string;
+     id?: string;
      created_at?: number;
      updated_at?: number;
      client_id: string;
+     default_payment_method: boolean;
      payment_method_id: string;
+     billing_status_id: string;
      full_name: string;
      billing_address: string;
-     billing_status_id: string;
      // card details
      card_number?: string | null;
      cvc?: number;
@@ -20,6 +21,7 @@ export const clientBillingInformationInitialValues: ClientBillingInformation = {
      created_at: 0,
      updated_at: 0,
      client_id: '',
+     default_payment_method: false,
      payment_method_id: '',
      full_name: '',
      billing_address: '',
