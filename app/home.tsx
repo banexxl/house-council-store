@@ -1,6 +1,6 @@
 'use client'
 
-import React, { use } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import { Box, Button, Container, Typography, Avatar, Link, Card, CardContent, Grid, useMediaQuery } from '@mui/material';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import PeopleIcon from '@mui/icons-material/People';
@@ -12,7 +12,23 @@ import Animate from "@/app/components/animation-framer-motion"
 const LandingPage = () => {
 
      const isMobile = useMediaQuery(theme => theme.breakpoints.down('sm'));
+     // Can be used to fetch the user's IP address if needed
+     // const [ipAddress, setIpAddress] = useState<string | null>(null)
+     // console.log("IP Address:", ipAddress);
 
+     // const fetchIpAddress = async () => {
+     //      try {
+     //           const response = await fetch("https://api.ipify.org?format=json")
+     //           const data = await response.json()
+     //           setIpAddress(data.ip)
+     //      } catch (error) {
+     //           console.error("Error fetching IP address:", error)
+     //      }
+     // }
+
+     // useEffect(() => {
+     //      fetchIpAddress()
+     // }, [])
      return (
           <Box>
                <Animate>
