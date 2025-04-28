@@ -8,7 +8,6 @@ export type ClientBillingInformation = {
      billing_status_id: string;
      full_name: string;
      billing_address: string;
-     country?: string;
      // card details
      card_number?: string | null;
      cvc?: string;
@@ -26,7 +25,6 @@ export const clientBillingInformationInitialValues: ClientBillingInformation = {
      billing_status_id: '',
      full_name: '',
      billing_address: '',
-     country: '',
      card_number: '',
      cvc: '',
      expiration_date: new Date().toLocaleDateString('en-GB', {

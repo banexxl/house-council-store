@@ -126,8 +126,6 @@ export const BillingTab = ({ userData, allClientBillingInformation, binCheckerAP
 
                <Divider sx={{ my: 3 }} />
 
-               {/* Subscription Plan */}
-
                {/* Invoice Email Recipient */}
                <Box >
                     <Typography variant="h6" gutterBottom>

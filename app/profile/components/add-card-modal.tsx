@@ -17,6 +17,8 @@ import { parseExpirationDate } from '@/app/lib/date-helpers';
 import { luhnCheck } from '@/app/lib/card-validator';
 import { BinLookupResult } from '@/app/types/bin-lookup';
 import { clientBillingInformationInitialValues } from '@/app/types/billing-information';
+import AddressAutocomplete, { AddressAutocompleteRef } from './address-autocomplete';
+import { transliterateCyrillicToLatin } from '@/app/lib/transliterate';
 
 type AddCardModalProps = {
      open: boolean;
@@ -30,7 +32,7 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userD
      const [isValidCardNumber, setIsValidCardNumber] = useState(false);
      const [binData, setBinData] = useState<BinLookupResult | null>(null);
      const [cardScheme, setCardScheme] = useState<string>('');
-
+     const autoCompleteRef = React.useRef<AddressAutocompleteRef>(null);
      const handleCardNumberChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
           const formattedValue = e.target.value
                .replace(/[^\d]/g, '')
@@ -112,7 +114,6 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userD
                     }),
                cvc: Yup.number().required('Security code is required'),
                full_name: Yup.string().required('Full name is required'),
-               country: Yup.string().required('Country is required'),
                billing_address: Yup.string().required('Address is required'),
           }),
           onSubmit: async (values) => {
@@ -344,13 +345,17 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userD
                               onBlur={formik.handleBlur}
                               error={formik.touched.full_name && Boolean(formik.errors.full_name)}
                               helperText={formik.touched.full_name && formik.errors.full_name}
+                              sx={{ my: 2 }}
                          />
 
-                         <CountryAutocomplete value={formik.values.country!}
-                              onChange={(value) => formik.setFieldValue('country', value)}
+                         <AddressAutocomplete
+                              onAddressSelected={(value => formik.setFieldValue('billing_address', transliterateCyrillicToLatin(value.place_name)))}
+                              label={"Billing address"}
+                              ref={autoCompleteRef}
+                              initialValue={formik.values.billing_address}
                          />
 
-                         <TextField
+                         {/* <TextField
                               name="billing_address"
                               label="Address"
                               fullWidth
@@ -360,7 +365,7 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userD
                               onBlur={formik.handleBlur}
                               error={formik.touched.billing_address && Boolean(formik.errors.billing_address)}
                               helperText={formik.touched.billing_address && formik.errors.billing_address}
-                         />
+                         /> */}
 
                          <FormControlLabel
                               control={
