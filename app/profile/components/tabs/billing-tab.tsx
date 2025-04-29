@@ -11,6 +11,7 @@ import {
      MenuItem,
      Stack,
      TextField,
+     Tooltip,
      Typography,
 } from '@mui/material';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
@@ -22,13 +23,9 @@ import { User } from '@supabase/supabase-js';
 import { Feature } from '@/app/types/feature';
 import { ClientBillingInformation } from '@/app/types/billing-information';
 import { AddCardModal } from '../add-card-modal';
-import { deleteClientBillingInformation } from '../../client-billing-information-actions';
+import { deleteClientBillingInformation, makeCardDefault } from '../../client-billing-information-actions';
 import toast from 'react-hot-toast';
-import { luhnCheck } from '@/app/lib/card-validator';
-import { formatExpirationDate, parseExpirationDate } from '@/app/lib/date-helpers';
-const countries = ['United States', 'Germany', 'Serbia'];
-const states = ['New York', 'California', 'Texas'];
-const languages = ['English', 'German', 'Serbian'];
+import { formatExpirationDate } from '@/app/lib/date-helpers';
 
 
 interface BillingTabProps {
@@ -38,18 +35,7 @@ interface BillingTabProps {
 }
 
 export const BillingTab = ({ userData, allClientBillingInformation, binCheckerAPIKey }: BillingTabProps) => {
-     const [emailRecipient, setEmailRecipient] = useState('');
-     const [companyName, setCompanyName] = useState('');
-     const [address, setAddress] = useState({
-          line1: '',
-          line2: '',
-          city: '',
-          state: 'New York',
-          zip: '',
-          country: 'United States',
-     });
-     const [purchaseOrder, setPurchaseOrder] = useState('');
-     const [taxId, setTaxId] = useState('');
+
      const [openAddCardModal, setOpenAddCardModal] = useState(false);
 
      const handleDeleteCard = async (billingInformationId: string) => {
@@ -60,6 +46,21 @@ export const BillingTab = ({ userData, allClientBillingInformation, binCheckerAP
                toast.success('Card deleted successfully!');
           } else {
                toast.error(`Error deleting card: ${deleteClientBillingInformationError!}`);
+          }
+     }
+
+     const handleMakeDefault = async (billingInformationId: string) => {
+          try {
+               const { makeCardDefaultSuccess, makeCardDefaultError } = await makeCardDefault(userData.client.id, billingInformationId)
+
+               if (makeCardDefaultSuccess) {
+                    toast.success('Card made default successfully!');
+               } else {
+                    toast.error(`Error making card default: ${makeCardDefaultError!}`);
+               }
+          } catch (error) {
+               console.error('Error making card default:', error);
+               toast.error('Error making card default. Please try again later.');
           }
      }
 
@@ -96,9 +97,23 @@ export const BillingTab = ({ userData, allClientBillingInformation, binCheckerAP
                                                        </Box>
                                                   )}
                                              </Box>
-                                             <Button variant="outlined" color="error" onClick={() => handleDeleteCard(billingInformation.id!)}>
-                                                  Delete
-                                             </Button>
+                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                  <Button
+                                                       variant="outlined"
+                                                       onClick={() => handleMakeDefault(billingInformation.id!)}
+                                                       disabled={billingInformation.default_payment_method}
+                                                  >
+                                                       Make default
+                                                  </Button>
+                                                  <Button
+                                                       variant="outlined"
+                                                       color="error"
+                                                       onClick={() => handleDeleteCard(billingInformation.id!)}
+                                                       disabled={billingInformation.default_payment_method}
+                                                  >
+                                                       Delete
+                                                  </Button>
+                                             </Box>
                                         </Box>
                                         <Divider sx={{ mb: 2 }} />
                                    </>
@@ -109,15 +124,29 @@ export const BillingTab = ({ userData, allClientBillingInformation, binCheckerAP
                               </Typography>
                          )
                     }
-                    <Box mt={2}>
-                         <Button
-                              variant="outlined"
-                              startIcon={<CreditCardIcon />}
-                              onClick={() => setOpenAddCardModal(true)}
-                              disabled={allClientBillingInformation.length >= 3}
+                    <Box my={2}>
+                         <Tooltip
+                              title={
+                                   allClientBillingInformation.length >= 3
+                                        ? "You can only add up to 3 cards"
+                                        : "Add Card"
+                              }
+                              arrow
+                              placement="top"
                          >
-                              Add Card
-                         </Button>
+                              <span>
+                                   <Button
+                                        variant="outlined"
+                                        startIcon={<CreditCardIcon />}
+                                        onClick={() => setOpenAddCardModal(true)}
+                                        disabled={allClientBillingInformation.length >= 3}
+                                        sx={{ my: 1 }}
+                                   >
+                                        Add Card
+                                   </Button>
+                              </span>
+                         </Tooltip>
+
                          <Typography variant="caption" color="text.secondary" display="block">
                               At most, three credit cards can be added.
                          </Typography>
@@ -131,16 +160,17 @@ export const BillingTab = ({ userData, allClientBillingInformation, binCheckerAP
                     <Typography variant="h6" gutterBottom>
                          Invoice Email Recipient
                     </Typography>
-                    <TextField
+                    {/* <TextField
                          fullWidth
                          placeholder="john@doe.com"
                          value={emailRecipient}
                          onChange={(e) => setEmailRecipient(e.target.value)}
-                    />
+                         type='email'
+                    /> */}
                     <Typography variant="caption" color="text.secondary">
-                         Max 254 characters.
+                         By default, all your invoices will be sent to your account’s email address. If you want to use a custom email address specifically for receiving invoices, enter it here.
                     </Typography>
-                    <Box mt={2}>
+                    <Box my={2}>
                          <Button variant="contained">Save</Button>
                     </Box>
                </Box>
@@ -150,85 +180,17 @@ export const BillingTab = ({ userData, allClientBillingInformation, binCheckerAP
                     <Typography variant="h6" gutterBottom>
                          Company Name
                     </Typography>
-                    <TextField
+                    {/* <TextField
                          fullWidth
                          value={companyName}
                          onChange={(e) => setCompanyName(e.target.value)}
-                    />
+                    /> */}
                     <Typography variant="caption" color="text.secondary">
                          Max 64 characters.
                     </Typography>
-                    <Box mt={2}>
+                    <Box my={2}>
                          <Button variant="contained">Save</Button>
                     </Box>
-               </Box>
-
-               {/* Billing Address */}
-               <Box >
-                    <Typography variant="h6" gutterBottom>
-                         Billing Address
-                    </Typography>
-                    <Stack spacing={2}>
-                         <TextField
-                              label="Address Line 1"
-                              fullWidth
-                              value={address.line1}
-                              onChange={(e) => setAddress({ ...address, line1: e.target.value })}
-                         />
-                         <TextField
-                              label="Address Line 2"
-                              fullWidth
-                              value={address.line2}
-                              onChange={(e) => setAddress({ ...address, line2: e.target.value })}
-                         />
-                         <TextField
-                              label="City"
-                              fullWidth
-                              value={address.city}
-                              onChange={(e) => setAddress({ ...address, city: e.target.value })}
-                         />
-                         <Grid container spacing={2}>
-                              <Grid size={6}>
-                                   <TextField
-                                        label="State"
-                                        select
-                                        fullWidth
-                                        value={address.state}
-                                        onChange={(e) => setAddress({ ...address, state: e.target.value })}
-                                   >
-                                        {states.map((state) => (
-                                             <MenuItem key={state} value={state}>
-                                                  {state}
-                                             </MenuItem>
-                                        ))}
-                                   </TextField>
-                              </Grid>
-                              <Grid size={6}>
-                                   <TextField
-                                        label="ZIP / Postal Code"
-                                        fullWidth
-                                        value={address.zip}
-                                        onChange={(e) => setAddress({ ...address, zip: e.target.value })}
-                                   />
-                              </Grid>
-                         </Grid>
-                         <TextField
-                              label="Country"
-                              select
-                              fullWidth
-                              value={address.country}
-                              onChange={(e) => setAddress({ ...address, country: e.target.value })}
-                         >
-                              {countries.map((c) => (
-                                   <MenuItem key={c} value={c}>
-                                        {c}
-                                   </MenuItem>
-                              ))}
-                         </TextField>
-                         <Box>
-                              <Button variant="contained">Save</Button>
-                         </Box>
-                    </Stack>
                </Box>
 
                <Divider sx={{ my: 3 }} />
@@ -238,15 +200,15 @@ export const BillingTab = ({ userData, allClientBillingInformation, binCheckerAP
                     <Typography variant="h6" gutterBottom>
                          Invoice Purchase Order
                     </Typography>
-                    <TextField
+                    {/* <TextField
                          fullWidth
                          value={purchaseOrder}
                          onChange={(e) => setPurchaseOrder(e.target.value)}
-                    />
+                    /> */}
                     <Typography variant="caption" color="text.secondary">
                          Max 64 characters.
                     </Typography>
-                    <Box mt={2}>
+                    <Box my={2}>
                          <Button variant="contained">Save</Button>
                     </Box>
                </Box>
@@ -256,16 +218,16 @@ export const BillingTab = ({ userData, allClientBillingInformation, binCheckerAP
                     <Typography variant="h6" gutterBottom>
                          Tax ID
                     </Typography>
-                    <TextField
+                    {/* <TextField
                          fullWidth
                          placeholder="EU VAT number"
                          value={taxId}
                          onChange={(e) => setTaxId(e.target.value)}
-                    />
+                    /> */}
                     <Typography variant="caption" color="text.secondary">
                          Countries that do not use Tax IDs can leave this blank.
                     </Typography>
-                    <Box mt={2}>
+                    <Box my={2}>
                          <Button variant="contained">Save</Button>
                     </Box>
                </Box>

@@ -367,7 +367,7 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userD
                               helperText={formik.touched.billing_address && formik.errors.billing_address}
                          /> */}
 
-                         <FormControlLabel
+                         {/* <FormControlLabel
                               control={
                                    <Checkbox
                                         name="default_payment_method"
@@ -376,7 +376,7 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userD
                                    />
                               }
                               label="Set as default payment method"
-                         />
+                         /> */}
 
                          <DialogActions sx={{ mt: 2 }}>
                               <Button onClick={onClose}>Cancel</Button>

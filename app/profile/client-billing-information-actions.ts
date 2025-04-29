@@ -173,6 +173,7 @@ export const readAllClientsBillingInformation = async (clientId: string): Promis
      const { data, error } = await supabase
           .from('tblBillingInformation')
           .select('*')
+          .order('created_at', { ascending: false })
           .eq('client_id', clientId);
 
      if (error) {
@@ -200,3 +201,63 @@ export const readAllClientsBillingInformation = async (clientId: string): Promis
 
      return { readAllClientBillingInformationSuccess: true, readAllClientBillingInformationData: data ?? undefined };
 }
+
+export const makeCardDefault = async (clientId: string, clientBillingInformationID: string): Promise<{ makeCardDefaultSuccess: boolean; makeCardDefaultError?: string }> => {
+
+     const startTime = Date.now();
+     const supabase = await useServerSideSupabaseServiceRoleClient();
+
+     // Step 1: Set all cards for this client to default_payment_method = false
+     const { error: updateError } = await supabase
+          .from('tblBillingInformation')
+          .update({ default_payment_method: false })
+          .eq('client_id', clientId);
+
+     if (updateError) {
+          await logServerAction({
+               user_id: clientId,
+               action: 'Make Card Default - Update Error.',
+               payload: clientBillingInformationID,
+               status: 'fail',
+               error: updateError.message,
+               duration_ms: Date.now() - startTime,
+               type: 'db',
+          });
+          return { makeCardDefaultSuccess: false, makeCardDefaultError: updateError.message };
+     }
+
+     // Step 2: Set the selected billing info to default_payment_method = true
+     const { error: setDefaultError } = await supabase
+          .from('tblBillingInformation')
+          .update({ default_payment_method: true })
+          .eq('id', clientBillingInformationID)
+          .eq('client_id', clientId);
+
+     if (setDefaultError) {
+          await logServerAction({
+               user_id: clientId,
+               action: 'Make Card Default - Set Default Error.',
+               payload: { id: clientBillingInformationID },
+               status: 'fail',
+               error: setDefaultError.message,
+               duration_ms: Date.now() - startTime,
+               type: 'db',
+          });
+     }
+
+     await logServerAction({
+          user_id: clientId,
+          action: 'Make Card Default - Success.',
+          payload: { id: clientBillingInformationID },
+          status: 'success',
+          error: '',
+          duration_ms: Date.now() - startTime,
+          type: 'action',
+     });
+
+     revalidatePath(`/profile`);
+
+     return { makeCardDefaultSuccess: true };
+};
+
+

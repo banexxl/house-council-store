@@ -8,6 +8,8 @@ export type ClientBillingInformation = {
      billing_status_id: string;
      full_name: string;
      billing_address: string;
+     email_receipt?: string;
+     company_name?: string;
      // card details
      card_number?: string | null;
      cvc?: string;
@@ -15,6 +17,7 @@ export type ClientBillingInformation = {
      // cash payment
      cash_amount?: number;
 };
+
 export const clientBillingInformationInitialValues: ClientBillingInformation = {
      id: null,
      created_at: null,
