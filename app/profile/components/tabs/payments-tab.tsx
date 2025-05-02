@@ -15,12 +15,13 @@ import {
 } from "@mui/material"
 import DownloadIcon from "@mui/icons-material/Download"
 import { ClientBillingInformation } from "@/app/types/billing-information"
+import { Payment } from "@/app/types/payment"
 
 interface PaymentsTabProps {
-     allClientBillingInformation: ClientBillingInformation[]
+     clientPayments: Payment[]
 }
 
-export default function PaymentsTab({ allClientBillingInformation }: PaymentsTabProps) {
+export default function PaymentsTab({ clientPayments }: PaymentsTabProps) {
 
      const getPaymentStatusColor = (status: string) => {
           switch (status.toLowerCase()) {
@@ -54,14 +55,14 @@ export default function PaymentsTab({ allClientBillingInformation }: PaymentsTab
                               </TableRow>
                          </TableHead>
                          <TableBody>
-                              {allClientBillingInformation && allClientBillingInformation.length > 0
-                                   ? allClientBillingInformation.map((payment) => (
+                              {clientPayments && clientPayments.length > 0
+                                   ? clientPayments.map((payment: Payment) => (
                                         <TableRow key={payment.id}>
                                              <TableCell>{payment.id}</TableCell>
-                                             <TableCell>{payment.expiration_date}</TableCell>
-                                             <TableCell>{payment.cash_amount}</TableCell>
+                                             <TableCell>{payment.created_at}</TableCell>
+                                             <TableCell>{payment.total_paid}</TableCell>
                                              <TableCell>
-                                                  <Chip label={payment.billing_status_id} color={getPaymentStatusColor(payment.billing_status_id)} size="small" />
+                                                  <Chip label={payment.status} color={getPaymentStatusColor(payment.status)} size="small" />
                                              </TableCell>
                                              <TableCell>{payment.id}</TableCell>
                                              <TableCell align="right">

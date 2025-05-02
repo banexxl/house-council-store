@@ -23,17 +23,19 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday"
 import CreditCardIcon from "@mui/icons-material/CreditCard"
 import toast, { Toaster } from "react-hot-toast"
 import { updateAccountAction } from "@/app/profile/account-action"
-import { SubscriptionPlan } from "@/app/types/subscription-plan"
+import { ClientSubscription, SubscriptionPlan } from "@/app/types/subscription-plan"
 import { Client } from "@/app/types/client"
 import Animate from "@/app/components/animation-framer-motion"
+import { subscribeClientAction } from "@/app/profile/subscription-plan-actions"
 
 interface FreeTrialConfirmationProps {
      subscriptionPlan: SubscriptionPlan
+     clientSubscription?: SubscriptionPlan & ClientSubscription
      userEmail?: string
-     client?: Client
+     client: Client
 }
 
-export default function FreeTrialConfirmation({ subscriptionPlan, userEmail, client }: FreeTrialConfirmationProps) {
+export default function FreeTrialConfirmation({ subscriptionPlan, clientSubscription, userEmail, client }: FreeTrialConfirmationProps) {
 
      const router = useRouter()
      const [isLoading, setIsLoading] = useState(false)
@@ -53,7 +55,9 @@ export default function FreeTrialConfirmation({ subscriptionPlan, userEmail, cli
 
      // Format the billing cycle
      const formattedCycle = subscriptionPlan.is_billed_yearly === true ? "annually" : "monthly"
-     const hasUsedFreeTrial = client?.next_billing_date !== null
+     const hasUsedFreeTrial = clientSubscription?.created_at
+          ? new Date().getTime() - new Date(clientSubscription.created_at).getTime() > 30 * 24 * 60 * 60 * 1000
+          : false
      // Calculate the first billing date (after trial)
      const firstBillingDate = new Date(trialEndDate)
      const formattedBillingDate = firstBillingDate.toLocaleDateString("en-US", {
@@ -65,24 +69,18 @@ export default function FreeTrialConfirmation({ subscriptionPlan, userEmail, cli
      const handleStartFreeTrial = async () => {
           setIsLoading(true)
           try {
-               const updateClientResponse = await updateAccountAction(
-                    client?.id!,
-                    {
-                         subscription_plan: subscriptionPlan.id,
-                         next_billing_date: trialEndDate,
-                    },
-               );
+               const updateClientResponse = await subscribeClientAction(client.id!, subscriptionPlan.id!)
 
                if (!updateClientResponse.error) {
                     toast.success("Your free trial has been started successfully!")
-                    router.push("/pricing/subscription-plan/success")
+                    router.push("/pricing/subscription-plan-purchase/success")
                } else {
-                    router.push("/pricing/subscription-plan/error")
+                    router.push("/pricing/subscription-plan-purchase/error")
                }
           } catch (error) {
                console.error("Error starting free trial:", error)
                toast.error("There was an error starting your free trial. Please try again.")
-               router.push("/pricing/subscription-plan/error")
+               router.push("/pricing/subscription-plan-purchase/error")
                setIsLoading(false)
           } finally {
                setIsLoading(false)

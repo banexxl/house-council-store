@@ -37,7 +37,7 @@ import toast from "react-hot-toast"
 import { useRouter } from "next/navigation"
 import { Client } from "@/app/types/client"
 import { User } from "@supabase/supabase-js"
-import { SubscriptionPlan } from "@/app/types/subscription-plan"
+import { ClientSubscription, SubscriptionPlan } from "@/app/types/subscription-plan"
 import { Feature } from "@/app/types/feature"
 import { logoutUserAction } from "../account-action"
 
@@ -51,10 +51,9 @@ export interface ActivityItem {
 
 interface ProfileSidebarProps {
      userData: { client: Client; session: User }
-     subscriptionData: SubscriptionPlan | null
+     clientSubscriptionObject: SubscriptionPlan & ClientSubscription | null
      recentActivity: ActivityItem[] | undefined
      onEditProfile: () => void
-     subscriptionFeatures?: Feature[]
 }
 
 export const getStatusColor = (status: string) => {
@@ -70,7 +69,7 @@ export const getStatusColor = (status: string) => {
      }
 }
 
-export default function ProfileSidebar({ userData, subscriptionData, recentActivity, onEditProfile, subscriptionFeatures }: ProfileSidebarProps) {
+export default function ProfileSidebar({ userData, clientSubscriptionObject, recentActivity, onEditProfile }: ProfileSidebarProps) {
 
      const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null)
      const router = useRouter()

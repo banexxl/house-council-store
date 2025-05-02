@@ -76,8 +76,8 @@ export const BillingTab = ({ userData, allClientBillingInformation, binCheckerAP
                     {
                          allClientBillingInformation.length > 0 ? (
                               allClientBillingInformation.map((billingInformation) => (
-                                   <>
-                                        <Box key={billingInformation.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                                   <Box key={billingInformation.id}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
                                              <Box sx={{ display: 'flex', flexDirection: 'row' }}>
 
                                                   <Box sx={{ display: 'flex', flexDirection: 'column' }}>
@@ -116,7 +116,7 @@ export const BillingTab = ({ userData, allClientBillingInformation, binCheckerAP
                                              </Box>
                                         </Box>
                                         <Divider sx={{ mb: 2 }} />
-                                   </>
+                                   </Box>
                               ))
                          ) : (
                               <Typography variant="body2" color="text.secondary">

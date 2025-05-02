@@ -6,10 +6,11 @@ import { readAccountByEmailAction, readClientRecentActivityAction } from "./acco
 import { User } from "@supabase/supabase-js";
 import { clientInitialValues } from "../types/client";
 import { readEntity } from "@/app/lib/base-entity-actions";
-import { readFeaturesFromSubscriptionPlanId, readSubscriptionPlanFromClientId } from "./subscription-plan-actions";
+import { readClientSubscriptionPlan } from "./subscription-plan-actions";
 import { readAllClientsBillingInformation } from "./client-billing-information-actions";
 import { redirect } from "next/navigation";
 import { logServerAction } from "../lib/server-logging";
+import { readAllClientPaymentsAction } from "./client-payment-actions";
 
 export default async function Page() {
      // Fetch user session
@@ -37,14 +38,14 @@ export default async function Page() {
      }
 
      // Fetch related data in parallel
-     const [subscriptionPlanReturnObject, role, client_status, client_type, billingInformation, subscriptionFeatures, recentActivity] = await Promise.all([
-          readSubscriptionPlanFromClientId(client.id),
+     const [clientSubscriptionObject, role, client_status, client_type, billingInformation, recentActivity, clientPayments] = await Promise.all([
+          readClientSubscriptionPlan(client.id),
           readEntity("tblClientRoles", client.role_id),
           readEntity("tblClientStatuses", client.client_status),
           readEntity("tblClientTypes", client.type),
           readAllClientsBillingInformation(client.id),
-          readFeaturesFromSubscriptionPlanId(client.subscription_plan ?? null),
           readClientRecentActivityAction(user.email, client.id),
+          readAllClientPaymentsAction(client.id),
      ]);
 
      // Merge session and client data
@@ -55,23 +56,21 @@ export default async function Page() {
                role_id: role?.entity?.name ?? "",
                client_status: client_status?.entity?.name ?? "",
                type: client_type?.entity?.name ?? "",
-               subscription_plan: subscriptionPlanReturnObject?.subscriptionPlan?.id ?? null,
           },
           session: { ...user },
      };
 
      const binCheckerAPIKey = process.env.NEXT_PUBLIC_BIN_CHECKER_API_KEY
 
-
      return (
           <>
                <Header user={user} />
                <ProfilePage
                     sessionAndClientDataCombined={sessionAndClientDataCombined}
-                    subscriptionPlan={subscriptionPlanReturnObject?.subscriptionPlan ?? null}
+                    clientSubscriptionObject={clientSubscriptionObject?.subscriptionPlanData! ?? null}
                     allClientBillingInformation={billingInformation.readAllClientBillingInformationData ?? []}
+                    clientPayments={clientPayments.data ?? []}
                     paymentMethods={[]}
-                    subscriptionFeatures={subscriptionFeatures?.features ?? []}
                     recentActivity={recentActivity.data ?? []}
                     binCheckerAPIKey={binCheckerAPIKey ?? ""}
                />

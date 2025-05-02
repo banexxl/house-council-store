@@ -25,10 +25,6 @@ export interface Client {
   is_potential?: boolean;
   is_returning?: boolean;
   is_verified?: boolean;
-  total_spent?: number;
-  total_orders?: number;
-  subscription_plan?: string | null;
-  next_billing_date?: Date | null;
 }
 
 export interface ClientLog {
@@ -106,8 +102,4 @@ export const clientInitialValues: Client = {
   is_potential: false,
   is_returning: false,
   is_verified: false,
-  total_spent: 0,
-  total_orders: 0,
-  subscription_plan: null,
-  next_billing_date: null,
 };

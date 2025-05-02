@@ -33,6 +33,7 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userD
      const [binData, setBinData] = useState<BinLookupResult | null>(null);
      const [cardScheme, setCardScheme] = useState<string>('');
      const autoCompleteRef = React.useRef<AddressAutocompleteRef>(null);
+
      const handleCardNumberChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
           const formattedValue = e.target.value
                .replace(/[^\d]/g, '')

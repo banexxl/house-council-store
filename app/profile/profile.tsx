@@ -6,11 +6,12 @@ import ProfileSidebar, { ActivityItem } from "./components/profile-sidebar"
 import ProfileTabs from "./components/profile-tabs"
 import { Client } from "../types/client"
 import { User } from "@supabase/supabase-js"
-import { SubscriptionPlan } from "../types/subscription-plan"
+import { ClientSubscription, SubscriptionPlan } from "../types/subscription-plan"
 import { BaseEntity } from "../types/base-entity"
 import { ClientBillingInformation } from "../types/billing-information"
 import { Feature } from "../types/feature"
 import Animate from "@/app/components/animation-framer-motion"
+import { Payment } from "../types/payment"
 
 // Mock data for notification preferences
 const notificationPreferences = [
@@ -40,14 +41,14 @@ const notificationPreferences = [
 
 type ProfilePageProps = {
      sessionAndClientDataCombined?: { client: Client, session: User }
-     subscriptionPlan: SubscriptionPlan | null
+     clientSubscriptionObject: SubscriptionPlan & ClientSubscription
      paymentMethods: BaseEntity[]
      allClientBillingInformation: ClientBillingInformation[]
-     subscriptionFeatures?: Feature[]
-     recentActivity?: ActivityItem[]
-     binCheckerAPIKey?: string
+     recentActivity: ActivityItem[]
+     binCheckerAPIKey?: string,
+     clientPayments: Payment[]
 }
-export const ProfilePage = ({ sessionAndClientDataCombined, subscriptionPlan, paymentMethods, allClientBillingInformation, subscriptionFeatures, recentActivity, binCheckerAPIKey }: ProfilePageProps) => {
+export const ProfilePage = ({ sessionAndClientDataCombined, clientSubscriptionObject, paymentMethods, allClientBillingInformation, recentActivity, binCheckerAPIKey, clientPayments }: ProfilePageProps) => {
 
      const [editMode, setEditMode] = useState(false)
      const [notificationSettings, setNotificationSettings] = useState(notificationPreferences)
@@ -62,10 +63,9 @@ export const ProfilePage = ({ sessionAndClientDataCombined, subscriptionPlan, pa
                                    <Grid size={{ xs: 12, md: 4 }}>
                                         <ProfileSidebar
                                              userData={sessionAndClientDataCombined!}
-                                             subscriptionData={subscriptionPlan}
+                                             clientSubscriptionObject={clientSubscriptionObject}
                                              recentActivity={recentActivity}
                                              onEditProfile={() => setEditMode(true)}
-                                             subscriptionFeatures={subscriptionFeatures}
                                         />
                                    </Grid>
 
@@ -75,14 +75,14 @@ export const ProfilePage = ({ sessionAndClientDataCombined, subscriptionPlan, pa
                                              userData={sessionAndClientDataCombined!}
                                              editMode={editMode}
                                              setEditMode={setEditMode}
-                                             subscriptionData={subscriptionPlan}
+                                             clientSubscriptionObject={clientSubscriptionObject}
                                              paymentMethods={paymentMethods}
                                              allClientBillingInformation={allClientBillingInformation}
                                              notificationSettings={notificationSettings}
                                              setNotificationSettings={setNotificationSettings}
                                              recentActivity={recentActivity || []}
-                                             subscriptionFeatures={subscriptionFeatures}
                                              binCheckerAPIKey={binCheckerAPIKey}
+                                             clientPayments={clientPayments}
                                         />
                                    </Grid>
                               </Grid>

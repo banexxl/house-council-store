@@ -43,3 +43,17 @@ export const subscriptionPlanValidationSchema = Yup.object({
      base_price_per_month: Yup.number().min(0, "Must be positive").max(1000000, "Must be 1,000,000 or less"),
      total_price_per_month: Yup.number().min(0, "Must be positive").max(1000000, "Must be 1,000,000 or less")
 })
+
+export type SubscriptionStatus = 'trialing' | 'active' | 'canceled' | 'past_due'; // extend if needed
+
+export interface ClientSubscription {
+     id: string;
+     client_id: string;
+     subscription_plan_id: string;
+     status: SubscriptionStatus;
+     created_at: string; // ISO date string
+     updated_at: string; // ISO date string
+     is_auto_renew: boolean;
+     end_date: string | null; // nullable
+}
+

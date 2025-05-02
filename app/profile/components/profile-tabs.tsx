@@ -5,6 +5,7 @@ import type React from "react"
 import { useState } from "react"
 import { Box, Paper, Tab, Tabs, Typography } from "@mui/material"
 import EditIcon from "@mui/icons-material/Edit"
+import SubscriptionsIcon from '@mui/icons-material/Subscriptions';
 import CreditCardIcon from "@mui/icons-material/CreditCard"
 import ReceiptIcon from "@mui/icons-material/Receipt"
 import NotificationsIcon from "@mui/icons-material/Notifications"
@@ -15,11 +16,14 @@ import SecurityTab from "./tabs/security-tab"
 import PaymentsTab from "./tabs/payments-tab"
 import { Session, User } from "@supabase/supabase-js"
 import { Client } from "@/app/types/client"
-import { SubscriptionPlan } from "@/app/types/subscription-plan"
+import { ClientSubscription, SubscriptionPlan } from "@/app/types/subscription-plan"
 import { ClientBillingInformation } from "@/app/types/billing-information"
 import { ActivityItem } from "./profile-sidebar"
 import { Feature } from "@/app/types/feature"
 import { BillingTab } from "./tabs/billing-tab"
+import SubscriptionTab from "./tabs/subscription-tab"
+import { Payment } from "@/app/types/payment"
+import { BaseEntity } from "@/app/types/base-entity"
 
 interface TabPanelProps {
      children?: React.ReactNode
@@ -47,28 +51,30 @@ interface ProfileTabsProps {
      userData: { client: Client, session: User }
      editMode: boolean
      setEditMode: (value: boolean) => void
-     subscriptionData: SubscriptionPlan | null
+     clientSubscriptionObject: SubscriptionPlan & ClientSubscription | null
      paymentMethods: any[]
      allClientBillingInformation: ClientBillingInformation[]
      notificationSettings: any[]
      setNotificationSettings: (value: any) => void
      recentActivity: ActivityItem[]
      subscriptionFeatures?: Feature[],
-     binCheckerAPIKey?: string
+     binCheckerAPIKey?: string,
+     clientPayments: Payment[]
 }
 
 export default function ProfileTabs({
      userData,
      editMode,
      setEditMode,
-     subscriptionData,
+     clientSubscriptionObject,
      paymentMethods,
      allClientBillingInformation,
      notificationSettings,
      setNotificationSettings,
      recentActivity,
      subscriptionFeatures,
-     binCheckerAPIKey
+     binCheckerAPIKey,
+     clientPayments,
 }: ProfileTabsProps) {
 
      const [tabValue, setTabValue] = useState(0)
@@ -103,6 +109,7 @@ export default function ProfileTabs({
                     >
                          <Tab label="Account" icon={<EditIcon />} iconPosition="start" />
                          <Tab label="Billing" icon={<CreditCardIcon />} iconPosition="start" />
+                         <Tab label="Subscription" icon={<SubscriptionsIcon />} iconPosition="start" />
                          <Tab label="Payments" icon={<ReceiptIcon />} iconPosition="start" />
                          <Tab label="Notifications" icon={<NotificationsIcon />} iconPosition="start" />
                          <Tab label="Security" icon={<SecurityIcon />} iconPosition="start" />
@@ -123,13 +130,21 @@ export default function ProfileTabs({
                               />
                          </TabPanel>
 
-                         {/* Payments Tab */}
+                         {/* Subscription Tab */}
                          <TabPanel value={tabValue} index={2}>
-                              <PaymentsTab allClientBillingInformation={allClientBillingInformation} />
+                              <SubscriptionTab
+                                   clientSubscriptionObject={clientSubscriptionObject || null}
+                                   payment={clientPayments.length > 0 ? clientPayments[clientPayments.length - 1] : null}
+                              />
+                         </TabPanel>
+
+                         {/* Payments Tab */}
+                         <TabPanel value={tabValue} index={3}>
+                              <PaymentsTab clientPayments={clientPayments} />
                          </TabPanel>
 
                          {/* Notifications Tab */}
-                         <TabPanel value={tabValue} index={3}>
+                         <TabPanel value={tabValue} index={4}>
                               <NotificationsTab
                                    notificationSettings={notificationSettings}
                                    handleNotificationToggle={handleNotificationToggle}
@@ -137,7 +152,7 @@ export default function ProfileTabs({
                          </TabPanel>
 
                          {/* Security Tab */}
-                         <TabPanel value={tabValue} index={4}>
+                         <TabPanel value={tabValue} index={5}>
                               <SecurityTab userData={userData} />
                          </TabPanel>
                     </Box>
