@@ -51,19 +51,21 @@ export interface ActivityItem {
 
 interface ProfileSidebarProps {
      userData: { client: Client; session: User }
-     clientSubscriptionObject: SubscriptionPlan & ClientSubscription | null
+     clientSubscriptionObject: ClientSubscription & { subscription_plan: SubscriptionPlan } | null
      recentActivity: ActivityItem[] | undefined
      onEditProfile: () => void
 }
 
 export const getStatusColor = (status: string) => {
      switch (status.toLowerCase()) {
+          case "trialing":
+               return "warning"
           case "active":
                return "success"
-          case "pending":
-               return "warning"
-          case "suspended":
+          case "canceled":
                return "error"
+          case "past_due":
+               return "warning"
           default:
                return "default"
      }

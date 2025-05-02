@@ -36,7 +36,7 @@ export default async function FreeTrialPage({ searchParams, }: { searchParams: P
                <Header user={user ? user : null} />
                <FreeTrialConfirmation
                     subscriptionPlan={subscriptionPlan!.subscriptionPlan!}
-                    clientSubscription={clientSubscription.subscriptionPlanData!}
+                    clientSubscription={clientSubscription.clientSubscriptionPlanData!}
                     userEmail={user?.email!}
                     client={client!}
                />

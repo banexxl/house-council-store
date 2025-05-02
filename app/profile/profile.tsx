@@ -41,7 +41,7 @@ const notificationPreferences = [
 
 type ProfilePageProps = {
      sessionAndClientDataCombined?: { client: Client, session: User }
-     clientSubscriptionObject: SubscriptionPlan & ClientSubscription
+     clientSubscriptionObject: ClientSubscription & { subscription_plan: SubscriptionPlan }
      paymentMethods: BaseEntity[]
      allClientBillingInformation: ClientBillingInformation[]
      recentActivity: ActivityItem[]

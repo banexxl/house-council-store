@@ -67,7 +67,7 @@ export default async function Page() {
                <Header user={user} />
                <ProfilePage
                     sessionAndClientDataCombined={sessionAndClientDataCombined}
-                    clientSubscriptionObject={clientSubscriptionObject?.subscriptionPlanData! ?? null}
+                    clientSubscriptionObject={clientSubscriptionObject?.clientSubscriptionPlanData! ?? null}
                     allClientBillingInformation={billingInformation.readAllClientBillingInformationData ?? []}
                     clientPayments={clientPayments.data ?? []}
                     paymentMethods={[]}

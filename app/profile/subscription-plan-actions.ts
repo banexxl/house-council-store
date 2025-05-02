@@ -133,10 +133,13 @@ export const subscribeClientAction = async (
           .insert({
                client_id: clientId,
                subscription_plan_id: subscriptionPlanId,
-               status: "active",
-               start_date: new Date().toISOString(),
+               status: "trialing",
+               created_at: new Date().toISOString(),
+               updated_at: new Date().toISOString(),
                is_auto_renew: true,
+               next_payment_date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(),
           });
+
 
      if (error) {
           await logServerAction({
@@ -174,7 +177,7 @@ export const unsubscribeClientAction = async (
           .from("tblClient_Subscription")
           .update({
                status: "canceled",
-               end_date: new Date().toISOString(),
+               next_payment_date: new Date().toISOString(),
           })
           .eq("client_id", clientId)
           .eq("status", "active"); // only cancel active subs
@@ -276,7 +279,7 @@ export const readFeaturesFromSubscriptionPlanId = async (subscriptionPlanId: str
      return { success: true, features };
 }
 
-export const readClientSubscriptionPlan = async (clientId: string): Promise<{ success: boolean, subscriptionPlanData?: ClientSubscription & SubscriptionPlan | null, error?: string }> => {
+export const readClientSubscriptionPlan = async (clientId: string): Promise<{ success: boolean, clientSubscriptionPlanData?: ClientSubscription & { subscription_plan: SubscriptionPlan } | null, error?: string }> => {
 
      if (!clientId) {
           await logServerAction({
@@ -292,7 +295,7 @@ export const readClientSubscriptionPlan = async (clientId: string): Promise<{ su
      }
      const supabase = await useServerSideSupabaseServiceRoleClient(); // Use the server-side Supabase client
 
-     const { data: clientSubscriptionData, error: clientSubscriptionDataError } = await supabase
+     const { data: clientSubscriptionPlanData, error: clientSubscriptionDataError } = await supabase
           .from("tblClient_Subscription")
           .select(`
     *,
@@ -300,6 +303,8 @@ export const readClientSubscriptionPlan = async (clientId: string): Promise<{ su
   `)
           .eq("client_id", clientId)
           .single();
+     console.log('clientSubscriptionPlanData', clientSubscriptionPlanData)
+     console.log('clientSubscriptionDataError', clientSubscriptionDataError);
 
      if (clientSubscriptionDataError) {
           await logServerAction({
@@ -311,10 +316,10 @@ export const readClientSubscriptionPlan = async (clientId: string): Promise<{ su
                duration_ms: 0,
                type: 'db'
           })
-          return { success: false, error: clientSubscriptionDataError.message, subscriptionPlanData: null };
+          return { success: false, error: clientSubscriptionDataError.message, clientSubscriptionPlanData: null };
      }
 
-     if (!clientSubscriptionData) {
+     if (!clientSubscriptionPlanData) {
           await logServerAction({
                user_id: null,
                action: 'Read Client Subscription Plan',
@@ -324,7 +329,7 @@ export const readClientSubscriptionPlan = async (clientId: string): Promise<{ su
                duration_ms: 0,
                type: 'db'
           })
-          return { success: false, error: "Client subscription data not found", subscriptionPlanData: null };
+          return { success: false, error: "Client subscription data not found", clientSubscriptionPlanData: null };
      }
      await logServerAction({
           user_id: null,
@@ -336,6 +341,6 @@ export const readClientSubscriptionPlan = async (clientId: string): Promise<{ su
           type: 'db'
      })
 
-     return { success: true, subscriptionPlanData: clientSubscriptionData.subscription };
+     return { success: true, clientSubscriptionPlanData };
 
 }

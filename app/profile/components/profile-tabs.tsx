@@ -51,7 +51,7 @@ interface ProfileTabsProps {
      userData: { client: Client, session: User }
      editMode: boolean
      setEditMode: (value: boolean) => void
-     clientSubscriptionObject: SubscriptionPlan & ClientSubscription | null
+     clientSubscriptionObject: ClientSubscription & { subscription_plan: SubscriptionPlan } | null
      paymentMethods: any[]
      allClientBillingInformation: ClientBillingInformation[]
      notificationSettings: any[]

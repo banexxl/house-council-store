@@ -16,6 +16,14 @@ module.exports = {
                {
                     pathname: '/background-images/**',
                     search: '',
+               },
+               {
+                    pathname: '/images/**',
+                    search: '',
+               },
+               {
+                    pathname: '/cards/**',
+                    search: '',
                }
           ],
           remotePatterns: [

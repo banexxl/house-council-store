@@ -66,7 +66,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans }) =
 
      const handleStartFreeTrial = (plan: SubscriptionPlan) => {
           setLoading(true)
-          router.push(`/pricing/subscription-plan?plan_id=${plan.id}`, {
+          router.push(`/pricing/subscription-plan-purchase?plan_id=${plan.id}`, {
                scroll: false,
           })
 
@@ -85,7 +85,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans }) =
                                         Simple, Transparent Pricing
                                    </Typography>
                                    <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 700, mx: "auto" }}>
-                                        Choose the plan that's right for your community. All plans include a 14-day free trial.
+                                        Choose the plan that's right for your community. All plans include a 30-day free trial.
                                    </Typography>
                               </Box>
 

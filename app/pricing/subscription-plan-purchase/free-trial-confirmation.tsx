@@ -30,7 +30,7 @@ import { subscribeClientAction } from "@/app/profile/subscription-plan-actions"
 
 interface FreeTrialConfirmationProps {
      subscriptionPlan: SubscriptionPlan
-     clientSubscription?: SubscriptionPlan & ClientSubscription
+     clientSubscription?: ClientSubscription & { subscription_plan: SubscriptionPlan }
      userEmail?: string
      client: Client
 }
@@ -124,7 +124,7 @@ export default function FreeTrialConfirmation({ subscriptionPlan, clientSubscrip
                                    Start Your Free Trial
                               </Typography>
                               <Typography variant="body1" color="text.secondary">
-                                   You're about to start a 14-day free trial of our {subscriptionPlan.name} subscriptionPlan. No payment required during the trial period.
+                                   You're about to start a 30-day free trial of our {subscriptionPlan.name} subscriptionPlan. No payment required during the trial period.
                               </Typography>
                          </Box>
 
@@ -139,7 +139,7 @@ export default function FreeTrialConfirmation({ subscriptionPlan, clientSubscrip
                                    <Typography variant="h6" sx={{ mr: 2 }}>
                                         {subscriptionPlan.name} Plan
                                    </Typography>
-                                   <Chip label="14-day free trial" color="primary" size="small" />
+                                   <Chip label="30-day free trial" color="primary" size="small" />
                               </Box>
 
                               <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 4, mb: 3 }}>

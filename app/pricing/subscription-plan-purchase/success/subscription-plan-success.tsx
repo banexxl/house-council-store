@@ -64,19 +64,6 @@ export default function SubscriptionSuccessPage({
                               borderRadius: 2,
                               position: "relative",
                               overflow: "hidden",
-                              "&::before": {
-                                   content: '""',
-                                   position: "absolute",
-                                   top: 0,
-                                   left: 0,
-                                   right: 0,
-                                   bottom: 0,
-                                   backgroundImage: "url(/images/community-meeting.png)",
-                                   backgroundSize: "cover",
-                                   backgroundPosition: "center",
-                                   opacity: 0.05,
-                                   zIndex: 0,
-                              },
                          }}
                     >
                          <Box sx={{ position: "relative", zIndex: 1 }}>
@@ -175,7 +162,7 @@ export default function SubscriptionSuccessPage({
                                    <Grid size={{ xs: 12, md: 6 }}>
                                         <Box sx={{ position: "relative", height: 300, mb: 4 }}>
                                              <Image
-                                                  src="/images/dashboard-mockup.png"
+                                                  src="/cards/ty-card.png"
                                                   alt="Dashboard Preview"
                                                   fill
                                                   style={{ objectFit: "contain", borderRadius: "8px" }}

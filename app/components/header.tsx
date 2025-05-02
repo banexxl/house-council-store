@@ -132,6 +132,7 @@ export const Header = ({ user }: HeaderProps) => {
                 width={shrinkOnScroll ? 50 : 80}
                 height={shrinkOnScroll ? 50 : 80}
                 style={{ transform: `scale(${shrinkOnScroll ? 1.2 : 1.5})`, marginTop: "20px", transition: "all 0.3s ease" }}
+                priority
               />
             </Link>
 

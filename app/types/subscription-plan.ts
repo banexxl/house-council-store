@@ -54,6 +54,6 @@ export interface ClientSubscription {
      created_at: string; // ISO date string
      updated_at: string; // ISO date string
      is_auto_renew: boolean;
-     end_date: string | null; // nullable
+     next_payment_date: string | null; // nullable
 }
 
