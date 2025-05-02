@@ -50,6 +50,8 @@ export interface SubscriptionTabProps {
 }
 
 export default function SubscriptionTab({ clientSubscriptionObject, payment }: SubscriptionTabProps) {
+     console.log('clientSubscriptionObject', clientSubscriptionObject);
+
      const router = useRouter()
      const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
      const [confirmCancelDialogOpen, setConfirmCancelDialogOpen] = useState(false)
