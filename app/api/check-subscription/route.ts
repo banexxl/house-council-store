@@ -11,6 +11,16 @@ export async function POST() {
           .from('tblClient_Subscription')
           .select('id, client_id, status, next_payment_date')
 
+     await logServerAction({
+          user_id: null,
+          action: 'Check all subscriptions',
+          payload: {},
+          status: error ? 'fail' : 'success',
+          error: error?.message || '',
+          duration_ms: 0,
+          type: 'db'
+     })
+
      if (error) {
           return NextResponse.json({ success: false, error: error.message }, { status: 500 })
      }
