@@ -8,8 +8,8 @@ export type SubscriptionPlan = {
      name: string;
      description: string;
      status_id: string;
-     is_billed_yearly: boolean;
-     yearly_discount_percentage: number;
+     is_billed_annually: boolean;
+     annually_discount_percentage: number;
      is_discounted: boolean;
      discount_percentage: number;
      features?: Feature[];
@@ -23,8 +23,8 @@ export const subscriptionPlanInitialValues: SubscriptionPlan = {
      name: '',
      description: '',
      status_id: '',
-     is_billed_yearly: false,
-     yearly_discount_percentage: 0,
+     is_billed_annually: false,
+     annually_discount_percentage: 0,
      is_discounted: false,
      discount_percentage: 0,
      features: [],
@@ -36,8 +36,8 @@ export const subscriptionPlanValidationSchema = Yup.object({
      name: Yup.string().required("Required"),
      description: Yup.string(),
      status_id: Yup.string().required("Required"),
-     is_billed_yearly: Yup.boolean(),
-     yearly_discount_percentage: Yup.number().min(0, "Must be positive").max(100, "Must be 100 or less"),
+     is_billed_annually: Yup.boolean(),
+     annually_discount_percentage: Yup.number().min(0, "Must be positive").max(100, "Must be 100 or less"),
      is_discounted: Yup.boolean(),
      discount_percentage: Yup.number().min(0, "Must be positive").max(100, "Must be 100 or less"),
      base_price_per_month: Yup.number().min(0, "Must be positive").max(1000000, "Must be 1,000,000 or less"),
@@ -45,6 +45,8 @@ export const subscriptionPlanValidationSchema = Yup.object({
 })
 
 export type SubscriptionStatus = 'trialing' | 'active' | 'canceled' | 'past_due'; // extend if needed
+
+export type RenewalPeriod = 'monthly' | 'annually'; // extend if needed
 
 export interface ClientSubscription {
      id: string;
@@ -55,5 +57,6 @@ export interface ClientSubscription {
      updated_at: string; // ISO date string
      is_auto_renew: boolean;
      next_payment_date: string | null; // nullable
+     renewal_period: RenewalPeriod
 }
 

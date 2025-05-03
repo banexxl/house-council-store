@@ -74,7 +74,7 @@ export default function SubscriptionTab({ clientSubscriptionObject, payment }: S
           try {
                await new Promise((resolve) => setTimeout(resolve, 1500))
                handleDialogToggle("upgrade", false)
-               router.push("/pricing/subscription-plan-purchase?upgrade=true")
+               router.push("/pricing/")
           } catch {
                toast.error("Failed to process upgrade request. Please try again.")
           } finally {
@@ -82,9 +82,9 @@ export default function SubscriptionTab({ clientSubscriptionObject, payment }: S
           }
      }
 
-     const formattedPrice = payment?.total_paid
+     const formattedPrice = payment?.total_paid && payment.total_paid > 0
           ? new Intl.NumberFormat('en-US', { style: 'currency', currency: payment.currency }).format(payment.total_paid)
-          : "Free for the first month!"
+          : ""
 
      const renderDate = (date?: string) =>
           date ? new Date(date).toLocaleDateString() : <i>No subscription plan selected</i>
@@ -113,7 +113,13 @@ export default function SubscriptionTab({ clientSubscriptionObject, payment }: S
                                         {clientSubscriptionObject?.subscription_plan.name}
                                    </Typography>
                                    <Typography variant="body2" color="text.secondary">
-                                        {formattedPrice} billed {clientSubscriptionObject?.subscription_plan.is_billed_yearly ? "yearly" : "monthly"}
+                                        {payment?.total_paid && payment.total_paid > 0 ? (
+                                             <>
+                                                  {formattedPrice} billed {clientSubscriptionObject?.renewal_period ? "annually" : "monthly"}
+                                             </>
+                                        ) : (
+                                             <i>No payment information available</i>
+                                        )}
                                    </Typography>
                               </Box>
                               <Button variant="outlined" color="primary" onClick={() => handleDialogToggle("upgrade", true)} disabled={isProcessing}>
@@ -134,11 +140,11 @@ export default function SubscriptionTab({ clientSubscriptionObject, payment }: S
                               <Grid size={{ xs: 12, sm: 6 }}>
                                    <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
                                         <CreditCardIcon fontSize="small" sx={{ mr: 1, color: "text.secondary" }} />
-                                        <Typography variant="body2">{clientSubscriptionObject?.subscription_plan.is_billed_yearly ? "Yearly" : "Monthly"}</Typography>
+                                        <Typography variant="body2">{clientSubscriptionObject?.renewal_period == 'annually' ? "Annually" : "Monthly"}</Typography>
                                    </Box>
                                    <Box sx={{ display: "flex", alignItems: "center" }}>
                                         <ReceiptIcon fontSize="small" sx={{ mr: 1, color: "text.secondary" }} />
-                                        <Typography variant="body2">Billing Cycle: {clientSubscriptionObject?.subscription_plan.is_billed_yearly ? "Yearly" : "Monthly"}</Typography>
+                                        <Typography variant="body2">Billing Cycle: {clientSubscriptionObject?.renewal_period == 'annually' ? "Annually" : "Monthly"}</Typography>
                                    </Box>
                               </Grid>
                          </Grid>

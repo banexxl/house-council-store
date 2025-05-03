@@ -66,7 +66,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans }) =
 
      const handleStartFreeTrial = (plan: SubscriptionPlan) => {
           setLoading(true)
-          router.push(`/pricing/subscription-plan-purchase?plan_id=${plan.id}`, {
+          router.push(`/pricing/subscription-plan-purchase?plan_id=${plan.id}&billing_cycle=${billingCycle}`, {
                scroll: false,
           })
 
@@ -99,11 +99,11 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans }) =
                               <Grid container spacing={4} justifyContent="center">
                                    {subscriptionPlans.map((plan) => {
                                         const price =
-                                             billingCycle === "monthly" || !plan.is_billed_yearly
+                                             billingCycle === "monthly" || !plan.is_billed_annually
                                                   ? plan.total_price_per_month
-                                                  : Math.round(plan.total_price_per_month * 12 * (1 - plan.yearly_discount_percentage / 100))
+                                                  : Math.round(plan.total_price_per_month * 12 * (1 - plan.annually_discount_percentage / 100))
 
-                                        const isAnnual = billingCycle === "annually" && plan.is_billed_yearly
+                                        const isAnnual = billingCycle === "annually" && plan.is_billed_annually
 
                                         return (
                                              <Grid key={plan.id} size={{ xs: 12, sm: 6, md: 4 }}>

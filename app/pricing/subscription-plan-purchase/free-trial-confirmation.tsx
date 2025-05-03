@@ -30,14 +30,16 @@ import { subscribeClientAction } from "@/app/profile/subscription-plan-actions"
 
 interface FreeTrialConfirmationProps {
      subscriptionPlan: SubscriptionPlan
+     billingCycle: "monthly" | "annually"
      clientSubscription?: ClientSubscription & { subscription_plan: SubscriptionPlan }
      userEmail?: string
      client: Client
 }
 
-export default function FreeTrialConfirmation({ subscriptionPlan, clientSubscription, userEmail, client }: FreeTrialConfirmationProps) {
+export default function FreeTrialConfirmation({ subscriptionPlan, billingCycle, clientSubscription, userEmail, client }: FreeTrialConfirmationProps) {
 
      const router = useRouter()
+
      const [isLoading, setIsLoading] = useState(false)
 
      if (!client) {
@@ -53,8 +55,6 @@ export default function FreeTrialConfirmation({ subscriptionPlan, clientSubscrip
           day: "numeric",
      })
 
-     // Format the billing cycle
-     const formattedCycle = subscriptionPlan.is_billed_yearly === true ? "annually" : "monthly"
      const hasUsedFreeTrial = clientSubscription?.created_at
           ? new Date().getTime() - new Date(clientSubscription.created_at).getTime() > 30 * 24 * 60 * 60 * 1000
           : false
@@ -69,7 +69,7 @@ export default function FreeTrialConfirmation({ subscriptionPlan, clientSubscrip
      const handleStartFreeTrial = async () => {
           setIsLoading(true)
           try {
-               const updateClientResponse = await subscribeClientAction(client.id!, subscriptionPlan.id!)
+               const updateClientResponse = await subscribeClientAction(client.id!, subscriptionPlan.id!, billingCycle)
 
                if (!updateClientResponse.error) {
                     toast.success("Your free trial has been started successfully!")
@@ -148,7 +148,7 @@ export default function FreeTrialConfirmation({ subscriptionPlan, clientSubscrip
                                              Price after trial
                                         </Typography>
                                         <Typography variant="h6">
-                                             ${subscriptionPlan.base_price_per_month.toFixed(2)}/{formattedCycle}
+                                             ${subscriptionPlan.base_price_per_month.toFixed(2)}/{billingCycle}
                                         </Typography>
                                    </Box>
 
@@ -156,7 +156,7 @@ export default function FreeTrialConfirmation({ subscriptionPlan, clientSubscrip
                                         <Typography variant="subtitle2" color="text.secondary">
                                              Billing cycle
                                         </Typography>
-                                        <Typography variant="h6">{formattedCycle}</Typography>
+                                        <Typography variant="h6">{billingCycle}</Typography>
                                    </Box>
                               </Box>
 

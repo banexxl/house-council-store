@@ -1,7 +1,7 @@
 'use server'
 
 import { useServerSideSupabaseServiceRoleClient } from "@/app/lib/ss-supabase-service-role-client";
-import { ClientSubscription, SubscriptionPlan } from "../types/subscription-plan";
+import { ClientSubscription, RenewalPeriod, SubscriptionPlan } from "../types/subscription-plan";
 import { Feature } from "../types/feature";
 import { logServerAction } from "../lib/server-logging";
 import { BaseEntity } from "../types/base-entity";
@@ -123,7 +123,8 @@ export const readAllSubscriptionPlans = async (): Promise<{
 
 export const subscribeClientAction = async (
      clientId: string,
-     subscriptionPlanId: string
+     subscriptionPlanId: string,
+     renewal_period: RenewalPeriod
 ): Promise<{ success: boolean; error?: string }> => {
      const supabase = await useServerSideSupabaseServiceRoleClient();
      const userId = (await supabase.auth.getUser()).data.user?.id;
@@ -138,6 +139,7 @@ export const subscribeClientAction = async (
                updated_at: new Date().toISOString(),
                is_auto_renew: true,
                next_payment_date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(),
+               renewal_period: renewal_period
           });
 
 
@@ -303,8 +305,6 @@ export const readClientSubscriptionPlan = async (clientId: string): Promise<{ su
   `)
           .eq("client_id", clientId)
           .single();
-     console.log('clientSubscriptionPlanData', clientSubscriptionPlanData)
-     console.log('clientSubscriptionDataError', clientSubscriptionDataError);
 
      if (clientSubscriptionDataError) {
           await logServerAction({

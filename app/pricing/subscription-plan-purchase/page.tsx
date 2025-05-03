@@ -7,9 +7,10 @@ import { readAccountByEmailAction } from "@/app/profile/account-action";
 import { logServerAction } from "@/app/lib/server-logging";
 
 
-export default async function FreeTrialPage({ searchParams, }: { searchParams: Promise<{ plan_id: string }> }) {
+export default async function FreeTrialPage({ searchParams, }: { searchParams: Promise<{ plan_id: string, billing_cycle: 'monthly' | 'annually' }> }) {
 
-     const { plan_id } = await searchParams;
+     const { plan_id, billing_cycle } = await searchParams;
+
 
      // Get the user session
      const user = await getSessionUser()
@@ -36,6 +37,7 @@ export default async function FreeTrialPage({ searchParams, }: { searchParams: P
                <Header user={user ? user : null} />
                <FreeTrialConfirmation
                     subscriptionPlan={subscriptionPlan!.subscriptionPlan!}
+                    billingCycle={billing_cycle}
                     clientSubscription={clientSubscription.clientSubscriptionPlanData!}
                     userEmail={user?.email!}
                     client={client!}
