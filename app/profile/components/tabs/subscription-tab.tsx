@@ -15,6 +15,7 @@ import {
 import { useRouter } from "next/navigation"
 import toast from "react-hot-toast"
 import { getStatusColor } from "../profile-sidebar"
+import GradingIcon from '@mui/icons-material/Grading';
 import { ClientSubscription, SubscriptionPlan, SubscriptionStatus } from "@/app/types/subscription-plan"
 import { Payment } from "@/app/types/payment"
 
@@ -113,12 +114,19 @@ export default function SubscriptionTab({ clientSubscriptionObject, payment }: S
                                         {clientSubscriptionObject?.subscription_plan.name}
                                    </Typography>
                                    <Typography variant="body2" color="text.secondary">
-                                        {payment?.total_paid && payment.total_paid > 0 ? (
-                                             <>
-                                                  {formattedPrice} billed {clientSubscriptionObject?.renewal_period ? "annually" : "monthly"}
-                                             </>
+                                        {clientSubscriptionObject?.status == 'trialing' ? (
+                                             <>Trial period until: {renderDate(clientSubscriptionObject?.next_payment_date!)}</>
                                         ) : (
-                                             <i>No payment information available</i>
+                                             payment ? (
+                                                  <>
+                                                       Last Payment: {renderDate(payment.created_at)}
+                                                       {payment.total_paid > 0 && (
+                                                            <> - {formattedPrice}</>
+                                                       )}
+                                                  </>
+                                             ) : (
+                                                  <i>No payment information available</i>
+                                             )
                                         )}
                                    </Typography>
                               </Box>
@@ -131,20 +139,24 @@ export default function SubscriptionTab({ clientSubscriptionObject, payment }: S
 
                          <Grid container spacing={2}>
                               <Grid size={{ xs: 12, sm: 6 }}>
+                                   <Typography variant="h6" sx={{ mb: 1 }}>Subscription Details:</Typography>
                                    <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
                                         <CalendarTodayIcon fontSize="small" sx={{ mr: 1, color: "text.secondary" }} />
                                         <Typography variant="body2">{renderDate(clientSubscriptionObject?.created_at)}</Typography>
+                                        <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                                             (Subscription Start Date)
+                                        </Typography>
                                    </Box>
                               </Grid>
 
                               <Grid size={{ xs: 12, sm: 6 }}>
                                    <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                                        <CreditCardIcon fontSize="small" sx={{ mr: 1, color: "text.secondary" }} />
-                                        <Typography variant="body2">{clientSubscriptionObject?.renewal_period == 'annually' ? "Annually" : "Monthly"}</Typography>
+                                        <GradingIcon fontSize="small" sx={{ mr: 1, color: "text.secondary" }} />
+                                        <Typography variant="body2">Status: {clientSubscriptionObject?.status.toUpperCase()}</Typography>
                                    </Box>
                                    <Box sx={{ display: "flex", alignItems: "center" }}>
                                         <ReceiptIcon fontSize="small" sx={{ mr: 1, color: "text.secondary" }} />
-                                        <Typography variant="body2">Billing Cycle: {clientSubscriptionObject?.renewal_period == 'annually' ? "Annually" : "Monthly"}</Typography>
+                                        <Typography variant="body2">Billing Cycle: {clientSubscriptionObject?.renewal_period == 'annually' ? "ANNUALLY" : "MONTHLY"}</Typography>
                                    </Box>
                               </Grid>
                          </Grid>
