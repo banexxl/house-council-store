@@ -24,7 +24,7 @@ export const signInUser = async (values: SignInFormValues): Promise<{ success: b
 
      const { data, error } = await supabase
           .from('tblClients')
-          .select('password')
+          .select('email')
           .eq('email', values.email)
           .single();
 

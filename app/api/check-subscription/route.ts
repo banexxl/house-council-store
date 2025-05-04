@@ -11,19 +11,28 @@ export async function POST() {
           .from('tblClient_Subscription')
           .select('id, client_id, status, next_payment_date')
 
+     if (error) {
+          await logServerAction({
+               user_id: null,
+               action: 'Get all clients subscriptions',
+               payload: {},
+               status: error ? 'fail' : 'success',
+               error: error?.message || '',
+               duration_ms: 0,
+               type: 'db'
+          })
+          return NextResponse.json({ success: false, error: error.message }, { status: 500 })
+     }
+
      await logServerAction({
           user_id: null,
-          action: 'Check all subscriptions',
+          action: 'Check all clients subscriptions',
           payload: {},
           status: error ? 'fail' : 'success',
-          error: error?.message || '',
+          error: '',
           duration_ms: 0,
           type: 'db'
      })
-
-     if (error) {
-          return NextResponse.json({ success: false, error: error.message }, { status: 500 })
-     }
 
      const now = new Date()
      let updatedCount = 0
