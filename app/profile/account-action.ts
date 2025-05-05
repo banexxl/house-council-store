@@ -190,7 +190,7 @@ export const readClientRecentActivityAction = async (clientEmail: string, client
           .in('user_id', userIds)
           .in('type', logTypes)
           .order('created_at', { ascending: false })
-          .limit(10);
+          .limit(5);
 
      if (error) {
           await logServerAction({
