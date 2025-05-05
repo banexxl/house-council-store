@@ -6,7 +6,7 @@ import { readAccountByEmailAction, readClientRecentActivityAction } from "./acco
 import { User } from "@supabase/supabase-js";
 import { clientInitialValues } from "../types/client";
 import { readEntity } from "@/app/lib/base-entity-actions";
-import { readClientSubscriptionPlan } from "./subscription-plan-actions";
+import { readClientSubscriptionPlan, readSubscriptionPlanFeatures } from "./subscription-plan-actions";
 import { readAllClientsBillingInformation } from "./client-billing-information-actions";
 import { redirect } from "next/navigation";
 import { logServerAction } from "../lib/server-logging";
@@ -46,7 +46,10 @@ export default async function Page() {
           readAllClientsBillingInformation(client.id),
           readClientRecentActivityAction(user.email, client.id),
           readAllClientPaymentsAction(client.id),
-     ]);
+     ])
+
+
+     const subsrciptionFeatures = await readSubscriptionPlanFeatures(clientSubscriptionObject.clientSubscriptionPlanData?.subscription_plan_id ?? null)
 
      // Merge session and client data
      const sessionAndClientDataCombined = {
@@ -73,6 +76,7 @@ export default async function Page() {
                     paymentMethods={[]}
                     recentActivity={recentActivity.data ?? []}
                     binCheckerAPIKey={binCheckerAPIKey ?? ""}
+                    subsrciptioFeatures={subsrciptionFeatures?.subscriptionPlanFeatures ?? null}
                />
                <Footer />
           </>

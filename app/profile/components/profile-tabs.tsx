@@ -60,6 +60,7 @@ interface ProfileTabsProps {
      subscriptionFeatures?: Feature[],
      binCheckerAPIKey?: string,
      clientPayments: Payment[]
+     subsrciptioFeatures?: SubscriptionPlan & { features: Feature[] } | null
 }
 
 export default function ProfileTabs({
@@ -75,6 +76,7 @@ export default function ProfileTabs({
      subscriptionFeatures,
      binCheckerAPIKey,
      clientPayments,
+     subsrciptioFeatures
 }: ProfileTabsProps) {
 
      const [tabValue, setTabValue] = useState(0)
@@ -135,6 +137,7 @@ export default function ProfileTabs({
                               <SubscriptionTab
                                    clientSubscriptionObject={clientSubscriptionObject || null}
                                    payment={clientPayments.length > 0 ? clientPayments[clientPayments.length - 1] : null}
+                                   subsrciptioFeatures={subsrciptioFeatures}
                               />
                          </TabPanel>
 

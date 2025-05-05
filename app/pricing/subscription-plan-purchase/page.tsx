@@ -1,6 +1,6 @@
 import { getSessionUser } from "@/app/lib/get-session";
 import FreeTrialConfirmation from "./free-trial-confirmation";
-import { readClientSubscriptionPlan, readSubscriptionPlanById } from "@/app/profile/subscription-plan-actions";
+import { readClientSubscriptionPlan, readSubscriptionPlanFeatures } from "@/app/profile/subscription-plan-actions";
 import { Header } from "@/app/components/header";
 import { Footer } from "@/app/components/footer";
 import { readAccountByEmailAction } from "@/app/profile/account-action";
@@ -16,7 +16,7 @@ export default async function FreeTrialPage({ searchParams, }: { searchParams: P
      const user = await getSessionUser()
 
      const [subscriptionPlan, clientSubscription] = await Promise.all([
-          readSubscriptionPlanById(plan_id),
+          readSubscriptionPlanFeatures(plan_id),
           readClientSubscriptionPlan(user?.id!),
      ])
 
@@ -36,7 +36,7 @@ export default async function FreeTrialPage({ searchParams, }: { searchParams: P
           <>
                <Header user={user ? user : null} />
                <FreeTrialConfirmation
-                    subscriptionPlan={subscriptionPlan!.subscriptionPlan!}
+                    subscriptionPlan={subscriptionPlan!.subscriptionPlanFeatures!}
                     billingCycle={billing_cycle}
                     clientSubscription={clientSubscription.clientSubscriptionPlanData!}
                     userEmail={user?.email!}

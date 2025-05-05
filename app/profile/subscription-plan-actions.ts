@@ -6,46 +6,58 @@ import { Feature } from "../types/feature";
 import { logServerAction } from "../lib/server-logging";
 import { BaseEntity } from "../types/base-entity";
 
-export const readSubscriptionPlanById = async (id: string | null): Promise<{
-     readSubscriptionPlanSuccess: boolean; subscriptionPlan?: SubscriptionPlan; readSubscriptionPlanError?: string;
+
+export const readSubscriptionPlanFeatures = async (
+     id: string | null
+): Promise<{
+     readSubscriptionPlanFeaturesSuccess: boolean;
+     subscriptionPlanFeatures?: SubscriptionPlan & { features: Feature[] };
+     readSubscriptionPlanFeaturesError?: string;
 }> => {
      if (!id) {
-          return { readSubscriptionPlanSuccess: false, readSubscriptionPlanError: "Subscription plan ID is required" };
+          return {
+               readSubscriptionPlanFeaturesSuccess: false,
+               readSubscriptionPlanFeaturesError: "Subscription plan ID is required",
+          };
      }
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
      const userId = (await supabase.auth.getUser()).data.user?.id;
-     // Fetch the subscription plan along with its features using a join
-     const { data: subscriptionPlan, error: planError } = await supabase
+
+     const { data: subscriptionPlan, error } = await supabase
           .from("tblSubscriptionPlans")
           .select(`
       *,
       tblSubscriptionPlans_Features (
-        feature_id,
         tblFeatures (*)
       )
     `)
           .eq("id", id)
           .single();
 
-     if (planError) {
+     if (error || !subscriptionPlan) {
           await logServerAction({
-               user_id: userId ? userId : '',
+               user_id: userId || '',
                action: 'Read Subscription Plan by ID',
                payload: { id },
                status: 'fail',
-               error: planError.message,
+               error: error?.message || 'Not found',
                duration_ms: 0,
-               type: 'db'
-          })
-          return { readSubscriptionPlanSuccess: false, readSubscriptionPlanError: planError.message };
+               type: 'db',
+          });
+
+          return {
+               readSubscriptionPlanFeaturesSuccess: false,
+               readSubscriptionPlanFeaturesError: error?.message || 'Subscription plan not found',
+          };
      }
 
-     // Extract features from the subscription plan and exclude tblSubscriptionPlans_Features
-     const features = subscriptionPlan.tblSubscriptionPlans_Features.map((relation: any) => relation.tblFeatures);
+     // Normalize: rename tblSubscriptionPlans_Features → features
+     const features: Feature[] = subscriptionPlan.tblSubscriptionPlans_Features?.map(
+          (relation: { tblFeatures: Feature }) => relation.tblFeatures
+     ) || [];
 
-     // Return the subscription plan without tblSubscriptionPlans_Features
-     const { tblSubscriptionPlans_Features, ...restOfSubscriptionPlan } = subscriptionPlan;
+     const { tblSubscriptionPlans_Features, ...planData } = subscriptionPlan;
 
      await logServerAction({
           user_id: null,
@@ -54,12 +66,15 @@ export const readSubscriptionPlanById = async (id: string | null): Promise<{
           status: 'success',
           error: '',
           duration_ms: 0,
-          type: 'db'
-     })
+          type: 'db',
+     });
 
      return {
-          readSubscriptionPlanSuccess: true,
-          subscriptionPlan: { ...restOfSubscriptionPlan, features },
+          readSubscriptionPlanFeaturesSuccess: true,
+          subscriptionPlanFeatures: {
+               ...planData,
+               features,
+          },
      };
 };
 

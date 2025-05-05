@@ -18,13 +18,16 @@ import { getStatusColor } from "../profile-sidebar"
 import GradingIcon from '@mui/icons-material/Grading';
 import { ClientSubscription, SubscriptionPlan, SubscriptionStatus } from "@/app/types/subscription-plan"
 import { Payment } from "@/app/types/payment"
+import { Feature } from "@/app/types/feature"
 
 interface SubscriptionTabProps {
      clientSubscriptionObject: ClientSubscription & { subscription_plan: SubscriptionPlan } | null;
      payment: Payment | null;
+     subsrciptioFeatures?: SubscriptionPlan & { features: Feature[] } | null
 }
 
-export default function SubscriptionTab({ clientSubscriptionObject, payment }: SubscriptionTabProps) {
+export default function SubscriptionTab({ clientSubscriptionObject, payment, subsrciptioFeatures }: SubscriptionTabProps) {
+     console.log('subsrciptioFeatures', subsrciptioFeatures);
 
      const router = useRouter()
      const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
