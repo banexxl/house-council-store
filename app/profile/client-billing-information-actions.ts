@@ -55,7 +55,6 @@ export const createOrUpdateClientBillingInformation = async (clientBillingInform
      }
 
      const { data, error } = result;
-     console.log("createOrUpdateClientBillingInformation", { data, error });
 
      if (error) {
           await logServerAction({
@@ -80,7 +79,7 @@ export const createOrUpdateClientBillingInformation = async (clientBillingInform
           type: 'action'
      })
 
-     revalidatePath(`/dashboard/clients/billing-information/${clientBillingInformation.client_id}`);
+     revalidatePath(`/profile`);
      return { createOrUpdateClientBillingInformationSuccess: true, createOrUpdateClientBillingInformationData: data };
 }
 

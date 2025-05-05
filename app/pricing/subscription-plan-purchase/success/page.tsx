@@ -9,6 +9,8 @@ export default async function FreeTrialSuccessPage() {
      // Get the user session
      const session = await getSessionUser()
 
+     const dashboardUrl = process.env.DASHBOARD_URL!
+
      if (!session) {
           // Redirect to login if not authenticated
           redirect("/auth/sign-in")
@@ -27,7 +29,7 @@ export default async function FreeTrialSuccessPage() {
      return (
           <>
                <Header user={session ? session : null} />
-               <SubscriptionSuccessPage userEmail={session.email!} planId={""} planName={""} isTrial={false} />
+               <SubscriptionSuccessPage userEmail={session.email!} planId={""} planName={""} isTrial={false} dashboardUrl={dashboardUrl} />
                <Footer />
           </>
      )

@@ -27,6 +27,7 @@ interface SubscriptionSuccessPageProps {
      planName: string
      isTrial: boolean
      userEmail: string
+     dashboardUrl: string
 }
 
 export default function SubscriptionSuccessPage({
@@ -34,6 +35,7 @@ export default function SubscriptionSuccessPage({
      planName,
      isTrial,
      userEmail,
+     dashboardUrl
 }: SubscriptionSuccessPageProps) {
      const router = useRouter()
 
@@ -176,7 +178,7 @@ export default function SubscriptionSuccessPage({
                                              <Button
                                                   variant="contained"
                                                   size="large"
-                                                  onClick={() => router.push("/dashboard")}
+                                                  onClick={() => router.push(dashboardUrl)}
                                                   sx={{ mb: 2, minWidth: 200 }}
                                              >
                                                   Go to Dashboard

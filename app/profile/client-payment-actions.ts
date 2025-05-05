@@ -81,7 +81,7 @@ export const createOrUpdateClientPayment = async (
           type: 'db',
      });
 
-     revalidatePath(`/dashboard/clients/payments/${payment.client}`);
+     revalidatePath(`/profile/${payment.client}`);
      return { success: true, data };
 };
 
@@ -141,7 +141,7 @@ export const deleteClientPayment = async (
           type: 'action',
      });
 
-     revalidatePath(`/dashboard/clients/payments/${clientId}`);
+     revalidatePath(`/profile/${clientId}`);
      return { success: true };
 };
 
