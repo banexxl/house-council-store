@@ -26,7 +26,7 @@ export async function POST() {
 
      await logServerAction({
           user_id: null,
-          action: 'Check all clients subscriptions',
+          action: 'Check all clients subscriptions - Started',
           payload: {},
           status: error ? 'fail' : 'success',
           error: '',
@@ -101,6 +101,16 @@ export async function POST() {
                expired: isExpired
           })
      }
+
+     await logServerAction({
+          user_id: null,
+          action: 'Check all clients subscriptions - Completed',
+          payload: {},
+          status: 'success',
+          error: '',
+          duration_ms: 0,
+          type: 'db'
+     })
 
      // Return summary of operations
      return NextResponse.json({
