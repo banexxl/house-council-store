@@ -29,7 +29,7 @@ import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
 import { Toaster } from "react-hot-toast"
 import { resetPassword } from "./reset-password-actions"
 import { createBrowserClient } from '@supabase/ssr'
-import { calculatePasswordStrength, getStrengthColor, getStrengthLabel, validationSchema } from "./reset-password-utils"
+import { calculatePasswordStrength, getStrengthColor, getStrengthLabel, validationSchemaNoOldPassword } from "./reset-password-utils"
 
 export const ResetPasswordPage = () => {
 
@@ -85,29 +85,29 @@ export const ResetPasswordPage = () => {
 
      const formik = useFormik({
           initialValues: {
-               password: "",
+               newPassword: "",
                confirmPassword: "",
           },
-          validationSchema: validationSchema,
+          validationSchema: validationSchemaNoOldPassword,
           onSubmit: async (values) => {
                try {
                     // Call the server action to reset the password
-                    const result = await resetPassword(email, values.password)
+                    const result = await resetPassword(email, values.newPassword)
 
                     if (!result.success) {
-                         formik.setErrors({ password: result.error })
+                         formik.setErrors({ newPassword: result.error })
                     }
                     setIsSubmitted(true)
                } catch (error) {
-                    formik.setErrors({ password: "Failed to reset password. Please try again." })
+                    formik.setErrors({ newPassword: "Failed to reset password. Please try again." })
                }
           },
      })
 
      // Update password strength when password changes
      useEffect(() => {
-          setPasswordStrength(calculatePasswordStrength(formik.values.password))
-     }, [formik.values.password])
+          setPasswordStrength(calculatePasswordStrength(formik.values.newPassword))
+     }, [formik.values.newPassword])
 
 
      // Show error if token is invalid
@@ -197,16 +197,16 @@ export const ResetPasswordPage = () => {
                                              <Box component="form" onSubmit={formik.handleSubmit} noValidate>
                                                   <TextField
                                                        fullWidth
-                                                       id="password"
-                                                       name="password"
+                                                       id="newPassword"
+                                                       name="newPassword"
                                                        label="New Password"
                                                        type={showPassword ? "text" : "password"}
                                                        margin="normal"
-                                                       value={formik.values.password}
+                                                       value={formik.values.newPassword}
                                                        onChange={formik.handleChange}
                                                        onBlur={formik.handleBlur}
-                                                       error={formik.touched.password && Boolean(formik.errors.password)}
-                                                       helperText={formik.touched.password && formik.errors.password}
+                                                       error={formik.touched.newPassword && Boolean(formik.errors.newPassword)}
+                                                       helperText={formik.touched.newPassword && formik.errors.newPassword}
                                                        slotProps={{
                                                             input: {
                                                                  endAdornment: (
@@ -225,7 +225,7 @@ export const ResetPasswordPage = () => {
 
                                                   />
 
-                                                  {formik.values.password && (
+                                                  {formik.values.newPassword && (
                                                        <Box sx={{ mt: 1, mb: 2 }}>
                                                             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
                                                                  <Typography variant="caption">Password strength:</Typography>

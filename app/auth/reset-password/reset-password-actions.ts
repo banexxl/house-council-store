@@ -3,7 +3,7 @@
 import { logServerAction } from "@/app/lib/server-logging";
 import { useServerSideSupabaseAnonClient } from "@/app/lib/ss-supabase-anon-client";
 
-export async function resetPassword(email: string, newPassword: string): Promise<{ success: boolean, error?: string }> {
+export async function resetPasswordWithOldPassword(email: string, oldPassword: string, newPassword: string): Promise<{ success: boolean, error?: string }> {
 
      const startTime = Date.now();
 
@@ -38,6 +38,138 @@ export async function resetPassword(email: string, newPassword: string): Promise
           }
      }
 
+     if (!email || !email.includes("@") || !newPassword || !oldPassword) {
+
+          await logServerAction({
+               user_id: null,
+               action: 'Reset password - invalid input',
+               payload: {},
+               status: 'fail',
+               error: '',
+               duration_ms: Date.now() - startTime,
+               type: 'auth'
+          })
+
+          return {
+               success: false,
+               error: "Please enter a valid email address and old and new passwords.",
+          }
+     }
+
+     try {
+          // Get the current session
+          const { data: { session }, error: sessionError, } = await supabase.auth.getSession()
+          console.log('session', session);
+          console.log('sessionError', sessionError);
+
+          if (sessionError || !session) {
+               return {
+                    success: false,
+                    error: sessionError?.message || "No active session found",
+               }
+          }
+
+          // Check if the old password is correct
+          const { data: signedInUser, error: signInError } = await supabase.auth.signInWithPassword({ email: email, password: oldPassword })
+
+          if (signInError) {
+               logServerAction({
+                    user_id: null,
+                    action: 'Reset password - old password incorrect',
+                    payload: { email },
+                    status: 'fail',
+                    error: signInError.message,
+                    duration_ms: Date.now() - startTime,
+                    type: 'auth'
+               })
+               return {
+                    success: false,
+                    error: signInError?.message || "Failed to reset password",
+               }
+          }
+
+          // Update the user's password
+          const { error } = await supabase.auth.updateUser({ password: newPassword })
+
+          if (error) {
+               logServerAction({
+                    user_id: null,
+                    action: 'Reset password - password update failed',
+                    payload: { email },
+                    status: 'fail',
+                    error: error.message,
+                    duration_ms: Date.now() - startTime,
+                    type: 'auth'
+               })
+               return {
+                    success: false,
+                    error: error?.message || "Failed to reset password",
+               }
+          }
+
+          logServerAction({
+               user_id: userId,
+               action: 'Reset password - success',
+               payload: { email },
+               status: 'success',
+               error: '',
+               duration_ms: 0,
+               type: 'action'
+          })
+
+          return {
+               success: true,
+          }
+     } catch (error: any) {
+          logServerAction({
+               user_id: null,
+               action: 'Reset password - error',
+               payload: { email },
+               status: 'fail',
+               error: error.message,
+               duration_ms: Date.now() - startTime,
+               type: 'auth'
+          })
+          return {
+               success: false,
+               error: error?.message || "Failed to reset password",
+          }
+     }
+}
+
+export async function resetPassword(email: string, newPassword: string): Promise<{ success: boolean, error?: string }> {
+
+     const startTime = Date.now();
+
+     let userId = null;
+
+     const supabase = await useServerSideSupabaseAnonClient();
+
+     const { data: user, error: userError } = await supabase
+          .from('tblClients')
+          .select('*')
+          .eq('email', email)
+          .single();
+
+     userId = user?.id || null;
+
+     if (userError || !user) {
+          await logServerAction({
+               user_id: null,
+               action: 'Reset password - user not found',
+               payload: { email },
+               status: 'fail',
+               error: userError?.message || 'User not found',
+               duration_ms: Date.now() - startTime,
+               type: 'auth'
+          });
+
+          return {
+               success: false,
+               error: userError?.message || "User not found with the provided email address.",
+          }
+     }
+
      if (!email || !email.includes("@") || !newPassword) {
 
           await logServerAction({
@@ -52,26 +184,13 @@ export async function resetPassword(email: string, newPassword: string): Promise
 
           return {
                success: false,
-               error: "Please enter a valid email address and password.",
+               error: "Please enter a valid email address and new password.",
           }
      }
 
      try {
-          // Get the current session
-          // const { data: { session }, error: sessionError, } = await supabase.auth.getSession()
-          // console.log('session', session);
-          // console.log('sessionError', sessionError);
-
-          // if (sessionError || !session) {
-          //      return {
-          //           success: false,
-          //           error: sessionError?.message || "No active session found",
-          //      }
-          // }
-
           // Update the user's password
           const { error } = await supabase.auth.updateUser({ password: newPassword })
-
 
           if (error) {
                logServerAction({
@@ -83,7 +202,10 @@ export async function resetPassword(email: string, newPassword: string): Promise
                     duration_ms: Date.now() - startTime,
                     type: 'auth'
                })
-               throw error
+               return {
+                    success: false,
+                    error: error?.message || "Failed to reset password",
+               }
           }
 
           logServerAction({

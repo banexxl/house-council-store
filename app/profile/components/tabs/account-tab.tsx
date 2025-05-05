@@ -15,8 +15,8 @@ import { useEffect, useState } from "react"
 import toast from "react-hot-toast"
 import { Form, Formik, useFormik } from "formik"
 import * as Yup from "yup"
-import { resetPassword } from "@/app/auth/reset-password/reset-password-actions"
-import { calculatePasswordStrength, getStrengthColor, getStrengthLabel, validationSchema } from "@/app/auth/reset-password/reset-password-utils";
+import { resetPasswordWithOldPassword } from "@/app/auth/reset-password/reset-password-actions"
+import { calculatePasswordStrength, getStrengthColor, getStrengthLabel, validationSchemaWithOldPassword } from "@/app/auth/reset-password/reset-password-utils";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import Visibility from "@mui/icons-material/Visibility";
 
@@ -28,7 +28,7 @@ interface AccountTabProps {
 
 const accountSchema = Yup.object().shape({
      fullName: Yup.string().min(2, "Name must be at least 2 characters").required("Name is required"),
-     phoneNumber: Yup.string().min(8, "Phone number must be at least 8 characters").required("Phone number is required"),
+     mobilePhoneNumber: Yup.string().min(8, "Mobile phone number must be at least 8 characters").required("Mobile phone number is required"),
 });
 
 export default function AccountTab({ userData, editMode, setEditMode }: AccountTabProps) {
@@ -37,14 +37,20 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
      const [confirmText, setConfirmText] = useState("");
      const [showPasswordChange, setShowPasswordChange] = useState(false);
      const [resetingPassword, setResetingPassword] = useState(false);
-     const handleClickShowPassword = () => {
-          setShowPassword(!showPassword)
+
+     const handleClickShowNewPassword = () => {
+          setShowNewPassword(!showNewPassword)
+     }
+     const handleClickShowOldPassword = () => {
+          setShowOldPassword(!showOldPassword)
      }
 
      const handleClickShowConfirmPassword = () => {
           setShowConfirmPassword(!showConfirmPassword)
      }
-     const [showPassword, setShowPassword] = useState(false)
+
+     const [showOldPassword, setShowOldPassword] = useState(false)
+     const [showNewPassword, setShowNewPassword] = useState(false)
      const [showConfirmPassword, setShowConfirmPassword] = useState(false)
      const [isSubmitted, setIsSubmitted] = useState(false)
      const [passwordStrength, setPasswordStrength] = useState(0)
@@ -80,15 +86,16 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
 
      const formik = useFormik({
           initialValues: {
-               password: "",
+               oldPassword: "",
+               newPassword: "",
                confirmPassword: "",
           },
-          validationSchema: validationSchema,
+          validationSchema: validationSchemaWithOldPassword,
 
           onSubmit: async (values) => {
                setResetingPassword(true)
                try {
-                    const resetPasswordResponse = await resetPassword(userData.client.email, values.password);
+                    const resetPasswordResponse = await resetPasswordWithOldPassword(userData.client.email, values.oldPassword, values.newPassword);
                     if (resetPasswordResponse.success) {
                          toast.success("Password reset successfully.")
                          formik.resetForm()
@@ -102,7 +109,7 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                     toast.error("Error resetting password: " + error, {
                          // position: "top-center",
                     });
-                    formik.setErrors({ password: "Failed to reset password. Please try again." })
+                    formik.setErrors({ newPassword: "Failed to reset password. Please try again." })
                } finally {
                     setIsSubmitted(true)
                     setResetingPassword(false)
@@ -112,8 +119,8 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
 
      // Update password strength when password changes
      useEffect(() => {
-          setPasswordStrength(calculatePasswordStrength(formik.values.password))
-     }, [formik.values.password])
+          setPasswordStrength(calculatePasswordStrength(formik.values.newPassword))
+     }, [formik.values.newPassword])
 
      return (
           <>
@@ -126,14 +133,14 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                          <Formik
                               initialValues={{
                                    fullName: userData.client.name || '',
-                                   phoneNumber: userData.client.phone || ''
+                                   mobilePhoneNumber: userData.client.mobile_phone || ''
                               }}
                               onSubmit={async (values, { setSubmitting }) => {
                                    setSubmitting(true);
                                    try {
                                         const updateAccountActionResponse = await updateAccountAction(userData.client.id, {
                                              name: values.fullName,
-                                             phone: values.phoneNumber
+                                             mobile_phone: values.mobilePhoneNumber
                                         });
 
                                         if (updateAccountActionResponse.success) {
@@ -183,12 +190,12 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                              <Grid size={{ xs: 12, md: 6 }}>
                                                   <TextField
                                                        fullWidth
-                                                       label="Phone Number"
-                                                       name="phoneNumber"
-                                                       value={values.phoneNumber}
+                                                       label="Mobile phone number"
+                                                       name="mobilePhoneNumber"
+                                                       value={values.mobilePhoneNumber}
                                                        onChange={handleChange}
-                                                       error={!!errors.phoneNumber}
-                                                       helperText={errors.phoneNumber || ""}
+                                                       error={!!errors.mobilePhoneNumber}
+                                                       helperText={errors.mobilePhoneNumber || ""}
                                                   />
                                              </Grid>
 
@@ -255,7 +262,7 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
 
                               <Grid size={{ xs: 12, md: 6 }}>
                                    <Typography variant="subtitle2" color="text.secondary">
-                                        Phone Number
+                                        Mobile Phone Number
                                    </Typography>
                                    <Typography variant="body1">{userData.client.phone}</Typography>
                               </Grid>
@@ -319,26 +326,26 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                         <Box component="form" onSubmit={formik.handleSubmit} noValidate>
                                              <TextField
                                                   fullWidth
-                                                  id="password"
-                                                  name="password"
-                                                  label="New Password"
-                                                  type={showPassword ? "text" : "password"}
+                                                  id="oldPassword"
+                                                  name="oldPassword"
+                                                  label="Current Password"
+                                                  type={showOldPassword ? "text" : "password"}
                                                   margin="normal"
-                                                  value={formik.values.password}
+                                                  value={formik.values.oldPassword}
                                                   onChange={formik.handleChange}
                                                   onBlur={formik.handleBlur}
-                                                  error={formik.touched.password && Boolean(formik.errors.password)}
-                                                  helperText={formik.touched.password && formik.errors.password}
+                                                  error={formik.touched.oldPassword && Boolean(formik.errors.oldPassword)}
+                                                  helperText={formik.touched.oldPassword && formik.errors.oldPassword}
                                                   slotProps={{
                                                        input: {
                                                             endAdornment: (
                                                                  <InputAdornment position="end">
                                                                       <IconButton
                                                                            aria-label="toggle password visibility"
-                                                                           onClick={handleClickShowPassword}
+                                                                           onClick={handleClickShowOldPassword}
                                                                            edge="end"
                                                                       >
-                                                                           {showPassword ? <VisibilityOff /> : <Visibility />}
+                                                                           {showOldPassword ? <VisibilityOff /> : <Visibility />}
                                                                       </IconButton>
                                                                  </InputAdornment>
                                                             ),
@@ -346,7 +353,37 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                                   }}
                                              />
 
-                                             {formik.values.password && (
+
+                                             <TextField
+                                                  fullWidth
+                                                  id="newPassword"
+                                                  name="newPassword"
+                                                  label="New Password"
+                                                  type={showNewPassword ? "text" : "password"}
+                                                  margin="normal"
+                                                  value={formik.values.newPassword}
+                                                  onChange={formik.handleChange}
+                                                  onBlur={formik.handleBlur}
+                                                  error={formik.touched.newPassword && Boolean(formik.errors.newPassword)}
+                                                  helperText={formik.touched.newPassword && formik.errors.newPassword}
+                                                  slotProps={{
+                                                       input: {
+                                                            endAdornment: (
+                                                                 <InputAdornment position="end">
+                                                                      <IconButton
+                                                                           aria-label="toggle password visibility"
+                                                                           onClick={handleClickShowNewPassword}
+                                                                           edge="end"
+                                                                      >
+                                                                           {showNewPassword ? <VisibilityOff /> : <Visibility />}
+                                                                      </IconButton>
+                                                                 </InputAdornment>
+                                                            ),
+                                                       },
+                                                  }}
+                                             />
+
+                                             {formik.values.newPassword && (
                                                   <Box sx={{ mt: 1, mb: 2 }}>
                                                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
                                                             <Typography variant="caption">Password strength:</Typography>

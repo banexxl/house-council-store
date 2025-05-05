@@ -1,8 +1,9 @@
 import * as Yup from "yup";
 
 // Validation schema using Yup
-export const validationSchema = Yup.object({
-     password: Yup.string()
+export const validationSchemaWithOldPassword = Yup.object({
+     oldPassword: Yup.string().required("Old password is required"),
+     newPassword: Yup.string()
           .min(8, "Password must be at least 8 characters")
           .required("Password is required")
           .matches(
@@ -10,7 +11,21 @@ export const validationSchema = Yup.object({
                "Password must contain at least one uppercase letter, one lowercase letter, and one number",
           ),
      confirmPassword: Yup.string()
-          .oneOf([Yup.ref("password")], "Passwords must match")
+          .oneOf([Yup.ref("newPassword")], "Passwords must match")
+          .required("Confirm password is required"),
+})
+
+// Validation schema using Yup
+export const validationSchemaNoOldPassword = Yup.object({
+     newPassword: Yup.string()
+          .min(8, "Password must be at least 8 characters")
+          .required("Password is required")
+          .matches(
+               /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+               "Password must contain at least one uppercase letter, one lowercase letter, and one number",
+          ),
+     confirmPassword: Yup.string()
+          .oneOf([Yup.ref("newPassword")], "Passwords must match")
           .required("Confirm password is required"),
 })
 

@@ -32,6 +32,7 @@ import PhotoCameraIcon from "@mui/icons-material/PhotoCamera"
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser"
 import EmailIcon from "@mui/icons-material/Email"
 import PhoneIcon from "@mui/icons-material/Phone"
+import PhonelinkRingIcon from '@mui/icons-material/PhonelinkRing';
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday"
 import toast from "react-hot-toast"
 import { useRouter } from "next/navigation"
@@ -128,7 +129,7 @@ export default function ProfileSidebar({ userData, clientSubscriptionObject, rec
                                    <ListItemIcon>
                                         <LockIcon fontSize="small" />
                                    </ListItemIcon>
-                                   <ListItemText>Change Password</ListItemText>
+                                   <ListItemText>Forgot password</ListItemText>
                               </MenuItem>
                               <Divider />
                               <MenuItem onClick={handleLogout} sx={{ color: "error.main" }}>
@@ -175,7 +176,8 @@ export default function ProfileSidebar({ userData, clientSubscriptionObject, rec
 
                          <Divider sx={{ my: 2 }} />
 
-                         <List dense>
+                         <List >
+
                               <ListItem>
                                    <ListItemIcon>
                                         <EmailIcon fontSize="small" />
@@ -189,6 +191,13 @@ export default function ProfileSidebar({ userData, clientSubscriptionObject, rec
                                         <PhoneIcon fontSize="small" />
                                    </ListItemIcon>
                                    <ListItemText primary={userData.client.phone} />
+                              </ListItem>
+
+                              <ListItem>
+                                   <ListItemIcon>
+                                        <PhonelinkRingIcon fontSize="small" />
+                                   </ListItemIcon>
+                                   <ListItemText primary={userData.client.mobile_phone} />
                               </ListItem>
 
                               <ListItem>
