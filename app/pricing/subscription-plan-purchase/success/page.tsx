@@ -9,7 +9,7 @@ export default async function FreeTrialSuccessPage() {
      // Get the user session
      const session = await getSessionUser()
 
-     const dashboardUrl = process.env.DASHBOARD_URL!
+     const dashboardUrl = process.env.NEXT_PUBLIC_DASHBOARD_URL!
 
      if (!session) {
           // Redirect to login if not authenticated

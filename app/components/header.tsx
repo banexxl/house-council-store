@@ -83,7 +83,7 @@ export const Header = ({ user }: HeaderProps) => {
               </Link>
             </ListItem>
             <ListItem >
-              <Link href="/https://house-council-app-v2-plum.vercel.app/" style={{ color: theme.palette.primary.main, width: "100%" }}>
+              <Link href={process.env.NEXT_PUBLIC_DASHBOARD_URL!} style={{ color: theme.palette.primary.main, width: "100%" }}>
                 <ListItemButton sx={{ textAlign: "center" }}>
                   <ListItemText primary="Dashboard" sx={{ color: theme.palette.secondary.main }} />
                 </ListItemButton>
@@ -156,7 +156,7 @@ export const Header = ({ user }: HeaderProps) => {
                 </Link>
               )}
               {user && (
-                <Link href="https://house-council-app-v2-plum.vercel.app/" target="_blank" style={{ color: theme.palette.primary.main }}>
+                <Link href={process.env.NEXT_PUBLIC_DASHBOARD_URL!} target="_blank" style={{ color: theme.palette.primary.main }}>
                   <Button variant="contained" color="primary">
                     Dashboard
                   </Button>
