@@ -95,10 +95,6 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans }) =
                                         <Tab label="Annually (Save more)" value="annually" />
                                    </Tabs>
                               </Box>
-                              <Typography>
-                                   {(billingCycle + '--' + subscriptionPlans[0].is_billed_annually)}
-                              </Typography>
-
                               <Grid container spacing={4} justifyContent="center">
                                    {subscriptionPlans.map((plan) => {
                                         const isAnnual = billingCycle === "annually";
