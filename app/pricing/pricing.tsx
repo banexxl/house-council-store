@@ -95,15 +95,23 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans }) =
                                         <Tab label="Annually (Save more)" value="annually" />
                                    </Tabs>
                               </Box>
+                              <Typography>
+                                   {(billingCycle + '--' + subscriptionPlans[0].is_billed_annually)}
+                              </Typography>
 
                               <Grid container spacing={4} justifyContent="center">
                                    {subscriptionPlans.map((plan) => {
-                                        const price =
-                                             billingCycle === "monthly" || !plan.is_billed_annually
-                                                  ? plan.total_price_per_month
-                                                  : Math.round(plan.total_price_per_month * 12 * (1 - plan.annually_discount_percentage / 100))
+                                        const isAnnual = billingCycle === "annually";
+                                        const isBilledYearly = plan.is_billed_annually;
 
-                                        const isAnnual = billingCycle === "annually" && plan.is_billed_annually
+                                        const price = isBilledYearly
+                                             ? isAnnual
+                                                  ? plan.total_price // Show as-is for yearly billing (e.g., 600)
+                                                  : Math.round(plan.total_price / 12) // Convert annual to monthly (600 / 12 = 50)
+                                             : isAnnual
+                                                  ? Math.round(plan.total_price * 12 * (1 - (plan.annually_discount_percentage || 0) / 100))
+                                                  : plan.total_price; // Monthly billing, no conversion needed
+
 
                                         return (
                                              <Grid key={plan.id} size={{ xs: 12, sm: 6, md: 4 }}>

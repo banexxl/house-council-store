@@ -5,7 +5,12 @@ import { useEffect, useState } from "react"
 import {
      Box, Typography, Button, Card, CardContent, Divider, Chip,
      Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
-     Grid, Alert, CircularProgress
+     Grid, Alert, CircularProgress,
+     List,
+     ListItem,
+     ListItemIcon,
+     ListItemText,
+     useTheme
 } from "@mui/material"
 import {
      CalendarToday as CalendarTodayIcon,
@@ -17,8 +22,10 @@ import toast from "react-hot-toast"
 import { getStatusColor } from "../profile-sidebar"
 import GradingIcon from '@mui/icons-material/Grading';
 import { ClientSubscription, SubscriptionPlan, SubscriptionStatus } from "@/app/types/subscription-plan"
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { Payment } from "@/app/types/payment"
 import { Feature } from "@/app/types/feature"
+import Link from "next/link"
 
 interface SubscriptionTabProps {
      clientSubscriptionObject: ClientSubscription & { subscription_plan: SubscriptionPlan } | null;
@@ -27,8 +34,8 @@ interface SubscriptionTabProps {
 }
 
 export default function SubscriptionTab({ clientSubscriptionObject, payment, subsrciptioFeatures }: SubscriptionTabProps) {
-     console.log('subsrciptioFeatures', subsrciptioFeatures);
 
+     const theme = useTheme()
      const router = useRouter()
      const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
      const [confirmCancelDialogOpen, setConfirmCancelDialogOpen] = useState(false)
@@ -164,42 +171,72 @@ export default function SubscriptionTab({ clientSubscriptionObject, payment, sub
                               </Grid>
                          </Grid>
 
-                         {/* Cancel Confirmation Dialog */}
-                         <Dialog open={confirmCancelDialogOpen} onClose={() => handleDialogToggle("confirmCancel", false)}>
-                              <DialogTitle>Confirm Cancellation</DialogTitle>
-                              <DialogContent>
-                                   <DialogContentText>
-                                        Please confirm that you want to cancel your subscription. This action cannot be undone.
-                                   </DialogContentText>
-                              </DialogContent>
-                              <DialogActions>
-                                   <Button onClick={() => handleDialogToggle("confirmCancel", false)} color="primary" disabled={isProcessing}>Go Back</Button>
-                                   <Button onClick={handleCancelSubscription} color="error" disabled={isProcessing} startIcon={isProcessing ? <CircularProgress size={20} /> : null}>
-                                        {isProcessing ? "Processing..." : "Confirm Cancellation"}
-                                   </Button>
-                              </DialogActions>
-                         </Dialog>
+                    </CardContent>
 
-                         {/* Upgrade Plan Dialog */}
-                         <Dialog open={upgradeDialogOpen} onClose={() => handleDialogToggle("upgrade", false)}>
-                              <DialogTitle>Upgrade Your Plan</DialogTitle>
-                              <DialogContent>
-                                   <DialogContentText>
-                                        You are about to upgrade your subscription plan. You will be redirected to our pricing page to select a new plan.
-                                   </DialogContentText>
-                                   <Alert severity="info" sx={{ mt: 2 }}>
-                                        Your current plan will remain active until you select and confirm a new plan.
-                                   </Alert>
-                              </DialogContent>
-                              <DialogActions>
-                                   <Button onClick={() => handleDialogToggle("upgrade", false)} color="primary" disabled={isProcessing}>Cancel</Button>
-                                   <Button onClick={handleUpgradeSubscription} color="primary" variant="contained" disabled={isProcessing} startIcon={isProcessing ? <CircularProgress size={20} /> : null}>
-                                        {isProcessing ? "Processing..." : "Continue to Upgrade"}
-                                   </Button>
-                              </DialogActions>
-                         </Dialog>
+               </Card>
+               <Card>
+                    <CardContent>
+                         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                              <Typography variant="h6">
+                                   Features Included in {' '}
+                                   <Typography component="span" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
+                                        {subsrciptioFeatures?.name}
+                                   </Typography> Plan:
+                              </Typography>
+                         </Box>
+
+                         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                              <Typography variant="body1" color="text.secondary">
+
+                                   <List dense={true}>
+                                        {subsrciptioFeatures?.features.map((feature, index) => (
+                                             <ListItem key={index} component={Link} href={`/docs#${feature.name!}`} sx={{ cursor: "pointer" }}>
+                                                  <ListItemIcon>
+                                                       <CheckCircleIcon fontSize="small" color="success" />
+                                                  </ListItemIcon>
+                                                  <ListItemText primary={feature.name} sx={{ color: theme.palette.primary.main }} />
+                                             </ListItem>
+                                        ))}
+                                   </List>
+
+                              </Typography>
+                         </Box>
                     </CardContent>
                </Card>
+               {/* Cancel Confirmation Dialog */}
+               <Dialog open={confirmCancelDialogOpen} onClose={() => handleDialogToggle("confirmCancel", false)}>
+                    <DialogTitle>Confirm Cancellation</DialogTitle>
+                    <DialogContent>
+                         <DialogContentText>
+                              Please confirm that you want to cancel your subscription. This action cannot be undone.
+                         </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                         <Button onClick={() => handleDialogToggle("confirmCancel", false)} color="primary" disabled={isProcessing}>Go Back</Button>
+                         <Button onClick={handleCancelSubscription} color="error" disabled={isProcessing} startIcon={isProcessing ? <CircularProgress size={20} /> : null}>
+                              {isProcessing ? "Processing..." : "Confirm Cancellation"}
+                         </Button>
+                    </DialogActions>
+               </Dialog>
+
+               {/* Upgrade Plan Dialog */}
+               <Dialog open={upgradeDialogOpen} onClose={() => handleDialogToggle("upgrade", false)}>
+                    <DialogTitle>Upgrade Your Plan</DialogTitle>
+                    <DialogContent>
+                         <DialogContentText>
+                              You are about to upgrade your subscription plan. You will be redirected to our pricing page to select a new plan.
+                         </DialogContentText>
+                         <Alert severity="info" sx={{ mt: 2 }}>
+                              Your current plan will remain active until you select and confirm a new plan.
+                         </Alert>
+                    </DialogContent>
+                    <DialogActions>
+                         <Button onClick={() => handleDialogToggle("upgrade", false)} color="primary" disabled={isProcessing}>Cancel</Button>
+                         <Button onClick={handleUpgradeSubscription} color="primary" variant="contained" disabled={isProcessing} startIcon={isProcessing ? <CircularProgress size={20} /> : null}>
+                              {isProcessing ? "Processing..." : "Continue to Upgrade"}
+                         </Button>
+                    </DialogActions>
+               </Dialog>
           </Box>
      )
 }

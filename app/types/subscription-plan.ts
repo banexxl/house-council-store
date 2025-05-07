@@ -13,8 +13,8 @@ export type SubscriptionPlan = {
      is_discounted: boolean;
      discount_percentage: number;
      features?: Feature[];
-     base_price_per_month: number;
-     total_price_per_month: number;
+     base_price: number;
+     total_price: number;
 };
 
 export const subscriptionPlanInitialValues: SubscriptionPlan = {
@@ -28,8 +28,8 @@ export const subscriptionPlanInitialValues: SubscriptionPlan = {
      is_discounted: false,
      discount_percentage: 0,
      features: [],
-     base_price_per_month: 0,
-     total_price_per_month: 0
+     base_price: 0,
+     total_price: 0
 };
 
 export const subscriptionPlanValidationSchema = Yup.object({
@@ -40,8 +40,8 @@ export const subscriptionPlanValidationSchema = Yup.object({
      annually_discount_percentage: Yup.number().min(0, "Must be positive").max(100, "Must be 100 or less"),
      is_discounted: Yup.boolean(),
      discount_percentage: Yup.number().min(0, "Must be positive").max(100, "Must be 100 or less"),
-     base_price_per_month: Yup.number().min(0, "Must be positive").max(1000000, "Must be 1,000,000 or less"),
-     total_price_per_month: Yup.number().min(0, "Must be positive").max(1000000, "Must be 1,000,000 or less")
+     base_price: Yup.number().min(0, "Must be positive").max(1000000, "Must be 1,000,000 or less"),
+     total_price: Yup.number().min(0, "Must be positive").max(1000000, "Must be 1,000,000 or less")
 })
 
 export type SubscriptionStatus = 'trialing' | 'active' | 'canceled' | 'past_due'; // extend if needed
