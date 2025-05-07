@@ -14,6 +14,7 @@ import {
      ListItemIcon,
      ListItemText,
      Grid,
+     useTheme,
 } from "@mui/material"
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline"
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday"
@@ -21,6 +22,7 @@ import CreditCardIcon from "@mui/icons-material/CreditCard"
 import AccountCircleIcon from "@mui/icons-material/AccountCircle"
 import DescriptionIcon from "@mui/icons-material/Description"
 import Animate from "@/app/components/animation-framer-motion"
+import Link from "next/link"
 
 interface SubscriptionSuccessPageProps {
      planId: string
@@ -38,7 +40,7 @@ export default function SubscriptionSuccessPage({
      dashboardUrl
 }: SubscriptionSuccessPageProps) {
      const router = useRouter()
-
+     const theme = useTheme();
      // Calculate trial end date (30 days from now)
      const trialEndDate = new Date()
      trialEndDate.setDate(trialEndDate.getDate() + 30)
@@ -76,123 +78,142 @@ export default function SubscriptionSuccessPage({
                                    <Typography variant="h3" gutterBottom>
                                         {isTrial ? "Your Free Trial Has Started!" : "Subscription Successful!"}
                                    </Typography>
-                                   <Typography variant="h6" color="text.secondary">
+                                   <Typography variant="subtitle1">
                                         {isTrial
-                                             ? `You now have access to all ${planName} plan features for the next 30 days.`
-                                             : `You now have full access to all ${planName} plan features.`}
+                                             ? <>You now have access to all <span style={{ color: theme.palette.primary.main }}>{planName}</span> plan features for the next 30 days.</>
+                                             : <>You now have full access to all <span style={{ color: theme.palette.primary.main }}>{planName}</span> plan features.</>}
                                    </Typography>
                               </Box>
 
-                              <Grid container spacing={4}>
+                              {/* Top grid row: Subscription Details + Next Steps */}
+                              <Grid container spacing={6}>
                                    <Grid size={{ xs: 12, md: 6 }}>
-                                        <Box sx={{ mb: 4 }}>
-                                             <Typography variant="h5" gutterBottom>
-                                                  {isTrial ? "Trial Details" : "Subscription Details"}
-                                             </Typography>
-                                             <Divider sx={{ mb: 3 }} />
-
-                                             <List>
-                                                  <ListItem>
-                                                       <ListItemIcon>
-                                                            <DescriptionIcon color="primary" />
-                                                       </ListItemIcon>
-                                                       <ListItemText primary="Plan" secondary={planName} />
-                                                  </ListItem>
-                                                  <ListItem>
-                                                       <ListItemIcon>
-                                                            <AccountCircleIcon color="primary" />
-                                                       </ListItemIcon>
-                                                       <ListItemText primary="Account" secondary={userEmail} />
-                                                  </ListItem>
-                                                  {isTrial && (
-                                                       <>
-                                                            <ListItem>
-                                                                 <ListItemIcon>
-                                                                      <CalendarTodayIcon color="primary" />
-                                                                 </ListItemIcon>
-                                                                 <ListItemText primary="Trial End Date" secondary={formattedTrialEndDate} />
-                                                            </ListItem>
-                                                            <ListItem>
-                                                                 <ListItemIcon>
-                                                                      <CreditCardIcon color="primary" />
-                                                                 </ListItemIcon>
-                                                                 <ListItemText primary="First Billing Date" secondary={formattedBillingDate} />
-                                                            </ListItem>
-                                                       </>
-                                                  )}
-                                             </List>
-                                        </Box>
-
-                                        <Box sx={{ mb: 4 }}>
-                                             <Typography variant="h5" gutterBottom>
-                                                  Next Steps
-                                             </Typography>
-                                             <Divider sx={{ mb: 3 }} />
-
-                                             <List>
-                                                  <ListItem>
-                                                       <ListItemIcon>
-                                                            <CheckCircleOutlineIcon color="primary" />
-                                                       </ListItemIcon>
-                                                       <ListItemText
-                                                            primary="Set up your profile"
-                                                            secondary="Complete your profile to get the most out of our platform"
-                                                       />
-                                                  </ListItem>
-                                                  <ListItem>
-                                                       <ListItemIcon>
-                                                            <CheckCircleOutlineIcon color="primary" />
-                                                       </ListItemIcon>
-                                                       <ListItemText
-                                                            primary="Explore the dashboard"
-                                                            secondary="Familiarize yourself with all the features available to you"
-                                                       />
-                                                  </ListItem>
-                                                  <ListItem>
-                                                       <ListItemIcon>
-                                                            <CheckCircleOutlineIcon color="primary" />
-                                                       </ListItemIcon>
-                                                       <ListItemText
-                                                            primary="Invite your team"
-                                                            secondary="Add other council members to collaborate effectively"
-                                                       />
-                                                  </ListItem>
-                                             </List>
-                                        </Box>
+                                        <Typography variant="h5" gutterBottom>
+                                             {isTrial ? "Trial Details" : "Subscription Details"}
+                                        </Typography>
+                                        <Divider sx={{ mb: 3 }} />
+                                        <List sx={{ pl: 1 }}>
+                                             <ListItem disableGutters sx={{ pb: 1 }}>
+                                                  <ListItemIcon sx={{ minWidth: 36 }}>
+                                                       <DescriptionIcon color="primary" />
+                                                  </ListItemIcon>
+                                                  <ListItemText primary="Plan" secondary={planName} />
+                                             </ListItem>
+                                             <ListItem disableGutters sx={{ pb: 1 }}>
+                                                  <ListItemIcon sx={{ minWidth: 36 }}>
+                                                       <AccountCircleIcon color="primary" />
+                                                  </ListItemIcon>
+                                                  <ListItemText primary="Account" secondary={userEmail} />
+                                             </ListItem>
+                                             {isTrial && (
+                                                  <>
+                                                       <ListItem disableGutters sx={{ pb: 1 }}>
+                                                            <ListItemIcon sx={{ minWidth: 36 }}>
+                                                                 <CalendarTodayIcon color="primary" />
+                                                            </ListItemIcon>
+                                                            <ListItemText primary="Trial End Date" secondary={formattedTrialEndDate} />
+                                                       </ListItem>
+                                                       <ListItem disableGutters sx={{ pb: 1 }}>
+                                                            <ListItemIcon sx={{ minWidth: 36 }}>
+                                                                 <CreditCardIcon color="primary" />
+                                                            </ListItemIcon>
+                                                            <ListItemText primary="First Billing Date" secondary={formattedBillingDate} />
+                                                       </ListItem>
+                                                  </>
+                                             )}
+                                        </List>
                                    </Grid>
 
                                    <Grid size={{ xs: 12, md: 6 }}>
-                                        <Box sx={{ position: "relative", height: 300, mb: 4 }}>
-                                             <Image
-                                                  src="/cards/ty-card.png"
-                                                  alt="Dashboard Preview"
-                                                  fill
-                                                  style={{ objectFit: "contain", borderRadius: "8px" }}
-                                             />
-                                        </Box>
-
-                                        <Box sx={{ textAlign: "center", mt: 4 }}>
-                                             <Typography variant="h6" gutterBottom>
-                                                  Ready to get started?
-                                             </Typography>
-                                             <Button
-                                                  variant="contained"
-                                                  size="large"
-                                                  onClick={() => router.push(dashboardUrl)}
-                                                  sx={{ mb: 2, minWidth: 200 }}
-                                             >
-                                                  Go to Dashboard
-                                             </Button>
-                                             <Typography variant="body2" color="text.secondary">
-                                                  Need help? Check out our <Button variant="text">documentation</Button> or{" "}
-                                                  <Button variant="text">contact support</Button>.
-                                             </Typography>
-                                        </Box>
+                                        <Typography variant="h5" gutterBottom>
+                                             Next Steps
+                                        </Typography>
+                                        <Divider sx={{ mb: 3 }} />
+                                        <List sx={{ pl: 1 }}>
+                                             <ListItem disableGutters sx={{ pb: 1 }}>
+                                                  <ListItemIcon sx={{ minWidth: 36 }}>
+                                                       <CheckCircleOutlineIcon color="primary" />
+                                                  </ListItemIcon>
+                                                  <ListItemText
+                                                       primary="Set up your profile"
+                                                       secondary="Complete your profile to get the most out of our platform"
+                                                  />
+                                             </ListItem>
+                                             <ListItem disableGutters sx={{ pb: 1 }}>
+                                                  <ListItemIcon sx={{ minWidth: 36 }}>
+                                                       <CheckCircleOutlineIcon color="primary" />
+                                                  </ListItemIcon>
+                                                  <ListItemText
+                                                       primary="Explore the dashboard"
+                                                       secondary="Familiarize yourself with all the features available to you"
+                                                  />
+                                             </ListItem>
+                                             <ListItem disableGutters sx={{ pb: 1 }}>
+                                                  <ListItemIcon sx={{ minWidth: 36 }}>
+                                                       <CheckCircleOutlineIcon color="primary" />
+                                                  </ListItemIcon>
+                                                  <ListItemText
+                                                       primary="Invite your team"
+                                                       secondary="Add other council members to collaborate effectively"
+                                                  />
+                                             </ListItem>
+                                        </List>
                                    </Grid>
                               </Grid>
+
+                              {/* Bottom row: Image and CTA */}
+                              <Box>
+                                   <Box sx={{ height: 400, position: "relative", mb: 4 }}>
+                                        <Image
+                                             src="/cards/ty-card.png"
+                                             alt="Thank You"
+                                             fill
+                                             style={{ objectFit: "contain", borderRadius: "8px" }}
+                                        />
+                                   </Box>
+
+                                   <Box sx={{ textAlign: "center" }}>
+                                        <Typography variant="h6" gutterBottom>
+                                             Ready to get started?
+                                        </Typography>
+                                        <Button
+                                             variant="contained"
+                                             size="large"
+                                             onClick={() => window.open(dashboardUrl, '_blank')}
+                                             sx={{
+                                                  mb: 2,
+                                                  minWidth: 200,
+                                                  animation: "pulse 2s infinite",
+                                                  "@keyframes pulse": {
+                                                       "0%": { transform: "scale(1)" },
+                                                       "50%": { transform: "scale(1.05)" },
+                                                       "100%": { transform: "scale(1)" }
+                                                  }
+                                             }}
+                                        >
+                                             Go to Dashboard
+                                        </Button>
+                                        <Typography variant="body2" color="text.secondary">
+                                             Need help? Check out our{" "}
+                                             <Link href="/docs" passHref>
+                                                  <Typography variant="body2" color="primary" component="a">
+                                                       documentation
+                                                  </Typography>
+                                             </Link>{" "}
+                                             or{" "}
+                                             <Link href="/contact" passHref>
+                                                  <Typography variant="body2" color="primary" component="a">
+                                                       contact support
+                                                  </Typography>
+                                             </Link>.
+                                        </Typography>
+                                   </Box>
+                              </Box>
                          </Box>
                     </Paper>
                </Animate>
           </Container>
      )
+
+
 }
