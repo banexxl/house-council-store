@@ -197,7 +197,7 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                    <Typography variant="subtitle2" color="text.secondary">
                                         Mobile Phone Number
                                    </Typography>
-                                   <Typography variant="body1">{userData.client.phone}</Typography>
+                                   <Typography variant="body1">{userData.client.mobile_phone}</Typography>
                               </Grid>
 
                               <Grid size={{ xs: 12, md: 6 }}>

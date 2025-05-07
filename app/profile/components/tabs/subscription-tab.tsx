@@ -10,7 +10,8 @@ import {
      ListItem,
      ListItemIcon,
      ListItemText,
-     useTheme
+     useTheme,
+     Tooltip
 } from "@mui/material"
 import {
      CalendarToday as CalendarTodayIcon,
@@ -34,6 +35,7 @@ interface SubscriptionTabProps {
 }
 
 export default function SubscriptionTab({ clientSubscriptionObject, payment, subsrciptioFeatures }: SubscriptionTabProps) {
+     console.log('clientSubscriptionObject', clientSubscriptionObject);
 
      const theme = useTheme()
      const router = useRouter()
@@ -199,11 +201,13 @@ export default function SubscriptionTab({ clientSubscriptionObject, payment, sub
 
                                    <List dense={true}>
                                         {subsrciptioFeatures?.features.map((feature, index) => (
-                                             <ListItem key={index} component={Link} href={`/docs#${feature.name!}`} sx={{ cursor: "pointer" }}>
+                                             <ListItem key={index} component={Link} href={`/docs#${feature.slug!}`} sx={{ cursor: "pointer" }}>
                                                   <ListItemIcon>
                                                        <CheckCircleIcon fontSize="small" color="success" />
                                                   </ListItemIcon>
-                                                  <ListItemText primary={feature.name} sx={{ color: theme.palette.primary.main }} />
+                                                  <Tooltip title={'Learn more about ' + feature.name} placement={'right'}>
+                                                       <ListItemText primary={feature.name} sx={{ color: theme.palette.primary.main }} />
+                                                  </Tooltip>
                                              </ListItem>
                                         ))}
                                    </List>

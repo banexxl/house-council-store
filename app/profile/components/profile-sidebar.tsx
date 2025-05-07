@@ -39,7 +39,6 @@ import { useRouter } from "next/navigation"
 import { Client } from "@/app/types/client"
 import { User } from "@supabase/supabase-js"
 import { ClientSubscription, SubscriptionPlan } from "@/app/types/subscription-plan"
-import { Feature } from "@/app/types/feature"
 import { logoutUserAction } from "../account-action"
 
 export interface ActivityItem {
@@ -182,8 +181,16 @@ export default function ProfileSidebar({ userData, clientSubscriptionObject, rec
                                    <ListItemIcon>
                                         <EmailIcon fontSize="small" />
                                    </ListItemIcon>
-                                   <ListItemText primary={userData.client.email} secondary={userData.session.confirmed_at ? "Verified" : "Not verified"} />
-                                   {userData.client.is_verified && <VerifiedUserIcon color="success" fontSize="small" />}
+                                   <ListItemText
+                                        primary={
+                                             <Typography variant="body2" noWrap sx={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                                  {userData.client.email}
+                                             </Typography>
+                                        }
+                                        secondary={userData.session.confirmed_at ? "Verified" : "Not verified"}
+                                   />
+                                   {userData.client.is_verified &&
+                                        <VerifiedUserIcon color="success" fontSize="small" />}
                               </ListItem>
 
                               <ListItem>

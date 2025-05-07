@@ -24,8 +24,8 @@ import {
 } from "@mui/material"
 import CheckIcon from "@mui/icons-material/Check"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
-import { Toaster } from "react-hot-toast"
-import { SubscriptionPlan } from "../types/subscription-plan"
+import toast, { Toaster } from "react-hot-toast"
+import { ClientSubscription, SubscriptionPlan } from "../types/subscription-plan"
 import { Feature } from "../types/feature"
 import { useRouter } from "next/navigation"
 import Animate from "@/app/components/animation-framer-motion"
@@ -51,9 +51,11 @@ const faqs = [
 
 interface PricingPageProps {
      subscriptionPlans: SubscriptionPlan[]
+     clientSubscriptionPlanData?: ClientSubscription & { subscription_plan: SubscriptionPlan } | null
 }
 
-export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans }) => {
+export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, clientSubscriptionPlanData }) => {
+     console.log('clientSubscriptionPlanData', clientSubscriptionPlanData);
 
      const router = useRouter()
      const [billingCycle, setBillingCycle] = useState<"monthly" | "annually">("monthly")
@@ -66,6 +68,12 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans }) =
      }
 
      const handleStartFreeTrial = (plan: SubscriptionPlan, index: number) => {
+
+          if (clientSubscriptionPlanData && clientSubscriptionPlanData.status === "trialing") {
+               toast.error("You are currently in a free trial. Please wait for it to finish before starting a new one.")
+               return
+          }
+
           setLoadingIndex(index);
           router.push(`/pricing/subscription-plan-purchase?plan_id=${plan.id}&billing_cycle=${billingCycle}`, {
                scroll: false,
