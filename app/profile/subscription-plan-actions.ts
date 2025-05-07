@@ -161,7 +161,7 @@ export const subscribeClientAction = async (
      if (error) {
           await logServerAction({
                user_id: userId ?? '',
-               action: "Subscribe Action",
+               action: "Subscribe Action Error",
                payload: { clientId, subscriptionPlanId },
                status: "fail",
                error: error.message,
@@ -173,7 +173,7 @@ export const subscribeClientAction = async (
 
      await logServerAction({
           user_id: userId ?? '',
-          action: "Subscribe Action",
+          action: "Subscribtion Action Successful",
           payload: { clientId, subscriptionPlanId },
           status: "success",
           error: "",
