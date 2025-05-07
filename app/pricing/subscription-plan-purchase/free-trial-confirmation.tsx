@@ -148,7 +148,7 @@ export default function FreeTrialConfirmation({ subscriptionPlan, billingCycle, 
                                              Price after trial
                                         </Typography>
                                         <Typography variant="h6">
-                                             ${subscriptionPlan.base_price_per_month.toFixed(2)}/{billingCycle}
+                                             ${subscriptionPlan.base_price.toFixed(2)}/{billingCycle}
                                         </Typography>
                                    </Box>
 
