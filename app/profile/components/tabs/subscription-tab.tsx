@@ -176,14 +176,23 @@ export default function SubscriptionTab({ clientSubscriptionObject, payment, sub
                </Card>
                <Card>
                     <CardContent>
-                         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                              <Typography variant="h6">
-                                   Features Included in {' '}
-                                   <Typography component="span" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
-                                        {subsrciptioFeatures?.name}
-                                   </Typography> Plan:
-                              </Typography>
-                         </Box>
+                         {!subsrciptioFeatures && (
+                              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                                   <Typography variant="h6">
+                                        No Subscription plan selected...
+                                   </Typography>
+                              </Box>
+                         )}
+                         {subsrciptioFeatures && (
+                              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                                   <Typography variant="h6">
+                                        Features Included in {' '}
+                                        <Typography component="span" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
+                                             {subsrciptioFeatures?.name}
+                                        </Typography> Plan:
+                                   </Typography>
+                              </Box>
+                         )}
 
                          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
                               <Typography variant="body1" color="text.secondary">

@@ -22,8 +22,6 @@ export type ErrorType = {
 }
 export const registerUser = async (values: RegisterFormValues): Promise<{ success: boolean, error?: ErrorType }> => {
 
-     const hashedPassword = await hashPassword(values.password);
-
      if (!values.email || !values.password || !values.confirm_password || !values.contact_person) {
           return { success: false, error: { code: 'VALIDATION_ERROR', details: 'All fields are required', hint: null, message: 'All fields are required' } };
      }
@@ -49,7 +47,6 @@ export const registerUser = async (values: RegisterFormValues): Promise<{ succes
           type: '3cb057f5-32c1-423b-a549-5c28a89c6907',
           client_status: '6f0f38ed-bd14-4f84-9718-1e37fe0b7027',
           role_id: '01054864-19ab-4d52-ba1e-59ab35858349',
-          password: hashedPassword,
           has_accepted_terms_and_conditions: values.has_accepted_terms_and_conditions,
           has_accepted_privacy_policy: values.has_accepted_privacy_policy,
           has_accepted_marketing: values.has_accepted_marketing

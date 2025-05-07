@@ -46,9 +46,9 @@ export default function FreeTrialConfirmation({ subscriptionPlan, billingCycle, 
           router.push("/auth/sign-in")
      }
 
-     // Calculate trial end date (14 days from now)
+     // Calculate trial end date (30 days from now)
      const trialEndDate = new Date()
-     trialEndDate.setDate(trialEndDate.getDate() + 14)
+     trialEndDate.setDate(trialEndDate.getDate() + 30)
      const formattedTrialEndDate = trialEndDate.toLocaleDateString("en-US", {
           year: "numeric",
           month: "long",
@@ -148,7 +148,7 @@ export default function FreeTrialConfirmation({ subscriptionPlan, billingCycle, 
                                              Price after trial
                                         </Typography>
                                         <Typography variant="h6">
-                                             ${subscriptionPlan.base_price.toFixed(2)}/{billingCycle}
+                                             ${subscriptionPlan.total_price.toFixed(2)}/{billingCycle}
                                         </Typography>
                                    </Box>
 

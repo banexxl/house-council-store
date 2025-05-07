@@ -58,20 +58,22 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans }) =
      const router = useRouter()
      const [billingCycle, setBillingCycle] = useState<"monthly" | "annually">("monthly")
      const [loading, setLoading] = useState(false)
+     const [loadingIndex, setLoadingIndex] = useState<number | null>(null);
      const theme = useTheme()
 
      const handleBillingCycleChange = (event: React.SyntheticEvent, newValue: "monthly" | "annually") => {
           setBillingCycle(newValue)
      }
 
-     const handleStartFreeTrial = (plan: SubscriptionPlan) => {
-          setLoading(true)
+     const handleStartFreeTrial = (plan: SubscriptionPlan, index: number) => {
+          setLoadingIndex(index);
           router.push(`/pricing/subscription-plan-purchase?plan_id=${plan.id}&billing_cycle=${billingCycle}`, {
                scroll: false,
           })
 
           setTimeout(() => {
                setLoading(false)
+               setLoadingIndex(null)
           }, 3000)
      }
 
@@ -103,7 +105,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans }) =
                               )}
 
                               <Grid container spacing={4} justifyContent="center">
-                                   {subscriptionPlans.map((plan) => {
+                                   {subscriptionPlans.map((plan, index) => {
                                         const isAnnual = billingCycle === "annually";
                                         const isBilledYearly = plan.is_billed_annually;
 
@@ -173,8 +175,9 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans }) =
                                                             <Button
                                                                  variant="contained"
                                                                  fullWidth
-                                                                 onClick={() => handleStartFreeTrial(plan)}
-                                                                 loading={loading}
+                                                                 onClick={() => handleStartFreeTrial(plan, index)}
+                                                                 disabled={loadingIndex !== null && loadingIndex !== index}
+                                                                 loading={loadingIndex === index}
                                                             >
                                                                  Start Free Trial
                                                             </Button>

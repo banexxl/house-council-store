@@ -39,9 +39,9 @@ export default function SubscriptionSuccessPage({
 }: SubscriptionSuccessPageProps) {
      const router = useRouter()
 
-     // Calculate trial end date (14 days from now)
+     // Calculate trial end date (30 days from now)
      const trialEndDate = new Date()
-     trialEndDate.setDate(trialEndDate.getDate() + 14)
+     trialEndDate.setDate(trialEndDate.getDate() + 30)
      const formattedTrialEndDate = trialEndDate.toLocaleDateString("en-US", {
           year: "numeric",
           month: "long",
@@ -78,7 +78,7 @@ export default function SubscriptionSuccessPage({
                                    </Typography>
                                    <Typography variant="h6" color="text.secondary">
                                         {isTrial
-                                             ? `You now have access to all ${planName} plan features for the next 14 days.`
+                                             ? `You now have access to all ${planName} plan features for the next 30 days.`
                                              : `You now have full access to all ${planName} plan features.`}
                                    </Typography>
                               </Box>
