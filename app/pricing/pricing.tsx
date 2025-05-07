@@ -75,6 +75,10 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans }) =
           }, 3000)
      }
 
+     // Determine if ANY plan supports annual billing
+     const hasAnnualPlans = subscriptionPlans.some((plan) => plan.is_billed_annually);
+
+
      return (
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
                <Animate>
@@ -89,35 +93,32 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans }) =
                                    </Typography>
                               </Box>
 
-                              <Box sx={{ display: "flex", justifyContent: "center", mb: 6 }}>
-                                   <Tabs value={billingCycle} onChange={handleBillingCycleChange}>
-                                        <Tab label="Monthly" value="monthly" />
-                                        <Tab label="Annually (Save more)" value="annually" />
-                                   </Tabs>
-                              </Box>
+                              {hasAnnualPlans && (
+                                   <Box sx={{ display: "flex", justifyContent: "center", mb: 6 }}>
+                                        <Tabs value={billingCycle} onChange={handleBillingCycleChange}>
+                                             <Tab label="Monthly" value="monthly" />
+                                             <Tab label="Annually (Save more)" value="annually" />
+                                        </Tabs>
+                                   </Box>
+                              )}
+
                               <Grid container spacing={4} justifyContent="center">
                                    {subscriptionPlans.map((plan) => {
                                         const isAnnual = billingCycle === "annually";
                                         const isBilledYearly = plan.is_billed_annually;
 
+                                        // Price logic based on plan configuration
                                         const price = isBilledYearly
                                              ? isAnnual
-                                                  ? plan.total_price // Show as-is for yearly billing (e.g., 600)
-                                                  : Math.round(plan.total_price / 12) // Convert annual to monthly (600 / 12 = 50)
+                                                  ? plan.total_price // e.g., 600
+                                                  : Math.round(plan.total_price / 12) // e.g., 600 / 12 = 50
                                              : isAnnual
                                                   ? Math.round(plan.total_price * 12 * (1 - (plan.annually_discount_percentage || 0) / 100))
-                                                  : plan.total_price; // Monthly billing, no conversion needed
-
+                                                  : plan.total_price;
 
                                         return (
                                              <Grid key={plan.id} size={{ xs: 12, sm: 6, md: 4 }}>
-                                                  <Card
-                                                       sx={{
-                                                            height: "100%",
-                                                            display: "flex",
-                                                            flexDirection: "column",
-                                                       }}
-                                                  >
+                                                  <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
                                                        <CardContent sx={{ flexGrow: 1 }}>
                                                             <Typography variant="h5" gutterBottom>
                                                                  {plan.name}
@@ -128,46 +129,62 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans }) =
 
                                                             <Box sx={{ my: 3 }}>
                                                                  <Typography variant="h3">
-                                                                      ${price}
-                                                                      <Typography
-                                                                           component="span"
-                                                                           variant="body2"
-                                                                           color="text.secondary"
-                                                                           sx={{ ml: 1 }}
-                                                                      >
-                                                                           /month
-                                                                      </Typography>
+                                                                      ${isBilledYearly ? price : plan.total_price}
+                                                                      {isBilledYearly && (
+                                                                           <Typography
+                                                                                component="span"
+                                                                                variant="body2"
+                                                                                color="text.secondary"
+                                                                                sx={{ ml: 1 }}
+                                                                           >
+                                                                                {isAnnual ? "/year" : "/month"}
+                                                                           </Typography>
+                                                                      )}
                                                                  </Typography>
-                                                                 {isAnnual && (
+
+                                                                 {!isBilledYearly && (
                                                                       <Typography variant="caption" color="text.secondary">
-                                                                           Billed annually (${price * 12})
+                                                                           Billed monthly only
+                                                                      </Typography>
+                                                                 )}
+
+                                                                 {isBilledYearly && (
+                                                                      <Typography variant="caption" color="text.secondary">
+                                                                           {isAnnual
+                                                                                ? `Equivalent to $${Math.round(plan.total_price / 12)} /month`
+                                                                                : `Billed annually ($${plan.total_price})`}
                                                                       </Typography>
                                                                  )}
                                                             </Box>
 
                                                             <List dense>
-                                                                 {
-                                                                      plan.features?.map((feature: Feature) => (
-                                                                           <ListItem key={feature.id} disablePadding sx={{ py: 0.5 }}>
-                                                                                <ListItemIcon sx={{ minWidth: 32 }}>
-                                                                                     <CheckIcon color="primary" fontSize="small" />
-                                                                                </ListItemIcon>
-                                                                                <ListItemText primary={feature.name} />
-                                                                           </ListItem>
-                                                                      ))}
+                                                                 {plan.features?.map((feature: Feature) => (
+                                                                      <ListItem key={feature.id} disablePadding sx={{ py: 0.5 }}>
+                                                                           <ListItemIcon sx={{ minWidth: 32 }}>
+                                                                                <CheckIcon color="primary" fontSize="small" />
+                                                                           </ListItemIcon>
+                                                                           <ListItemText primary={feature.name} />
+                                                                      </ListItem>
+                                                                 ))}
                                                             </List>
                                                        </CardContent>
 
                                                        <CardActions sx={{ p: 2, pt: 0 }}>
-                                                            <Button variant="contained" fullWidth onClick={() => handleStartFreeTrial(plan)} loading={loading}>
+                                                            <Button
+                                                                 variant="contained"
+                                                                 fullWidth
+                                                                 onClick={() => handleStartFreeTrial(plan)}
+                                                                 loading={loading}
+                                                            >
                                                                  Start Free Trial
                                                             </Button>
                                                        </CardActions>
                                                   </Card>
                                              </Grid>
-                                        )
+                                        );
                                    })}
                               </Grid>
+
 
                               <Box sx={{ mt: 10, mb: 6, textAlign: "center" }}>
                                    <Typography variant="h4" gutterBottom>
