@@ -35,7 +35,6 @@ interface SubscriptionTabProps {
 }
 
 export default function SubscriptionTab({ clientSubscriptionObject, payment, subsrciptioFeatures }: SubscriptionTabProps) {
-     console.log('clientSubscriptionObject', clientSubscriptionObject);
 
      const theme = useTheme()
      const router = useRouter()
