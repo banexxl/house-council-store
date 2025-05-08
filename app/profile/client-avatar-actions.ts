@@ -12,12 +12,12 @@ function extractInfoFromUrl(url: string) {
 }
 
 export async function uploadClientAvatarAction(formData: FormData): Promise<{ success: boolean, message: string, awsUrl?: string }> {
+
      const file = formData.get('file') as string;
      const title = formData.get('title') as string;
      const extension = formData.get('extension') as string;
      const fileName = formData.get('fileName') as string;
      const folderName = formData.get('folderName') as string;
-     console.log('formData', formData);
 
      if (!file || !title || !extension || !fileName || !folderName) {
           throw new Error('Missing file, title, or extension');
@@ -54,7 +54,6 @@ export async function uploadClientAvatarAction(formData: FormData): Promise<{ su
 
      try {
           const uploadedFile = await s3.upload(params).promise();
-          console.log('uploadedFile', uploadedFile);
 
           return { success: true, message: 'File uploaded successfully', awsUrl: uploadedFile.Location };
      } catch (error) {

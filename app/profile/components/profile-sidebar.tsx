@@ -28,7 +28,6 @@ import EditIcon from "@mui/icons-material/Edit"
 import LockIcon from "@mui/icons-material/Lock"
 import SecurityIcon from "@mui/icons-material/Security"
 import MoreVertIcon from "@mui/icons-material/MoreVert"
-import CheckCircleIcon from "@mui/icons-material/CheckCircle"
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera"
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser"
 import EmailIcon from "@mui/icons-material/Email"
@@ -122,7 +121,7 @@ export default function ProfileSidebar({ userData, clientSubscriptionObject, rec
                     formData.append('title', userData.client.name);
                     formData.append('extension', extension);
                     formData.append('fileName', file.name);
-                    formData.append('folderName', userData.client.id); // or any unique folder id
+                    formData.append('folderName', userData.client.name); // or any unique folder id
 
                     const uploadResponse = await uploadClientAvatarAction(formData);
 
@@ -232,11 +231,11 @@ export default function ProfileSidebar({ userData, clientSubscriptionObject, rec
                                                                  const { width, height } = img;
                                                                  console.log('file size', file.size, 'width', width, 'height', height);
 
-                                                                 if (file.size <= 5000000 && width <= 2000 && height <= 2000) {
+                                                                 if (file.size <= 5000000 && width <= 5000 && height <= 5000) {
                                                                       handleUpdateAvatar(file);
                                                                  } else {
                                                                       setImageLoading(false);
-                                                                      toast.error("Image must be < 5MB and < 2000x2000px");
+                                                                      toast.error("Image must be < 5MB and < 5000x5000px");
                                                                  }
                                                             };
                                                        }
