@@ -58,6 +58,8 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
      };
 
      const [countries, setCountries] = useState<CountryItem[]>([]);
+     const [selectedMobileCode, setSelectedMobileCode] = useState<CountryItem | null>(null);
+     const [selectedPhoneCode, setSelectedPhoneCode] = useState<CountryItem | null>(null);
 
      useEffect(() => {
           const fetchCountries = async () => {
@@ -104,12 +106,15 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                               }}
                               onSubmit={async (values, { setSubmitting }) => {
                                    setSubmitting(true);
+                                   const fullMobileNumber = `${selectedMobileCode?.dialling_code || ''} ${values.mobile_phone}`;
+                                   const fullPhoneNumber = `${selectedPhoneCode?.dialling_code || ''} ${values.phone}`;
+
                                    try {
                                         const updateAccountActionResponse = await updateAccountAction(userData.client.id, {
                                              contact_person: values.contact_person,
                                              name: values.name,
-                                             mobile_phone: values.mobile_phone,
-                                             phone: values.phone,
+                                             mobile_phone: fullMobileNumber,
+                                             phone: fullPhoneNumber,
                                              address_1: values.address_1
                                         });
 
@@ -157,74 +162,61 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                                   />
                                              </Grid>
 
-                                             <Grid container spacing={2}>
-                                                  {/* Mobile Phone Country Code */}
-                                                  <Grid size={{ xs: 12, md: 3 }}>
-                                                       <Autocomplete
-                                                            options={countries}
-                                                            getOptionLabel={(option) => `${option.country_name} (${option.dialling_code})`}
-                                                            renderOption={(props, option) => (
-                                                                 <li {...props}>
-                                                                      <strong>{option.country_name}</strong>&nbsp;—&nbsp;{option.dialling_code}
-                                                                 </li>
-                                                            )}
-                                                            renderInput={(params) => (
-                                                                 <TextField {...params} label="Mobile Code" />
-                                                            )}
-                                                            onChange={(_, newValue) => {
-                                                                 if (newValue) {
-                                                                      console.log("Mobile Dial Code:", newValue.dialling_code);
-                                                                 }
-                                                            }}
-                                                       />
-                                                  </Grid>
+                                             <Box sx={{ mb: 3 }}>
+                                                  <TextField
+                                                       fullWidth
+                                                       label="Mobile Phone"
+                                                       placeholder="123456789"
+                                                       InputProps={{
+                                                            startAdornment: (
+                                                                 <InputAdornment position="start" sx={{ minWidth: 130 }}>
+                                                                      <Autocomplete
+                                                                           options={countries}
+                                                                           value={selectedMobileCode}
+                                                                           getOptionLabel={(option) => option.dialling_code}
+                                                                           onChange={(_, newValue) => setSelectedMobileCode(newValue)}
+                                                                           renderInput={(params) => (
+                                                                                <TextField
+                                                                                     {...params}
+                                                                                     placeholder="+XXX"
+                                                                                     variant="standard"
+                                                                                     sx={{ width: 100 }}
+                                                                                />
+                                                                           )}
+                                                                      />
+                                                                 </InputAdornment>
+                                                            ),
+                                                       }}
+                                                  />
+                                             </Box>
 
-                                                  {/* Mobile Phone Number */}
-                                                  <Grid size={{ xs: 12, md: 9 }}>
-                                                       <TextField
-                                                            fullWidth
-                                                            name="mobile_phone"
-                                                            label="Mobile Phone"
-                                                            placeholder="123456789"
-                                                       // value={formik.values.mobile_phone}
-                                                       // onChange={formik.handleChange}
-                                                       />
-                                                  </Grid>
-
-                                                  {/* Landline Phone Country Code */}
-                                                  <Grid size={{ xs: 12, md: 3 }}>
-                                                       <Autocomplete
-                                                            options={countries}
-                                                            getOptionLabel={(option) => `${option.country_name} (${option.dialling_code})`}
-                                                            renderOption={(props, option) => (
-                                                                 <li {...props}>
-                                                                      <strong>{option.country_name}</strong>&nbsp;—&nbsp;{option.dialling_code}
-                                                                 </li>
-                                                            )}
-                                                            renderInput={(params) => (
-                                                                 <TextField {...params} label="Phone Code" />
-                                                            )}
-                                                            onChange={(_, newValue) => {
-                                                                 if (newValue) {
-                                                                      console.log("Phone Dial Code:", newValue.dialling_code);
-                                                                 }
-                                                            }}
-                                                       />
-                                                  </Grid>
-
-                                                  {/* Landline Phone Number */}
-                                                  <Grid size={{ xs: 12, md: 9 }}>
-                                                       <TextField
-                                                            fullWidth
-                                                            name="phone"
-                                                            label="Phone"
-                                                            placeholder="987654321"
-                                                       // value={formik.values.phone}
-                                                       // onChange={formik.handleChange}
-                                                       />
-                                                  </Grid>
-                                             </Grid>
-
+                                             <Box>
+                                                  <TextField
+                                                       fullWidth
+                                                       label="Phone"
+                                                       placeholder="987654321"
+                                                       InputProps={{
+                                                            startAdornment: (
+                                                                 <InputAdornment position="start" sx={{ minWidth: 130 }}>
+                                                                      <Autocomplete
+                                                                           options={countries}
+                                                                           value={selectedPhoneCode}
+                                                                           getOptionLabel={(option) => option.dialling_code}
+                                                                           onChange={(_, newValue) => setSelectedPhoneCode(newValue)}
+                                                                           renderInput={(params) => (
+                                                                                <TextField
+                                                                                     {...params}
+                                                                                     placeholder="+XXX"
+                                                                                     variant="standard"
+                                                                                     sx={{ width: 100 }}
+                                                                                />
+                                                                           )}
+                                                                      />
+                                                                 </InputAdornment>
+                                                            ),
+                                                       }}
+                                                  />
+                                             </Box>
 
                                              <Grid size={{ xs: 12, md: 6 }}>
                                                   <TextField
