@@ -217,4 +217,3 @@ export const readClientRecentActivityAction = async (clientEmail: string, client
 
      return { success: true, data }
 }
-

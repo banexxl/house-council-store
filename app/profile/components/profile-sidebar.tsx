@@ -22,6 +22,7 @@ import {
      Badge,
      Menu,
      MenuItem,
+     CircularProgress,
 } from "@mui/material"
 import EditIcon from "@mui/icons-material/Edit"
 import LockIcon from "@mui/icons-material/Lock"
@@ -39,7 +40,8 @@ import { useRouter } from "next/navigation"
 import { Client } from "@/app/types/client"
 import { User } from "@supabase/supabase-js"
 import { ClientSubscription, SubscriptionPlan } from "@/app/types/subscription-plan"
-import { logoutUserAction } from "../account-action"
+import { logoutUserAction, updateAccountAction } from "../account-action"
+import { deleteClientAvatarAction, uploadClientAvatarAction } from "../client-avatar-actions"
 
 export interface ActivityItem {
      id: string
@@ -74,6 +76,7 @@ export const getStatusColor = (status: string) => {
 export default function ProfileSidebar({ userData, clientSubscriptionObject, recentActivity, onEditProfile }: ProfileSidebarProps) {
 
      const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null)
+     const [imageLoading, setImageLoading] = useState<boolean>(false)
      const router = useRouter()
 
      const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -96,6 +99,75 @@ export default function ProfileSidebar({ userData, clientSubscriptionObject, rec
                toast.error("Error logging out")
           }
      }
+
+     const handleUpdateAvatar = async (file: File) => {
+          setImageLoading(true);
+
+          try {
+               const reader = new FileReader();
+
+               reader.onloadend = async () => {
+                    const base64String = reader.result?.toString();
+
+                    if (!base64String) {
+                         toast.error("Failed to read file.");
+                         setImageLoading(false);
+                         return;
+                    }
+
+                    const extension = file.name.split('.').pop()!;
+                    const formData = new FormData();
+
+                    formData.append('file', base64String);
+                    formData.append('title', userData.client.name);
+                    formData.append('extension', extension);
+                    formData.append('fileName', file.name);
+                    formData.append('folderName', userData.client.id); // or any unique folder id
+
+                    const uploadResponse = await uploadClientAvatarAction(formData);
+
+                    if (uploadResponse.success && uploadResponse.awsUrl) {
+                         const updateAccountActionResponse = await updateAccountAction(userData.client.id, {
+                              avatar: uploadResponse.awsUrl,
+                         });
+
+                         if (updateAccountActionResponse.success) {
+                              toast.success("Avatar updated successfully.");
+                         } else {
+                              toast.error("Failed to update account: " + updateAccountActionResponse.error);
+                         }
+                    } else {
+                         toast.error("Upload failed: " + uploadResponse.message);
+                    }
+
+                    setImageLoading(false);
+               };
+
+               reader.readAsDataURL(file);
+          } catch (error) {
+               setImageLoading(false);
+               toast.error("Unexpected error: " + error);
+          }
+     };
+
+     const handleDeleteAvatar = async (awsUrl: string) => {
+          const formData = new FormData();
+          formData.append('awsUrl', awsUrl);
+
+          try {
+               const res = await deleteClientAvatarAction(formData);
+               if (res.success) {
+                    toast.success("Previous avatar deleted.");
+               } else {
+                    toast.error(res.message);
+               }
+          } catch (error) {
+               toast.error("Error deleting avatar: " + error);
+          }
+     };
+
+
+
 
      return (
           <>
@@ -144,22 +216,60 @@ export default function ProfileSidebar({ userData, clientSubscriptionObject, rec
                                    overlap="circular"
                                    anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                                    badgeContent={
-                                        <IconButton
-                                             sx={{
-                                                  bgcolor: "primary.main",
-                                                  color: "white",
-                                                  "&:hover": {
-                                                       bgcolor: "primary.dark",
-                                                  },
-                                                  width: 32,
-                                                  height: 32,
-                                             }}
-                                        >
-                                             <PhotoCameraIcon sx={{ fontSize: 16 }} />
-                                        </IconButton>
+                                        <>
+                                             <input
+                                                  accept="image/*"
+                                                  type="file"
+                                                  style={{ display: "none" }}
+                                                  id="upload-button"
+                                                  onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                                                       const file = event.target.files?.[0];
+                                                       if (file) {
+                                                            setImageLoading(true); // Show loader early
+                                                            const img = new Image();
+                                                            img.src = URL.createObjectURL(file);
+                                                            img.onload = () => {
+                                                                 const { width, height } = img;
+                                                                 console.log('file size', file.size, 'width', width, 'height', height);
+
+                                                                 if (file.size <= 5000000 && width <= 2000 && height <= 2000) {
+                                                                      handleUpdateAvatar(file);
+                                                                 } else {
+                                                                      setImageLoading(false);
+                                                                      toast.error("Image must be < 5MB and < 2000x2000px");
+                                                                 }
+                                                            };
+                                                       }
+                                                  }}
+                                             />
+                                             <label htmlFor="upload-button">
+                                                  <IconButton
+                                                       component="span"
+                                                       sx={{
+                                                            bgcolor: "primary.main",
+                                                            color: "white",
+                                                            "&:hover": {
+                                                                 bgcolor: "primary.dark",
+                                                            },
+                                                            width: 32,
+                                                            height: 32,
+                                                       }}
+                                                  >
+                                                       {imageLoading ? (
+                                                            <CircularProgress size={16} color="inherit" />
+                                                       ) : (
+                                                            <PhotoCameraIcon sx={{ fontSize: 16 }} />
+                                                       )}
+                                                  </IconButton>
+                                             </label>
+                                        </>
                                    }
                               >
-                                   <Avatar src={userData.client.avatar} alt={userData.client.name} sx={{ width: 120, height: 120 }} />
+                                   <Avatar
+                                        src={userData.client.avatar}
+                                        alt={userData.client.name}
+                                        sx={{ width: 120, height: 120 }}
+                                   />
                               </Badge>
                          </Box>
 
