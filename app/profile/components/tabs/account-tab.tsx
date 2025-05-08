@@ -1,6 +1,6 @@
 "use client"
 
-import { Box, Button, Divider, TextField, Typography, Chip, Alert, Stack, Grid, InputAdornment, IconButton, LinearProgress, CircularProgress, Paper } from "@mui/material"
+import { Box, Button, Divider, TextField, Typography, Chip, Alert, Stack, Grid, InputAdornment, IconButton, LinearProgress, CircularProgress, Paper, Autocomplete } from "@mui/material"
 import EditIcon from "@mui/icons-material/Edit"
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser"
 import LogoutIcon from "@mui/icons-material/Logout"
@@ -14,14 +14,24 @@ import { useEffect, useState } from "react"
 import toast from "react-hot-toast"
 import { Form, Formik, useFormik } from "formik"
 import * as Yup from "yup"
-import { resetPasswordWithOldPassword } from "@/app/auth/reset-password/reset-password-actions"
-import { calculatePasswordStrength, getStrengthColor, getStrengthLabel, validationSchemaWithOldPassword } from "@/app/auth/reset-password/reset-password-utils";
 
 interface AccountTabProps {
      userData: { client: Client; session: User }
      editMode: boolean
      setEditMode: (value: boolean) => void
 }
+type CountryCodeData = {
+     [key: string]: {
+          country_name: string;
+          dialling_code: string;
+     };
+};
+
+type CountryItem = {
+     code: string;
+     country_name: string;
+     dialling_code: string;
+};
 
 const accountSchema = Yup.object().shape({
      contact_person: Yup.string().min(2, "Name must be at least 2 characters").required("Full name is required"),
@@ -46,6 +56,35 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                console.error("Error signing out:", error);
           }
      };
+
+     const [countries, setCountries] = useState<CountryItem[]>([]);
+
+     useEffect(() => {
+          const fetchCountries = async () => {
+               const response = await fetch(`https://api.apilayer.com/number_verification/countries/`, {
+                    headers: {
+                         'Content-Type': 'application/json',
+                         'Access-Control-Allow-Origin': '*',
+                         'redirect': 'follow',
+                         'apikey': `${process.env.NEXT_PUBLIC_API_LAYER_KEY}`
+                    },
+               });
+
+               const data: CountryCodeData = await response.json();
+               console.log('data', data);
+
+               const countryList: CountryItem[] = Object.entries(data).map(([code, value]) => ({
+                    code,
+                    country_name: value.country_name,
+                    dialling_code: value.dialling_code,
+               }));
+               console.log('countryList', countryList);
+
+               setCountries(countryList);
+          };
+
+          fetchCountries();
+     }, []);
 
      return (
           <>
@@ -118,29 +157,74 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                                   />
                                              </Grid>
 
-                                             <Grid size={{ xs: 12, md: 6 }}>
-                                                  <TextField
-                                                       fullWidth
-                                                       label="Mobile phone number"
-                                                       name="mobile_phone"
-                                                       value={values.mobile_phone}
-                                                       onChange={handleChange}
-                                                       error={!!errors.mobile_phone}
-                                                       helperText={errors.mobile_phone || ""}
-                                                  />
+                                             <Grid container spacing={2}>
+                                                  {/* Mobile Phone Country Code */}
+                                                  <Grid size={{ xs: 12, md: 3 }}>
+                                                       <Autocomplete
+                                                            options={countries}
+                                                            getOptionLabel={(option) => `${option.country_name} (${option.dialling_code})`}
+                                                            renderOption={(props, option) => (
+                                                                 <li {...props}>
+                                                                      <strong>{option.country_name}</strong>&nbsp;—&nbsp;{option.dialling_code}
+                                                                 </li>
+                                                            )}
+                                                            renderInput={(params) => (
+                                                                 <TextField {...params} label="Mobile Code" />
+                                                            )}
+                                                            onChange={(_, newValue) => {
+                                                                 if (newValue) {
+                                                                      console.log("Mobile Dial Code:", newValue.dialling_code);
+                                                                 }
+                                                            }}
+                                                       />
+                                                  </Grid>
+
+                                                  {/* Mobile Phone Number */}
+                                                  <Grid size={{ xs: 12, md: 9 }}>
+                                                       <TextField
+                                                            fullWidth
+                                                            name="mobile_phone"
+                                                            label="Mobile Phone"
+                                                            placeholder="123456789"
+                                                       // value={formik.values.mobile_phone}
+                                                       // onChange={formik.handleChange}
+                                                       />
+                                                  </Grid>
+
+                                                  {/* Landline Phone Country Code */}
+                                                  <Grid size={{ xs: 12, md: 3 }}>
+                                                       <Autocomplete
+                                                            options={countries}
+                                                            getOptionLabel={(option) => `${option.country_name} (${option.dialling_code})`}
+                                                            renderOption={(props, option) => (
+                                                                 <li {...props}>
+                                                                      <strong>{option.country_name}</strong>&nbsp;—&nbsp;{option.dialling_code}
+                                                                 </li>
+                                                            )}
+                                                            renderInput={(params) => (
+                                                                 <TextField {...params} label="Phone Code" />
+                                                            )}
+                                                            onChange={(_, newValue) => {
+                                                                 if (newValue) {
+                                                                      console.log("Phone Dial Code:", newValue.dialling_code);
+                                                                 }
+                                                            }}
+                                                       />
+                                                  </Grid>
+
+                                                  {/* Landline Phone Number */}
+                                                  <Grid size={{ xs: 12, md: 9 }}>
+                                                       <TextField
+                                                            fullWidth
+                                                            name="phone"
+                                                            label="Phone"
+                                                            placeholder="987654321"
+                                                       // value={formik.values.phone}
+                                                       // onChange={formik.handleChange}
+                                                       />
+                                                  </Grid>
                                              </Grid>
 
-                                             <Grid size={{ xs: 12, md: 6 }}>
-                                                  <TextField
-                                                       fullWidth
-                                                       label="Phone"
-                                                       name="phone"
-                                                       value={values.phone}
-                                                       onChange={handleChange}
-                                                       error={!!errors.phone}
-                                                       helperText={errors.phone || ""}
-                                                  />
-                                             </Grid>
 
                                              <Grid size={{ xs: 12, md: 6 }}>
                                                   <TextField

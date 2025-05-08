@@ -7,7 +7,6 @@ import {
 import SecurityIcon from '@mui/icons-material/Security';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { CountryAutocomplete } from './countries-autocomplete';
 import { createOrUpdateClientBillingInformation } from '../client-billing-information-actions';
 import HelpIcon from '@mui/icons-material/Help';
 import { Client } from '@/app/types/client';

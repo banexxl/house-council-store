@@ -16,16 +16,16 @@ import {
 } from '@mui/material';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import React, { useState } from 'react';
-import { SubscriptionPlan } from '@/app/types/subscription-plan';
-import { BaseEntity } from '@/app/types/base-entity';
 import { Client } from '@/app/types/client';
 import { User } from '@supabase/supabase-js';
-import { Feature } from '@/app/types/feature';
 import { ClientBillingInformation } from '@/app/types/billing-information';
 import { AddCardModal } from '../add-card-modal';
 import { deleteClientBillingInformation, makeCardDefault } from '../../client-billing-information-actions';
 import toast from 'react-hot-toast';
 import { formatExpirationDate } from '@/app/lib/date-helpers';
+import { Formik } from 'formik';
+import { updateAccountAction } from '../../account-action';
+import * as Yup from "yup"
 
 
 interface BillingTabProps {
@@ -155,82 +155,122 @@ export const BillingTab = ({ userData, allClientBillingInformation, binCheckerAP
 
                <Divider sx={{ my: 3 }} />
 
-               {/* Invoice Email Recipient */}
-               <Box >
-                    <Typography variant="h6" gutterBottom>
-                         Invoice Email Recipient
-                    </Typography>
-                    {/* <TextField
-                         fullWidth
-                         placeholder="john@doe.com"
-                         value={emailRecipient}
-                         onChange={(e) => setEmailRecipient(e.target.value)}
-                         type='email'
-                    /> */}
-                    <Typography variant="caption" color="text.secondary">
-                         By default, all your invoices will be sent to your account’s email address. If you want to use a custom email address specifically for receiving invoices, enter it here.
-                    </Typography>
-                    <Box my={2}>
-                         <Button variant="contained">Save</Button>
-                    </Box>
-               </Box>
+               <Formik
+                    validationSchema={
+                         Yup.object().shape({
+                              name: Yup.string().required('Required').max(64),
+                              invoice_email_recipient: Yup.string().email('Invalid email'),
+                              // purchaseOrder: Yup.string().required('Required'),
+                              // taxId: Yup.string().required('Required')
+                         })}
+                    initialValues={{
+                         invoice_email_recipient: userData?.client?.invoice_email_recipient || '',
+                         name: userData?.client?.name || '',
+                         // purchaseOrder: userData?.client?.purchaseOrder || '',
+                         // taxId: userData?.client?.taxId || ''
+                    }}
+                    onSubmit={async (values) => {
+                         const { success } = await updateAccountAction(userData.client.id, {
+                              invoice_email_recipient: values.invoice_email_recipient,
+                              name: values.name,
+                              // purchaseOrder: values.purchaseOrder,
+                              // taxId: values.taxId
+                         })
 
-               {/* Company Name */}
-               <Box >
-                    <Typography variant="h6" gutterBottom>
-                         Company Name
-                    </Typography>
-                    {/* <TextField
-                         fullWidth
-                         value={companyName}
-                         onChange={(e) => setCompanyName(e.target.value)}
-                    /> */}
-                    <Typography variant="caption" color="text.secondary">
-                         Max 64 characters.
-                    </Typography>
-                    <Box my={2}>
-                         <Button variant="contained">Save</Button>
-                    </Box>
-               </Box>
+                         if (success) {
+                              toast.success("Account updated successfully.");
+                         } else {
+                              toast.error("There was a problem updating your account.");
+                         }
+                    }}
+               >
+                    {({ values, handleChange, handleSubmit, handleBlur }) => (
+                         <form onSubmit={handleSubmit}>
+                              {/* Invoice Email Recipient */}
+                              <Box>
+                                   <Typography variant="h6" gutterBottom>
+                                        Invoice Email Recipient
+                                   </Typography>
+                                   <TextField
+                                        fullWidth
+                                        placeholder="john@doe.com"
+                                        name="invoice_email_recipient"
+                                        value={values.invoice_email_recipient}
+                                        onChange={handleChange}
+                                        onBlur={handleBlur}
+                                        type="email"
+                                   />
+                                   <Typography variant="caption" color="text.secondary">
+                                        By default, all your invoices will be sent to your account’s email address. If you want to use a custom email address specifically for receiving invoices, enter it here.
+                                   </Typography>
+                                   <Box my={2}>
+                                        <Button variant="contained" type="submit">Save</Button>
+                                   </Box>
+                              </Box>
 
-               <Divider sx={{ my: 3 }} />
+                              {/* Company Name */}
+                              <Box>
+                                   <Typography variant="h6" gutterBottom>
+                                        Company Name
+                                   </Typography>
+                                   <TextField
+                                        fullWidth
+                                        name="name"
+                                        value={values.name}
+                                        onChange={handleChange}
+                                   />
+                                   <Typography variant="caption" color="text.secondary">
+                                        Max 64 characters.
+                                   </Typography>
+                                   <Box my={2}>
+                                        <Button variant="contained" type="submit">Save</Button>
+                                   </Box>
+                              </Box>
 
-               {/* Invoice Purchase Order */}
-               <Box >
-                    <Typography variant="h6" gutterBottom>
-                         Invoice Purchase Order
-                    </Typography>
-                    {/* <TextField
-                         fullWidth
-                         value={purchaseOrder}
-                         onChange={(e) => setPurchaseOrder(e.target.value)}
-                    /> */}
-                    <Typography variant="caption" color="text.secondary">
-                         Max 64 characters.
-                    </Typography>
-                    <Box my={2}>
-                         <Button variant="contained">Save</Button>
-                    </Box>
-               </Box>
+                              <Divider sx={{ my: 3 }} />
 
-               {/* Tax ID */}
-               <Box >
-                    <Typography variant="h6" gutterBottom>
-                         Tax ID
-                    </Typography>
-                    {/* <TextField
-                         fullWidth
-                         placeholder="EU VAT number"
-                         value={taxId}
-                         onChange={(e) => setTaxId(e.target.value)}
-                    /> */}
-                    <Typography variant="caption" color="text.secondary">
-                         Countries that do not use Tax IDs can leave this blank.
-                    </Typography>
-                    <Box my={2}>
-                         <Button variant="contained">Save</Button>
-                    </Box>
-               </Box>
+                              {/* Invoice Purchase Order */}
+                              {/* <Box>
+                                   <Typography variant="h6" gutterBottom>
+                                        Invoice Purchase Order
+                                   </Typography>
+                                   <TextField
+                                        fullWidth
+                                        name="purchaseOrder"
+                                        value={values.purchaseOrder}
+                                        onChange={handleChange}
+                                   />
+                                   <Typography variant="caption" color="text.secondary">
+                                        Max 64 characters.
+                                   </Typography>
+                                   <Box my={2}>
+                                        <Button variant="contained" type="submit">Save</Button>
+                                   </Box>
+                              </Box> */}
+
+                              {/* Tax ID */}
+                              {/* <Box>
+                                   <Typography variant="h6" gutterBottom>
+                                        Tax ID
+                                   </Typography>
+                                   <TextField
+                                        fullWidth
+                                        placeholder="EU VAT number"
+                                        name="taxId"
+                                        value={values.taxId}
+                                        onChange={handleChange}
+                                   />
+                                   <Typography variant="caption" color="text.secondary">
+                                        Countries that do not use Tax IDs can leave this blank.
+                                   </Typography>
+                                   <Box my={2}>
+                                        <Button variant="contained" type="submit">Save</Button>
+                                   </Box>
+                              </Box> */}
+                         </form>
+                    )}
+               </Formik>
+
                <AddCardModal
                     open={openAddCardModal}
                     onClose={() => setOpenAddCardModal(false)}

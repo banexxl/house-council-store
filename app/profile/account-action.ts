@@ -130,7 +130,6 @@ export const readAccountByEmailAction = async (email: string): Promise<{ client?
 }
 
 export const updateAccountAction = async (id: string, update: Partial<Client>): Promise<{ success: boolean, error?: string, data?: Client }> => {
-     console.log('updateAccountAction', update);
 
      const startTime = Date.now();
 

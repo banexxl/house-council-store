@@ -17,6 +17,7 @@ export interface Client {
   address_2?: string;
   mobile_phone?: string;
   avatar?: string;
+  invoice_email_recipient?: string;
   ////////
   balance?: number;
   has_accepted_marketing?: boolean;
