@@ -35,8 +35,32 @@ type CountryItem = {
 
 const accountSchema = Yup.object().shape({
      contact_person: Yup.string().min(2, "Name must be at least 2 characters").required("Full name is required"),
-     mobile_phone: Yup.string().min(8, "Mobile phone number must be at least 8 characters"),
-     phone: Yup.string().min(8, "Phone number must be at least 8 characters"),
+     mobile_phone: Yup.string()
+          .test(
+               'mobile-phone-required-if-code',
+               'Mobile phone must be at least 8 characters',
+               function (value) {
+                    const { selected_mobile_code } = this.parent;
+                    if (selected_mobile_code) {
+                         return !!value && value.length >= 8;
+                    }
+                    return true; // valid if code is not selected
+               }
+          ),
+     phone: Yup.string()
+          .test(
+               'phone-required-if-code',
+               'Phone must be at least 8 characters',
+               function (value) {
+                    const { selected_phone_code } = this.parent;
+                    if (selected_phone_code) {
+                         return !!value && value.length >= 8;
+                    }
+                    return true;
+               }
+          ),
+     selected_mobile_code: Yup.object().nullable(),
+     selected_phone_code: Yup.object().nullable(),
      name: Yup.string().min(2, "Company name must be at least 2 characters"),
      address_1: Yup.string().min(2, "Address must be at least 2 characters"),
 });
@@ -58,35 +82,60 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
      };
 
      const [countries, setCountries] = useState<CountryItem[]>([]);
-     const [selectedMobileCode, setSelectedMobileCode] = useState<CountryItem | null>(null);
-     const [selectedPhoneCode, setSelectedPhoneCode] = useState<CountryItem | null>(null);
+     const [selected_mobile_code, setselected_mobile_code] = useState<CountryItem | null>(null);
+     const [selected_phone_code, setselected_phone_code] = useState<CountryItem | null>(null);
+
+     // var myHeaders = new Headers();
+
+     // var requestOptions = {
+     //      method: 'GET',
+     //      redirect: 'follow' as RequestRedirect,
+     //      headers: myHeaders,
+     //      apikey: `${process.env.NEXT_PUBLIC_API_LAYER_KEY}`
+     // };
+
+     // const aaa = fetch("https://api.apilayer.com/number_verification/countries", requestOptions)
+     //      .then(response => response.text())
+     //      .then(result => console.log(result))
+     //      .catch(error => console.log('error', error));
+     // console.log('aaa', aaa);
 
      useEffect(() => {
           const fetchCountries = async () => {
-               const response = await fetch(`https://api.apilayer.com/number_verification/countries/`, {
-                    headers: {
-                         'Content-Type': 'application/json',
-                         'Access-Control-Allow-Origin': '*',
-                         'redirect': 'follow',
-                         'apikey': `${process.env.NEXT_PUBLIC_API_LAYER_KEY}`
-                    },
-               });
+               try {
+                    const myHeaders = new Headers();
+                    myHeaders.append("apikey", process.env.NEXT_PUBLIC_API_LAYER_KEY!);
 
-               const data: CountryCodeData = await response.json();
-               console.log('data', data);
+                    const requestOptions: RequestInit = {
+                         method: "GET",
+                         redirect: "follow",
+                         headers: myHeaders,
+                    };
 
-               const countryList: CountryItem[] = Object.entries(data).map(([code, value]) => ({
-                    code,
-                    country_name: value.country_name,
-                    dialling_code: value.dialling_code,
-               }));
-               console.log('countryList', countryList);
+                    const response = await fetch("https://api.apilayer.com/number_verification/countries", requestOptions);
 
-               setCountries(countryList);
+                    if (!response.ok) {
+                         throw new Error(`API error ${response.status}: ${response.statusText}`);
+                    }
+
+                    const data: CountryCodeData = await response.json();
+
+                    const countryList: CountryItem[] = Object.entries(data).map(([code, value]) => ({
+                         code,
+                         country_name: value.country_name,
+                         dialling_code: value.dialling_code,
+                    }));
+                    console.log('countryList', countryList);
+
+                    setCountries(countryList);
+               } catch (error) {
+                    console.error("Failed to fetch countries", error);
+               }
           };
 
           fetchCountries();
      }, []);
+
 
      return (
           <>
@@ -102,12 +151,14 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                    mobile_phone: userData.client.mobile_phone,
                                    phone: userData.client.phone,
                                    name: userData.client.name,
-                                   address_1: userData.client.address_1
+                                   address_1: userData.client.address_1,
+                                   selected_mobile_code: null,
+                                   selected_phone_code: null,
                               }}
                               onSubmit={async (values, { setSubmitting }) => {
                                    setSubmitting(true);
-                                   const fullMobileNumber = `${selectedMobileCode?.dialling_code || ''} ${values.mobile_phone}`;
-                                   const fullPhoneNumber = `${selectedPhoneCode?.dialling_code || ''} ${values.phone}`;
+                                   const fullMobileNumber = `${selected_mobile_code?.dialling_code || ''} ${values.mobile_phone}`;
+                                   const fullPhoneNumber = `${selected_phone_code?.dialling_code || ''} ${values.phone}`;
 
                                    try {
                                         const updateAccountActionResponse = await updateAccountAction(userData.client.id, {
@@ -134,7 +185,7 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                    accountSchema
                               }
                          >
-                              {({ values, handleChange, isSubmitting, errors }) => (
+                              {({ values, handleChange, isSubmitting, errors, setFieldValue }) => (
                                    <Form>
                                         <Grid container spacing={3}>
                                              <Grid size={{ xs: 12, md: 6 }}>
@@ -148,75 +199,6 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                                   // required
                                                   />
                                              </Grid>
-
-                                             <Grid size={{ xs: 12, md: 6 }}>
-                                                  <TextField
-                                                       fullWidth
-                                                       label="Full Name"
-                                                       name="contact_person"
-                                                       value={values.contact_person}
-                                                       onChange={handleChange}
-                                                       error={!!errors.contact_person}
-                                                       helperText={errors.contact_person || ""}
-                                                       required
-                                                  />
-                                             </Grid>
-
-                                             <Box sx={{ mb: 3 }}>
-                                                  <TextField
-                                                       fullWidth
-                                                       label="Mobile Phone"
-                                                       placeholder="123456789"
-                                                       InputProps={{
-                                                            startAdornment: (
-                                                                 <InputAdornment position="start" sx={{ minWidth: 130 }}>
-                                                                      <Autocomplete
-                                                                           options={countries}
-                                                                           value={selectedMobileCode}
-                                                                           getOptionLabel={(option) => option.dialling_code}
-                                                                           onChange={(_, newValue) => setSelectedMobileCode(newValue)}
-                                                                           renderInput={(params) => (
-                                                                                <TextField
-                                                                                     {...params}
-                                                                                     placeholder="+XXX"
-                                                                                     variant="standard"
-                                                                                     sx={{ width: 100 }}
-                                                                                />
-                                                                           )}
-                                                                      />
-                                                                 </InputAdornment>
-                                                            ),
-                                                       }}
-                                                  />
-                                             </Box>
-
-                                             <Box>
-                                                  <TextField
-                                                       fullWidth
-                                                       label="Phone"
-                                                       placeholder="987654321"
-                                                       InputProps={{
-                                                            startAdornment: (
-                                                                 <InputAdornment position="start" sx={{ minWidth: 130 }}>
-                                                                      <Autocomplete
-                                                                           options={countries}
-                                                                           value={selectedPhoneCode}
-                                                                           getOptionLabel={(option) => option.dialling_code}
-                                                                           onChange={(_, newValue) => setSelectedPhoneCode(newValue)}
-                                                                           renderInput={(params) => (
-                                                                                <TextField
-                                                                                     {...params}
-                                                                                     placeholder="+XXX"
-                                                                                     variant="standard"
-                                                                                     sx={{ width: 100 }}
-                                                                                />
-                                                                           )}
-                                                                      />
-                                                                 </InputAdornment>
-                                                            ),
-                                                       }}
-                                                  />
-                                             </Box>
 
                                              <Grid size={{ xs: 12, md: 6 }}>
                                                   <TextField
@@ -241,6 +223,124 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                                        helperText={errors.name || ""}
                                                   />
                                              </Grid>
+
+                                             <Grid size={{ xs: 12, md: 6 }}>
+                                                  <TextField
+                                                       fullWidth
+                                                       label="Full Name"
+                                                       name="contact_person"
+                                                       value={values.contact_person}
+                                                       onChange={handleChange}
+                                                       error={!!errors.contact_person}
+                                                       helperText={errors.contact_person || ""}
+                                                       required
+                                                  />
+                                             </Grid>
+
+
+                                             {/* Mobile Phone Line */}
+                                             <Grid size={{ xs: 12, md: 6 }}>
+                                                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                       <Autocomplete
+                                                            fullWidth
+                                                            options={countries}
+                                                            value={selected_mobile_code}
+                                                            isOptionEqualToValue={(option, value) => option.code === value.code}
+                                                            onChange={(_, newValue) => {
+                                                                 setselected_mobile_code(newValue);
+                                                                 setFieldValue('selected_mobile_code', newValue);
+                                                                 setselected_mobile_code(newValue)
+                                                            }}
+                                                            getOptionLabel={(option) =>
+                                                                 option ? `${option.country_name} (${option.dialling_code})` : ''
+                                                            }
+                                                            filterOptions={(options, state) =>
+                                                                 options.filter(
+                                                                      (option) =>
+                                                                           option.country_name.toLowerCase().includes(state.inputValue.toLowerCase()) ||
+                                                                           option.dialling_code.includes(state.inputValue)
+                                                                 )
+                                                            }
+                                                            renderInput={(params) => (
+                                                                 <TextField
+                                                                      {...params}
+                                                                      label="Country Code"
+                                                                      placeholder="Search country"
+                                                                      fullWidth
+                                                                 />
+                                                            )}
+                                                            renderOption={(props, option) => (
+                                                                 <li {...props}>
+                                                                      {option.country_name}
+                                                                      <span style={{ color: '#888' }}>&nbsp;{option.dialling_code}</span>
+                                                                 </li>
+                                                            )}
+                                                       />
+                                                       <TextField
+                                                            sx={{ flex: '1 1 60%' }}
+                                                            label="Mobile Phone"
+                                                            name="mobile_phone"
+                                                            placeholder="123456789"
+                                                            value={values.mobile_phone}
+                                                            error={!!errors.mobile_phone}
+                                                            helperText={errors.mobile_phone || ""}
+                                                            onChange={handleChange}
+                                                            slotProps={{
+                                                                 formHelperText: {
+                                                                      sx: { minHeight: '20px' }, // reserve space under input for alignment
+                                                                 },
+                                                            }}
+
+                                                       />
+                                                  </Box>
+                                             </Grid>
+
+
+                                             {/* Mobile Phone Line */}
+                                             <Grid size={{ xs: 12, md: 6 }}>
+                                                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                       <Autocomplete
+                                                            fullWidth
+                                                            options={countries}
+                                                            value={selected_phone_code}
+                                                            isOptionEqualToValue={(option, value) => option.code === value.code}
+                                                            onChange={(_, newValue) => setselected_phone_code(newValue)}
+                                                            getOptionLabel={(option) =>
+                                                                 option ? `${option.country_name} (${option.dialling_code})` : ''
+                                                            }
+                                                            filterOptions={(options, state) =>
+                                                                 options.filter(
+                                                                      (option) =>
+                                                                           option.country_name.toLowerCase().includes(state.inputValue.toLowerCase()) ||
+                                                                           option.dialling_code.includes(state.inputValue)
+                                                                 )
+                                                            }
+                                                            renderInput={(params) => (
+                                                                 <TextField
+                                                                      {...params}
+                                                                      label="Country Code"
+                                                                      placeholder="Search country"
+                                                                      fullWidth
+                                                                 />
+                                                            )}
+                                                            renderOption={(props, option) => (
+                                                                 <li {...props}>
+                                                                      {option.country_name}
+                                                                      <span style={{ color: '#888' }}>&nbsp;{option.dialling_code}</span>
+                                                                 </li>
+                                                            )}
+                                                       />
+                                                       <TextField
+                                                            sx={{ flex: '1 1 60%' }}
+                                                            label="Land Line"
+                                                            name="phone"
+                                                            placeholder="123456789"
+                                                            value={values.phone}
+                                                            onChange={handleChange}
+                                                       />
+                                                  </Box>
+                                             </Grid>
+
 
                                              <Grid size={{ xs: 12, md: 6 }}>
                                                   <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
