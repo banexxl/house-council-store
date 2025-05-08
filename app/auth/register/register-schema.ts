@@ -3,6 +3,7 @@ import * as Yup from "yup"
 // Validation schema using Yup
 export const registrationSchema = Yup.object({
      contact_person: Yup.string().required("Full name is required").min(2, "Name must be at least 2 characters"),
+     name: Yup.string().min(2, "Company name must be at least 2 characters"),
      email: Yup.string().email("Enter a valid email").required("Email is required"),
      confirm_email: Yup.string().oneOf([Yup.ref("email")], "Emails must match").required("Confirm email is required"),
      password: Yup.string()

@@ -6,6 +6,7 @@ import { useServerSideSupabaseServiceRoleClient } from '@/app/lib/ss-supabase-se
 
 export type RegisterFormValues = {
      contact_person: string;
+     name: string;
      email: string;
      confirm_email: string;
      password: string;
@@ -42,7 +43,8 @@ export const registerUser = async (values: RegisterFormValues): Promise<{ succes
      }
 
      const { data, error } = await supabase.from('tblClients').insert({
-          name: values.contact_person,
+          contact_person: values.contact_person,
+          name: values.name,
           email: values.email,
           type: '3cb057f5-32c1-423b-a549-5c28a89c6907',
           client_status: '6f0f38ed-bd14-4f84-9718-1e37fe0b7027',

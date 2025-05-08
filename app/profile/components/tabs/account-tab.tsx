@@ -24,8 +24,11 @@ interface AccountTabProps {
 }
 
 const accountSchema = Yup.object().shape({
-     fullName: Yup.string().min(2, "Name must be at least 2 characters").required("Name is required"),
-     mobilePhoneNumber: Yup.string().min(8, "Mobile phone number must be at least 8 characters").required("Mobile phone number is required"),
+     contact_person: Yup.string().min(2, "Name must be at least 2 characters").required("Full name is required"),
+     mobile_phone: Yup.string().min(8, "Mobile phone number must be at least 8 characters"),
+     phone: Yup.string().min(8, "Phone number must be at least 8 characters"),
+     name: Yup.string().min(2, "Company name must be at least 2 characters"),
+     address_1: Yup.string().min(2, "Address must be at least 2 characters"),
 });
 
 export default function AccountTab({ userData, editMode, setEditMode }: AccountTabProps) {
@@ -54,15 +57,21 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
 
                          <Formik
                               initialValues={{
-                                   fullName: userData.client.name || '',
-                                   mobilePhoneNumber: userData.client.mobile_phone || ''
+                                   contact_person: userData.client.contact_person,
+                                   mobile_phone: userData.client.mobile_phone,
+                                   phone: userData.client.phone,
+                                   name: userData.client.name,
+                                   address_1: userData.client.address_1
                               }}
                               onSubmit={async (values, { setSubmitting }) => {
                                    setSubmitting(true);
                                    try {
                                         const updateAccountActionResponse = await updateAccountAction(userData.client.id, {
-                                             name: values.fullName,
-                                             mobile_phone: values.mobilePhoneNumber
+                                             contact_person: values.contact_person,
+                                             name: values.name,
+                                             mobile_phone: values.mobile_phone,
+                                             phone: values.phone,
+                                             address_1: values.address_1
                                         });
 
                                         if (updateAccountActionResponse.success) {
@@ -92,7 +101,7 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                                        name="email"
                                                        value={userData.client.email}
                                                        disabled
-                                                       required
+                                                  // required
                                                   />
                                              </Grid>
 
@@ -100,11 +109,11 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                                   <TextField
                                                        fullWidth
                                                        label="Full Name"
-                                                       name="fullName"
-                                                       value={values.fullName}
+                                                       name="contact_person"
+                                                       value={values.contact_person}
                                                        onChange={handleChange}
-                                                       error={!!errors.fullName}
-                                                       helperText={errors.fullName || ""}
+                                                       error={!!errors.contact_person}
+                                                       helperText={errors.contact_person || ""}
                                                        required
                                                   />
                                              </Grid>
@@ -113,11 +122,47 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                                   <TextField
                                                        fullWidth
                                                        label="Mobile phone number"
-                                                       name="mobilePhoneNumber"
-                                                       value={values.mobilePhoneNumber}
+                                                       name="mobile_phone"
+                                                       value={values.mobile_phone}
                                                        onChange={handleChange}
-                                                       error={!!errors.mobilePhoneNumber}
-                                                       helperText={errors.mobilePhoneNumber || ""}
+                                                       error={!!errors.mobile_phone}
+                                                       helperText={errors.mobile_phone || ""}
+                                                  />
+                                             </Grid>
+
+                                             <Grid size={{ xs: 12, md: 6 }}>
+                                                  <TextField
+                                                       fullWidth
+                                                       label="Phone"
+                                                       name="phone"
+                                                       value={values.phone}
+                                                       onChange={handleChange}
+                                                       error={!!errors.phone}
+                                                       helperText={errors.phone || ""}
+                                                  />
+                                             </Grid>
+
+                                             <Grid size={{ xs: 12, md: 6 }}>
+                                                  <TextField
+                                                       fullWidth
+                                                       label="Address"
+                                                       name="address_1"
+                                                       value={values.address_1}
+                                                       onChange={handleChange}
+                                                       error={!!errors.address_1}
+                                                       helperText={errors.address_1 || ""}
+                                                  />
+                                             </Grid>
+
+                                             <Grid size={{ xs: 12, md: 6 }}>
+                                                  <TextField
+                                                       fullWidth
+                                                       label="Company name"
+                                                       name="name"
+                                                       value={values.name}
+                                                       onChange={handleChange}
+                                                       error={!!errors.name}
+                                                       helperText={errors.name || ""}
                                                   />
                                              </Grid>
 
@@ -180,7 +225,7 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                    <Typography variant="subtitle2" color="text.secondary">
                                         Full Name
                                    </Typography>
-                                   <Typography variant="body1">{userData.client.name}</Typography>
+                                   <Typography variant="body1">{userData.client.contact_person}</Typography>
                               </Grid>
 
                               <Grid size={{ xs: 12, md: 6 }}>
@@ -198,6 +243,27 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                         Mobile Phone Number
                                    </Typography>
                                    <Typography variant="body1">{userData.client.mobile_phone}</Typography>
+                              </Grid>
+
+                              <Grid size={{ xs: 12, md: 6 }}>
+                                   <Typography variant="subtitle2" color="text.secondary">
+                                        Phone Number
+                                   </Typography>
+                                   <Typography variant="body1">{userData.client.phone}</Typography>
+                              </Grid>
+
+                              <Grid size={{ xs: 12, md: 6 }}>
+                                   <Typography variant="subtitle2" color="text.secondary">
+                                        Company Name
+                                   </Typography>
+                                   <Typography variant="body1">{userData.client.name}</Typography>
+                              </Grid>
+
+                              <Grid size={{ xs: 12, md: 6 }}>
+                                   <Typography variant="subtitle2" color="text.secondary">
+                                        Address
+                                   </Typography>
+                                   <Typography variant="body1">{userData.client.address_1}</Typography>
                               </Grid>
 
                               <Grid size={{ xs: 12, md: 6 }}>

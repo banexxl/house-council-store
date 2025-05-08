@@ -152,7 +152,7 @@ export async function GET(request: Request) {
           const user = sessionData.session.user;
 
           const { data, error: insertError } = await supabase.from('tblClients').insert({
-               name: user.user_metadata.full_name || user.user_metadata.name || user.email,
+               name: user.user_metadata.contact_person || user.user_metadata.name || user.email,
                email: user.email,
                type: '3cb057f5-32c1-423b-a549-5c28a89c6907',
                client_status: '6f0f38ed-bd14-4f84-9718-1e37fe0b7027',

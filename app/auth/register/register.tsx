@@ -46,6 +46,7 @@ export const RegisterPage = () => {
      const formik = useFormik({
           initialValues: {
                contact_person: "",
+               name: "",
                email: "",
                confirm_email: "",
                password: "",
@@ -113,6 +114,23 @@ export const RegisterPage = () => {
                                                        />
                                                   </Box>
                                              </Grid>
+
+                                             <Grid size={{ xs: 12 }}>
+                                                  <Box sx={{ height: "65px" }}>
+                                                       <TextField
+                                                            fullWidth
+                                                            id="name"
+                                                            name="name"
+                                                            label="Company Name"
+                                                            value={formik.values.name}
+                                                            onChange={formik.handleChange}
+                                                            onBlur={formik.handleBlur}
+                                                            error={formik.touched.name && Boolean(formik.errors.name)}
+                                                            helperText={formik.touched.name && formik.errors.name}
+                                                       />
+                                                  </Box>
+                                             </Grid>
+
 
                                              <Grid size={{ xs: 12 }}>
                                                   <Box sx={{ height: "65px" }}>

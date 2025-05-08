@@ -114,7 +114,7 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userD
                          return expiry >= current;
                     }),
                cvc: Yup.number().required('Security code is required'),
-               full_name: Yup.string().required('Full name is required'),
+               contact_person: Yup.string().required('Full name is required'),
                billing_address: Yup.string().required('Address is required'),
           }),
           onSubmit: async (values) => {
@@ -337,15 +337,15 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userD
                          </Typography>
 
                          <TextField
-                              name="full_name"
+                              name="contact_person"
                               label="Full name"
                               fullWidth
                               margin="normal"
-                              value={formik.values.full_name}
+                              value={formik.values.contact_person}
                               onChange={formik.handleChange}
                               onBlur={formik.handleBlur}
-                              error={formik.touched.full_name && Boolean(formik.errors.full_name)}
-                              helperText={formik.touched.full_name && formik.errors.full_name}
+                              error={formik.touched.contact_person && Boolean(formik.errors.contact_person)}
+                              helperText={formik.touched.contact_person && formik.errors.contact_person}
                               sx={{ my: 2 }}
                          />
 

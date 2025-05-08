@@ -19,7 +19,7 @@ export const createOrUpdateClientBillingInformation = async (clientBillingInform
                .from('tblBillingInformation')
                .update({
                     updated_at: new Date().toISOString(),
-                    full_name: clientBillingInformation.full_name,
+                    contact_person: clientBillingInformation.contact_person,
                     billing_address: clientBillingInformation.billing_address,
                     card_number: clientBillingInformation.card_number,
                     cvc: clientBillingInformation.cvc,
@@ -41,7 +41,7 @@ export const createOrUpdateClientBillingInformation = async (clientBillingInform
                     created_at: new Date().toISOString(),
                     updated_at: new Date().toISOString(),
                     client_id: clientBillingInformation.client_id,
-                    full_name: clientBillingInformation.full_name,
+                    contact_person: clientBillingInformation.contact_person,
                     billing_address: clientBillingInformation.billing_address,
                     card_number: clientBillingInformation.card_number,
                     cvc: clientBillingInformation.cvc,
