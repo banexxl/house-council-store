@@ -229,8 +229,6 @@ export default function ProfileSidebar({ userData, clientSubscriptionObject, rec
                                                             img.src = URL.createObjectURL(file);
                                                             img.onload = () => {
                                                                  const { width, height } = img;
-                                                                 console.log('file size', file.size, 'width', width, 'height', height);
-
                                                                  if (file.size <= 5000000 && width <= 5000 && height <= 5000) {
                                                                       handleUpdateAvatar(file);
                                                                  } else {

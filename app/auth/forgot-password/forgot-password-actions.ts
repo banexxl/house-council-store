@@ -23,8 +23,6 @@ export async function sendPasswordResetEmail(email: string): Promise<void> {
           .select("email, id")
           .eq("email", email)
           .single()
-     console.log("userExists", userExists);
-     console.log("userCheckError", userCheckError);
 
      if (userExists) {
           await logServerAction({

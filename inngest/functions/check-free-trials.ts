@@ -19,7 +19,7 @@ export const checkAllClientSubscriptions = inngest.createFunction(
                     const result = await response.json();
 
                     // Optional: log summary or handle expired accounts here
-                    console.log(`[Inngest] Checked ${result.checked} subscriptions. Marked ${result.updated} as expired.`);
+                    console.log(`[Inngest] Checked ${result.ch.ecked} subscriptions. Marked ${result.updated} as expired.`);
 
                     return {
                          success: true,

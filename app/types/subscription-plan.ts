@@ -9,7 +9,7 @@ export type SubscriptionPlan = {
      description: string;
      status_id: string;
      is_billed_annually: boolean;
-     annually_discount_percentage: number;
+     annual_discount_percentage: number;
      is_discounted: boolean;
      discount_percentage: number;
      features?: Feature[];
@@ -24,7 +24,7 @@ export const subscriptionPlanInitialValues: SubscriptionPlan = {
      description: '',
      status_id: '',
      is_billed_annually: false,
-     annually_discount_percentage: 0,
+     annual_discount_percentage: 0,
      is_discounted: false,
      discount_percentage: 0,
      features: [],

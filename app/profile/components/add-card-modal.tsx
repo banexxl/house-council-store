@@ -78,7 +78,6 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userD
 
                          // 🛠 Set cardScheme immediately after new binData
                          setCardScheme(data.scheme?.toLowerCase() || '');
-                         console.log('BIN Lookup result:', data);
                     } else {
                          setBinData(null);
                          setCardScheme('');

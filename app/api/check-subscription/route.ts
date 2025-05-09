@@ -59,7 +59,7 @@ export async function POST() {
                // Log the expiration action
                await logServerAction({
                     user_id: null,
-                    action: 'Auto-expire subscription',
+                    action: 'Auto-expire subscription for client',
                     payload: { subscriptionId: sub.id, clientId: sub.client_id },
                     status: updateError ? 'fail' : 'success',
                     error: updateError?.message || '',
@@ -105,7 +105,7 @@ export async function POST() {
      await logServerAction({
           user_id: null,
           action: 'Check all clients subscriptions - Completed',
-          payload: {},
+          payload: { 'updatedCount': updatedCount },
           status: 'success',
           error: '',
           duration_ms: 0,

@@ -55,7 +55,6 @@ interface PricingPageProps {
 }
 
 export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, clientSubscriptionPlanData }) => {
-     console.log('clientSubscriptionPlanData', clientSubscriptionPlanData);
 
      const router = useRouter()
      const [billingCycle, setBillingCycle] = useState<"monthly" | "annually">("monthly")
@@ -107,7 +106,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
                                    <Box sx={{ display: "flex", justifyContent: "center", mb: 6 }}>
                                         <Tabs value={billingCycle} onChange={handleBillingCycleChange}>
                                              <Tab label="Monthly" value="monthly" />
-                                             <Tab label="Annually (Save more)" value="annually" />
+                                             <Tab label="Annually (Save 10%)" value="annually" />
                                         </Tabs>
                                    </Box>
                               )}
@@ -116,15 +115,34 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
                                    {subscriptionPlans.map((plan, index) => {
                                         const isAnnual = billingCycle === "annually";
                                         const isBilledYearly = plan.is_billed_annually;
+                                        const hasAnnualDiscount = isBilledYearly && plan.annual_discount_percentage > 0;
+                                        const hasGeneralDiscount = plan.discount_percentage > 0;
 
-                                        // Price logic based on plan configuration
-                                        const price = isBilledYearly
-                                             ? isAnnual
-                                                  ? plan.total_price // e.g., 600
-                                                  : Math.round(plan.total_price / 12) // e.g., 600 / 12 = 50
-                                             : isAnnual
-                                                  ? Math.round(plan.total_price * 12 * (1 - (plan.annually_discount_percentage || 0) / 100))
-                                                  : plan.total_price;
+                                        // Step 1: Reconstruct original annual price (e.g., 540 / 0.9 = 600)
+                                        const originalAnnualPrice = hasAnnualDiscount
+                                             ? plan.total_price / (1 - plan.annual_discount_percentage / 100)
+                                             : plan.total_price;
+
+                                        // Step 2: Decide what price to show based on billing cycle and plan config
+                                        let priceToDisplay: number;
+
+                                        if (isAnnual && isBilledYearly) {
+                                             priceToDisplay = plan.total_price; // already discounted
+                                        } else if (!isAnnual && isBilledYearly) {
+                                             priceToDisplay = Math.round(originalAnnualPrice / 12); // monthly preview of annual
+                                        } else if (!isAnnual && !isBilledYearly) {
+                                             priceToDisplay = plan.total_price; // monthly plan
+                                        } else if (isAnnual && !isBilledYearly) {
+                                             priceToDisplay = plan.total_price * 12; // annual total for monthly-only plan
+                                        } else {
+                                             priceToDisplay = plan.total_price; // fallback
+                                        }
+
+                                        // Step 3: Apply general discount if NOT already discounted annual total
+                                        const shouldApplyGeneralDiscount = hasGeneralDiscount && !(isAnnual && isBilledYearly);
+                                        const finalPrice = shouldApplyGeneralDiscount
+                                             ? Math.round(priceToDisplay * (1 - plan.discount_percentage / 100))
+                                             : Math.round(priceToDisplay);
 
                                         return (
                                              <Grid key={plan.id} size={{ xs: 12, sm: 6, md: 4 }}>
@@ -138,31 +156,55 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
                                                             </Typography>
 
                                                             <Box sx={{ my: 3 }}>
-                                                                 <Typography variant="h3">
-                                                                      ${isBilledYearly ? price : plan.total_price}
-                                                                      {isBilledYearly && (
-                                                                           <Typography
-                                                                                component="span"
-                                                                                variant="body2"
-                                                                                color="text.secondary"
-                                                                                sx={{ ml: 1 }}
-                                                                           >
-                                                                                {isAnnual ? "/year" : "/month"}
-                                                                           </Typography>
-                                                                      )}
+                                                                 {/* Main discounted or base price */}
+                                                                 <Typography variant="h3" display="block">
+                                                                      ${finalPrice}
+                                                                      <Typography
+                                                                           component="span"
+                                                                           variant="body2"
+                                                                           color="text.secondary"
+                                                                           sx={{ ml: 1 }}
+                                                                      >
+                                                                           {isAnnual ? "/year" : "/month"}
+                                                                      </Typography>
                                                                  </Typography>
 
+                                                                 {/* Strikethrough original price for annual plans */}
+                                                                 {isAnnual && isBilledYearly && hasAnnualDiscount && (
+                                                                      <Typography
+                                                                           variant="body2"
+                                                                           color="text.secondary"
+                                                                           display="block"
+                                                                           sx={{ textDecoration: "line-through", mt: 0.5 }}
+                                                                      >
+                                                                           ${Math.round(originalAnnualPrice)} /year
+                                                                      </Typography>
+                                                                 )}
+
+                                                                 {/* Monthly equivalent display for yearly plans */}
+                                                                 {isBilledYearly && isAnnual && (
+                                                                      <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
+                                                                           Equivalent to ${Math.round(originalAnnualPrice / 12)} / month before discount
+                                                                      </Typography>
+                                                                 )}
+
+                                                                 {/* Label for monthly-only plans */}
                                                                  {!isBilledYearly && (
-                                                                      <Typography variant="caption" color="text.secondary">
+                                                                      <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
                                                                            Billed monthly only
                                                                       </Typography>
                                                                  )}
 
-                                                                 {isBilledYearly && (
-                                                                      <Typography variant="caption" color="text.secondary">
-                                                                           {isAnnual
-                                                                                ? `Equivalent to $${Math.round(plan.total_price / 12)} /month`
-                                                                                : `Billed annually ($${plan.total_price})`}
+                                                                 {/* Discount tags */}
+                                                                 {hasAnnualDiscount && isAnnual && (
+                                                                      <Typography variant="caption" color={theme.palette.primary.main} display="block" sx={{ mt: 0.5 }}>
+                                                                           Annual discount: {plan.annual_discount_percentage}% off
+                                                                      </Typography>
+                                                                 )}
+
+                                                                 {hasGeneralDiscount && (
+                                                                      <Typography variant="caption" color={theme.palette.primary.main} display="block" sx={{ mt: 0.5 }}>
+                                                                           Extra discount: {plan.discount_percentage}% off applied
                                                                       </Typography>
                                                                  )}
                                                             </Box>
@@ -194,6 +236,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
                                              </Grid>
                                         );
                                    })}
+
                               </Grid>
 
 
@@ -241,8 +284,8 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
                               </Paper>
                          </Container>
                     </Box>
-               </Animate>
+               </Animate >
                <Toaster />
-          </Box>
+          </Box >
      )
 }

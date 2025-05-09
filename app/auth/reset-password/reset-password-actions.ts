@@ -16,8 +16,6 @@ export async function resetPasswordWithOldPassword(email: string, oldPassword: s
           .select('*')
           .eq('email', email)
           .single();
-     console.log('user', user);
-     console.log('userError', userError);
 
      userId = user?.id || null;
 
@@ -59,8 +57,6 @@ export async function resetPasswordWithOldPassword(email: string, oldPassword: s
      try {
           // Get the current session
           const { data: { session }, error: sessionError, } = await supabase.auth.getSession()
-          console.log('session', session);
-          console.log('sessionError', sessionError);
 
           if (sessionError || !session) {
                return {

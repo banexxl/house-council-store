@@ -129,7 +129,6 @@ export const deleteClientBillingInformation = async (client_id: string, ids: str
      }
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
-     console.log("deleteClientBillingInformation", { client_id, ids });
 
      const { error } = await supabase
           .from('tblBillingInformation')
