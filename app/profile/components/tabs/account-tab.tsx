@@ -238,13 +238,16 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                                                  name="mobile_phone"
                                                                  placeholder="123456789"
                                                                  value={values.mobile_phone}
-                                                                 onChange={handleChange}
+                                                                 onChange={(e) => {
+                                                                      const onlyNumbers = e.target.value.replace(/\D/g, '');
+                                                                      setFieldValue('mobile_phone', onlyNumbers);
+                                                                 }}
                                                                  error={!!errors.mobile_phone}
                                                                  helperText={errors.mobile_phone || ''}
                                                                  slotProps={{
                                                                       formHelperText: {
                                                                            sx: {
-                                                                                height: '150px', // adjust as needed (16px–24px is typical)
+                                                                                height: '50px', // adjust as needed (16px–24px is typical)
                                                                            },
                                                                       },
                                                                  }}
@@ -302,7 +305,10 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                                             value={values.phone}
                                                             error={!!errors.phone}
                                                             helperText={errors.phone || ""}
-                                                            onChange={handleChange}
+                                                            onChange={(e) => {
+                                                                 const onlyNumbers = e.target.value.replace(/\D/g, '');
+                                                                 setFieldValue('phone', onlyNumbers);
+                                                            }}
                                                             slotProps={{
                                                                  formHelperText: {
                                                                       sx: {
