@@ -1,18 +1,18 @@
 "use client"
 
-import { Box, Button, Divider, TextField, Typography, Chip, Alert, Stack, Grid, InputAdornment, IconButton, LinearProgress, CircularProgress, Paper, Autocomplete } from "@mui/material"
+import { Box, Button, Divider, TextField, Typography, Chip, Alert, Grid, Autocomplete } from "@mui/material"
 import EditIcon from "@mui/icons-material/Edit"
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser"
 import LogoutIcon from "@mui/icons-material/Logout"
 import { getStatusColor } from "../profile-sidebar"
-import { deleteAccountAction, logoutUserAction, updateAccountAction } from "../../account-action"
-import Swal from 'sweetalert2'
+import { logoutUserAction, updateAccountAction } from "../../account-action"
+import { countries } from "../countries-autocomplete"
 import { Client } from "@/app/types/client"
 import { User } from "@supabase/supabase-js"
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import toast from "react-hot-toast"
-import { Form, Formik, useFormik } from "formik"
+import { Form, Formik } from "formik"
 import * as Yup from "yup"
 
 interface AccountTabProps {
@@ -20,47 +20,33 @@ interface AccountTabProps {
      editMode: boolean
      setEditMode: (value: boolean) => void
 }
-type CountryCodeData = {
-     [key: string]: {
-          country_name: string;
-          dialling_code: string;
-     };
-};
-
-type CountryItem = {
-     code: string;
-     country_name: string;
-     dialling_code: string;
-};
 
 const accountSchema = Yup.object().shape({
      contact_person: Yup.string().min(2, "Name must be at least 2 characters").required("Full name is required"),
-     mobile_phone: Yup.string()
-          .test(
-               'mobile-phone-required-if-code',
-               'Mobile phone must be at least 8 characters',
-               function (value) {
-                    const { selected_mobile_code } = this.parent;
-                    if (selected_mobile_code) {
-                         return !!value && value.length >= 8;
-                    }
-                    return true; // valid if code is not selected
+     mobile_phone: Yup.string().test(
+          'mobile-phone-required-if-country',
+          'Mobile phone must be at least 8 characters',
+          function (value) {
+               const { selected_mobile_country } = this.parent;
+               if (selected_mobile_country) {
+                    return !!value && value.length >= 8;
                }
-          ),
-     phone: Yup.string()
-          .test(
-               'phone-required-if-code',
-               'Phone must be at least 8 characters',
-               function (value) {
-                    const { selected_phone_code } = this.parent;
-                    if (selected_phone_code) {
-                         return !!value && value.length >= 8;
-                    }
-                    return true;
+               return true;
+          }
+     ),
+     phone: Yup.string().test(
+          'phone-required-if-country',
+          'Phone must be at least 8 characters',
+          function (value) {
+               const { selected_phone_country } = this.parent;
+               if (selected_phone_country) {
+                    return !!value && value.length >= 8;
                }
-          ),
-     selected_mobile_code: Yup.object().nullable(),
-     selected_phone_code: Yup.object().nullable(),
+               return true;
+          }
+     ),
+     selected_mobile_country: Yup.object().nullable(),
+     selected_phone_country: Yup.object().nullable(),
      name: Yup.string().min(2, "Company name must be at least 2 characters"),
      address_1: Yup.string().min(2, "Address must be at least 2 characters"),
 });
@@ -69,7 +55,6 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
 
      const [signoutLoading, setSignoutLoading] = useState(false)
      const router = useRouter()
-
      const handleSignOut = async () => {
           setSignoutLoading(true)
           try {
@@ -80,62 +65,6 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                console.error("Error signing out:", error);
           }
      };
-
-     const [countries, setCountries] = useState<CountryItem[]>([]);
-     const [selected_mobile_code, setselected_mobile_code] = useState<CountryItem | null>(null);
-     const [selected_phone_code, setselected_phone_code] = useState<CountryItem | null>(null);
-
-     // var myHeaders = new Headers();
-
-     // var requestOptions = {
-     //      method: 'GET',
-     //      redirect: 'follow' as RequestRedirect,
-     //      headers: myHeaders,
-     //      apikey: `${process.env.NEXT_PUBLIC_API_LAYER_KEY}`
-     // };
-
-     // const aaa = fetch("https://api.apilayer.com/number_verification/countries", requestOptions)
-     //      .then(response => response.text())
-     //      .then(result => console.log(result))
-     //      .catch(error => console.log('error', error));
-     // console.log('aaa', aaa);
-
-     useEffect(() => {
-          const fetchCountries = async () => {
-               try {
-                    const myHeaders = new Headers();
-                    myHeaders.append("apikey", process.env.NEXT_PUBLIC_API_LAYER_KEY!);
-
-                    const requestOptions: RequestInit = {
-                         method: "GET",
-                         redirect: "follow",
-                         headers: myHeaders,
-                    };
-
-                    const response = await fetch("https://api.apilayer.com/number_verification/countries", requestOptions);
-
-                    if (!response.ok) {
-                         throw new Error(`API error ${response.status}: ${response.statusText}`);
-                    }
-
-                    const data: CountryCodeData = await response.json();
-
-                    const countryList: CountryItem[] = Object.entries(data).map(([code, value]) => ({
-                         code,
-                         country_name: value.country_name,
-                         dialling_code: value.dialling_code,
-                    }));
-                    console.log('countryList', countryList);
-
-                    setCountries(countryList);
-               } catch (error) {
-                    console.error("Failed to fetch countries", error);
-               }
-          };
-
-          fetchCountries();
-     }, []);
-
 
      return (
           <>
@@ -148,24 +77,28 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                          <Formik
                               initialValues={{
                                    contact_person: userData.client.contact_person,
-                                   mobile_phone: userData.client.mobile_phone,
-                                   phone: userData.client.phone,
+                                   mobile_phone: userData.client.mobile_phone?.split(' ')?.[1] || '',
+                                   phone: userData.client.phone?.split(' ')?.[1] || '',
                                    name: userData.client.name,
                                    address_1: userData.client.address_1,
-                                   selected_mobile_code: null,
-                                   selected_phone_code: null,
+                                   selected_mobile_country: countries.find(
+                                        (country) => country.dialling_code === userData.client.mobile_phone?.split(' ')?.[0]
+                                   ) || null,
+                                   selected_phone_country: countries.find(
+                                        (country) => country.dialling_code === userData.client.phone?.split(' ')?.[0]
+                                   ) || null
                               }}
                               onSubmit={async (values, { setSubmitting }) => {
                                    setSubmitting(true);
-                                   const fullMobileNumber = `${selected_mobile_code?.dialling_code || ''} ${values.mobile_phone}`;
-                                   const fullPhoneNumber = `${selected_phone_code?.dialling_code || ''} ${values.phone}`;
+                                   const fullMobileNumber = `${values.selected_mobile_country?.dialling_code || ''} ${values.mobile_phone}`;
+                                   const fullPhoneNumber = `${values.selected_phone_country?.dialling_code || ''} ${values.phone}`;
 
                                    try {
                                         const updateAccountActionResponse = await updateAccountAction(userData.client.id, {
                                              contact_person: values.contact_person,
                                              name: values.name,
-                                             mobile_phone: fullMobileNumber,
-                                             phone: fullPhoneNumber,
+                                             mobile_phone: fullMobileNumber.length < 5 ? '' : fullMobileNumber,
+                                             phone: fullPhoneNumber.length < 5 ? '' : fullPhoneNumber,
                                              address_1: values.address_1
                                         });
 
@@ -185,8 +118,9 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                    accountSchema
                               }
                          >
-                              {({ values, handleChange, isSubmitting, errors, setFieldValue }) => (
-                                   <Form>
+                              {({ values, handleChange, isSubmitting, errors, setFieldValue, isValid, isInitialValid, dirty }) => (
+                                   <Form >
+
                                         <Grid container spacing={3}>
                                              <Grid size={{ xs: 12, md: 6 }}>
                                                   <TextField
@@ -237,74 +171,88 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                                   />
                                              </Grid>
 
-
                                              {/* Mobile Phone Line */}
                                              <Grid size={{ xs: 12, md: 6 }}>
-                                                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                       <Autocomplete
-                                                            fullWidth
-                                                            options={countries}
-                                                            value={selected_mobile_code}
-                                                            isOptionEqualToValue={(option, value) => option.code === value.code}
-                                                            onChange={(_, newValue) => {
-                                                                 setselected_mobile_code(newValue);
-                                                                 setFieldValue('selected_mobile_code', newValue);
-                                                                 setselected_mobile_code(newValue)
-                                                            }}
-                                                            getOptionLabel={(option) =>
-                                                                 option ? `${option.country_name} (${option.dialling_code})` : ''
-                                                            }
-                                                            filterOptions={(options, state) =>
-                                                                 options.filter(
-                                                                      (option) =>
-                                                                           option.country_name.toLowerCase().includes(state.inputValue.toLowerCase()) ||
-                                                                           option.dialling_code.includes(state.inputValue)
-                                                                 )
-                                                            }
-                                                            renderInput={(params) => (
-                                                                 <TextField
-                                                                      {...params}
-                                                                      label="Country Code"
-                                                                      placeholder="Search country"
-                                                                      fullWidth
-                                                                 />
-                                                            )}
-                                                            renderOption={(props, option) => (
-                                                                 <li {...props}>
-                                                                      {option.country_name}
-                                                                      <span style={{ color: '#888' }}>&nbsp;{option.dialling_code}</span>
-                                                                 </li>
-                                                            )}
-                                                       />
-                                                       <TextField
-                                                            sx={{ flex: '1 1 60%' }}
-                                                            label="Mobile Phone"
-                                                            name="mobile_phone"
-                                                            placeholder="123456789"
-                                                            value={values.mobile_phone}
-                                                            error={!!errors.mobile_phone}
-                                                            helperText={errors.mobile_phone || ""}
-                                                            onChange={handleChange}
-                                                            slotProps={{
-                                                                 formHelperText: {
-                                                                      sx: { minHeight: '20px' }, // reserve space under input for alignment
-                                                                 },
-                                                            }}
+                                                  <Box
+                                                       sx={{
+                                                            display: 'flex',
+                                                            alignItems: 'flex-start', // ensures both fields align at the top
+                                                            width: '100%',
+                                                            pb: 8
+                                                       }}
+                                                  >
+                                                       {/* Autocomplete Country Code */}
+                                                       <Box sx={{ flex: '1 1 80%' }}>
+                                                            <Autocomplete
+                                                                 fullWidth
+                                                                 options={countries}
+                                                                 value={values.selected_mobile_country}
+                                                                 isOptionEqualToValue={(option, value) => option.code === value.code}
+                                                                 onChange={(_, newValue) => setFieldValue('selected_mobile_country', newValue)}
+                                                                 getOptionLabel={(option) =>
+                                                                      option ? `${option.country_name} (${option.dialling_code})` : ''
+                                                                 }
+                                                                 filterOptions={(options, state) =>
+                                                                      options.filter(
+                                                                           (option) =>
+                                                                                option.country_name.toLowerCase().includes(state.inputValue.toLowerCase()) ||
+                                                                                option.dialling_code.includes(state.inputValue)
+                                                                      )
+                                                                 }
+                                                                 renderInput={(params) => (
+                                                                      <TextField
+                                                                           {...params}
+                                                                           label="Country Code"
+                                                                           placeholder="Search country"
+                                                                           fullWidth
+                                                                      />
+                                                                 )}
+                                                                 renderOption={(props, option) => (
+                                                                      <li {...props}>
+                                                                           {option.country_name}
+                                                                           <span style={{ color: '#888' }}>&nbsp;{option.dialling_code}</span>
+                                                                      </li>
+                                                                 )}
+                                                            />
+                                                       </Box>
 
-                                                       />
+                                                       {/* Mobile Phone Number */}
+                                                       <Box sx={{ flex: '1 1 60%' }}>
+                                                            <TextField
+                                                                 fullWidth
+                                                                 label="Mobile phone"
+                                                                 name="mobile_phone"
+                                                                 placeholder="123456789"
+                                                                 value={values.mobile_phone}
+                                                                 onChange={handleChange}
+                                                                 error={!!errors.mobile_phone}
+                                                                 helperText={errors.mobile_phone || ''}
+                                                                 slotProps={{
+                                                                      formHelperText: {
+                                                                           sx: {
+                                                                                height: '150px', // adjust as needed (16px–24px is typical)
+                                                                           },
+                                                                      },
+                                                                 }}
+                                                            />
+                                                       </Box>
                                                   </Box>
                                              </Grid>
 
-
-                                             {/* Mobile Phone Line */}
+                                             {/* Home Phone Line */}
                                              <Grid size={{ xs: 12, md: 6 }}>
-                                                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                  <Box sx={{
+                                                       display: 'flex',
+                                                       alignItems: 'flex-start', // ensures both fields align at the top
+                                                       width: '100%',
+                                                  }}
+                                                  >
                                                        <Autocomplete
                                                             fullWidth
                                                             options={countries}
-                                                            value={selected_phone_code}
+                                                            value={values.selected_phone_country} // ✅ match your initialValues
                                                             isOptionEqualToValue={(option, value) => option.code === value.code}
-                                                            onChange={(_, newValue) => setselected_phone_code(newValue)}
+                                                            onChange={(_, newValue) => setFieldValue('selected_phone_country', newValue)} // ✅ match formik field
                                                             getOptionLabel={(option) =>
                                                                  option ? `${option.country_name} (${option.dialling_code})` : ''
                                                             }
@@ -330,34 +278,45 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                                                  </li>
                                                             )}
                                                        />
+
                                                        <TextField
                                                             sx={{ flex: '1 1 60%' }}
+                                                            // type="number"
                                                             label="Land Line"
                                                             name="phone"
                                                             placeholder="123456789"
                                                             value={values.phone}
+                                                            error={!!errors.phone}
+                                                            helperText={errors.phone || ""}
                                                             onChange={handleChange}
+                                                            slotProps={{
+                                                                 formHelperText: {
+                                                                      sx: {
+                                                                           height: '50px', // adjust as needed (16px–24px is typical)
+                                                                      },
+                                                                 },
+                                                            }}
                                                        />
                                                   </Box>
                                              </Grid>
 
-
-                                             <Grid size={{ xs: 12, md: 6 }}>
-                                                  <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
-                                                       <Button variant="outlined" onClick={() => setEditMode(false)}>
-                                                            Cancel
-                                                       </Button>
-                                                       <Button
-                                                            variant="contained"
-                                                            disabled={isSubmitting}
-                                                            type="submit"
-                                                       >
-                                                            {isSubmitting ? "Saving..." : "Save Changes"}
-                                                       </Button>
-
-                                                  </Box>
-                                             </Grid>
                                         </Grid>
+
+                                        <Box >
+                                             <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
+                                                  <Button variant="outlined" onClick={() => setEditMode(false)}>
+                                                       Cancel
+                                                  </Button>
+                                                  <Button
+                                                       variant="contained"
+                                                       disabled={isSubmitting || !isValid || !dirty}
+                                                       type="submit"
+                                                  >
+                                                       {isSubmitting ? "Saving..." : "Save Changes"}
+                                                  </Button>
+                                             </Box>
+                                        </Box>
+
                                    </Form>
                               )}
                          </Formik>
