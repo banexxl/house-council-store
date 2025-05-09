@@ -29,6 +29,7 @@ import { ClientSubscription, SubscriptionPlan } from "../types/subscription-plan
 import { Feature } from "../types/feature"
 import { useRouter } from "next/navigation"
 import Animate from "@/app/components/animation-framer-motion"
+import { Client } from "../types/client"
 
 const faqs = [
      {

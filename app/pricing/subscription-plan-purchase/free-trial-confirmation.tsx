@@ -16,6 +16,7 @@ import {
      Alert,
      CircularProgress,
      Chip,
+     useTheme,
 } from "@mui/material"
 import CheckCircleIcon from "@mui/icons-material/CheckCircle"
 import InfoIcon from "@mui/icons-material/Info"
@@ -38,7 +39,7 @@ interface FreeTrialConfirmationProps {
 export default function FreeTrialConfirmation({ subscriptionPlan, billingCycle, clientSubscription, userEmail, client }: FreeTrialConfirmationProps) {
 
      const router = useRouter()
-
+     const theme = useTheme()
      const [isLoading, setIsLoading] = useState(false)
 
      if (!client) {
@@ -119,11 +120,11 @@ export default function FreeTrialConfirmation({ subscriptionPlan, billingCycle, 
                <Animate>
                     <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
                          <Box sx={{ textAlign: "center", mb: 4 }}>
-                              <Typography variant="h4" gutterBottom>
+                              <Typography variant="h4" gutterBottom sx={{ color: theme.palette.primary.main }}>
                                    Start Your Free Trial
                               </Typography>
                               <Typography variant="body1" color="text.secondary">
-                                   You're about to start a 30-day free trial of our {subscriptionPlan.name} subscriptionPlan. No payment required during the trial period.
+                                   You're about to start a 30-day free trial of our <span style={{ color: theme.palette.primary.main }}>{subscriptionPlan.name}</span> subscription. No payment required during the trial period.
                               </Typography>
                          </Box>
 
@@ -146,8 +147,8 @@ export default function FreeTrialConfirmation({ subscriptionPlan, billingCycle, 
                                         <Typography variant="subtitle2" color="text.secondary">
                                              Price after trial
                                         </Typography>
-                                        <Typography variant="h6">
-                                             ${subscriptionPlan.total_price.toFixed(2)}/{billingCycle}
+                                        <Typography variant="h6" sx={{ mb: 1, color: theme.palette.primary.main, fontWeight: 700 }}>
+                                             ${subscriptionPlan.total_price.toFixed(2)}
                                         </Typography>
                                    </Box>
 
@@ -155,7 +156,7 @@ export default function FreeTrialConfirmation({ subscriptionPlan, billingCycle, 
                                         <Typography variant="subtitle2" color="text.secondary">
                                              Billing cycle
                                         </Typography>
-                                        <Typography variant="h6">{billingCycle}</Typography>
+                                        <Typography variant="h6" sx={{ mb: 1, color: theme.palette.primary.main, fontWeight: 700 }}>{billingCycle.toUpperCase()}</Typography>
                                    </Box>
                               </Box>
 
