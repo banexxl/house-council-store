@@ -23,7 +23,7 @@ export interface AddressAutocompleteRef {
 
 const AddressAutocomplete = forwardRef<AddressAutocompleteRef, AddressAutocompleteProps>(({ onAddressSelected, label, initialValue }, ref) => {
 
-     const [inputValue, setInputValue] = useState("");
+     const [inputValue, setInputValue] = useState(initialValue || "");
      const [suggestions, setSuggestions] = useState<any[]>([]);
      const [loading, setLoading] = useState(false);
 
@@ -81,7 +81,7 @@ const AddressAutocomplete = forwardRef<AddressAutocompleteRef, AddressAutocomple
                     label={label}
                     variant="outlined"
                     fullWidth
-                    value={initialValue !== '' ? initialValue : inputValue}
+                    value={inputValue} // ✅ just this
                     onChange={handleInputChange}
                     sx={{ mb: 2 }}
                     slotProps={{
@@ -96,9 +96,8 @@ const AddressAutocomplete = forwardRef<AddressAutocompleteRef, AddressAutocomple
                                         )}
                                    </>
                               ),
-                         }
+                         },
                     }}
-
                />
                {suggestions.length > 0 && (
                     <List

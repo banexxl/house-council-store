@@ -14,6 +14,7 @@ import { useState } from "react"
 import toast from "react-hot-toast"
 import { Form, Formik } from "formik"
 import * as Yup from "yup"
+import AddressAutocomplete from "../address-autocomplete"
 
 interface AccountTabProps {
      userData: { client: Client; session: User }
@@ -122,6 +123,7 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                    <Form >
 
                                         <Grid container spacing={3}>
+
                                              <Grid size={{ xs: 12, md: 6 }}>
                                                   <TextField
                                                        fullWidth
@@ -130,31 +132,7 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                                        name="email"
                                                        value={userData.client.email}
                                                        disabled
-                                                  // required
-                                                  />
-                                             </Grid>
-
-                                             <Grid size={{ xs: 12, md: 6 }}>
-                                                  <TextField
-                                                       fullWidth
-                                                       label="Address"
-                                                       name="address_1"
-                                                       value={values.address_1}
-                                                       onChange={handleChange}
-                                                       error={!!errors.address_1}
-                                                       helperText={errors.address_1 || ""}
-                                                  />
-                                             </Grid>
-
-                                             <Grid size={{ xs: 12, md: 6 }}>
-                                                  <TextField
-                                                       fullWidth
-                                                       label="Company name"
-                                                       name="name"
-                                                       value={values.name}
-                                                       onChange={handleChange}
-                                                       error={!!errors.name}
-                                                       helperText={errors.name || ""}
+                                                       required
                                                   />
                                              </Grid>
 
@@ -170,6 +148,42 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                                        required
                                                   />
                                              </Grid>
+
+                                             <Grid size={{ xs: 12, md: 6 }}>
+                                                  <AddressAutocomplete
+                                                       onAddressSelected={
+                                                            (feature) => {
+                                                                 setFieldValue("address_1", feature.matching_place_name);
+                                                            }
+                                                       }
+                                                       label={"Address"}
+                                                       initialValue={values.address_1}
+                                                  />
+                                             </Grid>
+
+                                             <Grid size={{ xs: 12, md: 6 }}>
+                                                  <TextField
+                                                       fullWidth
+                                                       label="Company name"
+                                                       name="name"
+                                                       value={values.name}
+                                                       onChange={handleChange}
+                                                       error={!!errors.name}
+                                                       helperText={errors.name || ""}
+                                                  />
+                                             </Grid>
+
+                                             {/* <Grid size={{ xs: 12, md: 6 }}>
+                                                  <TextField
+                                                       fullWidth
+                                                       label="Address"
+                                                       name="address_1"
+                                                       value={values.address_1}
+                                                       onChange={handleChange}
+                                                       error={!!errors.address_1}
+                                                       helperText={errors.address_1 || ""}
+                                                  />
+                                             </Grid> */}
 
                                              {/* Mobile Phone Line */}
                                              <Grid size={{ xs: 12, md: 6 }}>
