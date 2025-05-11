@@ -2,12 +2,14 @@
 import { useServerSideSupabaseServiceRoleClient } from '@/app/lib/ss-supabase-service-role-client'
 import { NextResponse } from 'next/server'
 import { logServerAction } from '@/app/lib/server-logging'
+import { sendTrialEndingEmail } from '@/app/lib/node-mailer'
 
 export async function POST() {
+
      const supabase = await useServerSideSupabaseServiceRoleClient()
 
      // Fetch all client subscriptions
-     const { data: subscriptions, error } = await supabase
+     const { data: client_subscriptions, error } = await supabase
           .from('tblClient_Subscription')
           .select('id, client_id, status, next_payment_date')
 
@@ -38,7 +40,7 @@ export async function POST() {
      let updatedCount = 0
      const results: { clientId: string; status: string; expired: boolean }[] = []
 
-     for (const sub of subscriptions || []) {
+     for (const sub of client_subscriptions || []) {
           const nextPaymentDate = sub.next_payment_date ? new Date(sub.next_payment_date) : null
 
           // Determine if the subscription is expired
@@ -77,6 +79,30 @@ export async function POST() {
                )
 
                if ([7, 3, 1].includes(daysUntilExpiration)) {
+
+                    const { data: clientData, error: clientError } = await supabase
+                         .from('tblClients')
+                         .select('email')
+                         .eq('id', sub.client_id)
+                         .single();
+
+                    if (clientError) {
+                         await logServerAction({
+                              user_id: null,
+                              action: 'Fetch client email - Error',
+                              payload: { clientId: sub.client_id },
+                              status: 'fail',
+                              error: clientError.message,
+                              duration_ms: 0,
+                              type: 'db'
+                         });
+                         return NextResponse.json({ success: false, error: clientError.message }, { status: 500 });
+                    }
+
+                    const clientEmail = clientData?.email;
+
+                    const sendExpirationEmailResponse = await sendTrialEndingEmail({ to: clientEmail, daysRemaining: daysUntilExpiration })
+
                     await logServerAction({
                          user_id: null,
                          action: `Upcoming expiration in ${daysUntilExpiration} day(s)`,
@@ -84,7 +110,8 @@ export async function POST() {
                               subscriptionId: sub.id,
                               clientId: sub.client_id,
                               daysUntilExpiration,
-                              expirationDate: nextPaymentDate.toISOString()
+                              expirationDate: nextPaymentDate.toISOString(),
+                              sendExpirationEmailResponse
                          },
                          status: 'success',
                          error: '',
