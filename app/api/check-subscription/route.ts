@@ -2,7 +2,7 @@
 import { useServerSideSupabaseServiceRoleClient } from '@/app/lib/ss-supabase-service-role-client'
 import { NextResponse } from 'next/server'
 import { logServerAction } from '@/app/lib/server-logging'
-import { sendTrialEndingEmail } from '@/app/lib/node-mailer'
+import { sendTrialEndingEmailToClient, sendSubscriptionEndingNotificationToSupport } from '@/app/lib/node-mailer'
 
 export async function POST() {
 
@@ -38,7 +38,7 @@ export async function POST() {
 
      const now = new Date()
      let updatedCount = 0
-     const results: { clientId: string; status: string; expired: boolean }[] = []
+     const results: { clientId: string; susbcriptionStatus: string; expired: boolean }[] = []
 
      for (const sub of client_subscriptions || []) {
           const nextPaymentDate = sub.next_payment_date ? new Date(sub.next_payment_date) : null
@@ -101,7 +101,9 @@ export async function POST() {
 
                     const clientEmail = clientData?.email;
 
-                    const sendExpirationEmailResponse = await sendTrialEndingEmail({ to: clientEmail, daysRemaining: daysUntilExpiration })
+                    const sendExpirationEmailToClientResponse = await sendTrialEndingEmailToClient({ to: clientEmail, daysRemaining: daysUntilExpiration })
+
+                    const sendSubscriptionEndingNotificationToSupportResponse = await sendSubscriptionEndingNotificationToSupport({ daysRemaining: daysUntilExpiration, clientEmail, subscription: sub.id })
 
                     await logServerAction({
                          user_id: null,
@@ -111,7 +113,8 @@ export async function POST() {
                               clientId: sub.client_id,
                               daysUntilExpiration,
                               expirationDate: nextPaymentDate.toISOString(),
-                              sendExpirationEmailResponse
+                              sendExpirationEmailToClientResponse,
+                              sendSubscriptionEndingNotificationToSupportResponse
                          },
                          status: 'success',
                          error: '',
@@ -124,7 +127,7 @@ export async function POST() {
           // Add result to summary array
           results.push({
                clientId: sub.client_id,
-               status: isExpired ? 'expired' : sub.status,
+               susbcriptionStatus: isExpired ? 'expired' : sub.status,
                expired: isExpired
           })
      }
@@ -132,7 +135,7 @@ export async function POST() {
      await logServerAction({
           user_id: null,
           action: 'Check all clients subscriptions - Completed',
-          payload: { 'updatedCount': updatedCount },
+          payload: { checked: results.length, 'updatedCount': updatedCount },
           status: 'success',
           error: '',
           duration_ms: 0,

@@ -1,29 +1,29 @@
 import nodemailer from 'nodemailer';
 
 export const transporter = nodemailer.createTransport({
-     host: process.env.EMAIL_SERVER_HOST,
-     port: 465,
-     secure: true, // true for 465, false for other ports
-     auth: {
-          user: process.env.EMAIL_SERVER_USER, // generated ethereal user
-          pass: process.env.EMAIL_SERVER_PASSWORD, // generated ethereal password
-     },
-     tls: {
-          rejectUnauthorized: false
-     }
+  host: process.env.EMAIL_SERVER_HOST,
+  port: 465,
+  secure: true, // true for 465, false for other ports
+  auth: {
+    user: process.env.EMAIL_SERVER_USER, // generated ethereal user
+    pass: process.env.EMAIL_SERVER_PASSWORD, // generated ethereal password
+  },
+  tls: {
+    rejectUnauthorized: false
+  }
 });
 
-interface SendTrialEmailOptions {
-     to: string;
-     daysRemaining: number;
+interface SendTrialEndingEmail {
+  to: string;
+  daysRemaining: number;
 }
 
-export async function sendTrialEndingEmail({
-     to,
-     daysRemaining
-}: SendTrialEmailOptions) {
+export const sendTrialEndingEmailToClient = async ({
+  to,
+  daysRemaining
+}: SendTrialEndingEmail) => {
 
-     const htmlContent = `
+  const htmlContent = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -185,11 +185,163 @@ export async function sendTrialEndingEmail({
 </html>
   `;
 
-     await transporter.sendMail({
-          from: 'Nest Link <no-reply@nest-link.app>',
-          to,
-          subject: 'Your free tial is about to end, how do you like it so far?',
-          html: htmlContent
-     });
+  await transporter.sendMail({
+    from: 'Nest Link <no-reply@nest-link.app>',
+    to,
+    subject: 'Your free tial is about to end, how do you like it so far?',
+    html: htmlContent
+  });
 }
+
+export type SendEndingSubscriptionEmail = {
+  daysRemaining: number, clientEmail: string, subscription: string
+}
+
+export const sendSubscriptionEndingNotificationToSupport = async ({ daysRemaining, clientEmail, subscription }: SendEndingSubscriptionEmail) => {
+
+  const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Subscription Ending Soon</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f68a00;
+    }
+    table {
+      border-spacing: 0;
+      font-family: Arial, sans-serif;
+    }
+    img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+    }
+    .wrapper {
+      width: 100%;
+      background-color: #f68a00;
+      padding: 20px;
+    }
+    .main {
+      background-color: #ffffff;
+      margin: 0 auto;
+      width: 100%;
+      max-width: 800px;
+      border-radius: 10px;
+    }
+    .column td {
+      padding: 10px;
+      vertical-align: top;
+      text-align: center;
+    }
+    .footer {
+      background-color: #4a1005;
+      color: white;
+      font-weight: bold;
+      font-size: 16px;
+      padding: 15px;
+      border-radius: 0 0 10px 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+    }
+    a {
+      color: #f68a00;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    @media screen and (max-width: 600px) {
+      .stack-column {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+
+      .footer {
+        flex-direction: column !important;
+        text-align: center !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <center class="wrapper">
+    <table role="presentation" class="main">
+      <tr>
+        <td style="padding: 40px 20px; text-align: center;">
+          <h1 style="font-size: 48px; font-weight: 300; margin: 0;">Subscription ${subscription} Ending Soon</h1>
+          <h2 style="font-size: 24px; margin: 10px 0 20px;">Client Email: ${clientEmail}</h2>
+
+          <p style="font-size: 16px; margin-top: 20px;">
+            The subscription for the client above is about to end in <strong>${daysRemaining}</strong> days. Make sure to follow up with them.
+          </p>
+
+          <table role="presentation" width="100%" style="margin-top: 40px;">
+            <tr>
+              <td class="stack-column" width="33.33%">
+                <table role="presentation" width="100%">
+                  <tr>
+                    <td>
+                      <h3 style="font-style: italic; font-weight: bold;">A heartfelt thank you</h3>
+                      <p style="font-size: 14px;">We truly appreciate your trust and support—it means the world to us.</p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+              <td class="stack-column" width="33.33%">
+                <table role="presentation" width="100%">
+                  <tr>
+                    <td>
+                      <img src="https://house-council-app.s3.eu-central-1.amazonaws.com/emails/JPG/1-01.jpg" alt="Nest Link Logo" width="80" style="margin: 0 auto 10px;" />
+                      <p style="margin: 0;"><strong>NEST LINK</strong></p>
+                      <small>Bringing Your Tenants Together</small>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+              <td class="stack-column" width="33.33%">
+                <table role="presentation" width="100%">
+                  <tr>
+                    <td align="center">
+                      <h3 style="font-style: italic; font-weight: bold; margin-bottom: 8px;">Contact</h3>
+                      <table role="presentation" style="margin: 0 auto;">
+                        <tr>
+                          <td style="padding: 0 5px; font-size: 18px;">📞</td>
+                          <td style="padding: 0 5px; font-size: 18px;">✉️</td>
+                          <td style="padding: 0 5px; font-size: 18px;">🌐</td>
+                        </tr>
+                      </table>
+                      <p style="font-size: 14px; margin: 10px 0 0;">
+                        +38166415651<br />
+                        support@nest-link.app<br />
+                        nest-link.app
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </center>
+</body>
+</html>
+  `;
+
+  await transporter.sendMail({
+    from: 'Nest Link <support@nest-link.app>',
+    to: 'support@nest-link.app',
+    subject: 'Client Subscription is ending soon',
+    html: htmlContent
+  });
+}
+
 
