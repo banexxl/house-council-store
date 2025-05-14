@@ -195,7 +195,7 @@ export default function ProfileSidebar({ userData, clientSubscriptionObject, rec
                                    </ListItemIcon>
                                    <ListItemText>Edit Profile</ListItemText>
                               </MenuItem>
-                              <MenuItem component={Link} href="/auth/reset-password" onClick={handleMenuClose}>
+                              <MenuItem component={Link} href="/auth/forgot-password" onClick={handleMenuClose}>
                                    <ListItemIcon>
                                         <LockIcon fontSize="small" />
                                    </ListItemIcon>
