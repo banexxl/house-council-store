@@ -26,7 +26,9 @@ export const checkAllClientSubscriptions = inngest.createFunction(
                          summary: {
                               checked: result.checked,
                               updated: result.updated,
+                              results: result.results,
                          },
+
                     };
                } catch (err: any) {
                     console.error(`[Inngest] Error during subscription check:`, err.message);
