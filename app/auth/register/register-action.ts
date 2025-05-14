@@ -1,6 +1,7 @@
 'use server';
 
 import { hashPassword } from '@/app/lib/bcrypt';
+import { sendSuccessfullClientRegistrationToSupport } from '@/app/lib/node-mailer';
 import { logServerAction } from '@/app/lib/server-logging';
 import { useServerSideSupabaseServiceRoleClient } from '@/app/lib/ss-supabase-service-role-client';
 
@@ -81,13 +82,17 @@ export const registerUser = async (values: RegisterFormValues): Promise<{ succes
                duration_ms: 0,
                type: 'auth'
           })
-          const { error } = await supabase.auth.signUp({
+          const { data: signUpData, error } = await supabase.auth.signUp({
                email: values.email,
                password: values.password,
                options: {
                     emailRedirectTo: `${process.env.BASE_URL}/auth/registration-confirmed`,
                }
           });
+
+          if (signUpData) {
+               await sendSuccessfullClientRegistrationToSupport(values.email, values.contact_person);
+          }
 
           if (error) {
                logServerAction({

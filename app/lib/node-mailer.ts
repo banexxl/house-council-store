@@ -379,4 +379,66 @@ export const sendSubscriptionEndingNotificationToSupport = async ({ daysRemainin
   return sendEmailToSupport
 }
 
+export const sendSuccessfullClientRegistrationToSupport = async (clientEmail: string, contactPerson: string): Promise<SentMessageInfo> => {
+
+  const htmlContent = `
+<html>
+<head>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .wrapper {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .header {
+      background-color: #f2f2f2;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .content {
+      padding: 20px;
+    }
+
+    .footer {
+      background-color: #f2f2f2;
+      padding: 20px;
+      text-align: center; 
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="header">
+      <h1>Client Registered Successfully</h1>
+    </div>
+    <div class="content">
+      <p>Client Name: ${contactPerson}</p>
+      <p>Client Email: ${clientEmail}</p>
+    </div>
+    <div class="footer">
+      <p>Client Registered Successfully</p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+
+  const sendEmailToSupport = await transporter.sendMail({
+    from: 'Nest Link <support@nest-link.app>',
+    to: 'support@nest-link.app',
+    subject: 'Client Registered Successfully',
+    html: htmlContent
+  });
+
+  return sendEmailToSupport
+}
+
 
