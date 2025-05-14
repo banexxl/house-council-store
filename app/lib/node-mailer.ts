@@ -1,4 +1,6 @@
-import nodemailer from 'nodemailer';
+import nodemailer, { SentMessageInfo } from 'nodemailer';
+import { logServerAction } from './server-logging';
+import { readClientSubscriptionPlanFromClientId } from '../profile/subscription-plan-actions';
 
 export const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_SERVER_HOST,
@@ -18,10 +20,7 @@ interface SendTrialEndingEmail {
   daysRemaining: number;
 }
 
-export const sendTrialEndingEmailToClient = async ({
-  to,
-  daysRemaining
-}: SendTrialEndingEmail) => {
+export const sendTrialEndingEmailToClient = async ({ to, daysRemaining }: SendTrialEndingEmail): Promise<SentMessageInfo> => {
 
   const htmlContent = `
 <!DOCTYPE html>
@@ -185,19 +184,53 @@ export const sendTrialEndingEmailToClient = async ({
 </html>
   `;
 
-  await transporter.sendMail({
+  const sendEmailToClientResponse = await transporter.sendMail({
     from: 'Nest Link <no-reply@nest-link.app>',
     to,
     subject: 'Your free tial is about to end, how do you like it so far?',
     html: htmlContent
   });
+
+  if (sendEmailToClientResponse.response) {
+    await logServerAction({
+      user_id: null,
+      action: `Sent trial ending in ${daysRemaining} email to client: ${to}`,
+      payload: {
+        clientEmail: to,
+        daysRemaining
+      },
+      status: 'success',
+      error: '',
+      duration_ms: 0,
+      type: 'action'
+    })
+  } else if (sendEmailToClientResponse.rejected) {
+    await logServerAction({
+      user_id: null,
+      action: `Failed to send trial ending in ${daysRemaining} email to client: ${to}`,
+      payload: {
+        clientEmail: to,
+        daysRemaining
+      },
+      status: 'fail',
+      error: '',
+      duration_ms: 0,
+      type: 'action'
+    })
+  }
+
+  return sendEmailToClientResponse
 }
 
 export type SendEndingSubscriptionEmail = {
-  daysRemaining: number, clientEmail: string, subscription: string
+  daysRemaining: number,
+  clientEmail: string,
+  clientId: string
 }
 
-export const sendSubscriptionEndingNotificationToSupport = async ({ daysRemaining, clientEmail, subscription }: SendEndingSubscriptionEmail) => {
+export const sendSubscriptionEndingNotificationToSupport = async ({ daysRemaining, clientEmail, clientId }: SendEndingSubscriptionEmail): Promise<SentMessageInfo> => {
+
+  const { clientSubscriptionPlanData } = await readClientSubscriptionPlanFromClientId(clientId)
 
   const htmlContent = `
 <!DOCTYPE html>
@@ -275,7 +308,7 @@ export const sendSubscriptionEndingNotificationToSupport = async ({ daysRemainin
     <table role="presentation" class="main">
       <tr>
         <td style="padding: 40px 20px; text-align: center;">
-          <h1 style="font-size: 48px; font-weight: 300; margin: 0;">Subscription ${subscription} Ending Soon</h1>
+          <h1 style="font-size: 48px; font-weight: 300; margin: 0;">Subscription ${clientSubscriptionPlanData?.subscription_plan.name} Ending Soon</h1>
           <h2 style="font-size: 24px; margin: 10px 0 20px;">Client Email: ${clientEmail}</h2>
 
           <p style="font-size: 16px; margin-top: 20px;">
@@ -336,12 +369,14 @@ export const sendSubscriptionEndingNotificationToSupport = async ({ daysRemainin
 </html>
   `;
 
-  await transporter.sendMail({
+  const sendEmailToSupport = await transporter.sendMail({
     from: 'Nest Link <support@nest-link.app>',
     to: 'support@nest-link.app',
     subject: 'Client Subscription is ending soon',
     html: htmlContent
   });
+
+  return sendEmailToSupport
 }
 
 

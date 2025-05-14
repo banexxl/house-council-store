@@ -296,7 +296,7 @@ export const readFeaturesFromSubscriptionPlanId = async (subscriptionPlanId: str
      return { success: true, features };
 }
 
-export const readClientSubscriptionPlan = async (clientId: string): Promise<{ success: boolean, clientSubscriptionPlanData?: ClientSubscription & { subscription_plan: SubscriptionPlan } | null, error?: string }> => {
+export const readClientSubscriptionPlanFromClientId = async (clientId: string): Promise<{ success: boolean, clientSubscriptionPlanData?: ClientSubscription & { subscription_plan: SubscriptionPlan } | null, error?: string }> => {
 
      if (!clientId) {
           await logServerAction({

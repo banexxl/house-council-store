@@ -103,7 +103,24 @@ export async function POST() {
 
                     const sendExpirationEmailToClientResponse = await sendTrialEndingEmailToClient({ to: clientEmail, daysRemaining: daysUntilExpiration })
 
-                    const sendSubscriptionEndingNotificationToSupportResponse = await sendSubscriptionEndingNotificationToSupport({ daysRemaining: daysUntilExpiration, clientEmail, subscription: sub.id })
+                    await logServerAction({
+                         user_id: null,
+                         action: `Sent upcoming expiration email to client ${daysUntilExpiration} day(s) in advance`,
+                         payload: {
+                              subscriptionId: sub.id,
+                              clientId: sub.client_id,
+                              clientEmail,
+                              daysUntilExpiration,
+                              sendExpirationEmailToClientResponse,
+                         },
+                         status: 'success',
+                         error: '',
+                         duration_ms: 0,
+                         type: 'action'
+                    });
+
+
+                    const sendSubscriptionEndingNotificationToSupportResponse = await sendSubscriptionEndingNotificationToSupport({ daysRemaining: daysUntilExpiration, clientEmail, clientId: sub.client_id })
 
                     await logServerAction({
                          user_id: null,

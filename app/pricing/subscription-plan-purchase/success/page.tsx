@@ -4,7 +4,7 @@ import { Header } from "@/app/components/header"
 import { Footer } from "@/app/components/footer"
 import SubscriptionSuccessPage from "./subscription-plan-success"
 import { logServerAction } from "@/app/lib/server-logging"
-import { readClientSubscriptionPlan } from "@/app/profile/subscription-plan-actions"
+import { readClientSubscriptionPlanFromClientId } from "@/app/profile/subscription-plan-actions"
 import { readAccountByEmailAction } from "@/app/profile/account-action"
 
 export default async function FreeTrialSuccessPage() {
@@ -16,7 +16,7 @@ export default async function FreeTrialSuccessPage() {
 
      const dashboardUrl = process.env.NEXT_PUBLIC_DASHBOARD_URL!
 
-     const { clientSubscriptionPlanData } = await readClientSubscriptionPlan(client?.id!)
+     const { clientSubscriptionPlanData } = await readClientSubscriptionPlanFromClientId(client?.id!)
 
      if (!session) {
           // Redirect to login if not authenticated
