@@ -27,14 +27,16 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { Payment } from "@/app/types/payment"
 import { Feature } from "@/app/types/feature"
 import Link from "next/link"
+import { Currency } from "@/app/types/currency"
 
 interface SubscriptionTabProps {
      clientSubscriptionObject: ClientSubscription & { subscription_plan: SubscriptionPlan } | null;
      payment: Payment | null;
-     subsrciptioFeatures?: SubscriptionPlan & { features: Feature[] } | null
+     subsrciptioFeatures?: SubscriptionPlan & { features: Feature[] } | null;
+     currencies?: Currency[]
 }
 
-export default function SubscriptionTab({ clientSubscriptionObject, payment, subsrciptioFeatures }: SubscriptionTabProps) {
+export default function SubscriptionTab({ clientSubscriptionObject, payment, subsrciptioFeatures, currencies }: SubscriptionTabProps) {
 
      const theme = useTheme()
      const router = useRouter()
@@ -43,8 +45,6 @@ export default function SubscriptionTab({ clientSubscriptionObject, payment, sub
      const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false)
      const [isProcessing, setIsProcessing] = useState(false)
      const [autoRenew, setAutoRenew] = useState(payment?.is_recurring || false)
-
-     const [clientSubscriptionStatus, setClientSubscriptionStatus] = useState<SubscriptionStatus>('trialing')
 
      const handleDialogToggle = (type: "cancel" | "confirmCancel" | "upgrade", open: boolean) => {
           if (type === "cancel") setCancelDialogOpen(open)
@@ -94,8 +94,11 @@ export default function SubscriptionTab({ clientSubscriptionObject, payment, sub
           }
      }
 
+     const currency = currencies?.find((currency: Currency) => currency.id === payment?.currency)
+
+
      const formattedPrice = payment?.total_paid && payment.total_paid > 0
-          ? new Intl.NumberFormat('en-US', { style: 'currency', currency: payment.currency }).format(payment.total_paid)
+          ? new Intl.NumberFormat('en-US', { style: 'currency', currency: currency?.code }).format(payment.total_paid)
           : ""
 
      const renderDate = (date?: string) =>
@@ -130,10 +133,10 @@ export default function SubscriptionTab({ clientSubscriptionObject, payment, sub
                                         ) : (
                                              payment ? (
                                                   <>
-                                                       Last Payment: {renderDate(payment.created_at)}
-                                                       {payment.total_paid > 0 && (
+                                                       Last Payment: {renderDate(payment.created_at)}aaaa
+                                                       {/* {payment.total_paid > 0 && (
                                                             <> - {formattedPrice}</>
-                                                       )}
+                                                       )} */}
                                                   </>
                                              ) : (
                                                   <i>No payment information available</i>

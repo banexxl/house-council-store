@@ -141,6 +141,7 @@ export default function ProfileTabs({
                                    clientSubscriptionObject={clientSubscriptionObject || null}
                                    payment={clientPayments.length > 0 ? clientPayments[clientPayments.length - 1] : null}
                                    subsrciptioFeatures={subsrciptioFeatures}
+                                   currencies={currencies || []}
                               />
                          </TabPanel>
 

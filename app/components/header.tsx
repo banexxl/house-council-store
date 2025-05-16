@@ -3,14 +3,15 @@
 import { AppBar, Toolbar, Button, Box, Container, IconButton, Drawer, List, ListItem, ListItemButton, ListItemText, Typography, useTheme } from "@mui/material";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import MenuIcon from '@mui/icons-material/Menu';
 import { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import { useCookieTokenUpdater } from "@/app/lib/client-session-update";
 import useScrollTrigger from "@mui/material/useScrollTrigger";
 import { logoutUserAction } from "../profile/account-action";
-
+import CircularProgress from '@mui/material/CircularProgress';
+import Backdrop from '@mui/material/Backdrop';
 
 type HeaderProps = {
   user: User | null;
@@ -23,6 +24,14 @@ export const Header = ({ user }: HeaderProps) => {
   const theme = useTheme();
 
   useCookieTokenUpdater();
+
+  const [isPending, startTransition] = useTransition()
+
+  const handleNavClick = (path: string) => {
+    startTransition(() => {
+      router.push(path);
+    });
+  };
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -67,9 +76,9 @@ export const Header = ({ user }: HeaderProps) => {
         {navItems.map((item) => (
           <ListItem key={item.name} >
             <ListItemButton sx={{ textAlign: "center" }}>
-              <Link href={item.path} style={{ textDecoration: "none", color: theme.palette.secondary.main, width: "100%" }}>
-                <ListItemText primary={item.name} />
-              </Link>
+              <ListItemButton onClick={() => handleNavClick(item.path)}>
+                <ListItemText primary={item.name} sx={{ color: theme.palette.secondary.main }} />
+              </ListItemButton>
             </ListItemButton>
           </ListItem>
         ))}
@@ -140,9 +149,13 @@ export const Header = ({ user }: HeaderProps) => {
 
             <Box sx={{ display: { xs: "none", md: "flex" }, gap: 2 }}>
               {navItems.map((item) => (
-                <Link key={item.name} href={item.path} >
-                  <Button sx={{ color: theme.palette.primary.main }}>{item.name}</Button>
-                </Link>
+                <Button
+                  key={item.name}
+                  sx={{ color: theme.palette.primary.main }}
+                  onClick={() => handleNavClick(item.path)}
+                >
+                  {item.name}
+                </Button>
               ))}
               {user ? (
                 <>
@@ -186,6 +199,15 @@ export const Header = ({ user }: HeaderProps) => {
       >
         {drawer}
       </Drawer>
+      <Backdrop
+        sx={{
+          color: '#fff',
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+        }}
+        open={isPending}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
     </Box>
   );
 }

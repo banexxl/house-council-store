@@ -84,7 +84,7 @@ export default function PaymentsTab({ clientPayments, userData, clientSubscripti
 
      const getPaymentStatusColor = (status: string) => {
           switch (status.toLowerCase()) {
-               case "paid":
+               case "succeeded":
                     return "success"
                case "pending":
                     return "warning"
@@ -117,7 +117,7 @@ export default function PaymentsTab({ clientPayments, userData, clientSubscripti
                               {clientPayments && clientPayments.length > 0
                                    ? clientPayments.map((payment: Payment) => (
                                         <TableRow key={payment.id}>
-                                             <TableCell>{payment.id}</TableCell>
+                                             <TableCell>{payment.invoice_number}</TableCell>
                                              <TableCell>{payment.created_at}</TableCell>
                                              <TableCell>{payment.total_paid}</TableCell>
                                              <TableCell>
