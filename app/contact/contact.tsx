@@ -63,12 +63,17 @@ export const ContactPage = ({ mapKey }: ContactProps) => {
 
      const handleSubmit = async (values: typeof initialValues) => {
 
-          const sendEmailResponse = await sendClientContactMessageToSupport(values.email, values.fullName, values.message, values.subject)
+          try {
+               const sendEmailResponse = await sendClientContactMessageToSupport(values.email, values.fullName, values.message, values.subject)
 
-          if (sendEmailResponse) {
-               toast.success("Message sent successfully.");
-          } else {
-               toast.error("Failed to send message.");
+               if (sendEmailResponse) {
+                    toast.success("Message sent successfully.");
+               } else {
+                    toast.error("Failed to send message.");
+               }
+          } catch (error) {
+               console.error(error);
+               toast.error("Failed to send message. Please try again later.");
           }
      };
 

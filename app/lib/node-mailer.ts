@@ -499,7 +499,6 @@ export const sendClientContactMessageToSupport = async (clientEmail: string, con
     subject: subject,
     html: htmlContent
   });
-  console.log('sendEmailToSupport', sendEmailToSupport);
 
   return sendEmailToSupport
 
