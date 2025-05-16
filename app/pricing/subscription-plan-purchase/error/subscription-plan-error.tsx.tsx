@@ -37,7 +37,7 @@ export default function SubscriptionErrorPage({ userEmail }: FreeTrialErrorProps
                          </Typography>
 
                          <Typography variant="body1" sx={{ mb: 4 }}>
-                              It looks like there was an error starting your free trial. You can try again, or contact our support team at support@NestLink.com if you need help.
+                              It looks like there was an error starting your free trial. You can try again, or contact our support team at support@nest-link.app if you need help.
                          </Typography>
 
                          <Box sx={{ bgcolor: "background.default", p: 3, borderRadius: 2, mb: 4, maxWidth: 500, mx: "auto" }}>
@@ -73,7 +73,7 @@ export default function SubscriptionErrorPage({ userEmail }: FreeTrialErrorProps
                          </Box>
 
                          <Typography variant="body2" color="text.secondary">
-                              If you have any questions or need help, contact our support team at support@NestLink.com
+                              If you have any questions or need help, contact our support team at support@nest-link.app
                          </Typography>
                     </Paper>
                </Animate>

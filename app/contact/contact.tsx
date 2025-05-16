@@ -120,7 +120,7 @@ export const ContactPage = ({ mapKey }: ContactProps) => {
                                         <Typography variant="h4" gutterBottom>
                                              Contact Information
                                         </Typography>
-                                        <Typography variant="body1" color="text.secondary" paragraph>
+                                        <Typography variant="body1" color="text.secondary" >
                                              You can also reach us through the following channels.
                                         </Typography>
 
@@ -132,7 +132,7 @@ export const ContactPage = ({ mapKey }: ContactProps) => {
                                                             Email
                                                        </Typography>
                                                        <Typography variant="body2" color="text.secondary">
-                                                            support@NestLink.com
+                                                            support@nest-link.app
                                                        </Typography>
                                                        <Typography variant="body2" color="text.secondary">
                                                             sales@NestLink.com

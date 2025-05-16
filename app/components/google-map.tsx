@@ -35,6 +35,7 @@ export default function GoogleMap({
      width = "100%",
      onMarkerClick,
 }: GoogleMapProps) {
+
      const mapRef = useRef<HTMLDivElement>(null);
      const [map, setMap] = useState<google.maps.Map | null>(null);
      const [error, setError] = useState<string | null>(null);
