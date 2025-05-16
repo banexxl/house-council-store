@@ -4,10 +4,13 @@ import { Box, Button, Card, Container, Divider, Grid, MenuItem, Paper, TextField
 import EmailIcon from "@mui/icons-material/Email"
 import PhoneIcon from "@mui/icons-material/Phone"
 import LocationOnIcon from "@mui/icons-material/LocationOn"
-import { Toaster } from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import GoogleMap, { MapMarker } from "@/app/components/google-map";
 import { use, useEffect, useState } from "react";
+import * as Yup from "yup"
 import Animate from "@/app/components/animation-framer-motion"
+import { Form, Formik } from "formik"
+import { sendClientContactMessageToSupport } from "../lib/node-mailer"
 // Sample data for markers
 const sampleLocations: MapMarker[] = [
      {
@@ -30,6 +33,22 @@ const sampleLocations: MapMarker[] = [
      },
 ]
 
+const initialValues = {
+     fullName: '',
+     email: '',
+     subject: '',
+     message: '',
+};
+
+const validationSchema = Yup.object({
+     fullName: Yup.string().required('Full Name is required'),
+     email: Yup.string().email('Invalid email').required('Email is required'),
+     subject: Yup.string().required('Subject is required'),
+     message: Yup.string().required('Message is required'),
+});
+
+
+
 type ContactProps = {
      mapKey: string
 }
@@ -41,6 +60,17 @@ export const ContactPage = ({ mapKey }: ContactProps) => {
      const handleMarkerClick = (marker: MapMarker) => {
           setSelectedLocation(marker)
      }
+
+     const handleSubmit = async (values: typeof initialValues) => {
+
+          const sendEmailResponse = await sendClientContactMessageToSupport(values.email, values.fullName, values.message, values.subject)
+
+          if (sendEmailResponse) {
+               toast.success("Message sent successfully.");
+          } else {
+               toast.error("Failed to send message.");
+          }
+     };
 
      return (
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
@@ -66,41 +96,97 @@ export const ContactPage = ({ mapKey }: ContactProps) => {
                                              Fill out the form and our team will get back to you within 24 hours.
                                         </Typography>
 
-                                        <Box component="form" sx={{ mt: 4 }}>
-                                             <Grid container spacing={3}>
-                                                  <Grid size={{ xs: 12, md: 6 }}>
-                                                       <TextField fullWidth label="Full Name" variant="outlined" placeholder="Enter your full name" />
-                                                  </Grid>
-                                                  <Grid size={{ xs: 12, md: 6 }}>
-                                                       <TextField fullWidth label="Email" variant="outlined" placeholder="Enter your email" type="email" />
-                                                  </Grid>
-                                                  <Grid size={{ xs: 12 }}>
-                                                       <TextField fullWidth select label="Subject" variant="outlined" defaultValue="">
-                                                            <MenuItem value="">Select a subject</MenuItem>
-                                                            <MenuItem value="general">General Inquiry</MenuItem>
-                                                            <MenuItem value="support">Technical Support</MenuItem>
-                                                            <MenuItem value="demo">Request a Demo</MenuItem>
-                                                            <MenuItem value="billing">Billing Question</MenuItem>
-                                                            <MenuItem value="other">Other</MenuItem>
-                                                       </TextField>
-                                                  </Grid>
-                                                  <Grid size={{ xs: 12 }}>
-                                                       <TextField
-                                                            fullWidth
-                                                            label="Message"
-                                                            variant="outlined"
-                                                            placeholder="Enter your message"
-                                                            multiline
-                                                            rows={5}
-                                                       />
-                                                  </Grid>
-                                                  <Grid size={{ xs: 12 }}>
-                                                       <Button variant="contained" size="large" fullWidth>
-                                                            Send Message
-                                                       </Button>
-                                                  </Grid>
-                                             </Grid>
-                                        </Box>
+                                        <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleSubmit}>
+                                             {({ values, errors, touched, handleChange, handleBlur, isSubmitting }) => (
+                                                  <Form>
+                                                       <Box sx={{ mt: 4 }}>
+                                                            <Grid container spacing={3}>
+                                                                 <Grid size={{ xs: 12, md: 6 }}>
+                                                                      <TextField
+                                                                           fullWidth
+                                                                           name="fullName"
+                                                                           label="Full Name"
+                                                                           placeholder="Enter your full name"
+                                                                           variant="outlined"
+                                                                           value={values.fullName}
+                                                                           onChange={handleChange}
+                                                                           onBlur={handleBlur}
+                                                                           error={touched.fullName && Boolean(errors.fullName)}
+                                                                           helperText={touched.fullName && errors.fullName}
+                                                                      />
+                                                                 </Grid>
+
+                                                                 <Grid size={{ xs: 12, md: 6 }}>
+                                                                      <TextField
+                                                                           fullWidth
+                                                                           name="email"
+                                                                           label="Email"
+                                                                           placeholder="Enter your email"
+                                                                           type="email"
+                                                                           variant="outlined"
+                                                                           value={values.email}
+                                                                           onChange={handleChange}
+                                                                           onBlur={handleBlur}
+                                                                           error={touched.email && Boolean(errors.email)}
+                                                                           helperText={touched.email && errors.email}
+                                                                      />
+                                                                 </Grid>
+
+                                                                 <Grid size={{ xs: 12, md: 6 }}>
+                                                                      <TextField
+                                                                           select
+                                                                           fullWidth
+                                                                           name="subject"
+                                                                           label="Subject"
+                                                                           variant="outlined"
+                                                                           value={values.subject}
+                                                                           onChange={handleChange}
+                                                                           onBlur={handleBlur}
+                                                                           error={touched.subject && Boolean(errors.subject)}
+                                                                           helperText={touched.subject && errors.subject}
+                                                                      >
+                                                                           <MenuItem value="">Select a subject</MenuItem>
+                                                                           <MenuItem value="General Inquiry">General Inquiry</MenuItem>
+                                                                           <MenuItem value="Technical Support">Technical Support</MenuItem>
+                                                                           <MenuItem value="Request a Demo">Request a Demo</MenuItem>
+                                                                           <MenuItem value="Billing Question">Billing Question</MenuItem>
+                                                                           <MenuItem value="Other">Other</MenuItem>
+                                                                      </TextField>
+                                                                 </Grid>
+
+                                                                 <Grid size={{ xs: 12 }}>
+                                                                      <TextField
+                                                                           fullWidth
+                                                                           multiline
+                                                                           rows={5}
+                                                                           name="message"
+                                                                           label="Message"
+                                                                           placeholder="Enter your message"
+                                                                           variant="outlined"
+                                                                           value={values.message}
+                                                                           onChange={handleChange}
+                                                                           onBlur={handleBlur}
+                                                                           error={touched.message && Boolean(errors.message)}
+                                                                           helperText={touched.message && errors.message}
+                                                                      />
+                                                                 </Grid>
+
+                                                                 <Grid size={{ xs: 12 }}>
+                                                                      <Button
+                                                                           type="submit"
+                                                                           variant="contained"
+                                                                           size="large"
+                                                                           fullWidth
+                                                                           loading={isSubmitting}
+                                                                      >
+                                                                           Send Message
+                                                                      </Button>
+                                                                 </Grid>
+                                                            </Grid>
+                                                       </Box>
+                                                  </Form>
+                                             )}
+                                        </Formik>
                                    </Grid>
 
                                    <Grid size={{ xs: 12, md: 6 }}>
@@ -133,9 +219,6 @@ export const ContactPage = ({ mapKey }: ContactProps) => {
                                                        </Typography>
                                                        <Typography variant="body2" color="text.secondary">
                                                             support@nest-link.app
-                                                       </Typography>
-                                                       <Typography variant="body2" color="text.secondary">
-                                                            sales@NestLink.com
                                                        </Typography>
                                                   </Box>
                                              </Box>

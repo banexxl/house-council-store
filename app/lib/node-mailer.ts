@@ -1,8 +1,10 @@
+'use server';
+
 import nodemailer, { SentMessageInfo } from 'nodemailer';
 import { logServerAction } from './server-logging';
 import { readClientSubscriptionPlanFromClientId } from '../profile/subscription-plan-actions';
 
-export const transporter = nodemailer.createTransport({
+const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_SERVER_HOST,
   port: 465,
   secure: true, // true for 465, false for other ports
@@ -14,6 +16,12 @@ export const transporter = nodemailer.createTransport({
     rejectUnauthorized: false
   }
 });
+
+type SendEndingSubscriptionEmail = {
+  daysRemaining: number,
+  clientEmail: string,
+  clientId: string
+}
 
 interface SendTrialEndingEmail {
   to: string;
@@ -220,12 +228,6 @@ export const sendTrialEndingEmailToClient = async ({ to, daysRemaining }: SendTr
   }
 
   return sendEmailToClientResponse
-}
-
-export type SendEndingSubscriptionEmail = {
-  daysRemaining: number,
-  clientEmail: string,
-  clientId: string
 }
 
 export const sendSubscriptionEndingNotificationToSupport = async ({ daysRemaining, clientEmail, clientId }: SendEndingSubscriptionEmail): Promise<SentMessageInfo> => {
@@ -441,4 +443,63 @@ export const sendSuccessfullClientRegistrationToSupport = async (clientEmail: st
   return sendEmailToSupport
 }
 
+export const sendClientContactMessageToSupport = async (clientEmail: string, contactPerson: string, message: string, subject: string): Promise<SentMessageInfo> => {
 
+  const htmlContent = `
+<html>
+<head>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .wrapper {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .header {
+      background-color: #f2f2f2;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .content {
+      padding: 20px;
+    }
+
+    .footer {
+      background-color: #f2f2f2;
+      padding: 20px;
+      text-align: center; 
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="header">
+      <h1>Client Contact Message</h1>
+    </div>
+    <div class="content">
+      <p>Client Name: ${contactPerson}</p>
+      <p>Client Email: ${clientEmail}</p>
+      <p>Message: ${message}</p>
+    </div>
+      </div>
+</body>
+</html>
+  `;
+
+  const sendEmailToSupport = await transporter.sendMail({
+    from: 'Nest Link <support@nest-link.app>',
+    to: 'support@nest-link.app',
+    subject: subject,
+    html: htmlContent
+  });
+
+  return sendEmailToSupport
+
+}
