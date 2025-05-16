@@ -133,18 +133,15 @@ export const Header = ({ user }: HeaderProps) => {
               transition: "all 0.3s ease",
             }}
           >
-
-            <Link href="/" >
-              <Image
-                src="/logo-icons/1-01.png"
-                alt="Logo"
-                width={shrinkOnScroll ? 50 : 80}
-                height={shrinkOnScroll ? 50 : 80}
-                style={{ transform: `scale(${shrinkOnScroll ? 1.2 : 1.5})`, marginTop: "20px", transition: "all 0.3s ease" }}
-                priority
-              />
-            </Link>
-
+            <Image
+              src="/logo-icons/1-01.png"
+              alt="Logo"
+              width={shrinkOnScroll ? 50 : 80}
+              height={shrinkOnScroll ? 50 : 80}
+              style={{ transform: `scale(${shrinkOnScroll ? 1.2 : 1.5})`, marginTop: "20px", transition: "all 0.3s ease", cursor: "pointer" }}
+              priority
+              onClick={() => handleNavClick("/")}
+            />
             <Box sx={{ flexGrow: 1 }} />
 
             <Box sx={{ display: { xs: "none", md: "flex" }, gap: 2 }}>
