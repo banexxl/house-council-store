@@ -1,7 +1,7 @@
 'use client'
 
 import React, { use, useEffect, useState, useTransition } from 'react';
-import { Box, Button, Container, Typography, Avatar, Card, CardContent, Grid, useMediaQuery } from '@mui/material';
+import { Box, Button, Container, Typography, Avatar, Card, CardContent, Grid, useMediaQuery, useTheme } from '@mui/material';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import PeopleIcon from '@mui/icons-material/People';
 import ShieldIcon from '@mui/icons-material/Shield';
@@ -16,6 +16,7 @@ const LandingPage = () => {
      const isMobile = useMediaQuery(theme => theme.breakpoints.down('sm'));
      const router = useRouter();
      const [isPending, startTransition] = useTransition()
+     const theme = useTheme();
 
      const handleNavClick = (path: string) => {
           startTransition(() => {
@@ -234,7 +235,7 @@ const LandingPage = () => {
                     }}
                     open={isPending}
                >
-                    <CircularProgress color="inherit" />
+                    <CircularProgress sx={{ color: theme.palette.primary.main }} />
                </Backdrop>
           </Box >
      );

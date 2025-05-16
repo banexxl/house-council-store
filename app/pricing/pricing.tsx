@@ -303,7 +303,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
                     }}
                     open={isPending}
                >
-                    <CircularProgress color="inherit" />
+                    <CircularProgress sx={{ color: theme.palette.primary.main }} />
                </Backdrop>
           </Box >
      )
