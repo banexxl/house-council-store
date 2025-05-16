@@ -1,7 +1,7 @@
 import * as Yup from 'yup';
 
 export type Payment = {
-     id: string; // uuid
+     id?: string; // uuid
      created_at: string; // ISO timestamp
      updated_at: string; // ISO timestamp
      total_cost: number;
@@ -11,8 +11,8 @@ export type Payment = {
      client: string; // uuid
      billing_information: string; // uuid
      status: string; // uuid
-     currency: string
-     refunded_at: string;
+     currency: string;
+     refunded_at: string | null;
      is_recurring: boolean;
 }
 

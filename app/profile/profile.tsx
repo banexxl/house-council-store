@@ -12,6 +12,7 @@ import { ClientBillingInformation } from "../types/billing-information"
 import { Feature } from "../types/feature"
 import Animate from "@/app/components/animation-framer-motion"
 import { Payment } from "../types/payment"
+import { Currency } from "../types/currency"
 
 // Mock data for notification preferences
 const notificationPreferences = [
@@ -48,8 +49,9 @@ type ProfilePageProps = {
      binCheckerAPIKey?: string,
      clientPayments: Payment[]
      subsrciptioFeatures: SubscriptionPlan & { features: Feature[] } | null
+     currencies?: Currency[],
 }
-export const ProfilePage = ({ sessionAndClientDataCombined, clientSubscriptionObject, paymentMethods, allClientBillingInformation, recentActivity, binCheckerAPIKey, clientPayments, subsrciptioFeatures }: ProfilePageProps) => {
+export const ProfilePage = ({ sessionAndClientDataCombined, clientSubscriptionObject, paymentMethods, allClientBillingInformation, recentActivity, binCheckerAPIKey, clientPayments, subsrciptioFeatures, currencies }: ProfilePageProps) => {
 
      const [editMode, setEditMode] = useState(false)
      const [notificationSettings, setNotificationSettings] = useState(notificationPreferences)
@@ -85,6 +87,7 @@ export const ProfilePage = ({ sessionAndClientDataCombined, clientSubscriptionOb
                                              binCheckerAPIKey={binCheckerAPIKey}
                                              clientPayments={clientPayments}
                                              subsrciptioFeatures={subsrciptioFeatures}
+                                             currencies={currencies}
                                         />
                                    </Grid>
                               </Grid>

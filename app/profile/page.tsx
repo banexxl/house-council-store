@@ -11,6 +11,7 @@ import { readAllClientsBillingInformation } from "./client-billing-information-a
 import { redirect } from "next/navigation";
 import { logServerAction } from "../lib/server-logging";
 import { readAllClientPaymentsAction } from "./client-payment-actions";
+import { readAllCurrenciesAction, readAllPaymentMethodsAction } from "./payment-actions";
 
 export default async function Page() {
      // Fetch user session
@@ -38,7 +39,7 @@ export default async function Page() {
      }
 
      // Fetch related data in parallel
-     const [clientSubscriptionObject, role, client_status, client_type, billingInformation, recentActivity, clientPayments] = await Promise.all([
+     const [clientSubscriptionObject, role, client_status, client_type, billingInformation, recentActivity, clientPayments, currencies, paymentMethodsData] = await Promise.all([
           readClientSubscriptionPlanFromClientId(client.id),
           readEntity("tblClientRoles", client.role_id),
           readEntity("tblClientStatuses", client.client_status),
@@ -46,6 +47,8 @@ export default async function Page() {
           readAllClientsBillingInformation(client.id),
           readClientRecentActivityAction(user.email, client.id),
           readAllClientPaymentsAction(client.id),
+          readAllCurrenciesAction(),
+          readAllPaymentMethodsAction(),
      ])
 
 
@@ -73,10 +76,11 @@ export default async function Page() {
                     clientSubscriptionObject={clientSubscriptionObject?.clientSubscriptionPlanData! ?? null}
                     allClientBillingInformation={billingInformation.readAllClientBillingInformationData ?? []}
                     clientPayments={clientPayments.data ?? []}
-                    paymentMethods={[]}
+                    paymentMethods={paymentMethodsData.paymentMethods!}
                     recentActivity={recentActivity.data ?? []}
                     binCheckerAPIKey={binCheckerAPIKey ?? ""}
                     subsrciptioFeatures={subsrciptionFeatures?.subscriptionPlanFeatures ?? null}
+                    currencies={currencies.currencies ?? []}
                />
                <Footer />
           </>

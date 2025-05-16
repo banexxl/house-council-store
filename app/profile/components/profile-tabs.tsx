@@ -24,6 +24,7 @@ import { BillingTab } from "./tabs/billing-tab"
 import SubscriptionTab from "./tabs/subscription-tab"
 import { Payment } from "@/app/types/payment"
 import { BaseEntity } from "@/app/types/base-entity"
+import { Currency } from "@/app/types/currency"
 
 interface TabPanelProps {
      children?: React.ReactNode
@@ -60,7 +61,8 @@ interface ProfileTabsProps {
      subscriptionFeatures?: Feature[],
      binCheckerAPIKey?: string,
      clientPayments: Payment[]
-     subsrciptioFeatures?: SubscriptionPlan & { features: Feature[] } | null
+     subsrciptioFeatures?: SubscriptionPlan & { features: Feature[] } | null,
+     currencies?: Currency[]
 }
 
 export default function ProfileTabs({
@@ -76,7 +78,8 @@ export default function ProfileTabs({
      subscriptionFeatures,
      binCheckerAPIKey,
      clientPayments,
-     subsrciptioFeatures
+     subsrciptioFeatures,
+     currencies
 }: ProfileTabsProps) {
 
      const [tabValue, setTabValue] = useState(0)
@@ -143,7 +146,13 @@ export default function ProfileTabs({
 
                          {/* Payments Tab */}
                          <TabPanel value={tabValue} index={3}>
-                              <PaymentsTab clientPayments={clientPayments} />
+                              <PaymentsTab
+                                   clientPayments={clientPayments}
+                                   userData={userData}
+                                   clientSubscriptionObject={clientSubscriptionObject || null}
+                                   allClientBillingInformation={allClientBillingInformation}
+                                   currencies={currencies || []}
+                              />
                          </TabPanel>
 
                          {/* Notifications Tab */}
