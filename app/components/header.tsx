@@ -157,25 +157,36 @@ export const Header = ({ user }: HeaderProps) => {
                   {item.name}
                 </Button>
               ))}
+
               {user ? (
-                <>
-                  <Link href="/profile" style={{ color: theme.palette.primary.main }}>
-                    <Button color="inherit">Profile</Button>
-                  </Link>
-                </>
+                <Button
+                  sx={{ color: theme.palette.primary.main }}
+                  onClick={() => handleNavClick("/profile")}
+                >
+                  Profile
+                </Button>
               ) : (
-                <Link href="/auth/sign-in" style={{ color: theme.palette.primary.main }}>
-                  <Button color="inherit">Sign In</Button>
-                </Link>
+                <Button
+                  sx={{ color: theme.palette.primary.main }}
+                  onClick={() => handleNavClick("/auth/sign-in")}
+                >
+                  Sign In
+                </Button>
               )}
+
               {user && (
-                <Link href={process.env.NEXT_PUBLIC_DASHBOARD_URL!} target="_blank" style={{ color: theme.palette.primary.main }}>
+                <Link
+                  href={process.env.NEXT_PUBLIC_DASHBOARD_URL!}
+                  target="_blank"
+                  style={{ color: theme.palette.primary.main }}
+                >
                   <Button variant="contained" color="primary">
                     Dashboard
                   </Button>
                 </Link>
               )}
             </Box>
+
 
             <Box sx={{ display: { xs: "flex", md: "none" } }}>
               <IconButton color="inherit" aria-label="open drawer" edge="end" onClick={handleDrawerToggle}>
@@ -206,7 +217,7 @@ export const Header = ({ user }: HeaderProps) => {
         }}
         open={isPending}
       >
-        <CircularProgress color="inherit" />
+        <CircularProgress color="primary" />
       </Backdrop>
     </Box>
   );
