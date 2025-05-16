@@ -127,22 +127,21 @@ export default function SubscriptionTab({ clientSubscriptionObject, payment, sub
                                    <Typography variant="h5" color="primary.main" gutterBottom>
                                         {clientSubscriptionObject?.subscription_plan.name}
                                    </Typography>
-                                   <Typography variant="body2" color="text.secondary">
-                                        {clientSubscriptionObject?.status == 'trialing' ? (
+                                   <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                                        {clientSubscriptionObject?.status === 'trialing' ? (
                                              <>Trial period until: {renderDate(clientSubscriptionObject?.next_payment_date!)}</>
+                                        ) : payment ? (
+                                             <>
+                                                  Last Payment: {renderDate(payment.created_at)}aaaa
+                                                  {/* {payment.total_paid > 0 && (
+                                                  <> - {formattedPrice}</>
+                                                  )} */}
+                                             </>
                                         ) : (
-                                             payment ? (
-                                                  <>
-                                                       Last Payment: {renderDate(payment.created_at)}aaaa
-                                                       {/* {payment.total_paid > 0 && (
-                                                            <> - {formattedPrice}</>
-                                                       )} */}
-                                                  </>
-                                             ) : (
-                                                  <i>No payment information available</i>
-                                             )
+                                             <i>No payment information available</i>
                                         )}
-                                   </Typography>
+                                   </Box>
+
                               </Box>
                               <Button variant="outlined" color="primary" onClick={() => handleDialogToggle("upgrade", true)} disabled={isProcessing}>
                                    Upgrade Plan
@@ -199,22 +198,18 @@ export default function SubscriptionTab({ clientSubscriptionObject, payment, sub
                          )}
 
                          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                              <Typography variant="body1" color="text.secondary">
-
-                                   <List dense={true}>
-                                        {subsrciptioFeatures?.features.map((feature, index) => (
-                                             <ListItem key={index} component={Link} href={`/docs#${feature.slug!}`} sx={{ cursor: "pointer" }}>
-                                                  <ListItemIcon>
-                                                       <CheckCircleIcon fontSize="small" color="success" />
-                                                  </ListItemIcon>
-                                                  <Tooltip title={'Learn more about ' + feature.name} placement={'right'}>
-                                                       <ListItemText primary={feature.name} sx={{ color: theme.palette.primary.main }} />
-                                                  </Tooltip>
-                                             </ListItem>
-                                        ))}
-                                   </List>
-
-                              </Typography>
+                              <List dense={true}>
+                                   {subsrciptioFeatures?.features.map((feature, index) => (
+                                        <ListItem key={index} component={Link} href={`/docs#${feature.slug!}`} sx={{ cursor: "pointer" }}>
+                                             <ListItemIcon>
+                                                  <CheckCircleIcon fontSize="small" color="success" />
+                                             </ListItemIcon>
+                                             <Tooltip title={'Learn more about ' + feature.name} placement={'right'}>
+                                                  <ListItemText primary={feature.name} sx={{ color: theme.palette.primary.main }} />
+                                             </Tooltip>
+                                        </ListItem>
+                                   ))}
+                              </List>
                          </Box>
                     </CardContent>
                </Card>
