@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useTransition } from "react"
 import {
      Box,
      Button,
@@ -29,7 +29,8 @@ import { ClientSubscription, SubscriptionPlan } from "../types/subscription-plan
 import { Feature } from "../types/feature"
 import { useRouter } from "next/navigation"
 import Animate from "@/app/components/animation-framer-motion"
-import { Client } from "../types/client"
+import CircularProgress from '@mui/material/CircularProgress';
+import Backdrop from '@mui/material/Backdrop';
 
 const faqs = [
      {
@@ -62,6 +63,14 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
      const [loading, setLoading] = useState(false)
      const [loadingIndex, setLoadingIndex] = useState<number | null>(null);
      const theme = useTheme()
+
+     const [isPending, startTransition] = useTransition()
+
+     const handleNavClick = (path: string) => {
+          startTransition(() => {
+               router.push(path);
+          });
+     };
 
      const handleBillingCycleChange = (event: React.SyntheticEvent, newValue: "monthly" | "annually") => {
           setBillingCycle(newValue)
@@ -279,7 +288,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
                                    <Typography variant="body1" color="text.secondary" sx={{ color: theme.palette.primary.main, mb: 2 }}>
                                         Contact our sales team for custom pricing and features tailored to your specific needs.
                                    </Typography>
-                                   <Button variant="contained" size="large" onClick={() => router.push("/contact")}>
+                                   <Button variant="contained" size="large" onClick={() => handleNavClick("/contact")}>
                                         Contact Sales
                                    </Button>
                               </Paper>
@@ -287,6 +296,15 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
                     </Box>
                </Animate >
                <Toaster />
+               <Backdrop
+                    sx={{
+                         color: '#fff',
+                         zIndex: (theme) => theme.zIndex.drawer + 1,
+                    }}
+                    open={isPending}
+               >
+                    <CircularProgress color="inherit" />
+               </Backdrop>
           </Box >
      )
 }

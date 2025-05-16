@@ -1,16 +1,27 @@
 'use client'
 
-import React, { use, useEffect, useState } from 'react';
-import { Box, Button, Container, Typography, Avatar, Link, Card, CardContent, Grid, useMediaQuery } from '@mui/material';
+import React, { use, useEffect, useState, useTransition } from 'react';
+import { Box, Button, Container, Typography, Avatar, Card, CardContent, Grid, useMediaQuery } from '@mui/material';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import PeopleIcon from '@mui/icons-material/People';
 import ShieldIcon from '@mui/icons-material/Shield';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import ParallaxSection from './components/paralax-section';
+import CircularProgress from '@mui/material/CircularProgress';
+import Backdrop from '@mui/material/Backdrop';
+import { useRouter } from 'next/navigation';
 
 const LandingPage = () => {
 
      const isMobile = useMediaQuery(theme => theme.breakpoints.down('sm'));
+     const router = useRouter();
+     const [isPending, startTransition] = useTransition()
+
+     const handleNavClick = (path: string) => {
+          startTransition(() => {
+               router.push(path);
+          });
+     };
 
      return (
           <Box>
@@ -37,16 +48,12 @@ const LandingPage = () => {
                                              communities.
                                         </Typography>
                                         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                                             <Link href="/pricing" style={{ textDecoration: 'none' }}>
-                                                  <Button variant="contained" size="large" endIcon={<ArrowForwardIcon />}>
-                                                       Get Started
-                                                  </Button>
-                                             </Link>
-                                             <Link href="/docs" style={{ textDecoration: 'none' }}>
-                                                  <Button variant="outlined" size="large">
-                                                       Learn More
-                                                  </Button>
-                                             </Link>
+                                             <Button variant="contained" size="large" endIcon={<ArrowForwardIcon />} onClick={() => handleNavClick('/register')}>
+                                                  Get Started
+                                             </Button>
+                                             <Button variant="outlined" size="large" onClick={() => handleNavClick('/docs')}>
+                                                  Learn More
+                                             </Button>
                                         </Box>
                                    </Box>
                               </Grid>
@@ -206,17 +213,29 @@ const LandingPage = () => {
                               <Typography variant="h6" color="text.secondary">
                                    Join hundreds of communities already using NestLink
                               </Typography>
-                              <Link href="/pricing" style={{ textDecoration: 'none' }}>
-                                   <Button variant="contained" size="large" fullWidth sx={{ maxWidth: 300, mb: 2 }}>
-                                        View Pricing Plans
-                                   </Button>
-                              </Link>
+                              <Button
+                                   variant="contained"
+                                   size="large"
+                                   fullWidth sx={{ maxWidth: 300, mb: 2 }}
+                                   onClick={() => handleNavClick('/pricing')}
+                              >
+                                   View Pricing Plans
+                              </Button>
                               <Typography variant="caption" color="text.secondary">
                                    Free trial available. No credit card required.
                               </Typography>
                          </Box>
                     </Container>
                </ParallaxSection>
+               <Backdrop
+                    sx={{
+                         color: '#fff',
+                         zIndex: (theme) => theme.zIndex.drawer + 1,
+                    }}
+                    open={isPending}
+               >
+                    <CircularProgress color="inherit" />
+               </Backdrop>
           </Box >
      );
 };

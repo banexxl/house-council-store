@@ -7,7 +7,6 @@ import { ThemeProvider } from "@mui/material/styles"
 import CssBaseline from "@mui/material/CssBaseline"
 import { Box } from "@mui/material"
 import theme from "@/app/theme"
-import { usePathname } from "next/navigation"
 import { Toaster } from "react-hot-toast"
 // import { useCookieFocusChecker } from "@/app/components/cookie-checker"
 
@@ -15,8 +14,6 @@ import { Toaster } from "react-hot-toast"
 const inter = Inter({ subsets: ["latin"] })
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-
-  const pathname = usePathname()
 
   // useCookieFocusChecker()
 

@@ -1,12 +1,25 @@
 "use client"
 
-import Link from "next/link"
-import { Box, Container, Typography, Divider, List, ListItem, ListItemText, Grid, useTheme } from "@mui/material"
+import { Box, Container, Typography, Divider, List, ListItem, ListItemText, Grid, useTheme, ListItemButton } from "@mui/material"
 import Image from "next/image";
+import CircularProgress from '@mui/material/CircularProgress';
+import Backdrop from '@mui/material/Backdrop';
+import { useTransition } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export const Footer = () => {
 
   const theme = useTheme();
+  const router = useRouter();
+
+  const [isPending, startTransition] = useTransition()
+
+  const handleNavClick = (path: string) => {
+    startTransition(() => {
+      router.push(path);
+    });
+  };
 
   return (
     <Box component="footer" sx={{ bgcolor: theme.palette.secondary.main, py: 6, borderTop: 1, borderColor: "divider" }}>
@@ -33,21 +46,24 @@ export const Footer = () => {
                 </Typography>
                 <List dense disablePadding>
                   <ListItem disablePadding>
-                    <Link href="/docs" style={{ textDecoration: "none", color: theme.palette.primary.main }}>
-                      <ListItemText primary="Features" />
-                    </Link>
+                    <ListItemButton onClick={() => handleNavClick("/docs")}>
+                      <ListItemText primary="Features" sx={{ color: theme.palette.primary.main }} />
+                    </ListItemButton>
                   </ListItem>
+
                   <ListItem disablePadding>
-                    <Link href="/pricing" style={{ textDecoration: "none", color: theme.palette.primary.main }}>
-                      <ListItemText primary="Pricing" />
-                    </Link>
+                    <ListItemButton onClick={() => handleNavClick("/pricing")}>
+                      <ListItemText primary="Pricing" sx={{ color: theme.palette.primary.main }} />
+                    </ListItemButton>
                   </ListItem>
+
                   <ListItem disablePadding>
-                    <Link href="/docs" style={{ textDecoration: "none", color: theme.palette.primary.main }}>
-                      <ListItemText primary="Documentation" />
-                    </Link>
+                    <ListItemButton onClick={() => handleNavClick("/docs")}>
+                      <ListItemText primary="Documentation" sx={{ color: theme.palette.primary.main }} />
+                    </ListItemButton>
                   </ListItem>
                 </List>
+
               </Grid>
 
               <Grid size={{ xs: 12, md: 4 }}>
@@ -55,21 +71,25 @@ export const Footer = () => {
                   Company
                 </Typography>
                 <List dense disablePadding>
+
                   <ListItem disablePadding>
-                    <Link href="/contact" style={{ textDecoration: "none", color: theme.palette.primary.main }}>
-                      <ListItemText primary="Contact" />
-                    </Link>
+                    <ListItemButton onClick={() => handleNavClick("/contact")}>
+                      <ListItemText primary="Contact" sx={{ color: theme.palette.primary.main }} />
+                    </ListItemButton>
                   </ListItem>
+
                   <ListItem disablePadding>
-                    <Link href="/privacy-policy" style={{ textDecoration: "none", color: theme.palette.primary.main }}>
-                      <ListItemText primary="Privacy Policy" />
-                    </Link>
+                    <ListItemButton onClick={() => handleNavClick("/privacy-policy")}>
+                      <ListItemText primary="Privacy Policy" sx={{ color: theme.palette.primary.main }} />
+                    </ListItemButton>
                   </ListItem>
+
                   <ListItem disablePadding>
-                    <Link href="/terms-and-conditions" style={{ textDecoration: "none", color: theme.palette.primary.main }}>
-                      <ListItemText primary="Terms of Service" />
-                    </Link>
+                    <ListItemButton onClick={() => handleNavClick("/terms-and-conditions")}>
+                      <ListItemText primary="Terms of Service" sx={{ color: theme.palette.primary.main }} />
+                    </ListItemButton>
                   </ListItem>
+
                 </List>
               </Grid>
 
@@ -79,17 +99,17 @@ export const Footer = () => {
                 </Typography>
                 <List dense disablePadding>
                   <ListItem disablePadding>
-                    <Link href="#" style={{ textDecoration: "none", color: theme.palette.primary.main }}>
+                    <Link href="https://twitter.com/NestLink" style={{ textDecoration: "none", color: theme.palette.primary.main }} target="_blank" rel="noopener noreferrer" >
                       <ListItemText primary="Twitter" />
                     </Link>
                   </ListItem>
                   <ListItem disablePadding>
-                    <Link href="#" style={{ textDecoration: "none", color: theme.palette.primary.main }}>
+                    <Link href="https://www.linkedin.com/company/nestlink" style={{ textDecoration: "none", color: theme.palette.primary.main }} target="_blank" rel="noopener noreferrer">
                       <ListItemText primary="LinkedIn" />
                     </Link>
                   </ListItem>
                   <ListItem disablePadding>
-                    <Link href="#" style={{ textDecoration: "none", color: theme.palette.primary.main }}>
+                    <Link href="https://www.facebook.com/NestLink" style={{ textDecoration: "none", color: theme.palette.primary.main }} target="_blank" rel="noopener noreferrer">
                       <ListItemText primary="Facebook" />
                     </Link>
                   </ListItem>
@@ -106,6 +126,15 @@ export const Footer = () => {
           © 2023 NestLink. All rights reserved.
         </Typography>
       </Container>
+      <Backdrop
+        sx={{
+          color: '#fff',
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+        }}
+        open={isPending}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
     </Box>
   )
 }
