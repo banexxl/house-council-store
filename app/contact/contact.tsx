@@ -97,7 +97,7 @@ export const ContactPage = ({ mapKey }: ContactProps) => {
                                         </Typography>
 
                                         <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleSubmit}>
-                                             {({ values, errors, touched, handleChange, handleBlur, isSubmitting }) => (
+                                             {({ values, errors, touched, handleChange, handleBlur, isSubmitting, isValid }) => (
                                                   <Form>
                                                        <Box sx={{ mt: 4 }}>
                                                             <Grid container spacing={3}>
@@ -178,6 +178,7 @@ export const ContactPage = ({ mapKey }: ContactProps) => {
                                                                            size="large"
                                                                            fullWidth
                                                                            loading={isSubmitting}
+                                                                           disabled={isSubmitting || !isValid}
                                                                       >
                                                                            Send Message
                                                                       </Button>
