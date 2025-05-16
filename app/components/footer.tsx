@@ -28,8 +28,8 @@ export const Footer = () => {
 
           <Grid size={{ xs: 12, md: 4 }}>
             <Box sx={{ display: "flex", alignItems: "center" }}>
-              <Image src="/logo-icons/1-01.png" alt="Logo" width={80} height={80} style={{ transform: "scale(1.5)", marginTop: "10px" }} priority />
-              <Typography variant="h6" component="div" sx={{ fontWeight: 700, color: theme.palette.primary.main }}>
+              <Image src="/logo-icons/1-01.png" alt="Logo" width={80} height={80} style={{ transform: "scale(1.5)", marginTop: "10px", cursor: "pointer" }} priority onClick={() => handleNavClick("/")} />
+              <Typography variant="h6" component="div" sx={{ fontWeight: 700, color: theme.palette.primary.main, cursor: "pointer" }} onClick={() => handleNavClick("/")}>
                 Nest Link
               </Typography>
             </Box>
