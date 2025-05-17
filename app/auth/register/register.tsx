@@ -1,12 +1,14 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { startTransition, useEffect, useState, useTransition } from "react"
 import Link from "next/link"
 import { useFormik } from "formik"
 import {
+     Backdrop,
      Box,
      Button,
      Checkbox,
+     CircularProgress,
      Container,
      Divider,
      FormControl,
@@ -18,6 +20,7 @@ import {
      Paper,
      TextField,
      Typography,
+     useTheme,
 } from "@mui/material"
 import Visibility from "@mui/icons-material/Visibility"
 import VisibilityOff from "@mui/icons-material/VisibilityOff"
@@ -31,9 +34,16 @@ export const RegisterPage = () => {
 
      const [showPassword, setShowPassword] = useState(false)
      const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+     const [isPending, startTransition] = useTransition()
      const router = useRouter()
+     const theme = useTheme();
+     const handleNavClick = (path: string) => {
+          console.log('path', path);
 
-
+          startTransition(() => {
+               router.push(path);
+          });
+     };
 
      const handleClickShowPassword = () => {
           setShowPassword(!showPassword)
@@ -332,11 +342,16 @@ export const RegisterPage = () => {
                                    <Divider sx={{ my: 4 }} />
 
                                    <Box sx={{ textAlign: "center" }}>
-                                        <Typography variant="body2">
+                                        <Typography variant="body2" component="div">
                                              Already have an account?{" "}
-                                             <Link href="/auth/sign-in" style={{ color: "primary" }}>
+                                             <Button
+                                                  variant="text"
+                                                  onClick={() => handleNavClick("/auth/sign-in")}
+                                                  color="primary"
+                                                  sx={{ fontWeight: 500, textTransform: "none", padding: 0, minWidth: "auto" }}
+                                             >
                                                   Sign in
-                                             </Link>
+                                             </Button>
                                         </Typography>
                                    </Box>
                               </Paper>
@@ -344,6 +359,15 @@ export const RegisterPage = () => {
                     </Box>
                     <Toaster />
                </Animate>
+               <Backdrop
+                    sx={{
+                         color: '#fff',
+                         zIndex: (theme) => theme.zIndex.drawer + 1,
+                    }}
+                    open={isPending}
+               >
+                    <CircularProgress sx={{ color: theme.palette.primary.main }} />
+               </Backdrop>
           </Box >
      )
 }
