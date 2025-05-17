@@ -17,6 +17,7 @@ import {
      DialogContent,
      TextField,
      DialogActions,
+     TablePagination,
 } from "@mui/material"
 import DownloadIcon from "@mui/icons-material/Download"
 import { ClientBillingInformation } from "@/app/types/billing-information"
@@ -29,6 +30,7 @@ import toast from "react-hot-toast"
 import { Currency } from "@/app/types/currency"
 import { ClientSubscription, SubscriptionPlan } from "@/app/types/subscription-plan"
 import { generateInvoiceString } from "@/app/lib/invoice-num-creator"
+import theme from "@/app/theme"
 
 interface PaymentsTabProps {
      clientPayments: Payment[],
@@ -43,12 +45,23 @@ export default function PaymentsTab({ clientPayments, userData, clientSubscripti
 
      const [open, setOpen] = useState(false)
      const [amount, setAmount] = useState("")
-
+     const currency = currencies.find(currency => currency.code === "USD")
      const handleOpen = () => setOpen(true)
+     const [page, setPage] = useState(0)
+     const [rowsPerPage, setRowsPerPage] = useState(5)
 
      const handleClose = () => {
           setAmount("")
           setOpen(false)
+     }
+
+     const handleChangePage = (_event: unknown, newPage: number) => {
+          setPage(newPage)
+     }
+
+     const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+          setRowsPerPage(parseInt(event.target.value, 10))
+          setPage(0)
      }
 
      const handleAddPayment = async (amount: number) => {
@@ -84,12 +97,22 @@ export default function PaymentsTab({ clientPayments, userData, clientSubscripti
 
      const getPaymentStatusColor = (status: string) => {
           switch (status.toLowerCase()) {
-               case "succeeded":
-                    return "success"
+               case "processing":
+                    return theme.palette.primary.main
                case "pending":
-                    return "warning"
+                    return theme.palette.warning.main
+               case "succeeded":
+                    return theme.palette.success.main
                case "failed":
-                    return "error"
+                    return theme.palette.error.main
+               case "chargeback":
+                    return theme.palette.error.main
+               case "refunded":
+                    return theme.palette.error.main
+               case "cancelled":
+                    return theme.palette.error.main
+               case "disputed":
+                    return theme.palette.error.main
                default:
                     return "default"
           }
@@ -109,21 +132,28 @@ export default function PaymentsTab({ clientPayments, userData, clientSubscripti
                                    <TableCell>Date</TableCell>
                                    <TableCell>Amount</TableCell>
                                    <TableCell>Status</TableCell>
-                                   <TableCell>Payment Method</TableCell>
                                    <TableCell align="right">Actions</TableCell>
                               </TableRow>
                          </TableHead>
                          <TableBody>
                               {clientPayments && clientPayments.length > 0
-                                   ? clientPayments.map((payment: Payment) => (
+                                   ? clientPayments.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((payment: Payment) => (
                                         <TableRow key={payment.id}>
                                              <TableCell>{payment.invoice_number}</TableCell>
-                                             <TableCell>{payment.created_at}</TableCell>
-                                             <TableCell>{payment.total_paid}</TableCell>
                                              <TableCell>
-                                                  <Chip label={payment.status} color={getPaymentStatusColor(payment.status)} size="small" />
+                                                  {new Intl.DateTimeFormat("en-US", {
+                                                       year: "numeric",
+                                                       month: "2-digit",
+                                                       day: "2-digit",
+                                                       hour: "2-digit",
+                                                       minute: "2-digit",
+                                                       second: "2-digit",
+                                                  }).format(new Date(payment.created_at))}
                                              </TableCell>
-                                             <TableCell>{payment.id}</TableCell>
+                                             <TableCell>{currency && currency.code} {payment.total_paid}</TableCell>
+                                             <TableCell>
+                                                  <Chip label={payment.status} sx={{ backgroundColor: getPaymentStatusColor(payment.status), color: theme.palette.common.white }} size="small" />
+                                             </TableCell>
                                              <TableCell align="right">
                                                   <Button variant="text" size="small" startIcon={<DownloadIcon />}>
                                                        Receipt
@@ -138,6 +168,15 @@ export default function PaymentsTab({ clientPayments, userData, clientSubscripti
                               }
                          </TableBody>
                     </Table>
+                    <TablePagination
+                         component="div"
+                         count={clientPayments.length}
+                         page={page}
+                         onPageChange={handleChangePage}
+                         rowsPerPage={rowsPerPage}
+                         onRowsPerPageChange={handleChangeRowsPerPage}
+                         rowsPerPageOptions={[5, 10, 25]}
+                    />
                </TableContainer>
 
                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -149,7 +188,7 @@ export default function PaymentsTab({ clientPayments, userData, clientSubscripti
                          Make Payment
                     </Button>
                     <Typography variant="body2" color="text.secondary">
-                         Showing 5 of 12 payments
+                         Showing {Math.min((page + 1) * rowsPerPage, clientPayments.length)} of {clientPayments.length} payments
                     </Typography>
                </Box>
 

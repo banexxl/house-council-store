@@ -49,7 +49,7 @@ const LandingPage = () => {
                                              communities.
                                         </Typography>
                                         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                                             <Button variant="contained" size="large" endIcon={<ArrowForwardIcon />} onClick={() => handleNavClick('/register')}>
+                                             <Button variant="contained" size="large" endIcon={<ArrowForwardIcon />} onClick={() => handleNavClick('/auth/register')}>
                                                   Get Started
                                              </Button>
                                              <Button variant="outlined" size="large" onClick={() => handleNavClick('/docs')}>
