@@ -1,12 +1,14 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useTransition } from "react"
 import Link from "next/link"
 import { useFormik } from "formik"
 import {
+     Backdrop,
      Box,
      Button,
      Checkbox,
+     CircularProgress,
      Container,
      Divider,
      FormControlLabel,
@@ -16,15 +18,17 @@ import {
      Paper,
      TextField,
      Typography,
+     useTheme,
 } from "@mui/material"
 import Visibility from "@mui/icons-material/Visibility"
 import VisibilityOff from "@mui/icons-material/VisibilityOff"
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined"
 import { signInSchema } from "./sign-in-schema"
-import { handleGoogleSignIn, signInUser } from "./sign-in-action"
+import { checkClientExists, handleGoogleSignIn } from "./sign-in-action"
 import { useRouter } from "next/navigation"
-import toast, { Toaster } from "react-hot-toast"
+import toast from "react-hot-toast"
 import Animate from "@/app/components/animation-framer-motion"
+import { createBrowserClient } from "@supabase/ssr"
 
 // Custom multi-colored Google icon as an SVG component
 const GoogleMultiColorIcon = (props: any) => (
@@ -75,8 +79,43 @@ export const LoginPage = () => {
      const [showPassword, setShowPassword] = useState(false)
      const [googleSignInLoading, setGoogleSignInLoading] = useState(false)
      const router = useRouter()
+     const theme = useTheme()
+     const [doesRequire2FA, setDoesRequire2FA] = useState(false)
+     const [twoFactorCode, setTwoFactorCode] = useState("")
+     const [loading, setLoading] = useState(false)
+     const [isPending, startTransition] = useTransition()
+     const [challengeId, setChallengeId] = useState<string>('')
+     const [factorId, setFactorId] = useState<string>('')
 
+     const supabase = createBrowserClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string
+     )
 
+     useEffect(() => {
+          (async () => {
+               try {
+                    const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+                    if (error) {
+                         throw error
+                    }
+
+                    if (data.nextLevel === 'aal2' && data.nextLevel !== data.currentLevel) {
+                         supabase.auth.signOut()
+                         router.refresh()
+                         toast.error('Your account needs 2FA authentication. Please sign in again.')
+                    }
+               } finally {
+                    // Cleanup or additional logic if needed
+               }
+          })()
+     }, [])
+
+     const handleNavClick = (path: string) => {
+          startTransition(() => {
+               router.push(path);
+          });
+     };
 
      const handleClickShowPassword = () => {
           setShowPassword(!showPassword)
@@ -90,21 +129,85 @@ export const LoginPage = () => {
           },
           validationSchema: signInSchema,
           onSubmit: async (values) => {
-               const signInUserResponse = await signInUser(values)
 
-               if (signInUserResponse.success) {
-                    toast.success("Sign in successful!")
-                    router.push("/profile")
+               const { success, error } = await checkClientExists(values)
+
+               if (!success) {
+                    toast.error(error?.message || error?.hint || error?.details || "Unknown error")
+                    return
                }
 
-               if (signInUserResponse.error) {
-                    toast.error(signInUserResponse.error.message ?
-                         signInUserResponse.error.message : signInUserResponse.error.hint ?
-                              signInUserResponse.error.hint : signInUserResponse.error.details
-                    )
+               try {
+                    const { data, error: signInError } = await supabase.auth.signInWithPassword({
+                         email: values.email,
+                         password: values.password,
+                    })
+
+                    if (signInError) {
+                         toast.error(signInError.message)
+                         return
+                    }
+
+                    if (!data.session.user.factors) {
+                         toast.success("Sign in successful!")
+                         handleNavClick("/profile")
+                         return
+                    }
+
+                    if (data.session && data.user?.factors && data.user?.factors?.length > 0) {
+                         const factor = data.user.factors.find(f => f.status === 'verified' && f.factor_type === 'totp')
+                         if (!factor) {
+                              console.log('factor', factor);
+
+                              toast.error("2FA required but no valid factor found.")
+                              return
+                         }
+
+                         const { data: challenge, error: challengeError } = await supabase.auth.mfa.challenge({ factorId: factor.id })
+
+                         if (challengeError || !challenge?.id) {
+                              toast.error("Failed to create 2FA challenge: " + (challengeError?.message || "Unknown error"))
+                              return
+                         }
+
+                         setDoesRequire2FA(true)
+                         setChallengeId(challenge.id)
+                         setFactorId(factor.id)
+                         toast.success("2FA code required. Please enter the 6-digit code.")
+                    }
+
+               } catch (err) {
+                    toast.error("Unexpected error during sign in. Please try again.")
                }
-          },
+          }
      })
+
+     const handleVerify = async (e?: React.FormEvent) => {
+          e?.preventDefault()
+          setLoading(true)
+
+          const { error, data } = await supabase.auth.mfa.verify({
+               factorId,
+               challengeId,
+               code: twoFactorCode,
+          })
+
+          if (error) {
+               toast.error("Invalid 2FA code: " + error.message)
+               setLoading(false)
+               return
+          }
+
+          const session = data.user
+          if (session) {
+               toast.success("2FA verified. You're now signed in!")
+               handleNavClick("/profile")
+          } else {
+               toast.error("Verification failed — no session returned.")
+          }
+
+          setLoading(false)
+     }
 
      return (
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
@@ -203,10 +306,57 @@ export const LoginPage = () => {
                                              </Grid>
 
                                              <Grid size={{ xs: 12 }}>
-                                                  <Button type="submit" fullWidth variant="contained" size="large" loading={formik.isSubmitting}>
+                                                  <Button
+                                                       type="submit"
+                                                       fullWidth
+                                                       variant="contained"
+                                                       size="large"
+                                                       loading={formik.isSubmitting}
+                                                       disabled={loading || formik.isSubmitting || doesRequire2FA}
+                                                  >
                                                        Sign In
                                                   </Button>
                                              </Grid>
+                                             {
+                                                  doesRequire2FA && (
+                                                       <Grid size={{ xs: 12 }}>
+                                                            <form onSubmit={handleVerify}>
+                                                                 <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
+                                                                      <TextField
+                                                                           label="6-digit code"
+                                                                           value={twoFactorCode}
+                                                                           onChange={(e) => {
+                                                                                const val = e.target.value.replace(/\D/g, '').slice(0, 6)
+                                                                                setTwoFactorCode(val)
+                                                                           }}
+                                                                           slotProps={{
+                                                                                htmlInput: {
+                                                                                     inputMode: 'numeric',
+                                                                                     pattern: '[0-9]*',
+                                                                                     maxLength: 6,
+                                                                                },
+                                                                           }}
+                                                                           onKeyDown={(e) => {
+                                                                                if (e.key === 'Enter') {
+                                                                                     handleVerify();
+                                                                                }
+                                                                           }}
+                                                                      />
+                                                                      <Button
+                                                                           type="submit"
+                                                                           sx={{ width: '200px', mt: 2 }}
+                                                                           variant="contained"
+                                                                           disabled={loading}
+                                                                      >
+                                                                           {
+                                                                                loading ? "Verifying..." : "Verify"
+                                                                           }
+                                                                      </Button>
+                                                                 </Box>
+                                                            </form>
+                                                       </Grid>
+                                                  )
+                                             }
                                         </Grid>
                                    </Box>
 
@@ -292,17 +442,31 @@ export const LoginPage = () => {
                                    <Box sx={{ mt: 4, textAlign: "center" }}>
                                         <Typography variant="body2">
                                              Don't have an account?{" "}
-                                             <Link href="/auth/register" style={{ textDecoration: "none", color: "primary" }}>
-                                                  <Typography component="span" variant="body2" color="primary" fontWeight={500}>
-                                                       Sign up
-                                                  </Typography>
-                                             </Link>
+                                             <Typography
+                                                  component="span"
+                                                  sx={{ cursor: "pointer" }}
+                                                  variant="body2"
+                                                  color="primary"
+                                                  fontWeight={500}
+                                                  onClick={() => handleNavClick("/auth/register")}
+                                             >
+                                                  Sign up
+                                             </Typography>
                                         </Typography>
                                    </Box>
                               </Paper>
                          </Container>
                     </Box>
                </Animate>
+               <Backdrop
+                    sx={{
+                         color: '#fff',
+                         zIndex: (theme) => theme.zIndex.drawer + 1,
+                    }}
+                    open={isPending}
+               >
+                    <CircularProgress sx={{ color: theme.palette.primary.main }} />
+               </Backdrop>
           </Box>
      )
 }

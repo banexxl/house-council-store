@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import {
      Box,
@@ -21,8 +21,10 @@ import EmailIcon from "@mui/icons-material/Email"
 import MarkEmailReadIcon from "@mui/icons-material/MarkEmailRead"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
 import { resendRegistrationEmail } from "./resend-email-action"
-import { Toaster } from "react-hot-toast"
+import toast, { Toaster } from "react-hot-toast"
 import Animate from "@/app/components/animation-framer-motion"
+import { createBrowserClient } from "@supabase/ssr"
+import { useRouter } from "next/navigation"
 
 export const RegistrationConfirmationPage = () => {
 
@@ -31,7 +33,7 @@ export const RegistrationConfirmationPage = () => {
      const [resendSuccess, setResendSuccess] = useState(false)
      const [resendError, setResendError] = useState(false)
      const [showResendForm, setShowResendForm] = useState(false)
-
+     const router = useRouter()
 
 
      const handleResendEmail = async (e: React.FormEvent) => {
@@ -54,6 +56,30 @@ export const RegistrationConfirmationPage = () => {
                setIsResending(false)
           }
      }
+
+     const supabase = createBrowserClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string
+     )
+
+     useEffect(() => {
+          (async () => {
+               try {
+                    const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+                    if (error) {
+                         throw error
+                    }
+
+                    if (data.nextLevel === 'aal2' && data.nextLevel !== data.currentLevel) {
+                         supabase.auth.signOut()
+                         router.refresh()
+                         toast.error('Your account needs 2FA authentication. Please sign in again.')
+                    }
+               } finally {
+                    // Cleanup or additional logic if needed
+               }
+          })()
+     }, [])
 
      return (
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
@@ -83,7 +109,7 @@ export const RegistrationConfirmationPage = () => {
 
                                    <Box
                                         sx={{
-                                             bgcolor: "secondary.light",
+                                             bgcolor: "primary.dark",
                                              p: 3,
                                              borderRadius: 2,
                                              mb: 4,
@@ -101,7 +127,7 @@ export const RegistrationConfirmationPage = () => {
                                         <Typography variant="body2">
                                              • The confirmation link will expire in 24 hours
                                              <br />• If you don't see the email, please check your spam or junk folder
-                                             <br />• Make sure to add <strong>noreply@NestLink.com</strong> to your contacts
+                                             <br />• Make sure to add <strong>support@nest-link.app</strong> to your contacts
                                         </Typography>
                                    </Box>
 

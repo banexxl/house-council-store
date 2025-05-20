@@ -1,3 +1,5 @@
+'use server'
+
 import { getSessionUser } from "@/app/lib/get-session";
 import { Footer } from "@/app/components/footer";
 import { Header } from "@/app/components/header";

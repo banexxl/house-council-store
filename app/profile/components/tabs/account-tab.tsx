@@ -61,7 +61,6 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
           try {
                logoutUserAction();
                router.refresh();
-
           } catch (error) {
                console.error("Error signing out:", error);
           }

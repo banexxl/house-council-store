@@ -1,18 +1,29 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { Box, Container, Typography, Paper, Button, Alert, AlertTitle } from "@mui/material"
+import { useEffect, useState, useTransition } from "react"
+import { Box, Container, Typography, Paper, Button, Alert, AlertTitle, Backdrop, CircularProgress, useTheme } from "@mui/material"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
 import Link from "next/link"
-import { useSearchParams } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Animate from "@/app/components/animation-framer-motion"
 
 export default function AuthErrorPage() {
+
      const [isMounted, setIsMounted] = useState(false)
      const searchParams = useSearchParams()
      const [errorMessage, setErrorMessage] = useState<string>("")
      const [errorTitle, setErrorTitle] = useState<string>("Authentication Error")
+     const router = useRouter();
+     const [isPending, startTransition] = useTransition()
 
+     const handleNavClick = (path: string) => {
+          startTransition(() => {
+               router.push(path);
+          });
+     };
+
+
+     const theme = useTheme();
      useEffect(() => {
           setIsMounted(true)
      }, [])
@@ -107,12 +118,21 @@ export default function AuthErrorPage() {
                                    Back to Login
                               </Button>
 
-                              <Button variant="contained" component={Link} href="/auth/register">
+                              <Button variant="contained" onClick={() => handleNavClick("/auth/register")} sx={{ ml: 2, cursor: 'pointer' }}>
                                    Sign Up
                               </Button>
                          </Box>
                     </Paper>
                </Animate>
+               <Backdrop
+                    sx={{
+                         color: '#fff',
+                         zIndex: (theme) => theme.zIndex.drawer + 1,
+                    }}
+                    open={isPending}
+               >
+                    <CircularProgress sx={{ color: theme.palette.primary.main }} />
+               </Backdrop>
           </Container>
      )
 }

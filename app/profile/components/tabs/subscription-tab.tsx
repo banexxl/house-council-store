@@ -138,7 +138,7 @@ export default function SubscriptionTab({ clientSubscriptionObject, payment, sub
                                                   )} */}
                                              </>
                                         ) : (
-                                             <i>No payment information available</i>
+                                             <i>No subscription information available</i>
                                         )}
                                    </Box>
 

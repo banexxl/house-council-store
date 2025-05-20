@@ -1,20 +1,21 @@
 "use client"
 
-import { Box, Button, Card, CardContent, Chip, Typography, List, ListItem, ListItemText, Stack, Alert, InputAdornment, TextField, LinearProgress, IconButton, CircularProgress } from "@mui/material"
+import { Box, Button, Card, CardContent, Chip, Typography, List, ListItem, ListItemText, Stack, Alert, InputAdornment, TextField, LinearProgress, IconButton, CircularProgress, useTheme } from "@mui/material"
 import LogoutIcon from "@mui/icons-material/Logout"
-import Link from "next/link"
 import LockIcon from "@mui/icons-material/Lock"
 import { Client } from "@/app/types/client"
-import { User } from "@supabase/supabase-js"
+import { Session, User, } from "@supabase/supabase-js"
+import { createBrowserClient } from '@supabase/ssr'
 import { Visibility, VisibilityOff } from "@mui/icons-material"
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { useEffect, useState } from "react"
 import { calculatePasswordStrength, getStrengthColor, getStrengthLabel, validationSchemaWithOldPassword } from "@/app/auth/reset-password/reset-password-utils"
 import { useRouter } from "next/navigation"
 import toast from "react-hot-toast"
 import { deleteAccountAction, logoutUserAction } from "../../account-action"
-import Swal from "sweetalert2"
 import { useFormik } from "formik"
 import { resetPasswordWithOldPassword } from "@/app/auth/reset-password/reset-password-actions"
+import { challengeTOTP, startEnrollTOTP, verifyTOTPEnrollment } from "@/app/lib/account-2fa-actions"
 
 interface SecurityTabProps {
      userData: { client: Client; session: User }
@@ -22,14 +23,31 @@ interface SecurityTabProps {
 
 export default function SecurityTab({ userData }: SecurityTabProps) {
 
+     const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL || "", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "");
      const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
      const [confirmText, setConfirmText] = useState("");
      const [showPasswordChange, setShowPasswordChange] = useState(false);
      const [resetingPassword, setResetingPassword] = useState(false);
+     const [is2FAEnabled, setIs2FAEnabled] = useState(false)
+     const [disableCode, setDisableCode] = useState("")
+     const router = useRouter()
+     const [showOldPassword, setShowOldPassword] = useState(false)
+     const [showNewPassword, setShowNewPassword] = useState(false)
+     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+     const [passwordStrength, setPasswordStrength] = useState(0)
+     const [signoutLoading, setSignoutLoading] = useState(false)
+     const [showDisableInput, setShowDisableInput] = useState(false)
+     const [factorId, setFactorId] = useState<string | null>(null)
+     const [step, setStep] = useState<"init" | "verify" | "disable" | "done">("init")
+     const [qrCode, setQrCode] = useState<string | null>(null)
+     const [code, setCode] = useState("")
+     const [loading, setLoading] = useState(false)
+     const [sessions, setSessions] = useState<Session[]>([])
 
      const handleClickShowNewPassword = () => {
           setShowNewPassword(!showNewPassword)
      }
+
      const handleClickShowOldPassword = () => {
           setShowOldPassword(!showOldPassword)
      }
@@ -38,15 +56,98 @@ export default function SecurityTab({ userData }: SecurityTabProps) {
           setShowConfirmPassword(!showConfirmPassword)
      }
 
-     const [showOldPassword, setShowOldPassword] = useState(false)
-     const [showNewPassword, setShowNewPassword] = useState(false)
-     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-     const [isSubmitted, setIsSubmitted] = useState(false)
-     const [passwordStrength, setPasswordStrength] = useState(0)
-     const [signoutLoading, setSignoutLoading] = useState(false)
-     const [isVerifying, setVerifying] = useState(true)
+     const handleEnable = async () => {
+          setLoading(true)
+          try {
+               const result = await startEnrollTOTP(userData.session.id)
+               if (result.error) throw new Error(result.error)
+               setQrCode(result.qr_code ? result.qr_code : null)
+               setFactorId(result.id ? result.id : null)
+               setStep("verify")
+          } catch (error) {
+               if (error instanceof Error) {
+                    toast.error(error.message)
+               } else {
+                    toast.error("An unexpected error occurred")
+               }
+          } finally {
+               setLoading(false)
+          }
+     }
 
-     const router = useRouter()
+     const handleVerify = async () => {
+          setLoading(true)
+          if (!factorId) return toast.error("Missing factor ID")
+
+          const challenge = await challengeTOTP(factorId, userData.session.id)
+          if (!challenge.success || !challenge.challengeId) {
+               return toast.error("Failed to create challenge: " + challenge.error)
+          }
+
+          const result = await verifyTOTPEnrollment(factorId, code, challenge.challengeId, userData.session.id)
+
+          if (result.success) {
+               toast.success("2FA enabled successfully!")
+               setStep("done")
+               setLoading(false)
+          } else {
+               toast.error("Verification failed: " + result.error)
+               setLoading(false)
+          }
+     }
+
+     const handleDisable = async (e: React.FormEvent) => {
+          e.preventDefault()
+          setLoading(true)
+
+          try {
+               if (!factorId) {
+                    toast.error("Missing factor ID")
+                    return
+               }
+
+               // 1. Trigger MFA challenge
+               const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({
+                    factorId,
+               })
+
+               if (challengeError || !challengeData?.id) {
+                    toast.error("Challenge failed: " + (challengeError?.message || "Unknown error"))
+                    return
+               }
+
+               // 2. Verify using the 6-digit code entered by the user
+               const { error: verifyError } = await supabase.auth.mfa.verify({
+                    factorId,
+                    challengeId: challengeData.id,
+                    code: disableCode, // must come from your input field
+               })
+
+               if (verifyError) {
+                    toast.error("Verification failed: " + verifyError.message)
+                    return
+               }
+
+               // 3. Unenroll TOTP factor
+               const { error: unenrollError } = await supabase.auth.mfa.unenroll({ factorId })
+               if (unenrollError) {
+                    toast.error("Disable failed: " + unenrollError.message)
+                    return
+               }
+
+               // 4. Update UI
+               toast.success("2FA disabled successfully!")
+               setDisableCode("")
+               setFactorId(null)
+               setStep("init")
+               setIs2FAEnabled(false)
+               setShowDisableInput(false)
+          } catch (err) {
+               toast.error("Unexpected error disabling 2FA")
+          } finally {
+               setLoading(false)
+          }
+     }
 
      const handleConfirmDelete = async () => {
           const deleteAccount = await deleteAccountAction(userData.session.id, userData.client.email);
@@ -58,14 +159,14 @@ export default function SecurityTab({ userData }: SecurityTabProps) {
                toast.error("There was a problem deleting your account.");
           }
      };
+
      const handleSignOut = async () => {
           setSignoutLoading(true)
           try {
                logoutUserAction();
                router.refresh();
-
           } catch (error) {
-               console.error("Error signing out:", error);
+               toast.error("There was a problem signing out.");
           }
      };
 
@@ -96,7 +197,6 @@ export default function SecurityTab({ userData }: SecurityTabProps) {
                     });
                     formik.setErrors({ newPassword: "Failed to reset password. Please try again." })
                } finally {
-                    setIsSubmitted(true)
                     setResetingPassword(false)
                }
           },
@@ -105,7 +205,19 @@ export default function SecurityTab({ userData }: SecurityTabProps) {
      // Update password strength when password changes
      useEffect(() => {
           setPasswordStrength(calculatePasswordStrength(formik.values.newPassword))
-     }, [formik.values.newPassword])
+
+          const factors = userData.session?.factors || []
+          const hasTotpFactor = factors.some(factor => factor.factor_type === 'totp' && factor.status === 'verified')
+
+          if (hasTotpFactor) {
+               const totp = factors.find(f => f.factor_type === 'totp')
+               setFactorId(totp?.id || null)
+               setIs2FAEnabled(true)
+               setStep("done") // Optional: show "Disable 2FA" UI by default
+          }
+
+     }, [formik.values.newPassword, userData.session])
+
 
      return (
           <>
@@ -330,22 +442,111 @@ export default function SecurityTab({ userData }: SecurityTabProps) {
 
                <Card variant="outlined" sx={{ mb: 4 }}>
                     <CardContent>
-                         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                              <Typography variant="h6">Two-Factor Authentication</Typography>
-                              {/* <Chip
-                                   label={userData.twoFactorEnabled ? "Enabled" : "Disabled"}
-                                   color={userData.twoFactorEnabled ? "success" : "default"}
-                              /> */}
+                         <Box sx={{ mt: 2 }}>
+                              <Typography variant="h6" sx={{ mb: 2 }}>Two-Factor Authentication</Typography>
+                              <Typography variant="body2" color="text.secondary" >
+                                   Add an extra layer of security to your account by requiring both your password and a verification code from your mobile phone.
+                              </Typography>
+
+                              {!is2FAEnabled && step === "init" && (
+                                   <Box sx={{ m: 1, position: 'relative' }}>
+                                        <Button
+                                             sx={{ width: '200px' }}
+                                             variant="contained"
+                                             disabled={loading}
+                                             onClick={handleEnable}
+                                             startIcon={<CheckCircleIcon />}
+                                        >
+                                             {loading ? "Enabling..." : "Enable"}
+                                        </Button>
+                                   </Box>
+                              )}
+
+                              {step === "verify" && qrCode && (
+                                   <Stack spacing={2}>
+                                        <img src={qrCode} alt="2FA QR Code" style={{ width: 200, height: 200 }} />
+                                        <form onSubmit={handleVerify}>
+                                             <TextField
+                                                  label="6-digit code"
+                                                  value={code}
+                                                  onChange={(e) => {
+                                                       const val = e.target.value.replace(/\D/g, '').slice(0, 6)
+                                                       setCode(val)
+                                                  }}
+                                                  slotProps={{
+                                                       htmlInput: {
+                                                            inputMode: 'numeric',
+                                                            pattern: '[0-9]*',
+                                                            maxLength: 6,
+                                                       },
+                                                  }}
+                                                  fullWidth
+                                                  onKeyDown={(e) => {
+                                                       if (e.key === 'Enter') {
+                                                            handleVerify();
+                                                       }
+                                                  }}
+                                             />
+                                             <Button
+                                                  type="submit"
+                                                  sx={{ width: '200px', mt: 2 }}
+                                                  variant="contained"
+                                                  disabled={loading}
+                                             >
+                                                  {
+                                                       loading ? "Verifying..." : "Verify"
+                                                  }
+                                             </Button>
+                                        </form>
+                                   </Stack>
+                              )}
+
+                              {step === "done" && (
+                                   <Stack spacing={2}>
+                                        <Alert severity="success">2FA is currently enabled for your account.</Alert>
+
+                                        {showDisableInput ? (
+                                             <form onSubmit={handleDisable}>
+                                                  <TextField
+                                                       label="6-digit code"
+                                                       value={disableCode}
+                                                       onChange={(e) => {
+                                                            const val = e.target.value.replace(/\D/g, "").slice(0, 6)
+                                                            setDisableCode(val)
+                                                       }}
+                                                       slotProps={{
+                                                            htmlInput: {
+                                                                 inputMode: "numeric",
+                                                                 pattern: "[0-9]*",
+                                                                 maxLength: 6,
+                                                            },
+                                                       }}
+                                                       fullWidth
+                                                  />
+                                                  <Button
+                                                       type="submit"
+                                                       sx={{ width: "200px", mt: 2 }}
+                                                       variant="contained"
+                                                       disabled={loading}
+                                                  >
+                                                       {loading ? "Disabling..." : "Confirm Disable"}
+                                                  </Button>
+                                             </form>
+                                        ) : (
+                                             <Button
+                                                  sx={{ width: "200px" }}
+                                                  variant="outlined"
+                                                  color="error"
+                                                  onClick={() => setShowDisableInput(true)}
+                                                  disabled={loading}
+                                             >
+                                                  {loading ? "Disabling..." : "Disable"}
+                                             </Button>
+                                        )}
+                                   </Stack>
+                              )}
+
                          </Box>
-
-                         <Typography variant="body2" color="text.secondary" paragraph>
-                              Add an extra layer of security to your account by requiring both your password and a verification code from
-                              your mobile phone.
-                         </Typography>
-
-                         {/* <Button variant={userData.twoFactorEnabled ? "outlined" : "contained"}>
-                              {userData.twoFactorEnabled ? "Disable" : "Enable"} Two-Factor Authentication
-                         </Button> */}
                     </CardContent>
                </Card>
 

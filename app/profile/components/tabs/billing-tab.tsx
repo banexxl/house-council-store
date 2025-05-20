@@ -105,14 +105,18 @@ export const BillingTab = ({ userData, allClientBillingInformation, binCheckerAP
                                                   >
                                                        Make default
                                                   </Button>
-                                                  <Button
-                                                       variant="outlined"
-                                                       color="error"
-                                                       onClick={() => handleDeleteCard(billingInformation.id!)}
-                                                       disabled={billingInformation.default_payment_method}
-                                                  >
-                                                       Delete
-                                                  </Button>
+                                                  <Tooltip title={billingInformation.default_payment_method ? 'Add another card to delete this one!' : 'Delete card'}>
+                                                       <span>
+                                                            <Button
+                                                                 variant="outlined"
+                                                                 color="error"
+                                                                 onClick={() => handleDeleteCard(billingInformation.id!)}
+                                                                 disabled={billingInformation.default_payment_method}
+                                                            >
+                                                                 Delete
+                                                            </Button>
+                                                       </span>
+                                                  </Tooltip>
                                              </Box>
                                         </Box>
                                         <Divider sx={{ mb: 2 }} />

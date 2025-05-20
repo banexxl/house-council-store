@@ -16,7 +16,7 @@ export type ErrorType = {
      message?: string;
 }
 
-export const signInUser = async (values: SignInFormValues): Promise<{ success: boolean, error?: ErrorType }> => {
+export const checkClientExists = async (values: SignInFormValues): Promise<{ success: boolean, error?: ErrorType }> => {
 
      const start = Date.now();
 
@@ -38,6 +38,8 @@ export const signInUser = async (values: SignInFormValues): Promise<{ success: b
                duration_ms: Date.now() - start,
                type: 'auth'
           })
+
+          return { success: true };
      }
 
      if (error) {
@@ -78,34 +80,7 @@ export const signInUser = async (values: SignInFormValues): Promise<{ success: b
           }
      }
 
-     const { data: signInSession, error: signInError } = await supabase.auth.signInWithPassword({
-          email: values.email,
-          password: values.password,
-     });
-
-     if (signInError) {
-          await logServerAction({
-               user_id: null,
-               action: 'User with valid password found in tblClients but signing in with email and password failed',
-               payload: JSON.stringify(values),
-               status: 'fail',
-               error: signInError.message,
-               duration_ms: Date.now() - start,
-               type: 'db'
-          })
-          return { success: false, error: { code: signInError.code!, details: signInError.message } };
-     }
-
-     await logServerAction({
-          user_id: signInSession.user.id,
-          action: 'Signed in with email and password',
-          payload: JSON.stringify(values),
-          status: 'success',
-          error: '',
-          duration_ms: Date.now() - start,
-          type: 'auth'
-     })
-     return { success: true };
+     return { success: false, error: { code: 'UnknownError', details: 'An unknown error occurred', hint: 'Please try again later', message: 'Unknown error' } };
 }
 
 export const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: any }> => {
@@ -113,7 +88,6 @@ export const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: 
      const start = Date.now();
 
      const supabase = await useServerSideSupabaseAnonClient();
-
      // Initiate Google OAuth flow.
      const { data: authData, error: authError } = await supabase.auth.signInWithOAuth({
           provider: 'google',

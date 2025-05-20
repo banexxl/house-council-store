@@ -40,8 +40,7 @@ export const Header = ({ user }: HeaderProps) => {
   const handleSignOut = async () => {
     try {
       logoutUserAction();
-      router.refresh();
-
+      router.refresh()
     } catch (error) {
       console.error("Error signing out:", error);
     }
@@ -66,7 +65,7 @@ export const Header = ({ user }: HeaderProps) => {
   // Drawer for mobile
   const drawer = (
     <Box onClick={handleDrawerToggle} sx={{ textAlign: "center", backgroundColor: theme.palette.primary.main, height: "100vh" }} >
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", p: 2 }}>
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
         <Image src="/logo-icons/1-02.png" alt="Logo" width={80} height={80} style={{ transform: "scale(1.5)", marginTop: "10px" }} />
         <Typography variant="h6" component="div" sx={{ textAlign: "center", color: theme.palette.secondary.main, textDecoration: "none" }}>
           Nest Link
@@ -75,7 +74,7 @@ export const Header = ({ user }: HeaderProps) => {
       <List>
         {navItems.map((item) => (
           <ListItem key={item.name} >
-            <ListItemButton sx={{ textAlign: "center" }}>
+            <ListItemButton sx={{ textAlign: "left", mt: 0, p: 0 }}>
               <ListItemButton onClick={() => handleNavClick(item.path)}>
                 <ListItemText primary={item.name} sx={{ color: theme.palette.secondary.main }} />
               </ListItemButton>
@@ -85,32 +84,28 @@ export const Header = ({ user }: HeaderProps) => {
         {user ? (
           <>
             <ListItem >
-              <Link href="/profile" style={{ color: theme.palette.primary.main, width: "100%" }}>
-                <ListItemButton >
-                  <ListItemText primary="Profile" sx={{ textAlign: "center", color: theme.palette.secondary.main, textDecoration: "none" }} />
-                </ListItemButton>
-              </Link>
+              <ListItemButton onClick={() => handleNavClick("/profile")}>
+                <ListItemText primary="Profile" sx={{ textAlign: "left", color: theme.palette.secondary.main, textDecoration: "none" }} />
+              </ListItemButton>
             </ListItem>
             <ListItem >
               <Link href={process.env.NEXT_PUBLIC_DASHBOARD_URL!} style={{ color: theme.palette.primary.main, width: "100%" }}>
-                <ListItemButton sx={{ textAlign: "center" }}>
+                <ListItemButton sx={{ textAlign: "left" }}>
                   <ListItemText primary="Dashboard" sx={{ color: theme.palette.secondary.main }} />
                 </ListItemButton>
               </Link>
             </ListItem>
             <ListItem >
-              <ListItemButton sx={{ textAlign: "center" }} onClick={handleSignOut}>
+              <ListItemButton sx={{ textAlign: "left" }} onClick={handleSignOut}>
                 <ListItemText primary="Sign Out" sx={{ color: theme.palette.secondary.main }} />
               </ListItemButton>
             </ListItem>
           </>
         ) : (
           <ListItem >
-            <Link href="/auth/sign-in" style={{ color: theme.palette.primary.main, width: "100%" }}>
-              <ListItemButton sx={{ textAlign: "center" }}>
-                <ListItemText primary="Sign In" sx={{ color: theme.palette.secondary.main }} />
-              </ListItemButton>
-            </Link>
+            <ListItemButton sx={{ textAlign: "left" }} onClick={() => handleNavClick("/auth/sign-in")}>
+              <ListItemText primary="Sign In" sx={{ color: theme.palette.secondary.main }} />
+            </ListItemButton>
           </ListItem>
         )}
       </List>

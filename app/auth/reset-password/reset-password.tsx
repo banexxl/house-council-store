@@ -26,7 +26,7 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff"
 import LockResetIcon from "@mui/icons-material/LockReset"
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
-import { Toaster } from "react-hot-toast"
+import toast, { Toaster } from "react-hot-toast"
 import { resetPassword } from "./reset-password-actions"
 import { createBrowserClient } from '@supabase/ssr'
 import { calculatePasswordStrength, getStrengthColor, getStrengthLabel, validationSchemaNoOldPassword } from "./reset-password-utils"
@@ -40,13 +40,32 @@ export const ResetPasswordPage = () => {
 
      const supabase = createBrowserClient(supabaseUrl, supabaseKey);
 
-
      const [showPassword, setShowPassword] = useState(false)
      const [showConfirmPassword, setShowConfirmPassword] = useState(false)
      const [isSubmitted, setIsSubmitted] = useState(false)
      const [passwordStrength, setPasswordStrength] = useState(0)
      const [isVerifying, setVerifying] = useState(true)
      const [isTokenValid, setIsTokenValid] = useState(true)
+     const router = useRouter()
+
+     useEffect(() => {
+          (async () => {
+               try {
+                    const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+                    if (error) {
+                         throw error
+                    }
+
+                    if (data.nextLevel === 'aal2' && data.nextLevel !== data.currentLevel) {
+                         supabase.auth.signOut()
+                         router.refresh()
+                         toast.error('Your account needs 2FA authentication. Please sign in again.')
+                    }
+               } finally {
+                    // Cleanup or additional logic if needed
+               }
+          })()
+     }, [])
 
      useEffect(() => {
           const verify = async () => {

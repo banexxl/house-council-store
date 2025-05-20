@@ -5,6 +5,9 @@ import { Box, Button, Container, Paper, Typography, Divider, Alert } from "@mui/
 import CheckCircleIcon from "@mui/icons-material/CheckCircle"
 import CancelIcon from "@mui/icons-material/Cancel"
 import Animate from "@/app/components/animation-framer-motion"
+import { createBrowserClient } from "@supabase/ssr"
+import { useEffect } from "react"
+import toast from "react-hot-toast"
 
 export function ForgotPasswordResult() {
 
@@ -13,6 +16,30 @@ export function ForgotPasswordResult() {
      const searchParams = useSearchParams()
      const success = searchParams.get("success") === "true"
      const message = searchParams.get("message") || ""
+
+     const supabase = createBrowserClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string
+     )
+
+     useEffect(() => {
+          (async () => {
+               try {
+                    const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+                    if (error) {
+                         throw error
+                    }
+
+                    if (data.nextLevel === 'aal2' && data.nextLevel !== data.currentLevel) {
+                         supabase.auth.signOut()
+                         router.refresh()
+                         toast.error('Your account needs 2FA authentication. Please sign in again.')
+                    }
+               } finally {
+                    // Cleanup or additional logic if needed
+               }
+          })()
+     }, [])
 
      return (
           <Box
