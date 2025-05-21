@@ -549,44 +549,6 @@ export default function SecurityTab({ userData }: SecurityTabProps) {
                          </Box>
                     </CardContent>
                </Card>
-
-               <Card variant="outlined">
-                    <CardContent>
-                         <Typography variant="h6" gutterBottom>
-                              Active Sessions
-                         </Typography>
-
-                         <Typography variant="body2" color="text.secondary" paragraph>
-                              These are the devices that are currently logged into your account.
-                         </Typography>
-
-                         <List>
-                              <ListItem divider>
-                                   <ListItemText
-                                        primary="Chrome on Windows"
-                                        secondary="Current session • Boston, MA • Last active: Just now"
-                                   />
-                                   <Chip label="Current" size="small" color="primary" />
-                              </ListItem>
-                              <ListItem divider>
-                                   <ListItemText primary="Safari on iPhone" secondary="Boston, MA • Last active: 2 hours ago" />
-                                   <Button size="small" color="error">
-                                        Logout
-                                   </Button>
-                              </ListItem>
-                              <ListItem>
-                                   <ListItemText primary="Chrome on MacBook" secondary="Boston, MA • Last active: Yesterday" />
-                                   <Button size="small" color="error">
-                                        Logout
-                                   </Button>
-                              </ListItem>
-                         </List>
-
-                         <Button variant="outlined" color="error" sx={{ mt: 2 }}>
-                              Logout of All Devices
-                         </Button>
-                    </CardContent>
-               </Card>
           </>
      )
 }

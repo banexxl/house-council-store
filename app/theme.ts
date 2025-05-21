@@ -68,6 +68,13 @@ const theme = createTheme({
             boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
           },
         },
+        loading: {
+          backgroundColor: "#f79622",
+          color: "#fff",
+          "&:hover": {
+            backgroundColor: "#f68a00",
+          },
+        }
       },
     },
     MuiCard: {

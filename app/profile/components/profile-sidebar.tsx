@@ -391,14 +391,6 @@ export default function ProfileSidebar({ userData, clientSubscriptionObject, rec
                                    )
                               }
                          </List>
-
-                         <Divider />
-
-                         <Box sx={{ textAlign: "center", py: 1 }}>
-                              <Button variant="text" size="small">
-                                   Refresh
-                              </Button>
-                         </Box>
                     </CardContent>
                </Card>
           </>
