@@ -74,6 +74,7 @@ const theme = createTheme({
           "&:hover": {
             backgroundColor: "#f68a00",
           },
+          zIndex: 1000,
         }
       },
     },

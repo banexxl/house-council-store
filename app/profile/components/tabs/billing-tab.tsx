@@ -26,6 +26,7 @@ import { formatExpirationDate } from '@/app/lib/date-helpers';
 import { Formik } from 'formik';
 import { updateAccountAction } from '../../account-action';
 import * as Yup from "yup"
+import { init } from 'next/dist/compiled/webpack/webpack';
 
 
 interface BillingTabProps {
@@ -36,6 +37,7 @@ interface BillingTabProps {
 
 export const BillingTab = ({ userData, allClientBillingInformation, binCheckerAPIKey }: BillingTabProps) => {
 
+     const [loading, setLoading] = useState(false);
      const [openAddCardModal, setOpenAddCardModal] = useState(false);
 
      const handleDeleteCard = async (billingInformationId: string) => {
@@ -174,17 +176,22 @@ export const BillingTab = ({ userData, allClientBillingInformation, binCheckerAP
                          // taxId: userData?.client?.taxId || ''
                     }}
                     onSubmit={async (values) => {
-                         const { success } = await updateAccountAction(userData.client.id, {
-                              invoice_email_recipient: values.invoice_email_recipient,
-                              name: values.name,
-                              // purchaseOrder: values.purchaseOrder,
-                              // taxId: values.taxId
-                         })
+                         setLoading(true);
+                         try {
+                              const { success } = await updateAccountAction(userData.client.id, {
+                                   invoice_email_recipient: values.invoice_email_recipient,
+                                   name: values.name,
+                                   // purchaseOrder: values.purchaseOrder,
+                                   // taxId: values.taxId
+                              })
 
-                         if (success) {
-                              toast.success("Account updated successfully.");
-                         } else {
+                              if (success) {
+                                   toast.success("Account updated successfully.");
+                              }
+                         } catch (error) {
                               toast.error("There was a problem updating your account.");
+                         } finally {
+                              setLoading(false);
                          }
                     }}
                >
@@ -207,9 +214,6 @@ export const BillingTab = ({ userData, allClientBillingInformation, binCheckerAP
                                    <Typography variant="caption" color="text.secondary">
                                         By default, all your invoices will be sent to your account’s email address. If you want to use a custom email address specifically for receiving invoices, enter it here.
                                    </Typography>
-                                   <Box my={2}>
-                                        <Button variant="contained" type="submit">Save</Button>
-                                   </Box>
                               </Box>
 
                               {/* Company Name */}
@@ -226,9 +230,6 @@ export const BillingTab = ({ userData, allClientBillingInformation, binCheckerAP
                                    <Typography variant="caption" color="text.secondary">
                                         Max 64 characters.
                                    </Typography>
-                                   <Box my={2}>
-                                        <Button variant="contained" type="submit">Save</Button>
-                                   </Box>
                               </Box>
 
                               <Divider sx={{ my: 3 }} />
@@ -271,6 +272,9 @@ export const BillingTab = ({ userData, allClientBillingInformation, binCheckerAP
                                         <Button variant="contained" type="submit">Save</Button>
                                    </Box>
                               </Box> */}
+                              <Box my={2}>
+                                   <Button variant="contained" type="submit" loading={loading} >Save</Button>
+                              </Box>
                          </form>
                     )}
                </Formik>
