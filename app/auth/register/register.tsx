@@ -39,30 +39,6 @@ export const RegisterPage = () => {
      const router = useRouter()
      const theme = useTheme();
 
-     const supabase = createBrowserClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string
-     )
-
-     useEffect(() => {
-          (async () => {
-               try {
-                    const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
-                    if (error) {
-                         throw error
-                    }
-
-                    if (data.nextLevel === 'aal2' && data.nextLevel !== data.currentLevel) {
-                         supabase.auth.signOut()
-                         router.refresh()
-                         toast.error('Your account needs 2FA authentication. Please sign in again.')
-                    }
-               } finally {
-                    // Cleanup or additional logic if needed
-               }
-          })()
-     }, [])
-
      const handleNavClick = (path: string) => {
           startTransition(() => {
                router.push(path);
