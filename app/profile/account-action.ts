@@ -5,8 +5,6 @@ import { Client } from "../types/client";
 import { revalidatePath } from "next/cache";
 import { logServerAction } from "../lib/server-logging";
 import { ActivityItem } from "./components/profile-sidebar";
-import { Session } from "@supabase/supabase-js";
-
 
 export const logoutUserAction = async (): Promise<string | null> => {
      const startTime = Date.now();

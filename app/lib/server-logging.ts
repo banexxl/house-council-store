@@ -1,4 +1,5 @@
 import { useServerSideSupabaseServiceRoleClient } from "./ss-supabase-service-role-client";
+import { createSupabaseBrowserClient } from "./supabase-client";
 
 export type LogType =
      | 'api'
@@ -35,6 +36,7 @@ export const logServerAction = async ({
 }: ServerLog) => {
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
+
      const { error: logInsertError } = await supabase.from('tblServerLogs').insert({
           user_id,
           action,

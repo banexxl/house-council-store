@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import {
      Box,
@@ -77,6 +77,48 @@ export default function ProfileSidebar({ userData, clientSubscriptionObject, rec
      const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null)
      const [imageLoading, setImageLoading] = useState<boolean>(false)
      const router = useRouter()
+     const [memberSince, setMemberSince] = useState<string | null>(null);
+     const [formattedActivities, setFormattedActivities] = useState<
+          { id: string; action: string; formattedDate: string }[]
+     >([]);
+
+     useEffect(() => {
+          const formattedDate = new Intl.DateTimeFormat(undefined, {
+               dateStyle: "medium",
+               timeStyle: "short",
+          }).format(new Date(userData.session.created_at));
+          setMemberSince(formattedDate);
+     }, [userData.session.created_at]);
+
+     useEffect(() => {
+          if (!recentActivity) return;
+
+          const updated = recentActivity.map((activity) => {
+               const date = activity.created_at
+                    ? new Date(activity.created_at.replace(" ", "T"))
+                    : null;
+
+               const formattedDate = date
+                    ? new Intl.DateTimeFormat(undefined, {
+                         year: "numeric",
+                         month: "2-digit",
+                         day: "2-digit",
+                         hour: "2-digit",
+                         minute: "2-digit",
+                         second: "2-digit",
+                         hour12: false,
+                    }).format(date)
+                    : "Invalid time value";
+
+               return {
+                    id: activity.id,
+                    action: activity.action,
+                    formattedDate,
+               };
+          });
+
+          setFormattedActivities(updated);
+     }, [recentActivity]);
 
      const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
           setMenuAnchorEl(event.currentTarget)
@@ -164,9 +206,6 @@ export default function ProfileSidebar({ userData, clientSubscriptionObject, rec
                toast.error("Error deleting avatar: " + error);
           }
      };
-
-
-
 
      return (
           <>
@@ -318,23 +357,13 @@ export default function ProfileSidebar({ userData, clientSubscriptionObject, rec
                                    <ListItemIcon>
                                         <CalendarTodayIcon fontSize="small" />
                                    </ListItemIcon>
-                                   <ListItemText
-                                        primary="Member since"
-                                        secondary={new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(userData.session.created_at))}
-                                   />
+                                   {memberSince && (
+                                        <ListItemText primary="Member since" secondary={memberSince} />
+                                   )}
                               </ListItem>
                          </List>
 
                          <Divider sx={{ my: 2 }} />
-
-                         {/* <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                              <Typography variant="subtitle2">Two-Factor Authentication</Typography>
-                              <Chip
-                                   label={userData.twoFactorEnabled ? "Enabled" : "Disabled"}
-                                   color={userData.twoFactorEnabled ? "success" : "default"}
-                                   size="small"
-                              />
-                         </Box> */}
                     </CardContent>
                </Card>
 
@@ -351,23 +380,11 @@ export default function ProfileSidebar({ userData, clientSubscriptionObject, rec
                                              </Typography>
                                         </ListItem>
                                    ) : (
-                                        recentActivity?.map((activity) => (
+                                        formattedActivities.map((activity) => (
                                              <ListItem key={activity.id} sx={{ px: 3 }}>
                                                   <ListItemText
                                                        primary={activity.action}
-                                                       secondary={
-                                                            activity.created_at
-                                                                 ? new Date(activity.created_at.replace(' ', 'T')).toLocaleString(undefined, {
-                                                                      year: 'numeric',
-                                                                      month: '2-digit',
-                                                                      day: '2-digit',
-                                                                      hour: '2-digit',
-                                                                      minute: '2-digit',
-                                                                      second: '2-digit',
-                                                                      hour12: false,
-                                                                 }).replace(',', '')
-                                                                 : 'Invalid time value'
-                                                       }
+                                                       secondary={activity.formattedDate}
                                                   />
                                              </ListItem>
                                         ))
@@ -379,7 +396,7 @@ export default function ProfileSidebar({ userData, clientSubscriptionObject, rec
 
                          <Box sx={{ textAlign: "center", py: 1 }}>
                               <Button variant="text" size="small">
-                                   View All Activity
+                                   Refresh
                               </Button>
                          </Box>
                     </CardContent>

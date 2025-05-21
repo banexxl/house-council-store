@@ -29,6 +29,8 @@ import { useRouter } from "next/navigation"
 import toast from "react-hot-toast"
 import Animate from "@/app/components/animation-framer-motion"
 import { createBrowserClient } from "@supabase/ssr"
+import { logServerAction } from "@/app/lib/server-logging"
+import { logClientAction } from "@/app/lib/client-logging"
 
 // Custom multi-colored Google icon as an SVG component
 const GoogleMultiColorIcon = (props: any) => (
@@ -131,15 +133,13 @@ export const LoginPage = () => {
 
                     if (!data.session.user.factors) {
                          toast.success("Sign in successful!")
-                         handleNavClick("/profile")
+                         handleNavClick("/")
                          return
                     }
 
                     if (data.session && data.user?.factors && data.user?.factors?.length > 0) {
                          const factor = data.user.factors.find(f => f.status === 'verified' && f.factor_type === 'totp')
                          if (!factor) {
-                              console.log('factor', factor);
-
                               toast.error("2FA required but no valid factor found.")
                               return
                          }
@@ -181,8 +181,17 @@ export const LoginPage = () => {
 
           const session = data.user
           if (session) {
+               await logClientAction({
+                    user_id: session.id,
+                    action: "Sign In with 2FA - Success",
+                    payload: {},
+                    status: "success",
+                    error: "",
+                    duration_ms: 0,
+                    type: "action"
+               })
                toast.success("2FA verified. You're now signed in!")
-               handleNavClick("/profile")
+               handleNavClick("/")
           } else {
                toast.error("Verification failed — no session returned.")
           }
@@ -378,7 +387,7 @@ export const LoginPage = () => {
                                                        const { success, error } = await handleGoogleSignIn()
                                                        if (success) {
                                                             setGoogleSignInLoading(false)
-                                                            router.push('/profile')
+                                                            router.push('/')
                                                        }
                                                        if (error) {
                                                             setGoogleSignInLoading(false)

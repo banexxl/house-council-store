@@ -82,9 +82,6 @@ export default function PaymentsTab({ clientPayments, userData, clientSubscripti
                refunded_at: null,
                is_recurring: false
           }
-          console.log('newPayment', newPayment);
-
-
           const { success, error } = await makePaymentAction(newPayment)
 
           if (success) {

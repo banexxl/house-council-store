@@ -14,8 +14,6 @@ import Animate from "@/app/components/animation-framer-motion"
 import { Payment } from "../types/payment"
 import { Currency } from "../types/currency"
 import { createBrowserClient } from "@supabase/ssr"
-import { useRouter } from "next/navigation"
-import toast from "react-hot-toast"
 
 // Mock data for notification preferences
 const notificationPreferences = [
@@ -58,29 +56,6 @@ export const ProfilePage = ({ sessionAndClientDataCombined, clientSubscriptionOb
 
      const [editMode, setEditMode] = useState(false)
      const [notificationSettings, setNotificationSettings] = useState(notificationPreferences)
-     const router = useRouter()
-     const supabase = createBrowserClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string
-     )
-
-     useEffect(() => {
-          (async () => {
-               try {
-                    const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
-                    if (error) {
-                         throw error
-                    }
-                    if (data.nextLevel === 'aal2' && data.nextLevel !== data.currentLevel) {
-                         supabase.auth.signOut()
-                         router.refresh()
-                         toast.error('Your account needs 2FA authentication. Please sign in again.')
-                    }
-               } finally {
-                    // Cleanup or additional logic if needed
-               }
-          })()
-     }, [])
 
      return (
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
