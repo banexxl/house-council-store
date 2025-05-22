@@ -440,8 +440,7 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                          <Divider sx={{ my: 3 }} />
 
                     </Box >
-               )
-               }
+               )}
           </>
      )
 }

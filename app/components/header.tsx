@@ -12,6 +12,7 @@ import useScrollTrigger from "@mui/material/useScrollTrigger";
 import { logoutUserAction } from "../profile/account-action";
 import CircularProgress from '@mui/material/CircularProgress';
 import Backdrop from '@mui/material/Backdrop';
+import toast from "react-hot-toast";
 
 type HeaderProps = {
   user: User | null;
@@ -40,7 +41,8 @@ export const Header = ({ user }: HeaderProps) => {
   const handleSignOut = async () => {
     try {
       logoutUserAction();
-      router.refresh()
+      handleNavClick("/")
+      toast.success("Logged out successfully");
     } catch (error) {
       console.error("Error signing out:", error);
     }
