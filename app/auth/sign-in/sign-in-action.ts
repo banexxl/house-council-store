@@ -96,6 +96,8 @@ export const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: 
                redirectTo: `${process.env.BASE_URL}/auth/callback`
           },
      });
+     console.log('google auth data', authData)
+     console.log('google auth error', authError);
 
      if (authError) {
           await logServerAction({
