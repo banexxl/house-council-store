@@ -33,7 +33,6 @@ export async function GET(request: Request) {
      const error = requestUrl.searchParams.get('error');
      const errorCode = requestUrl.searchParams.get('error_code');
      const errorDescription = requestUrl.searchParams.get('error_description');
-     const codeChallenge = requestUrl.searchParams.get('code_challenge');
 
      if (error) {
           await logServerAction({
@@ -51,7 +50,7 @@ export async function GET(request: Request) {
      }
 
      if (code) {
-          const { data, error: authError } = await supabase.auth.exchangeCodeForSession(code || codeChallenge || '');
+          const { data, error: authError } = await supabase.auth.exchangeCodeForSession(code);
           data ?? await logServerAction({
                action: 'Auth callback success',
                error: authError ? authError.message : '',
