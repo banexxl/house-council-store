@@ -225,7 +225,7 @@ export const LoginPage = () => {
                                         </Typography>
                                    </Box>
 
-                                   <Box component="form" onSubmit={formik.handleSubmit} noValidate>
+                                   <Box component="form" onSubmit={formik.handleSubmit} noValidate sx={{ mb: 2 }}>
                                         <Grid container spacing={3}>
                                              <Grid size={{ xs: 12 }}>
                                                   <TextField
@@ -307,48 +307,49 @@ export const LoginPage = () => {
                                                        Sign In
                                                   </Button>
                                              </Grid>
-                                             {
-                                                  doesRequire2FA && (
-                                                       <Grid size={{ xs: 12 }}>
-                                                            <form onSubmit={handleVerify}>
-                                                                 <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
-                                                                      <TextField
-                                                                           label="6-digit code"
-                                                                           value={twoFactorCode}
-                                                                           onChange={(e) => {
-                                                                                const val = e.target.value.replace(/\D/g, '').slice(0, 6)
-                                                                                setTwoFactorCode(val)
-                                                                           }}
-                                                                           slotProps={{
-                                                                                htmlInput: {
-                                                                                     inputMode: 'numeric',
-                                                                                     pattern: '[0-9]*',
-                                                                                     maxLength: 6,
-                                                                                },
-                                                                           }}
-                                                                           onKeyDown={(e) => {
-                                                                                if (e.key === 'Enter') {
-                                                                                     handleVerify();
-                                                                                }
-                                                                           }}
-                                                                      />
-                                                                      <Button
-                                                                           type="submit"
-                                                                           sx={{ width: '200px', mt: 2 }}
-                                                                           variant="contained"
-                                                                           disabled={loading}
-                                                                      >
-                                                                           {
-                                                                                loading ? "Verifying..." : "Verify"
-                                                                           }
-                                                                      </Button>
-                                                                 </Box>
-                                                            </form>
-                                                       </Grid>
-                                                  )
-                                             }
                                         </Grid>
                                    </Box>
+
+                                   {
+                                        doesRequire2FA && (
+                                             <Grid size={{ xs: 12 }}>
+                                                  <form onSubmit={handleVerify}>
+                                                       <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
+                                                            <TextField
+                                                                 label="6-digit code"
+                                                                 value={twoFactorCode}
+                                                                 onChange={(e) => {
+                                                                      const val = e.target.value.replace(/\D/g, '').slice(0, 6)
+                                                                      setTwoFactorCode(val)
+                                                                 }}
+                                                                 slotProps={{
+                                                                      htmlInput: {
+                                                                           inputMode: 'numeric',
+                                                                           pattern: '[0-9]*',
+                                                                           maxLength: 6,
+                                                                      },
+                                                                 }}
+                                                                 onKeyDown={(e) => {
+                                                                      if (e.key === 'Enter') {
+                                                                           handleVerify();
+                                                                      }
+                                                                 }}
+                                                            />
+                                                            <Button
+                                                                 type="submit"
+                                                                 sx={{ width: '200px', mt: 2 }}
+                                                                 variant="contained"
+                                                                 disabled={loading}
+                                                            >
+                                                                 {
+                                                                      loading ? "Verifying..." : "Verify"
+                                                                 }
+                                                            </Button>
+                                                       </Box>
+                                                  </form>
+                                             </Grid>
+                                        )
+                                   }
 
                                    <Box sx={{ mt: 4, mb: 2 }}>
                                         <Divider>
