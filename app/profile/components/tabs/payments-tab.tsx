@@ -40,10 +40,10 @@ interface PaymentsTabProps {
      currencies: Currency[]
 }
 
-
 export default function PaymentsTab({ clientPayments, userData, clientSubscriptionObject, allClientBillingInformation, currencies }: PaymentsTabProps) {
 
      const [open, setOpen] = useState(false)
+     const [paymentLoading, setPaymentLoading] = useState(false)
      const [amount, setAmount] = useState("")
      const currency = currencies.find(currency => currency.code === "USD")
      const handleOpen = () => setOpen(true)
@@ -66,6 +66,7 @@ export default function PaymentsTab({ clientPayments, userData, clientSubscripti
 
      const handleAddPayment = async (amount: number) => {
 
+          setPaymentLoading(true)
           if (!amount) return
 
           const newPayment: Payment = {
@@ -89,6 +90,7 @@ export default function PaymentsTab({ clientPayments, userData, clientSubscripti
           } else {
                toast.error(`Error adding payment: ${error}`);
           }
+          setPaymentLoading(false)
           handleClose()
      }
 
@@ -204,7 +206,13 @@ export default function PaymentsTab({ clientPayments, userData, clientSubscripti
                     </DialogContent>
                     <DialogActions>
                          <Button onClick={handleClose}>Cancel</Button>
-                         <Button variant="contained" onClick={() => handleAddPayment(Number(amount))}>Add</Button>
+                         <Button
+                              variant="contained"
+                              onClick={() => handleAddPayment(Number(amount))}
+                              loading={paymentLoading}
+                         >
+                              Add
+                         </Button>
                     </DialogActions>
                </Dialog>
           </>
