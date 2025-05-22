@@ -203,11 +203,6 @@ export const LoginPage = () => {
           setGoogleSignInLoading(true)
           const start = Date.now();
 
-          const supabase = createBrowserClient(
-               process.env.NEXT_PUBLIC_SUPABASE_URL!,
-               process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-          );
-
           const { error } = await supabase.auth.signOut();
 
           const { data: authData, error: authError } = await supabase.auth.signInWithOAuth({
@@ -216,9 +211,6 @@ export const LoginPage = () => {
                     redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback`,
                },
           });
-
-          console.log('authData:', authData);
-          console.log('authError:', authError);
 
           if (authError) {
                await logClientAction({
