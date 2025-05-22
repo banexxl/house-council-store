@@ -6,7 +6,7 @@ export const checkAllClientSubscriptions = inngest.createFunction(
      async ({ step }) => {
           await step.run("Check subscriptions", async () => {
                try {
-                    const response = await fetch(`${process.env.BASE_URL}/api/check-subscription/`, {
+                    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/check-subscription/`, {
                          method: "POST",
                          headers: { "Content-Type": "application/json" },
                     });

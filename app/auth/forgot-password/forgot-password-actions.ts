@@ -12,7 +12,7 @@ export async function sendPasswordResetEmail(email: string): Promise<void> {
 
      if (!email || !email.includes("@")) {
           redirect(
-               `${process.env.BASE_URL}/auth/forgot-password/result?success=false&message=${encodeURIComponent(
+               `${process.env.NEXT_PUBLIC_BASE_URL}/auth/forgot-password/result?success=false&message=${encodeURIComponent(
                     "Please enter a valid email address."
                )}`
           )
@@ -48,7 +48,7 @@ export async function sendPasswordResetEmail(email: string): Promise<void> {
                type: 'auth'
           })
           redirect(
-               `${process.env.BASE_URL}/auth/forgot-password/result?success=false&message=${encodeURIComponent(
+               `${process.env.NEXT_PUBLIC_BASE_URL}/auth/forgot-password/result?success=false&message=${encodeURIComponent(
                     "No account found with the provided email address."
                )}`
           )
@@ -65,7 +65,7 @@ export async function sendPasswordResetEmail(email: string): Promise<void> {
                type: 'auth'
           })
           redirect(
-               `${process.env.BASE_URL}/auth/forgot-password/result?success=true&message=${encodeURIComponent(
+               `${process.env.NEXT_PUBLIC_BASE_URL}/auth/forgot-password/result?success=true&message=${encodeURIComponent(
                     "Password reset instructions have been sent to your email."
                )}`
           )
@@ -80,7 +80,7 @@ export async function sendPasswordResetEmail(email: string): Promise<void> {
                type: 'auth'
           })
           redirect(
-               `${process.env.BASE_URL}/auth/forgot-password/result?success=false&message=${encodeURIComponent(
+               `${process.env.NEXT_PUBLIC_BASE_URL}/auth/forgot-password/result?success=false&message=${encodeURIComponent(
                     "Failed to send password reset email. Please try again later."
                )}`
           )
