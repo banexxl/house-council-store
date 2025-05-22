@@ -41,7 +41,9 @@ export const Header = ({ user }: HeaderProps) => {
   const handleSignOut = async () => {
     try {
       logoutUserAction();
-      handleNavClick("/")
+      startTransition(() => {
+        router.refresh();
+      });
       toast.success("Logged out successfully");
     } catch (error) {
       console.error("Error signing out:", error);
