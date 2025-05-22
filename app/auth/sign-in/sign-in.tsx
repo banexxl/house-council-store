@@ -203,7 +203,7 @@ export const LoginPage = () => {
           setGoogleSignInLoading(true)
           const start = Date.now();
 
-          const { error } = await supabase.auth.signOut();
+          // const { error } = await supabase.auth.signOut();
 
           const { data: authData, error: authError } = await supabase.auth.signInWithOAuth({
                provider: 'google',
