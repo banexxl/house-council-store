@@ -246,6 +246,6 @@ export async function GET(request: Request) {
      })
 
      // Redirect to dashboard with absolute URL
-     const dashboardUrl = `${requestUrl.origin}/profile`;
+     const dashboardUrl = `${requestUrl.origin}`;
      return NextResponse.redirect(dashboardUrl);
 }

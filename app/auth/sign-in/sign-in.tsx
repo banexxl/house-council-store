@@ -24,7 +24,7 @@ import Visibility from "@mui/icons-material/Visibility"
 import VisibilityOff from "@mui/icons-material/VisibilityOff"
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined"
 import { signInSchema } from "./sign-in-schema"
-import { checkClientExists, handleGoogleSignIn } from "./sign-in-action"
+import { checkClientExists } from "./sign-in-action"
 import { useRouter } from "next/navigation"
 import toast from "react-hot-toast"
 import Animate from "@/app/components/animation-framer-motion"
@@ -198,6 +198,70 @@ export const LoginPage = () => {
 
           setLoading(false)
      }
+
+     const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: any }> => {
+          setGoogleSignInLoading(true)
+          const start = Date.now();
+
+          const supabase = createBrowserClient(
+               process.env.NEXT_PUBLIC_SUPABASE_URL!,
+               process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+          );
+
+          const { error } = await supabase.auth.signOut();
+
+          const { data: authData, error: authError } = await supabase.auth.signInWithOAuth({
+               provider: 'google',
+               options: {
+                    redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback`,
+               },
+          });
+
+          console.log('authData:', authData);
+          console.log('authError:', authError);
+
+          if (authError) {
+               await logClientAction({
+                    user_id: null,
+                    action: 'Signing in with Google failed (client)',
+                    payload: {},
+                    status: 'fail',
+                    error: authError.message || 'Unknown error',
+                    duration_ms: Date.now() - start,
+                    type: 'auth',
+               });
+
+               return { success: false, error: authError };
+          }
+
+          if (authData?.url) {
+               await logClientAction({
+                    user_id: null,
+                    action: 'Google OAuth redirect initiated (client)',
+                    payload: { authData },
+                    status: 'success',
+                    error: '',
+                    duration_ms: Date.now() - start,
+                    type: 'auth',
+               });
+
+               // NOTE: This is where the browser will be redirected to Google
+               // Supabase handles this internally via `window.location.href = authData.url`
+               return { success: true };
+          }
+
+          await logClientAction({
+               user_id: null,
+               action: 'Google OAuth redirect failed (client)',
+               payload: { authData },
+               status: 'fail',
+               error: 'Redirect URL is null',
+               duration_ms: Date.now() - start,
+               type: 'auth',
+          });
+          setGoogleSignInLoading(false)
+          return { success: false, error: { message: 'Redirect URL is null.' } };
+     };
 
      return (
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
