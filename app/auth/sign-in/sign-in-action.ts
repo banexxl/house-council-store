@@ -112,7 +112,6 @@ export const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: 
           return { success: false, error: authError };
      } else {
           if (authData.url) {
-
                await logServerAction({
                     user_id: null,
                     action: 'Signed in with Google',
