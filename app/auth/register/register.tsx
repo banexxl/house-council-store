@@ -177,7 +177,7 @@ export const RegisterPage = () => {
                                              </Grid>
 
                                              <Grid size={{ xs: 12 }}>
-                                                  <Box sx={{ height: "65px", mb: 2 }}>
+                                                  <Box sx={{ height: "65px", mb: 4 }}>
                                                        <TextField
                                                             fullWidth
                                                             id="password"
