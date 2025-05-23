@@ -198,6 +198,9 @@ export const RegisterPage = () => {
                                                                                 </IconButton>
                                                                            </InputAdornment>
                                                                       ),
+                                                                 },
+                                                                 formHelperText: {
+                                                                      style: { width: "100%" } // Ensure the helper text takes the full width},
                                                                  }
                                                             }}
                                                        />

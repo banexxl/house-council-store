@@ -11,7 +11,7 @@ export const registrationSchema = Yup.object({
           .required("Password is required")
           .matches(
                /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-               "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character",
+               "Password must include an uppercase letter, lowercase letter, number, and special character.",
           ),
      confirm_password: Yup.string()
           .oneOf([Yup.ref("password")], "Passwords must match")

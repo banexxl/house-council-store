@@ -8,7 +8,7 @@ export const validationSchemaWithOldPassword = Yup.object({
           .required("Password is required")
           .matches(
                /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-               "Password must contain at least one uppercase letter, one lowercase letter, and one number",
+               "Password must include an uppercase letter, lowercase letter, number, and special character.",
           ),
      confirmPassword: Yup.string()
           .oneOf([Yup.ref("newPassword")], "Passwords must match")
@@ -22,7 +22,7 @@ export const validationSchemaNoOldPassword = Yup.object({
           .required("Password is required")
           .matches(
                /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-               "Password must contain at least one uppercase letter, one lowercase letter, and one number",
+               "Password must include an uppercase letter, lowercase letter, number, and special character.",
           ),
      confirmPassword: Yup.string()
           .oneOf([Yup.ref("newPassword")], "Passwords must match")
