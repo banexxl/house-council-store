@@ -42,7 +42,7 @@ export default function SecurityTab({ userData }: SecurityTabProps) {
      const [qrCode, setQrCode] = useState<string | null>(null)
      const [code, setCode] = useState("")
      const [loading, setLoading] = useState(false)
-     const [sessions, setSessions] = useState<Session[]>([])
+     const [confirmDeleteLoading, setConfirmDeleteLoading] = useState(false)
 
      const handleClickShowNewPassword = () => {
           setShowNewPassword(!showNewPassword)
@@ -150,6 +150,7 @@ export default function SecurityTab({ userData }: SecurityTabProps) {
      }
 
      const handleConfirmDelete = async () => {
+          setConfirmDeleteLoading(true)
           const deleteAccount = await deleteAccountAction(userData.session.id, userData.client.email);
           if (deleteAccount.success) {
                toast.success("Account deleted successfully.");
@@ -158,6 +159,7 @@ export default function SecurityTab({ userData }: SecurityTabProps) {
           } else {
                toast.error("There was a problem deleting your account.");
           }
+          setConfirmDeleteLoading(false)
      };
 
      const handleSignOut = async () => {
@@ -420,7 +422,7 @@ export default function SecurityTab({ userData }: SecurityTabProps) {
                                                   color="error"
                                                   disabled={confirmText !== "delete"}
                                                   onClick={handleConfirmDelete}
-                                                  loading={loading}
+                                                  loading={confirmDeleteLoading}
                                              >
                                                   Confirm Delete
                                              </Button>
