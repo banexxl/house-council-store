@@ -30,7 +30,7 @@ import toast from "react-hot-toast"
 import Animate from "@/app/components/animation-framer-motion"
 import { createBrowserClient } from "@supabase/ssr"
 import { logClientAction } from "@/app/lib/client-logging"
-
+import fs from 'fs';
 // Custom multi-colored Google icon as an SVG component
 const GoogleMultiColorIcon = (props: any) => (
      <svg
@@ -198,7 +198,7 @@ export const LoginPage = () => {
      }
 
      const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: any }> => {
-          setGoogleSignInLoading(true)
+          setGoogleSignInLoading(true);
           const start = Date.now();
 
           const { data: authData, error: authError } = await supabase.auth.signInWithOAuth({
@@ -208,7 +208,15 @@ export const LoginPage = () => {
                },
           });
 
-          alert(authData)
+          // Write result to file
+          try {
+               const result = authError ? { success: false, error: authError } : { success: true, authData };
+               fs.writeFileSync('C:/authResult.json', JSON.stringify(result, null, 2));
+          } catch (fileError) {
+               console.error("Failed to write auth result to file:", fileError);
+          }
+
+
 
           if (authError) {
                await logClientAction({
