@@ -2,7 +2,6 @@
 
 import { logServerAction } from '@/app/lib/server-logging';
 import { useServerSideSupabaseAnonClient } from '@/app/lib/ss-supabase-anon-client';
-import { redirect } from 'next/navigation';
 
 export type SignInFormValues = {
      email: string;

@@ -201,14 +201,13 @@ export const LoginPage = () => {
           setGoogleSignInLoading(true)
           const start = Date.now();
 
-          // const { error } = await supabase.auth.signOut();
-
           const { data: authData, error: authError } = await supabase.auth.signInWithOAuth({
                provider: 'google',
                options: {
                     redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback`,
                },
           });
+          console.log("Google OAuth Data:", authData, "Error:", authError);
 
           if (authError) {
                await logClientAction({
