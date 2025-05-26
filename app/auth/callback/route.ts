@@ -7,6 +7,8 @@ export async function GET(request: Request) {
 
      const start = Date.now()
 
+     console.log('Auth callback request received: ', request);
+
      const cookieStore = await cookies();
      const supabase = createServerClient(
           process.env.SUPABASE_URL!,
@@ -27,12 +29,21 @@ export async function GET(request: Request) {
           }
      );
 
+     console.log('Auth callback - Supabase client created');
+
      const requestUrl = new URL(request.url);
      // Extract the "code" and "error" parameters
      const code = requestUrl.searchParams.get('code');
      const error = requestUrl.searchParams.get('error');
      const errorCode = requestUrl.searchParams.get('error_code');
      const errorDescription = requestUrl.searchParams.get('error_description');
+
+     console.log('Extracted code and error parameters', {
+          code,
+          error,
+          errorCode,
+          errorDescription
+     });
 
      if (error) {
           await logServerAction({
@@ -60,7 +71,9 @@ export async function GET(request: Request) {
                user_id: null,
                type: 'auth'
           });
+          console.log('Exchanged code for session', { data, authError });
           if (authError) {
+               console.error('Error exchanging code for session:', authError);
                data ?? await logServerAction({
                     action: 'Auth callback errored',
                     error: authError.message,
@@ -73,6 +86,8 @@ export async function GET(request: Request) {
                return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=${authError.message}`);
           }
      }
+
+     console.log('Exchanged code for session');
 
      // Retrieve the session after OAuth to get the user details
      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
@@ -88,6 +103,8 @@ export async function GET(request: Request) {
           });
           return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=${sessionError.message}`);
      }
+
+     console.log('Retrieved session');
 
      if (!sessionData.session) {
           await logServerAction({
@@ -110,6 +127,8 @@ export async function GET(request: Request) {
           .select('*')
           .eq('email', userEmail)
 
+     console.log('Checked if user exists in tblClients', { userEmail, data, clientError });
+
      if (clientError) {
           await logServerAction({
                action: 'Auth callback errored',
@@ -120,6 +139,8 @@ export async function GET(request: Request) {
                user_id: null,
                type: 'auth'
           })
+          console.log('Error checking email in tblClients:', clientError);
+
           supabase.auth.signOut();
           const { data, error } = await supabase.auth.admin.deleteUser(sessionData.session.user.id);
 
@@ -144,6 +165,7 @@ export async function GET(request: Request) {
           })
           // Remove cookies
           cookieStore.getAll().forEach(cookie => cookieStore.delete(cookie.name));
+          console.log('Error checking email in tblClients:', clientError?.message);
 
           return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=Error checking email in database.`);
      }
@@ -163,7 +185,7 @@ export async function GET(request: Request) {
                has_accepted_marketing: false,
                is_verified: true
           });
-
+          console.log('Attempting to insert new user into tblClients', { user, data, insertError });
           data ?? await logServerAction({
                action: 'Auth callback success',
                error: 'Successfully inserted new user into tblClients',
@@ -206,10 +228,11 @@ export async function GET(request: Request) {
                user_id: null,
                type: 'auth'
           })
+          console.log('Duplicate email found in tblClients:', userEmail);
 
           supabase.auth.signOut();
           const { data, error } = await supabase.auth.admin.deleteUser(sessionData.session.user.id);
-
+          console.log('Attempting to delete user due to duplicate email', { data, error });
           error ?? await logServerAction({
                action: 'Auth callback errored',
                error: 'Failed to delete user',
@@ -244,8 +267,10 @@ export async function GET(request: Request) {
           user_id: sessionData.session.user.id,
           type: 'auth'
      })
+     console.log('Signed in with Google account', { userEmail, sessionData });
 
      // Redirect to dashboard with absolute URL
      const dashboardUrl = `${requestUrl.origin}`;
      return NextResponse.redirect(dashboardUrl);
 }
+
