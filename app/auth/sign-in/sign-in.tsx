@@ -207,7 +207,8 @@ export const LoginPage = () => {
                     redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback`,
                },
           });
-          console.log("Google OAuth Data:", authData, "Error:", authError);
+
+          alert(authData)
 
           if (authError) {
                await logClientAction({
