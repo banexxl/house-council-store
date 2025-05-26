@@ -200,12 +200,20 @@ export const LoginPage = () => {
      const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: any }> => {
           setGoogleSignInLoading(true)
           const start = Date.now();
-
           const { data: authData, error: authError } = await supabase.auth.signInWithOAuth({
                provider: 'google',
                options: {
                     redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback`,
                },
+          });
+          await logClientAction({
+               user_id: null,
+               action: `aaaaaaaaaaa - ${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback}`,
+               payload: {},
+               status: 'success',
+               error: '',
+               duration_ms: 0,
+               type: 'auth',
           });
 
           if (authError) {
