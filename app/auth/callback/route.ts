@@ -191,7 +191,7 @@ export async function GET(request: Request) {
                await supabase.auth.admin.deleteUser(user.id);
                cookieStore.getAll().forEach(cookie => cookieStore.delete(cookie.name));
 
-               return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=Failed to create user in tblClients.`);
+               return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=Failed to create user.`);
           }
      }
 

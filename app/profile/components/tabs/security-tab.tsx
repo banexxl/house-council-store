@@ -420,6 +420,7 @@ export default function SecurityTab({ userData }: SecurityTabProps) {
                                                   color="error"
                                                   disabled={confirmText !== "delete"}
                                                   onClick={handleConfirmDelete}
+                                                  loading={loading}
                                              >
                                                   Confirm Delete
                                              </Button>
