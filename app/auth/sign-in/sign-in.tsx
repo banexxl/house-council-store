@@ -206,15 +206,6 @@ export const LoginPage = () => {
                     redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback`,
                },
           });
-          await logClientAction({
-               user_id: null,
-               action: `aaaaaaaaaaa - ${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback}`,
-               payload: {},
-               status: 'success',
-               error: '',
-               duration_ms: 0,
-               type: 'auth',
-          });
 
           if (authError) {
                await logClientAction({

@@ -35,9 +35,6 @@ export const logClientAction = async ({
           duration_ms,
           type
      })
-     console.log(`Client log action: ${action}: ${status}`)
-     console.log('Client log error:', error);
-
 
      if (logInsertError) console.error(logInsertError)
 }
