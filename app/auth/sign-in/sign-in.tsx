@@ -29,7 +29,6 @@ import { useRouter } from "next/navigation"
 import toast from "react-hot-toast"
 import Animate from "@/app/components/animation-framer-motion"
 import { createBrowserClient } from "@supabase/ssr"
-import { logServerAction } from "@/app/lib/server-logging"
 import { logClientAction } from "@/app/lib/client-logging"
 
 // Custom multi-colored Google icon as an SVG component
@@ -74,7 +73,6 @@ const GoogleMultiColorIcon = (props: any) => (
           />
      </svg>
 );
-
 
 export const LoginPage = () => {
 
