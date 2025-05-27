@@ -197,7 +197,7 @@ export const BillingTab = ({ userData, allClientBillingInformation, binCheckerAP
                     {({ values, handleChange, handleSubmit, handleBlur }) => (
                          <form onSubmit={handleSubmit}>
                               {/* Invoice Email Recipient */}
-                              <Box>
+                              <Box sx={{ mb: 3 }}>
                                    <Typography variant="h6" gutterBottom>
                                         Invoice Email Recipient
                                    </Typography>
