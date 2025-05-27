@@ -209,9 +209,9 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                                                       />
                                                                  )}
                                                                  renderOption={(props, option) => (
-                                                                      <li {...props}>
+                                                                      <li {...props} key={option.code}>
                                                                            {option.country_name}
-                                                                           <span style={{ color: '#888' }}>&nbsp;{option.dialling_code}</span>
+                                                                           <span style={{ color: '#888' }} key={option.dialling_code}>&nbsp;{option.dialling_code}</span>
                                                                       </li>
                                                                  )}
                                                             />
@@ -276,7 +276,7 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                                                  />
                                                             )}
                                                             renderOption={(props, option) => (
-                                                                 <li {...props}>
+                                                                 <li {...props} key={option.code}>
                                                                       {option.country_name}
                                                                       <span style={{ color: '#888' }}>&nbsp;{option.dialling_code}</span>
                                                                  </li>
