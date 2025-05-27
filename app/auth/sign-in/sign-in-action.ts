@@ -64,7 +64,7 @@ export const checkClientExists = async (values: SignInFormValues): Promise<{ suc
                          duration_ms: Date.now() - start,
                          type: 'auth'
                     })
-                    return { success: false, error: { code: error.code, details: error.details, hint: 'Please try resetting your password', message: 'Password is incorrect' } };
+                    return { success: false, error: { code: error.code, details: error.details, hint: 'Please try resetting your password', message: 'Invalid credentials' } };
                default:
                     await logServerAction({
                          user_id: null,
