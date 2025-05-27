@@ -53,7 +53,7 @@ export const checkClientExists = async (values: SignInFormValues): Promise<{ suc
                          duration_ms: Date.now() - start,
                          type: 'auth'
                     })
-                    return { success: false, error: { code: error.code, details: error.details, hint: 'Please try registering first', message: 'Email not found' } };
+                    return { success: false, error: { code: error.code, details: error.details, hint: 'Please try registering first', message: 'Invalid credentials' } };
                case 'PGRS003':
                     await logServerAction({
                          user_id: null,
