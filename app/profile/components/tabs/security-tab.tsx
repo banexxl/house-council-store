@@ -74,7 +74,6 @@ export default function SecurityTab({ userData }: SecurityTabProps) {
                setLoading(false)
           }
      }
-
      const handleVerify = async () => {
           setLoading(true)
           if (!factorId) return toast.error("Missing factor ID")
@@ -148,7 +147,6 @@ export default function SecurityTab({ userData }: SecurityTabProps) {
                setLoading(false)
           }
      }
-
      const handleConfirmDelete = async () => {
           setConfirmDeleteLoading(true)
           const deleteAccount = await deleteAccountAction(userData.session.id, userData.client.email);
@@ -220,7 +218,6 @@ export default function SecurityTab({ userData }: SecurityTabProps) {
 
      }, [formik.values.newPassword, userData.session])
 
-
      return (
           <>
                <Typography variant="h5" gutterBottom>
@@ -259,10 +256,9 @@ export default function SecurityTab({ userData }: SecurityTabProps) {
                                              Sign out
                                         </Button>
                                         <Button variant="outlined" color="error" onClick={() => {
-                                             setShowDeleteConfirm(!showDeleteConfirm)
-                                             setShowPasswordChange(false)
+                                             router.push("/auth/forgot-password")
                                         }}>
-                                             Delete Account
+                                             Request new password
                                         </Button>
 
                                    </Box>
@@ -403,41 +399,6 @@ export default function SecurityTab({ userData }: SecurityTabProps) {
                                    </Box>
                                    // </Box>
                               )}
-                              {showDeleteConfirm && (
-                                   <Stack spacing={2} sx={{ mt: 2 }}>
-                                        <Typography color="error">
-                                             Type <strong>delete</strong> below to confirm account deletion:
-                                        </Typography>
-                                        <TextField
-                                             fullWidth
-                                             variant="outlined"
-                                             value={confirmText}
-                                             onChange={(e) => setConfirmText(e.target.value)}
-                                             placeholder="Type 'delete' to confirm"
-                                             size="small"
-                                        />
-                                        <Stack direction="row" spacing={2}>
-                                             <Button
-                                                  variant="contained"
-                                                  color="error"
-                                                  disabled={confirmText !== "delete"}
-                                                  onClick={handleConfirmDelete}
-                                                  loading={confirmDeleteLoading}
-                                             >
-                                                  Confirm Delete
-                                             </Button>
-                                             <Button
-                                                  variant="outlined"
-                                                  onClick={() => {
-                                                       setShowDeleteConfirm(false);
-                                                       setConfirmText("");
-                                                  }}
-                                             >
-                                                  Cancel
-                                             </Button>
-                                        </Stack>
-                                   </Stack>
-                              )}
 
                          </Box >
                     </CardContent>
@@ -552,6 +513,70 @@ export default function SecurityTab({ userData }: SecurityTabProps) {
                          </Box>
                     </CardContent>
                </Card>
+
+               <Card
+                    sx={{
+                         mt: 2,
+                         borderColor: "error.main",
+                         borderWidth: 1,
+                         borderStyle: "solid",
+                    }}
+               >
+                    <CardContent>
+                         <Typography variant="h6" gutterBottom>
+                              Delete Account
+                         </Typography>
+                         <Typography variant="body2" color="text.secondary">
+                              Note: This action is irreversible. Deleting your account will
+                              also delete all of your data and billing information.
+                         </Typography>
+                         <Stack direction="column" spacing={2} mt={2}>
+                              <Button
+                                   variant="contained"
+                                   color="error"
+                                   onClick={() => setShowDeleteConfirm(true)}
+                                   sx={{ width: "200px" }}
+                              >
+                                   Delete Account
+                              </Button>
+                              {showDeleteConfirm && (
+                                   <Stack spacing={2} sx={{ mt: 2 }}>
+                                        <Typography color="error">
+                                             Type <strong>delete</strong> below to confirm account deletion:
+                                        </Typography>
+                                        <TextField
+                                             fullWidth
+                                             variant="outlined"
+                                             value={confirmText}
+                                             onChange={(e) => setConfirmText(e.target.value)}
+                                             placeholder="Type 'delete' to confirm"
+                                             size="small"
+                                        />
+                                        <Stack direction="row" spacing={2}>
+                                             <Button
+                                                  variant="contained"
+                                                  color="error"
+                                                  disabled={confirmText !== "delete"}
+                                                  onClick={handleConfirmDelete}
+                                                  loading={confirmDeleteLoading}
+                                             >
+                                                  Confirm Delete
+                                             </Button>
+                                             <Button
+                                                  variant="outlined"
+                                                  onClick={() => {
+                                                       setShowDeleteConfirm(false);
+                                                       setConfirmText("");
+                                                  }}
+                                             >
+                                                  Cancel
+                                             </Button>
+                                        </Stack>
+                                   </Stack>
+                              )}
+                         </Stack>
+                    </CardContent>
+               </Card >
           </>
      )
 }

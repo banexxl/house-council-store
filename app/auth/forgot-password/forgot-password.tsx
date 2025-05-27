@@ -71,7 +71,7 @@ export default function ForgotPasswordPage() {
                                         <LockResetIcon />
                                    </Box>
                                    <Typography variant="h4" component="h1" gutterBottom>
-                                        Forgot Password
+                                        Reset Password
                                    </Typography>
                                    <Typography variant="body2" color="text.secondary" textAlign="center">
                                         Enter your email address and we'll send you instructions to reset your password.
