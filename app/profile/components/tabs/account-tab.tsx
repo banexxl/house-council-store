@@ -172,18 +172,6 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                                   />
                                              </Grid>
 
-                                             {/* <Grid size={{ xs: 12, md: 6 }}>
-                                                  <TextField
-                                                       fullWidth
-                                                       label="Address"
-                                                       name="address_1"
-                                                       value={values.address_1}
-                                                       onChange={handleChange}
-                                                       error={!!errors.address_1}
-                                                       helperText={errors.address_1 || ""}
-                                                  />
-                                             </Grid> */}
-
                                              {/* Mobile Phone Line */}
                                              <Grid size={{ xs: 12, md: 6 }}>
                                                   <Box
