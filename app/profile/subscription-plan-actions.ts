@@ -78,42 +78,54 @@ export const readSubscriptionPlanFeatures = async (
      };
 };
 
-export const readAllSubscriptionPlans = async (): Promise<{
+
+export const readSubscriptionPlansByStatus = async (
+     status: string
+): Promise<{
      readAllSubscriptionPlansSuccess: boolean;
      subscriptionPlanData?: (SubscriptionPlan & { features: any[] })[];
      readAllSubscriptionPlansError?: string;
 }> => {
      const supabase = await useServerSideSupabaseServiceRoleClient();
      const userId = (await supabase.auth.getUser()).data.user?.id;
+
      const { data: subscriptionPlans, error: planError } = await supabase
           .from("tblSubscriptionPlans")
           .select(`
-      *,
-      tblSubscriptionPlans_Features (
-        feature_id,
-        tblFeatures (*)
-      )
-    `)
+         *,
+         tblSubscriptionPlanStatuses!status_id (
+           name
+         ),
+         tblSubscriptionPlans_Features (
+           feature_id,
+           tblFeatures (*)
+         )
+       `)
           .order("monthly_total_price", { ascending: true });
 
      if (planError) {
           await logServerAction({
-               user_id: userId ? userId : '',
-               action: 'Read All Subscription Plans',
-               payload: {},
-               status: 'fail',
+               user_id: userId ?? "",
+               action: "Read All Subscription Plans",
+               payload: { status },
+               status: "fail",
                error: planError.message,
                duration_ms: 0,
-               type: 'db'
-          })
+               type: "db",
+          });
           return {
                readAllSubscriptionPlansSuccess: false,
                readAllSubscriptionPlansError: planError.message,
           };
      }
 
-     // Flatten features into a simple `features` array
-     const plansWithFeatures = subscriptionPlans?.map((plan) => ({
+     // Filter by status name
+     const filteredPlans = (subscriptionPlans || []).filter(
+          (plan: any) => plan.tblSubscriptionPlanStatuses?.name === status
+     );
+
+     // Flatten features into a simple array
+     const plansWithFeatures = filteredPlans.map((plan: any) => ({
           ...plan,
           features: plan.tblSubscriptionPlans_Features.map(
                (pf: any) => pf.tblFeatures
@@ -122,19 +134,21 @@ export const readAllSubscriptionPlans = async (): Promise<{
 
      await logServerAction({
           user_id: null,
-          action: 'Read All Subscription Plans',
-          payload: {},
-          status: 'success',
-          error: '',
+          action: "Read All Subscription Plans",
+          payload: { status },
+          status: "success",
+          error: "",
           duration_ms: 0,
-          type: 'db'
-     })
+          type: "db",
+     });
 
      return {
           readAllSubscriptionPlansSuccess: true,
           subscriptionPlanData: plansWithFeatures,
      };
 };
+
+
 
 export const subscribeClientAction = async (
      clientId: string,

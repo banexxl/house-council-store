@@ -3,21 +3,34 @@ import { getSessionUser } from "@/app/lib/get-session";
 import { Footer } from "@/app/components/footer";
 import { Header } from "@/app/components/header";
 import { PricingPage } from "./pricing";
-import { readAllSubscriptionPlans, readClientSubscriptionPlanFromClientId } from "../profile/subscription-plan-actions";
+import { readSubscriptionPlansByStatus, readClientSubscriptionPlanFromClientId } from "../profile/subscription-plan-actions";
 import { logServerAction } from "../lib/server-logging";
 import { readAccountByEmailAction } from "../profile/account-action";
 
 
 export default async function Page() {
-
   const user = await getSessionUser();
 
-  const { subscriptionPlanData } = await readAllSubscriptionPlans()
+  if (!user?.email) {
+    throw new Error("User email is required");
+  }
 
-  // Fetch client data
-  const { client, error } = await readAccountByEmailAction(user?.email!);
+  // Start independent call
+  const subscriptionPlansPromise = readSubscriptionPlansByStatus('Active');
 
-  const { clientSubscriptionPlanData } = await readClientSubscriptionPlanFromClientId(client?.id!)
+  // Start dependent chain
+  const { client, error } = await readAccountByEmailAction(user.email);
+  if (!client?.id) {
+    throw new Error("Client not found");
+  }
+
+  const clientSubscriptionPlanPromise = readClientSubscriptionPlanFromClientId(client.id);
+
+  // Await all parallel promises
+  const [{ subscriptionPlanData }, { clientSubscriptionPlanData }] = await Promise.all([
+    subscriptionPlansPromise,
+    clientSubscriptionPlanPromise,
+  ]);
 
   await logServerAction({
     user_id: user ? user.id : null,
