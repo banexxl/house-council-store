@@ -11,23 +11,12 @@ import { readEntity } from "@/app/lib/base-entity-actions";
 import { readClientSubscriptionPlanFromClientId, readSubscriptionPlanFeatures } from "./subscription-plan-actions";
 import { readAllClientsBillingInformation } from "./client-billing-information-actions";
 import { redirect } from "next/navigation";
-import { logServerAction } from "../lib/server-logging";
 import { readAllClientPaymentsAction } from "./client-payment-actions";
 import { readAllCurrenciesAction, readAllPaymentMethodsAction } from "./payment-actions";
 
 export default async function Page() {
      // Fetch user session
      const user: User | null = await getSessionUser();
-
-     await logServerAction({
-          user_id: user ? user.id : null,
-          action: 'Rendering Profile Page',
-          payload: {},
-          status: 'success',
-          error: '',
-          duration_ms: 0,
-          type: 'internal'
-     })
 
      if (!user?.email) {
           redirect("/auth/sign-in");
