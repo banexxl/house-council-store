@@ -94,7 +94,7 @@ export const readAllSubscriptionPlans = async (): Promise<{
         tblFeatures (*)
       )
     `)
-          .order("total_price", { ascending: true });
+          .order("monthly_total_price", { ascending: true });
 
      if (planError) {
           await logServerAction({

@@ -74,7 +74,7 @@ export default function PaymentsTab({ clientPayments, userData, clientSubscripti
                total_paid: amount,
                status: "succeeded",
                updated_at: new Date().toISOString(),
-               total_cost: clientSubscriptionObject?.subscription_plan?.total_price || 0,
+               total_cost: clientSubscriptionObject?.subscription_plan?.monthly_total_price || 0,
                invoice_number: generateInvoiceString(),
                subscription_plan: clientSubscriptionObject?.subscription_plan_id!,
                client: userData.client.id,
