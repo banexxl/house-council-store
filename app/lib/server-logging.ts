@@ -1,5 +1,4 @@
 import { useServerSideSupabaseServiceRoleClient } from "./ss-supabase-service-role-client";
-import { createSupabaseBrowserClient } from "./supabase-client";
 
 export type LogType =
      | 'api'
