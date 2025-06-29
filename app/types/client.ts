@@ -1,5 +1,11 @@
 import * as Yup from 'yup';
 
+export type ClientStatus = 'active' | 'inactive' | 'pending_activation' | 'suspended' | 'trial' | 'archived' | 'vip';
+
+export type ClientType = 'agency' | 'business' | 'enterprise' | 'government' | 'individual';
+
+export type ClientRole = 'admin' | 'client' | 'tenant';
+
 export interface Client {
   id: string;
   created_at?: Date;
@@ -10,9 +16,9 @@ export interface Client {
   phone?: string;
   address_1: string;
   contact_person: string;
-  type: string;
-  client_status: string;
-  client_role: string;
+  client_type: ClientType;
+  client_status: ClientStatus;
+  client_role: ClientRole;
   notes?: string;
   address_2?: string;
   mobile_phone?: string;
@@ -61,11 +67,19 @@ export const clientValidationSchema = (t: (key: string) => string) => {
     mobile_phone: Yup.string().max(15).required(t('clients.clientMobilePhoneRequired')),
     address_1: Yup.string().max(255),
     address_2: Yup.string().max(255),
-    type: Yup.string().max(255).required(t('clients.clientTypeRequired')),
+    client_type: Yup.string()
+      .oneOf(['agency', 'business', 'enterprise', 'government', 'individual'],
+        t('clients.clientTypeMustBeValid'))
+      .required(t('clients.clientTypeRequired')),
     has_discount: Yup.bool(),
     is_verified: Yup.bool(),
-    client_status: Yup.string().max(255).required(t('clients.clientStatusRequired')),
-    client_role: Yup.string().max(36).required(t('clients.clientRoleRequired')),
+    client_status: Yup.string()
+      .oneOf(['active', 'inactive', 'pending_activation', 'suspended', 'trial', 'archived', 'vip'],
+        t('clients.clientStatusMustBeValid'))
+      .required(t('clients.clientStatusRequired')),
+    client_role: Yup.string()
+      .oneOf(['admin', 'client', 'tenant'], t('clients.clientRoleMustBeValid'))
+      .required(t('clients.clientRoleRequired')),
     subscription_plan: Yup.string().max(40).nullable(),
     next_billing_date: Yup.date().nullable(),
     billing_information: Yup.string().max(255).nullable(),
@@ -89,8 +103,8 @@ export const clientInitialValues: Client = {
   password: '',
   address_1: '',
   contact_person: '',
-  type: '',
-  client_status: '',
+  client_type: 'individual',
+  client_status: 'active',
   client_role: 'client',
   address_2: '',
   phone: '',
