@@ -19,12 +19,7 @@ import LoginIcon from "@mui/icons-material/Login"
 import PersonIcon from "@mui/icons-material/Person"
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import BiotechIcon from '@mui/icons-material/Biotech';
-import EmailIcon from "@mui/icons-material/Email"
-import toast, { Toaster } from "react-hot-toast"
 import Animate from "@/app/components/animation-framer-motion"
-import { createBrowserClient } from "@supabase/ssr"
-import { useEffect } from "react"
-import { useRouter } from "next/navigation"
 
 export const RegistrationConfirmedPage = () => {
 
@@ -119,7 +114,6 @@ export const RegistrationConfirmedPage = () => {
                          </Container>
                     </Box>
                </Animate>
-               <Toaster />
           </Box>
      )
 }

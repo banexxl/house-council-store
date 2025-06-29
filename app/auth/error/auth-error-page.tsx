@@ -68,7 +68,7 @@ export default function AuthErrorPage() {
                invalid_client: "Client authentication failed.",
                invalid_grant: "The provided authorization grant or refresh token is invalid, expired, or revoked.",
                unauthorized: "You are not authorized to access this resource.",
-               email_not_verified: "Your email address has not been verified.",
+               email_not_verified: "Your email address has not been verified. Please contact support.",
                password_reset_required: "You need to reset your password before continuing.",
           }
 

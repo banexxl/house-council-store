@@ -7,7 +7,6 @@ import { ProfilePage } from "./profile";
 import { readAccountByEmailAction, readClientRecentActivityAction } from "./account-action";
 import { User } from "@supabase/supabase-js";
 import { clientInitialValues } from "../types/client";
-import { readEntity } from "@/app/lib/base-entity-actions";
 import { readClientSubscriptionPlanFromClientId, readSubscriptionPlanFeatures } from "./subscription-plan-actions";
 import { readAllClientsBillingInformation } from "./client-billing-information-actions";
 import { redirect } from "next/navigation";

@@ -1,6 +1,5 @@
 'use server';
 
-import { hashPassword } from '@/app/lib/bcrypt';
 import { sendSuccessfullClientRegistrationToSupport } from '@/app/lib/node-mailer';
 import { logServerAction } from '@/app/lib/server-logging';
 import { useServerSideSupabaseServiceRoleClient } from '@/app/lib/ss-supabase-service-role-client';
@@ -48,7 +47,7 @@ export const registerUser = async (values: RegisterFormValues): Promise<{ succes
           name: values.name,
           email: values.email,
           client_type: values.name.replace(/\s/g, '') === '' ? 'individual' : 'business',
-          client_status: 'active',
+          client_status: 'pending_activation',
           client_role: 'client',
           has_accepted_terms_and_conditions: values.has_accepted_terms_and_conditions,
           has_accepted_privacy_policy: values.has_accepted_privacy_policy,

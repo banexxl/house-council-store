@@ -23,7 +23,6 @@ import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
 import { resendRegistrationEmail } from "./resend-email-action"
 import toast, { Toaster } from "react-hot-toast"
 import Animate from "@/app/components/animation-framer-motion"
-import { createBrowserClient } from "@supabase/ssr"
 import { useRouter } from "next/navigation"
 
 export const RegistrationConfirmationPage = () => {
@@ -33,7 +32,6 @@ export const RegistrationConfirmationPage = () => {
      const [resendSuccess, setResendSuccess] = useState(false)
      const [resendError, setResendError] = useState(false)
      const [showResendForm, setShowResendForm] = useState(false)
-     const router = useRouter()
 
 
      const handleResendEmail = async (e: React.FormEvent) => {
