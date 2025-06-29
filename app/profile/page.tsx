@@ -49,7 +49,7 @@ export default async function Page() {
                ...client,
                client_role: client.client_role,
                client_status: client.client_status,
-               type: client.type,
+               client_type: client.client_type,
           },
           session: { ...user },
      };
