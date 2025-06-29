@@ -316,7 +316,7 @@ export default function ProfileSidebar({ userData, clientSubscriptionObject, rec
                          <Chip label={userData.client.client_status} color={getStatusColor(userData.client.client_status)} size="small" sx={{ mb: 1 }} />
 
                          <Typography variant="body2" color="text.secondary" gutterBottom>
-                              {userData.client.role_id}
+                              {userData.client.client_role}
                          </Typography>
 
                          <Divider sx={{ my: 2 }} />

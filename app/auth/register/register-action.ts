@@ -47,9 +47,9 @@ export const registerUser = async (values: RegisterFormValues): Promise<{ succes
           contact_person: values.contact_person,
           name: values.name,
           email: values.email,
-          type: '3cb057f5-32c1-423b-a549-5c28a89c6907',
-          client_status: '6f0f38ed-bd14-4f84-9718-1e37fe0b7027',
-          role_id: '01054864-19ab-4d52-ba1e-59ab35858349',
+          type: values.name.replace(/\s/g, '') === '' ? 'individual' : 'business',
+          client_status: 'active',
+          client_role: 'client',
           has_accepted_terms_and_conditions: values.has_accepted_terms_and_conditions,
           has_accepted_privacy_policy: values.has_accepted_privacy_policy,
           has_accepted_marketing: values.has_accepted_marketing

@@ -30,11 +30,8 @@ export default async function Page() {
      }
 
      // Fetch related data in parallel
-     const [clientSubscriptionObject, role, client_status, client_type, billingInformation, recentActivity, clientPayments, currencies, paymentMethodsData] = await Promise.all([
+     const [clientSubscriptionObject, billingInformation, recentActivity, clientPayments, currencies, paymentMethodsData] = await Promise.all([
           readClientSubscriptionPlanFromClientId(client.id),
-          readEntity("tblClientRoles", client.role_id),
-          readEntity("tblClientStatuses", client.client_status),
-          readEntity("tblClientTypes", client.type),
           readAllClientsBillingInformation(client.id),
           readClientRecentActivityAction(user.email, client.id),
           readAllClientPaymentsAction(client.id),
@@ -50,9 +47,9 @@ export default async function Page() {
           client: {
                ...clientInitialValues,
                ...client,
-               role_id: role?.entity?.name ?? "",
-               client_status: client_status?.entity?.name ?? "",
-               type: client_type?.entity?.name ?? "",
+               client_role: client.client_role,
+               client_status: client.client_status,
+               type: client.type,
           },
           session: { ...user },
      };
