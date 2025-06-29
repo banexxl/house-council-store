@@ -46,9 +46,6 @@ export default async function Page() {
           client: {
                ...clientInitialValues,
                ...client,
-               client_role: client.client_role,
-               client_status: client.client_status,
-               client_type: client.client_type,
           },
           session: { ...user },
      };
