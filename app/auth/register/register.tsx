@@ -141,7 +141,6 @@ export const RegisterPage = () => {
                                                   </Box>
                                              </Grid>
 
-
                                              <Grid size={{ xs: 12 }}>
                                                   <Box sx={{ height: "65px" }}>
                                                        <TextField
@@ -177,7 +176,7 @@ export const RegisterPage = () => {
                                              </Grid>
 
                                              <Grid size={{ xs: 12 }}>
-                                                  <Box sx={{ height: "65px", mb: 4 }}>
+                                                  <Box sx={{ height: "65px" }}>
                                                        <TextField
                                                             fullWidth
                                                             id="password"
@@ -200,7 +199,7 @@ export const RegisterPage = () => {
                                                                       ),
                                                                  },
                                                                  formHelperText: {
-                                                                      style: { width: "100%" } // Ensure the helper text takes the full width},
+                                                                      style: { width: "120%" } // Ensure the helper text takes the full width},
                                                                  }
                                                             }}
                                                        />
@@ -240,7 +239,7 @@ export const RegisterPage = () => {
                                              </Grid>
 
                                              <Grid size={{ xs: 12 }}>
-                                                  <Box sx={{ height: "50px", mb: 2 }}>
+                                                  <Box sx={{ height: "50px" }}>
                                                        <FormControl
                                                             error={
                                                                  formik.touched.has_accepted_terms_and_conditions &&

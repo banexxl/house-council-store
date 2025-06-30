@@ -10,7 +10,6 @@ export default async function Page() {
 
      const user = await getSessionUser();
 
-     console.log("Registration confirmed page user:", user);
      const { success, error } = await activateAccount(user?.email!);
      if (!success) {
           // Redirect to login if not authenticated

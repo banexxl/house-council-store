@@ -1,7 +1,7 @@
-'use server';
+'use client';
 
-import { logServerAction } from '@/app/lib/server-logging';
-import { useServerSideSupabaseAnonClient } from '@/app/lib/ss-supabase-anon-client';
+import { logClientAction } from '@/app/lib/client-logging';
+import { createSupabaseBrowserClient } from '@/app/lib/supabase-client';
 
 export type SignInFormValues = {
      email: string;
@@ -15,69 +15,76 @@ export type ErrorType = {
      message?: string;
 }
 
-export const checkClientExists = async (values: SignInFormValues): Promise<{ success: boolean, error?: ErrorType }> => {
+export const checkClientExists = async (
+     values: SignInFormValues
+): Promise<{ success: boolean; error?: ErrorType }> => {
+     const start = Date.now()
 
-     const start = Date.now();
-
-     const supabase = await useServerSideSupabaseAnonClient();
+     const supabase = await createSupabaseBrowserClient();
 
      const { data, error } = await supabase
           .from('tblClients')
           .select('email')
           .eq('email', values.email)
-          .single();
+          .single()
 
      if (data) {
-          await logServerAction({
+          await logClientAction({
                user_id: null,
-               action: 'Signing in with email and password - user found in tblClients',
-               payload: JSON.stringify(values),
+               action: 'Sign in - check client exists',
+               payload: { email: values.email },
                status: 'success',
                error: '',
                duration_ms: Date.now() - start,
-               type: 'auth'
+               type: 'auth',
           })
-
-          return { success: true };
+          return { success: true }
      }
 
-     if (error) {
-          switch (error.code) {
-               case 'PGRST116':
-                    await logServerAction({
-                         user_id: null,
-                         action: 'Signing in with email and password failed',
-                         payload: JSON.stringify(values),
-                         status: 'fail',
-                         error: error.message,
-                         duration_ms: Date.now() - start,
-                         type: 'auth'
-                    })
-                    return { success: false, error: { code: error.code, details: error.details, hint: 'Please try registering first', message: 'Invalid credentials' } };
-               case 'PGRS003':
-                    await logServerAction({
-                         user_id: null,
-                         action: 'Signing in with email and password failed',
-                         payload: JSON.stringify(values),
-                         status: 'fail',
-                         error: error.message,
-                         duration_ms: Date.now() - start,
-                         type: 'auth'
-                    })
-                    return { success: false, error: { code: error.code, details: error.details, hint: 'Please try resetting your password', message: 'Invalid credentials' } };
-               default:
-                    await logServerAction({
-                         user_id: null,
-                         action: 'Signing in with email and password failed',
-                         payload: JSON.stringify(values),
-                         status: 'fail',
-                         error: error.message,
-                         duration_ms: Date.now() - start,
-                         type: 'auth'
-                    })
-                    return { success: false, error: { code: error.code, details: error.details, hint: error.hint, message: error.message } };
+     const baseError = error
+          ? {
+               code: error.code,
+               details: error.details,
+               message: error.message,
+               hint: error.hint || 'Please try again later',
           }
-     }
+          : {
+               code: 'UnknownError',
+               details: 'An unknown error occurred',
+               message: 'Unknown error',
+               hint: 'Please try again later',
+          }
 
-     return { success: false, error: { code: 'UnknownError', details: 'An unknown error occurred', hint: 'Please try again later', message: 'Unknown error' } };
+     await logClientAction({
+          user_id: null,
+          action: 'Sign in - check client exists error',
+          payload: { email: values.email },
+          status: 'fail',
+          error: error?.message || 'Unknown error',
+          duration_ms: Date.now() - start,
+          type: 'auth',
+     })
+
+     switch (error?.code) {
+          case 'PGRST116':
+               return {
+                    success: false,
+                    error: {
+                         ...baseError,
+                         hint: 'Please try registering first',
+                         message: 'Invalid credentials',
+                    },
+               }
+          case 'PGRS003':
+               return {
+                    success: false,
+                    error: {
+                         ...baseError,
+                         hint: 'Please try resetting your password',
+                         message: 'Invalid credentials',
+                    },
+               }
+          default:
+               return { success: false, error: baseError }
+     }
 }
