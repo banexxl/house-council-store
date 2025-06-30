@@ -66,6 +66,14 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
           }
      };
 
+     const formatClientStatus = (status: string): string => {
+          return status
+               .toLowerCase()
+               .replace(/_/g, ' ')
+               .replace(/\b\w/g, char => char.toUpperCase())
+     }
+
+
      return (
           <>
                {editMode ? (
@@ -360,8 +368,13 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                    <Typography variant="subtitle2" color="text.secondary">
                                         Status
                                    </Typography>
-                                   <Chip label={userData.client.client_status} color={getStatusColor(userData.client.client_status)} size="small" />
+                                   <Chip
+                                        label={formatClientStatus(userData.client.client_status)}
+                                        color={getStatusColor(userData.client.client_status)}
+                                        size="small"
+                                   />
                               </Grid>
+
 
                               <Grid size={{ xs: 12, md: 6 }}>
                                    <Typography variant="subtitle2" color="text.secondary">

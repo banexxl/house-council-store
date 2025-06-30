@@ -4,7 +4,6 @@ import { useServerSideSupabaseServiceRoleClient } from "@/app/lib/ss-supabase-se
 import { ClientSubscription, RenewalPeriod, SubscriptionPlan } from "../types/subscription-plan";
 import { Feature } from "../types/feature";
 import { logServerAction } from "../lib/server-logging";
-import { BaseEntity } from "../types/base-entity";
 
 
 export const readSubscriptionPlanFeatures = async (
@@ -147,8 +146,6 @@ export const readSubscriptionPlansByStatus = async (
           subscriptionPlanData: plansWithFeatures,
      };
 };
-
-
 
 export const subscribeClientAction = async (
      clientId: string,

@@ -12,7 +12,6 @@ import {
      ListItem,
      ListItemIcon,
      ListItemText,
-     Alert,
 } from "@mui/material"
 import CheckCircleIcon from "@mui/icons-material/CheckCircle"
 import LoginIcon from "@mui/icons-material/Login"
@@ -20,8 +19,39 @@ import PersonIcon from "@mui/icons-material/Person"
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import BiotechIcon from '@mui/icons-material/Biotech';
 import Animate from "@/app/components/animation-framer-motion"
+import { useEffect } from "react"
+import { activateAccount } from "./registration-confirmed-action"
+import { createBrowserClient } from "@supabase/ssr"
+import toast from "react-hot-toast"
 
 export const RegistrationConfirmedPage = () => {
+
+     useEffect(() => {
+          const activate = async () => {
+               const supabase = createBrowserClient(
+                    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+                    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string
+               );
+
+               const user = await supabase.auth.getUser();
+               const email = user.data.user?.email;
+
+               const { success, error } = await activateAccount(email!);
+
+               if (success) {
+                    toast.success("Your account has been successfully activated!");
+               } else {
+                    toast.error("Failed to activate your account. Please try again.");
+               }
+          };
+
+          activate();
+
+          return () => {
+               // Cleanup if needed
+          };
+     }, [])
+
 
      return (
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
@@ -41,7 +71,7 @@ export const RegistrationConfirmedPage = () => {
                                         Welcome to NestLink!
                                    </Typography>
 
-                                   <Typography variant="body1" paragraph sx={{ maxWidth: 600, mx: "auto" }}>
+                                   <Typography variant="body1" sx={{ maxWidth: 600, mx: "auto" }}>
                                         Your account has been successfully created. You can now log in and start using our services.
                                    </Typography>
 
