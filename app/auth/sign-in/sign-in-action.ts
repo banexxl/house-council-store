@@ -1,6 +1,5 @@
 'use client';
 
-import { logClientAction } from '@/app/lib/client-logging';
 import { createSupabaseBrowserClient } from '@/app/lib/supabase-client';
 
 export type SignInFormValues = {
@@ -15,30 +14,32 @@ export type ErrorType = {
      message?: string;
 }
 
-export const checkClientExists = async (
+export const checkClientExistsAndIsPermitted = async (
      values: SignInFormValues
 ): Promise<{ success: boolean; error?: ErrorType }> => {
      const start = Date.now()
-
+     const restrictingStatuses = ['inactive', 'pending_activation', 'suspended', 'archived']
+     const allowedStatuses = ['active', 'trial', 'vip']
      const supabase = await createSupabaseBrowserClient();
 
      const { data, error } = await supabase
           .from('tblClients')
-          .select('email')
+          .select('*')
           .eq('email', values.email)
           .single()
 
      if (data) {
-          await logClientAction({
-               user_id: null,
-               action: 'Sign in - check client exists',
-               payload: { email: values.email },
-               status: 'success',
-               error: '',
-               duration_ms: Date.now() - start,
-               type: 'auth',
-          })
-          return { success: true }
+
+          if (!restrictingStatuses.includes(data.client_status)) {
+               return { success: true }
+          }
+          return {
+               success: false, error: {
+                    code: 'ClientRestricted',
+                    details: 'Your account is restricted',
+                    hint: 'Please contact support for assistance',
+               }
+          }
      }
 
      const baseError = error
@@ -54,16 +55,6 @@ export const checkClientExists = async (
                message: 'Unknown error',
                hint: 'Please try again later',
           }
-
-     await logClientAction({
-          user_id: null,
-          action: 'Sign in - check client exists error',
-          payload: { email: values.email },
-          status: 'fail',
-          error: error?.message || 'Unknown error',
-          duration_ms: Date.now() - start,
-          type: 'auth',
-     })
 
      switch (error?.code) {
           case 'PGRST116':

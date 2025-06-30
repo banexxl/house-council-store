@@ -24,7 +24,7 @@ import Visibility from "@mui/icons-material/Visibility"
 import VisibilityOff from "@mui/icons-material/VisibilityOff"
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined"
 import { signInSchema } from "./sign-in-schema"
-import { checkClientExists } from "./sign-in-action"
+import { checkClientExistsAndIsPermitted } from "./sign-in-action"
 import { useRouter } from "next/navigation"
 import toast from "react-hot-toast"
 import Animate from "@/app/components/animation-framer-motion"
@@ -112,7 +112,7 @@ export const LoginPage = () => {
 
           onSubmit: async (values) => {
 
-               const { success, error } = await checkClientExists(values)
+               const { success, error } = await checkClientExistsAndIsPermitted(values)
 
                if (!success) {
                     toast.error(error?.message || error?.hint || error?.details || "Unknown error")

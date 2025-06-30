@@ -26,7 +26,7 @@ export const logClientAction = async ({
 
      const supabase = await createSupabaseBrowserClient();
 
-     const { error: logInsertError } = await supabase.from('tblServerLogs').insert({
+     const { error: logInsertError } = await supabase.from('tblClientLogs').insert({
           user_id,
           action,
           payload,
