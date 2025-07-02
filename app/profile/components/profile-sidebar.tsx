@@ -40,7 +40,7 @@ import { Client } from "@/app/types/client"
 import { User } from "@supabase/supabase-js"
 import { ClientSubscription, SubscriptionPlan } from "@/app/types/subscription-plan"
 import { logoutUserAction, updateAccountAction } from "../account-action"
-import { deleteClientAvatarAction, uploadClientAvatarAction } from "../client-avatar-actions"
+import { deleteClientAvatarAction, uploadClientAvatarAction } from "@/app/lib/sb-storage"
 
 export interface ActivityItem {
      id: string
@@ -140,7 +140,6 @@ export default function ProfileSidebar({ userData, clientSubscriptionObject, rec
                toast.error("Error logging out")
           }
      }
-
      const handleUpdateAvatar = async (file: File) => {
           setImageLoading(true);
 
@@ -163,7 +162,7 @@ export default function ProfileSidebar({ userData, clientSubscriptionObject, rec
                     formData.append('title', userData.client.name);
                     formData.append('extension', extension);
                     formData.append('fileName', file.name);
-                    formData.append('folderName', userData.client.name); // or any unique folder id
+                    formData.append('folderName', userData.client.name); // or use a unique ID
 
                     const uploadResponse = await uploadClientAvatarAction(formData);
 
@@ -197,13 +196,14 @@ export default function ProfileSidebar({ userData, clientSubscriptionObject, rec
 
           try {
                const res = await deleteClientAvatarAction(formData);
+
                if (res.success) {
-                    toast.success("Previous avatar deleted.");
+                    toast.success("Avatar deleted.");
                } else {
                     toast.error(res.message);
                }
           } catch (error) {
-               toast.error("Error deleting avatar: " + error);
+               toast.error("Error deleting avatar");
           }
      };
 
@@ -305,6 +305,7 @@ export default function ProfileSidebar({ userData, clientSubscriptionObject, rec
                                         src={userData.client.avatar}
                                         alt={userData.client.name}
                                         sx={{ width: 120, height: 120 }}
+                                        onClick={() => handleDeleteAvatar(userData.client.avatar!)}
                                    />
                               </Badge>
                          </Box>
