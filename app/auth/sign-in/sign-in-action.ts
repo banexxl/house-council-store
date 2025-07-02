@@ -32,7 +32,7 @@ export const checkClientExistsAndIsPermitted = async (
      if (data) {
           await logClientAction({
                user_id: null,
-               action: 'sign-in',
+               action: 'Check if client exists and is permitted - client found',
                payload: { email: values.email },
                status: 'success',
                error: '',
@@ -42,7 +42,7 @@ export const checkClientExistsAndIsPermitted = async (
           if (!restrictingStatuses.includes(data.client_status)) {
                await logClientAction({
                     user_id: data.id,
-                    action: 'sign-in - client found',
+                    action: 'Check if client exists and is permitted - Client status is allowed',
                     payload: { email: values.email, status: data.client_status },
                     status: 'success',
                     error: '',
@@ -53,7 +53,7 @@ export const checkClientExistsAndIsPermitted = async (
           }
           await logClientAction({
                user_id: data.id,
-               action: 'sign-in - client found but restricted',
+               action: 'Check if client exists and is permitted - Client status is restricted',
                payload: { email: values.email, status: data.client_status },
                status: 'fail',
                error: `Client is restricted with status ${data.client_status}`,
