@@ -1,5 +1,6 @@
 'use client';
 
+import { logClientAction } from '@/app/lib/client-logging';
 import { createSupabaseBrowserClient } from '@/app/lib/supabase-client';
 
 export type SignInFormValues = {
@@ -29,10 +30,36 @@ export const checkClientExistsAndIsPermitted = async (
           .single()
 
      if (data) {
-
+          await logClientAction({
+               user_id: null,
+               action: 'sign-in',
+               payload: { email: values.email },
+               status: 'success',
+               error: '',
+               duration_ms: Date.now() - start,
+               type: 'auth'
+          })
           if (!restrictingStatuses.includes(data.client_status)) {
+               await logClientAction({
+                    user_id: data.id,
+                    action: 'sign-in - client found',
+                    payload: { email: values.email, status: data.client_status },
+                    status: 'success',
+                    error: '',
+                    duration_ms: Date.now() - start,
+                    type: 'auth'
+               })
                return { success: true }
           }
+          await logClientAction({
+               user_id: data.id,
+               action: 'sign-in - client found but restricted',
+               payload: { email: values.email, status: data.client_status },
+               status: 'fail',
+               error: `Client is restricted with status ${data.client_status}`,
+               duration_ms: Date.now() - start,
+               type: 'auth'
+          })
           return {
                success: false, error: {
                     code: 'ClientRestricted',
