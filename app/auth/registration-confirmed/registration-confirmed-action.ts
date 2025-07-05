@@ -9,7 +9,7 @@ export const activateAccount = async (email: string): Promise<{ success: boolean
 
      const { data, error } = await supabase
           .from('tblClients')
-          .update({ client_status: 'active' })
+          .update({ client_status: 'active', is_verified: true })
           .eq('email', email);
 
      if (error) {
