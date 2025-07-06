@@ -4,8 +4,7 @@ export type ClientBillingInformation = {
      updated_at?: number | null;
      client_id: string;
      default_payment_method: boolean;
-     payment_method_id: string;
-     billing_status_id: string;
+     payment_method: string;
      contact_person: string;
      billing_address: string;
      email_receipt?: string;
@@ -24,8 +23,7 @@ export const clientBillingInformationInitialValues: ClientBillingInformation = {
      updated_at: null,
      client_id: '',
      default_payment_method: false,
-     payment_method_id: '',
-     billing_status_id: '',
+     payment_method: '',
      contact_person: '',
      billing_address: '',
      card_number: '',

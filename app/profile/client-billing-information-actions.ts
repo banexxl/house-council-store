@@ -24,7 +24,7 @@ export const createOrUpdateClientBillingInformation = async (clientBillingInform
                     card_number: clientBillingInformation.card_number,
                     cvc: clientBillingInformation.cvc,
                     expiration_date: clientBillingInformation.expiration_date,
-                    payment_method_id: clientBillingInformation.payment_method_id,
+                    payment_method: clientBillingInformation.payment_method,
                     default_payment_method: clientBillingInformation.default_payment_method,
                     /////////////////////////////
                     cash_amount: Number(clientBillingInformation.cash_amount)
@@ -45,7 +45,7 @@ export const createOrUpdateClientBillingInformation = async (clientBillingInform
                     card_number: clientBillingInformation.card_number,
                     cvc: clientBillingInformation.cvc,
                     expiration_date: clientBillingInformation.expiration_date,
-                    payment_method_id: clientBillingInformation.payment_method_id,
+                    payment_method: clientBillingInformation.payment_method,
                     cash_amount: Number(clientBillingInformation.cash_amount)
                })
                .select()

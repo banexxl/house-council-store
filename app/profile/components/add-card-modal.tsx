@@ -126,8 +126,7 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userD
                     {
                          ...values,
                          client_id: userData.client.id,
-                         payment_method_id: 'f3089f92-a241-4542-b0e4-cbc98f8a9c6e',
-                         billing_status_id: '71f8c548-ba1c-44b6-a6cc-5cf079f4fb1e',
+                         payment_method: 'credit_card',
                     }
                )
 
