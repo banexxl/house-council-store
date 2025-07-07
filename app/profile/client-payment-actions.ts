@@ -18,10 +18,9 @@ export const createOrUpdateClientPayment = async (
 
      if (payment.id) {
           result = await supabase
-               .from('tblPayments')
+               .from('tblPaymentInvoices')
                .update({
                     updated_at: new Date().toISOString(),
-                    total_cost: payment.total_cost,
                     total_paid: payment.total_paid,
                     invoice_number: payment.invoice_number,
                     subscription_plan: payment.subscription_plan,
@@ -37,12 +36,11 @@ export const createOrUpdateClientPayment = async (
                .single();
      } else {
           result = await supabase
-               .from('tblPayments')
+               .from('tblPaymentInvoices')
                .insert({
                     id: payment.id,
                     created_at: new Date().toISOString(),
                     updated_at: new Date().toISOString(),
-                    total_cost: payment.total_cost,
                     total_paid: payment.total_paid,
                     invoice_number: payment.invoice_number,
                     subscription_plan: payment.subscription_plan,
@@ -91,7 +89,7 @@ export const readClientPayment = async (
      const start = Date.now();
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
-     const { data, error } = await supabase.from('tblPayments').select('*').eq('id', id).single();
+     const { data, error } = await supabase.from('tblPaymentInvoices').select('*').eq('id', id).single();
 
      if (error) {
           await logServerAction({
@@ -116,7 +114,7 @@ export const deleteClientPayment = async (
      const start = Date.now();
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
-     const { error } = await supabase.from('tblPayments').delete().in('id', ids);
+     const { error } = await supabase.from('tblPaymentInvoices').delete().in('id', ids);
 
      if (error) {
           await logServerAction({
@@ -152,7 +150,7 @@ export const readAllClientPaymentsAction = async (
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
      const { data, error } = await supabase
-          .from('tblPayments')
+          .from('tblPaymentInvoices')
           .select('*')
           .order('created_at', { ascending: false })
           .eq('client', clientId);

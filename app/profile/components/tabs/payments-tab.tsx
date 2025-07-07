@@ -74,14 +74,14 @@ export default function PaymentsTab({ clientPayments, userData, clientSubscripti
                total_paid: amount,
                status: "succeeded",
                updated_at: new Date().toISOString(),
-               total_cost: clientSubscriptionObject?.subscription_plan?.monthly_total_price || 0,
                invoice_number: generateInvoiceString(),
                subscription_plan: clientSubscriptionObject?.subscription_plan_id!,
                client: userData.client.id,
                billing_information: allClientBillingInformation.find(info => info.default_payment_method)?.id || "",
                currency: currencies.find(currency => currency.code === "USD")?.id || "",
                refunded_at: null,
-               is_recurring: false
+               is_recurring: false,
+               tax_percentage: 18
           }
           const { success, error } = await makePaymentAction(newPayment)
 
