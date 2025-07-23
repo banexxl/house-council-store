@@ -196,13 +196,13 @@ export default function SubscriptionSuccessPage({
                                         <Typography variant="body2" color="text.secondary">
                                              Need help? Check out our{" "}
                                              <Link href="/docs" passHref>
-                                                  <Typography variant="body2" color="primary" component="a">
+                                                  <Typography variant="body2" color="primary">
                                                        documentation
                                                   </Typography>
                                              </Link>{" "}
                                              or{" "}
                                              <Link href="/contact" passHref>
-                                                  <Typography variant="body2" color="primary" component="a">
+                                                  <Typography variant="body2" color="primary">
                                                        contact support
                                                   </Typography>
                                              </Link>.
