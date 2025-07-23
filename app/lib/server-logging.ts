@@ -46,5 +46,4 @@ export const logServerAction = async ({
           type
      })
 
-     if (logInsertError) console.error(logInsertError)
 }

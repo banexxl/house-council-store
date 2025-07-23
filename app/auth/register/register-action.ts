@@ -42,7 +42,45 @@ export const registerUser = async (values: RegisterFormValues): Promise<{ succes
           return { success: false, error: { code: 'PASSWORDS_DO_NOT_MATCH', details: 'Passwords do not match', hint: null, message: 'Passwords do not match' } };
      }
 
+
+     // First, sign up the user with Supabase Auth
+     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email: values.email,
+          password: values.password,
+          options: {
+               emailRedirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/registration-confirmed`,
+          }
+     });
+
+     if (signUpError) {
+          await logServerAction({
+               user_id: null,
+               action: 'Register user - sign up error',
+               payload: { values },
+               status: 'fail',
+               error: signUpError.message,
+               duration_ms: 0,
+               type: 'auth'
+          });
+          if (signUpError.code === '23505') {
+               return { success: false, error: { code: '23505', details: 'Email already exists', hint: null, message: 'Email already exists' } };
+          }
+          return {
+               success: false,
+               error: {
+                    code: signUpError.code ? String(signUpError.code) : 'UNKNOWN',
+                    details: signUpError.message || 'Unknown error',
+                    hint: null,
+                    message: signUpError.message || 'Unknown error'
+               }
+          };
+     }
+     console.log('signUpData', signUpData);
+
+     // If sign up is successful, insert into tblClients with user_id
+     const userId = signUpData?.user?.id ?? null;
      const { data, error } = await supabase.from('tblClients').insert({
+          user_id: userId,
           contact_person: values.contact_person,
           name: values.name,
           email: values.email,
@@ -55,69 +93,34 @@ export const registerUser = async (values: RegisterFormValues): Promise<{ succes
      }).select().single();
 
      if (error) {
-          logServerAction({
-               user_id: null,
+          await logServerAction({
+               user_id: userId,
                action: 'Register user - insert error',
                payload: { values },
                status: 'fail',
                error: error.message,
                duration_ms: 0,
                type: 'auth'
-          })
+          });
           if (error.code === '23505') {
                return { success: false, error: { code: '23505', details: 'Email already exists', hint: null, message: 'Email already exists' } };
           }
           return { success: false, error: { code: error.code, details: error.details, hint: error.hint, message: error.message } };
      }
 
-     // If no error and data is returned, we want to add the user in the tblClients
-     if (data) {
-          await logServerAction({
-               user_id: data.user?.id ?? null,
-               action: 'Register user - insert success -> Signing up...',
-               payload: { values },
-               status: 'success',
-               error: '',
-               duration_ms: 0,
-               type: 'auth'
-          })
-          const { data: signUpData, error } = await supabase.auth.signUp({
-               email: values.email,
-               password: values.password,
-               options: {
-                    emailRedirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/registration-confirmed`,
-               }
-          });
-
-          if (signUpData) {
-               await sendSuccessfullClientRegistrationToSupport(values.email, values.contact_person);
-          }
-
-          if (error) {
-               logServerAction({
-                    user_id: null,
-                    action: 'Register user - sign up error',
-                    payload: { values },
-                    status: 'fail',
-                    error: error.message,
-                    duration_ms: 0,
-                    type: 'auth'
-               })
-               if (error.code === '23505') {
-                    return { success: false, error: { code: '23505', details: 'Email already exists', hint: null, message: 'Email already exists' } };
-               }
-          }
+     if (signUpData) {
+          await sendSuccessfullClientRegistrationToSupport(values.email, values.contact_person);
      }
 
      await logServerAction({
-          user_id: data.user?.id ?? null,
-          action: 'Register user - sign up success',
+          user_id: userId,
+          action: 'Register user - sign up & insert success',
           payload: { values },
           status: 'success',
           error: '',
           duration_ms: 0,
           type: 'auth'
-     })
+     });
 
      return { success: true };
 }
