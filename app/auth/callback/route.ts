@@ -1,5 +1,5 @@
 import { logServerAction } from '@/app/lib/server-logging';
-import { createServerClient } from '@supabase/ssr';
+import { useServerSideSupabaseServiceRoleClient } from '@/app/lib/ss-supabase-service-role-client';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
@@ -8,24 +8,7 @@ export async function GET(request: Request) {
      const start = Date.now()
 
      const cookieStore = await cookies();
-     const supabase = createServerClient(
-          process.env.SUPABASE_URL!,
-          process.env.SUPABASE_SERVICE_ROLE_KEY!,
-          {
-               cookies: {
-                    getAll: () => cookieStore.getAll(),
-                    setAll: (cookiesToSet) => {
-                         cookiesToSet.forEach(({ name, value, options }) => {
-                              try {
-                                   cookieStore.set(name, value, options);
-                              } catch {
-                                   // Handle cases where setting cookies in server actions isn't supported
-                              }
-                         });
-                    },
-               },
-          }
-     );
+     const supabase = await useServerSideSupabaseServiceRoleClient();
 
      const requestUrl = new URL(request.url);
      // Extract the "code" and "error" parameters
@@ -49,6 +32,7 @@ export async function GET(request: Request) {
           return NextResponse.redirect(errorPageUrl);
      }
 
+     // If "code" is present, exchange it for a session
      if (code) {
           const { data, error: authError } = await supabase.auth.exchangeCodeForSession(code);
           data ?? await logServerAction({
@@ -75,7 +59,7 @@ export async function GET(request: Request) {
                return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=${authError.message}`);
           }
      }
-
+     // If "code" is not present, log an error and redirect to error page
      else {
           await logServerAction({
                action: 'Auth callback errored',
@@ -92,6 +76,7 @@ export async function GET(request: Request) {
      // Retrieve the session after OAuth to get the user details
      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
 
+     // If there's an error retrieving the session, log it and redirect to error page
      if (sessionError) {
           await logServerAction({
                action: 'Auth callback errored',
@@ -105,6 +90,7 @@ export async function GET(request: Request) {
           return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=${sessionError.message}`);
      }
 
+     // If no session is found, log it and redirect to error page
      if (!sessionData.session) {
           await logServerAction({
                action: 'Auth callback errored',
@@ -126,6 +112,7 @@ export async function GET(request: Request) {
           .select('*')
           .eq('email', userEmail)
 
+     // If there's an error checking the email, log it and redirect to error page
      if (clientError) {
           await logServerAction({
                action: 'Auth callback errored',
