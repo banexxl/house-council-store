@@ -12,6 +12,7 @@ import { readAllClientsBillingInformation } from "./client-billing-information-a
 import { redirect } from "next/navigation";
 import { readAllClientPaymentsAction } from "./client-payment-actions";
 import { readAllCurrenciesAction, readAllPaymentMethodsAction } from "./payment-actions";
+import { useServerSideSupabaseServiceRoleClient } from "../lib/ss-supabase-service-role-client";
 
 export default async function Page() {
      // Fetch user session
@@ -26,7 +27,9 @@ export default async function Page() {
      const { client, error } = await readAccountByEmailAction(user.email);
 
      if (!client) {
-          redirect("/auth/sign-in")
+          const supabase = await useServerSideSupabaseServiceRoleClient();
+          supabase.auth.signOut()
+          return redirect("/auth/sign-in")
      }
 
      // Fetch related data in parallel
