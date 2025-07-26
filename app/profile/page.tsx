@@ -18,14 +18,15 @@ export default async function Page() {
      const user: User | null = await getSessionUser();
 
      if (!user?.email) {
-          redirect("/auth/sign-in");
+          // Server-side redirect to sign-in page
+          return redirect("/auth/sign-in");
      }
 
      // Fetch client data
      const { client, error } = await readAccountByEmailAction(user.email);
 
      if (!client) {
-          return <div>Error: {error || "Failed to fetch account data"}</div>;
+          redirect("/auth/sign-in")
      }
 
      // Fetch related data in parallel
