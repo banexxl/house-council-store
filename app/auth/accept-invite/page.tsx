@@ -32,7 +32,7 @@ export default function AcceptInvitePage() {
                }
 
                // Set HTTP-only cookie on server
-               const res = await fetch('/api/auth/set-cookie', {
+               const res = await fetch('/auth/set-cookie', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ access_token, refresh_token }),
