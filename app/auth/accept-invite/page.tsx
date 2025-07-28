@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/app/lib/sb-client';
 
 export default function AcceptInvitePage() {
-
      const router = useRouter();
 
      useEffect(() => {
@@ -14,35 +13,40 @@ export default function AcceptInvitePage() {
           const refresh_token = fragment.get('refresh_token');
 
           const handleAuth = async () => {
-               if (access_token && refresh_token) {
-                    const { error } = await supabase.auth.setSession({
-                         access_token,
-                         refresh_token,
-                    });
-
-                    if (error) {
-                         console.error('Error setting session:', error.message);
-                         router.replace('/auth/error');
-                         return;
-                    }
-
-                    const { data: userData, error: userError } = await supabase.auth.getUser();
-
-                    if (userData?.user && !userError) {
-                         console.log('User logged in:', userData.user);
-                         router.replace('/'); // success
-                    } else {
-                         console.warn('Session set but no user found:', userError);
-                         router.replace('/auth/error');
-                    }
-               } else {
-                    console.warn('Missing tokens in URL fragment');
+               if (!access_token || !refresh_token) {
                     router.replace('/auth/error');
+                    return;
                }
+
+               const { error: sessionError } = await supabase.auth.setSession({
+                    access_token,
+                    refresh_token,
+               });
+
+               if (sessionError) {
+                    console.error('setSession error:', sessionError.message);
+                    router.replace('/auth/error');
+                    return;
+               }
+
+               // Set cookies via API
+               const res = await fetch('/auth/set-cookie', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ access_token, refresh_token }),
+               });
+
+               if (!res.ok) {
+                    console.warn('Failed to set cookie');
+                    router.replace('/auth/error');
+                    return;
+               }
+
+               router.replace('/');
           };
 
           handleAuth();
      }, [router]);
 
-     return null; // No UI, acts like redirect handler
+     return null;
 }
