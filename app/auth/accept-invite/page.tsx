@@ -1,11 +1,13 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/app/lib/sb-client';
+import Loading from '@/app/components/loading';
 
 export default function AcceptInvitePage() {
      const router = useRouter();
+     const [isLoading, setIsLoading] = useState(true);
 
      useEffect(() => {
           const fragment = new URLSearchParams(window.location.hash.substring(1));
@@ -29,8 +31,8 @@ export default function AcceptInvitePage() {
                     return;
                }
 
-               // Set cookies via API
-               const res = await fetch('/auth/set-cookie', {
+               // Set HTTP-only cookie on server
+               const res = await fetch('/api/auth/set-cookie', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ access_token, refresh_token }),
@@ -45,8 +47,8 @@ export default function AcceptInvitePage() {
                router.replace('/');
           };
 
-          handleAuth();
+          handleAuth().finally(() => setIsLoading(false));
      }, [router]);
 
-     return null;
+     return isLoading ? <Loading /> : null;
 }
