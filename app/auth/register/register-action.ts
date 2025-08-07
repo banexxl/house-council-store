@@ -86,7 +86,6 @@ export const registerUser = async (values: RegisterFormValues): Promise<{ succes
           email: values.email,
           client_type: values.name.replace(/\s/g, '') === '' ? 'individual' : 'business',
           client_status: 'pending_activation',
-          client_role: 'client',
           has_accepted_terms_and_conditions: values.has_accepted_terms_and_conditions,
           has_accepted_privacy_policy: values.has_accepted_privacy_policy,
           has_accepted_marketing: values.has_accepted_marketing
