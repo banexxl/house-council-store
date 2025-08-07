@@ -53,7 +53,9 @@ export async function sendPasswordResetEmail(email: string): Promise<void> {
                )}`
           )
      }
-     const { data, error } = await supabase.auth.resetPasswordForEmail(userExists.email)
+     const { data, error } = await supabase.auth.resetPasswordForEmail(userExists.email, {
+          redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/reset-password`,
+     })
      if (data) {
           await logServerAction({
                user_id: userExists.id,
