@@ -75,7 +75,6 @@ export const registerUser = async (values: RegisterFormValues): Promise<{ succes
                }
           };
      }
-     console.log('signUpData', signUpData);
 
      // If sign up is successful, insert into tblClients with user_id
      const userId = signUpData?.user?.id ?? null;

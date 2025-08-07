@@ -1,9 +1,9 @@
 'use server'
 
-import { useServerSideSupabaseServiceRoleClient } from "@/app/lib/ss-supabase-service-role-client";
 import { ClientSubscription, RenewalPeriod, SubscriptionPlan } from "../types/subscription-plan";
 import { Feature } from "../types/feature";
 import { logServerAction } from "../lib/server-logging";
+import { useServerSideSupabaseAnonClient } from "../lib/ss-supabase-anon-client";
 
 
 export const readSubscriptionPlanFeatures = async (
@@ -20,7 +20,7 @@ export const readSubscriptionPlanFeatures = async (
           };
      }
 
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
      const userId = (await supabase.auth.getUser()).data.user?.id;
 
      const { data: subscriptionPlan, error } = await supabase
@@ -77,7 +77,6 @@ export const readSubscriptionPlanFeatures = async (
      };
 };
 
-
 export const readSubscriptionPlansByStatus = async (
      status: string
 ): Promise<{
@@ -85,7 +84,7 @@ export const readSubscriptionPlansByStatus = async (
      subscriptionPlanData?: (SubscriptionPlan & { features: any[] })[];
      readAllSubscriptionPlansError?: string;
 }> => {
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
      const userId = (await supabase.auth.getUser()).data.user?.id;
 
      const { data: subscriptionPlans, error: planError } = await supabase
@@ -152,7 +151,7 @@ export const subscribeClientAction = async (
      subscriptionPlanId: string,
      renewal_period: RenewalPeriod
 ): Promise<{ success: boolean; error?: string }> => {
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
      const userId = (await supabase.auth.getUser()).data.user?.id;
 
      const { data, error } = await supabase
@@ -198,7 +197,7 @@ export const subscribeClientAction = async (
 export const unsubscribeClientAction = async (
      clientId: string
 ): Promise<{ success: boolean; error?: string }> => {
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
      const userId = (await supabase.auth.getUser()).data.user?.id;
 
      const { data, error } = await supabase
@@ -251,7 +250,7 @@ export const readFeaturesFromSubscriptionPlanId = async (subscriptionPlanId: str
           return { success: false, error: "Subscription plan ID is required" };
      }
 
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
      const userId = (await supabase.auth.getUser()).data.user?.id;
      const { data: subscriptionPlan, error: planError } = await supabase
           .from("tblSubscriptionPlans")
@@ -321,7 +320,7 @@ export const readClientSubscriptionPlanFromClientId = async (clientId: string): 
           })
           return { success: false, error: "Client ID is required" };
      }
-     const supabase = await useServerSideSupabaseServiceRoleClient(); // Use the server-side Supabase client
+     const supabase = await useServerSideSupabaseAnonClient(); // Use the server-side Supabase client
 
      const { data: clientSubscriptionPlanData, error: clientSubscriptionDataError } = await supabase
           .from("tblClient_Subscription")
