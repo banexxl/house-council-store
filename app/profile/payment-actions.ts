@@ -18,7 +18,7 @@ export const makePaymentAction = async (
      const supabase = await useServerSideSupabaseServiceRoleClient();
      console.log('payment', payment);
 
-     const { data, error } = await supabase.from('tblPaymentInvoices').insert(payment).select('*').single();
+     const { data, error } = await supabase.from('tblInvoices').insert(payment).select('*').single();
      console.log('error', error);
      console.log('data', data);
 

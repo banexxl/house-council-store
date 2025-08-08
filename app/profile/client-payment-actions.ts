@@ -18,7 +18,7 @@ export const createOrUpdateClientPayment = async (
 
      if (payment.id) {
           result = await supabase
-               .from('tblPaymentInvoices')
+               .from('tblInvoices')
                .update({
                     updated_at: new Date().toISOString(),
                     total_paid: payment.total_paid,
@@ -36,7 +36,7 @@ export const createOrUpdateClientPayment = async (
                .single();
      } else {
           result = await supabase
-               .from('tblPaymentInvoices')
+               .from('tblInvoices')
                .insert({
                     id: payment.id,
                     created_at: new Date().toISOString(),
@@ -89,7 +89,7 @@ export const readClientPayment = async (
      const start = Date.now();
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
-     const { data, error } = await supabase.from('tblPaymentInvoices').select('*').eq('id', id).single();
+     const { data, error } = await supabase.from('tblInvoices').select('*').eq('id', id).single();
 
      if (error) {
           await logServerAction({
@@ -114,7 +114,7 @@ export const deleteClientPayment = async (
      const start = Date.now();
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
-     const { error } = await supabase.from('tblPaymentInvoices').delete().in('id', ids);
+     const { error } = await supabase.from('tblInvoices').delete().in('id', ids);
 
      if (error) {
           await logServerAction({
@@ -150,7 +150,7 @@ export const readAllClientPaymentsAction = async (
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
      const { data, error } = await supabase
-          .from('tblPaymentInvoices')
+          .from('tblInvoices')
           .select('*')
           .order('created_at', { ascending: false })
           .eq('client', clientId);
