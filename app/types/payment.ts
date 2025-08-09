@@ -14,6 +14,8 @@ export type Payment = {
      refunded_at: string | null;
      is_recurring: boolean;
      tax_percentage: number; // percentage value
+     notes?: string;
+     invoice_url?: string
 }
 
 export const paymentInitialValues: Payment = {

@@ -1,12 +1,9 @@
 'use server';
 
 import { useServerSideSupabaseServiceRoleClient } from "@/app/lib/ss-supabase-service-role-client";
-import { Client } from "../types/client";
 import { revalidatePath } from "next/cache";
 import { logServerAction } from "../lib/server-logging";
 import { Payment } from "../types/payment";
-import { SubscriptionPlan } from "../types/subscription-plan";
-import { ClientBillingInformation } from "../types/billing-information";
 import { Currency } from "../types/currency";
 import { BaseEntity } from "../types/base-entity";
 
@@ -16,7 +13,6 @@ export const makePaymentAction = async (
 
      const start = Date.now();
      const supabase = await useServerSideSupabaseServiceRoleClient();
-     console.log('payment', payment);
 
      const { data, error } = await supabase.from('tblInvoices').insert(payment).select('*').single();
      console.log('error', error);
