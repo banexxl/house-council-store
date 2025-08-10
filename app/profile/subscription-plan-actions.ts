@@ -89,16 +89,13 @@ export const readSubscriptionPlansByStatus = async (
 
      const { data: subscriptionPlans, error: planError } = await supabase
           .from("tblSubscriptionPlans")
-          .select(`
-         *,
-         tblSubscriptionPlanStatuses!status_id (
-           name
-         ),
+          .select(`*,
          tblSubscriptionPlans_Features (
            feature_id,
            tblFeatures (*)
          )
        `)
+          .eq('status', status)
           .order("monthly_total_price", { ascending: true });
 
      if (planError) {
@@ -119,7 +116,7 @@ export const readSubscriptionPlansByStatus = async (
 
      // Filter by status name
      const filteredPlans = (subscriptionPlans || []).filter(
-          (plan: any) => plan.tblSubscriptionPlanStatuses?.name === status
+          (plan: any) => plan.status === status
      );
 
      // Flatten features into a simple array
