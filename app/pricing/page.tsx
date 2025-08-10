@@ -12,7 +12,7 @@ export default async function Page() {
 
   const user = await getSessionUser();
   const { client, error } = await readAccountByEmailAction(user?.email!);
-  const { subscriptionPlanData } = await readSubscriptionPlansByStatus('Active')
+  const { subscriptionPlanData } = await readSubscriptionPlansByStatus('active')
   const { clientSubscriptionPlanData } = await readClientSubscriptionPlanFromClientId(client?.id!)
 
   return (
