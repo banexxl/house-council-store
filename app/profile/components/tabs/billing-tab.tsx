@@ -135,6 +135,7 @@ export const BillingTab = ({ userData, allClientBillingInformation, binCheckerAP
                                                        userData={userData}
                                                        binCheckerAPIKey={binCheckerAPIKey}
                                                        clientBillingInfo={billingInformation}
+                                                       allClientBillingInformation={allClientBillingInformation}
                                                   />
                                              </Box>
                                         </Box>

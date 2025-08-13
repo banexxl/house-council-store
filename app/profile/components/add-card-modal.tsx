@@ -25,9 +25,10 @@ type AddCardModalProps = {
      userData: { client: Client; session: User; }
      binCheckerAPIKey?: string;
      clientBillingInfo?: ClientBillingInformation | null;
+     allClientBillingInformation: ClientBillingInformation[];
 };
 
-export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userData, binCheckerAPIKey, clientBillingInfo }) => {
+export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userData, binCheckerAPIKey, clientBillingInfo, allClientBillingInformation }) => {
 
      const [isValidCardNumber, setIsValidCardNumber] = useState(false);
      const [binData, setBinData] = useState<BinLookupResult | null>(null);
@@ -160,6 +161,9 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userD
           }),
           onSubmit: async (values) => {
                formik.resetForm();
+               if (allClientBillingInformation && allClientBillingInformation.length > 0) {
+                    values.default_payment_method = true;
+               }
                const {
                     createOrUpdateClientBillingInformationSuccess,
                     createOrUpdateClientBillingInformationError,
