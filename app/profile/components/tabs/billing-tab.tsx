@@ -37,8 +37,8 @@ interface BillingTabProps {
 export const BillingTab = ({ userData, allClientBillingInformation, binCheckerAPIKey }: BillingTabProps) => {
 
      const [loading, setLoading] = useState(false);
-     const [openAddCardModal, setOpenAddCardModal] = useState(false);
-     const [openEditCardModal, setOpenEditCardModal] = useState<ClientBillingInformation | null>(null);
+     // Single state for modal: null = closed, undefined = add, object = edit
+     const [editCardInfo, setEditCardInfo] = useState<ClientBillingInformation | null | undefined>(null);
 
      const handleDeleteCard = async (billingInformationId: string) => {
 
@@ -81,7 +81,6 @@ export const BillingTab = ({ userData, allClientBillingInformation, binCheckerAP
                                    <Box key={billingInformation.id}>
                                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
                                              <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-
                                                   <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                                                        <Typography variant="body2" color="text.secondary">
                                                             Card number ending with: {billingInformation.card_number?.slice(-4)}
@@ -92,7 +91,6 @@ export const BillingTab = ({ userData, allClientBillingInformation, binCheckerAP
                                                                  : 'Unknown'}
                                                        </Typography>
                                                   </Box>
-
                                                   {billingInformation.default_payment_method && (
                                                        <Box sx={{ display: 'inline-flex', alignItems: 'center', ml: 1 }}>
                                                             <Chip label="Default" color="success" variant="outlined" size="small" />
@@ -102,7 +100,7 @@ export const BillingTab = ({ userData, allClientBillingInformation, binCheckerAP
                                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                                   <Button
                                                        variant="outlined"
-                                                       onClick={() => setOpenEditCardModal(billingInformation)}
+                                                       onClick={() => setEditCardInfo(billingInformation)}
                                                        startIcon={<CreditCardIcon />}
                                                   >
                                                        Modify
@@ -126,17 +124,6 @@ export const BillingTab = ({ userData, allClientBillingInformation, binCheckerAP
                                                             </Button>
                                                        </span>
                                                   </Tooltip>
-                                                  <AddCardModal
-                                                       open={openAddCardModal || openEditCardModal !== null}
-                                                       onClose={() => {
-                                                            setOpenAddCardModal(false);
-                                                            setOpenEditCardModal(null);
-                                                       }}
-                                                       userData={userData}
-                                                       binCheckerAPIKey={binCheckerAPIKey}
-                                                       clientBillingInfo={billingInformation}
-                                                       allClientBillingInformation={allClientBillingInformation}
-                                                  />
                                              </Box>
                                         </Box>
                                         <Divider sx={{ mb: 2 }} />
@@ -162,7 +149,7 @@ export const BillingTab = ({ userData, allClientBillingInformation, binCheckerAP
                                    <Button
                                         variant="outlined"
                                         startIcon={<CreditCardIcon />}
-                                        onClick={() => setOpenAddCardModal(true)}
+                                        onClick={() => setEditCardInfo(undefined)}
                                         disabled={allClientBillingInformation.length >= 3}
                                         sx={{ my: 1 }}
                                    >
@@ -176,6 +163,16 @@ export const BillingTab = ({ userData, allClientBillingInformation, binCheckerAP
                          </Typography>
                     </Box>
                </Box>
+
+               {/* Single AddCardModal for both add and edit */}
+               <AddCardModal
+                    open={editCardInfo !== null}
+                    onClose={() => setEditCardInfo(null)}
+                    userData={userData}
+                    binCheckerAPIKey={binCheckerAPIKey}
+                    clientBillingInfo={editCardInfo}
+                    allClientBillingInformation={allClientBillingInformation}
+               />
 
                <Divider sx={{ my: 3 }} />
 
