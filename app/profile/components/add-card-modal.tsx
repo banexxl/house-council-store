@@ -15,7 +15,7 @@ import toast from 'react-hot-toast';
 import { parseExpirationDate } from '@/app/lib/date-helpers';
 import { luhnCheck } from '@/app/lib/card-validator';
 import { BinLookupResult } from '@/app/types/bin-lookup';
-import { clientBillingInformationInitialValues } from '@/app/types/billing-information';
+import { ClientBillingInformation, clientBillingInformationInitialValues } from '@/app/types/billing-information';
 import AddressAutocomplete, { AddressAutocompleteRef } from './address-autocomplete';
 import { transliterateCyrillicToLatin } from '@/app/lib/transliterate';
 
@@ -24,14 +24,58 @@ type AddCardModalProps = {
      onClose: () => void;
      userData: { client: Client; session: User; }
      binCheckerAPIKey?: string;
+     clientBillingInfo?: ClientBillingInformation | null;
 };
 
-export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userData, binCheckerAPIKey }) => {
+export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userData, binCheckerAPIKey, clientBillingInfo }) => {
 
      const [isValidCardNumber, setIsValidCardNumber] = useState(false);
      const [binData, setBinData] = useState<BinLookupResult | null>(null);
      const [cardScheme, setCardScheme] = useState<string>('');
      const autoCompleteRef = React.useRef<AddressAutocompleteRef>(null);
+
+     // Prefill form values if editing
+     const getInitialValues = () => {
+          if (clientBillingInfo) {
+               return {
+                    ...clientBillingInformationInitialValues,
+                    ...clientBillingInfo,
+               };
+          }
+          return clientBillingInformationInitialValues;
+     };
+
+     React.useEffect(() => {
+          if (clientBillingInfo) {
+               // Set card scheme if editing
+               if (clientBillingInfo.card_number) {
+                    const plainCardNumber = clientBillingInfo.card_number.replace(/\s/g, '');
+                    if (plainCardNumber.length >= 6) {
+                         // Optionally, trigger BIN lookup for editing
+                         (async () => {
+                              try {
+                                   const response = await fetch(
+                                        `https://api.apilayer.com/bincheck/${plainCardNumber.slice(0, 8)}`,
+                                        {
+                                             method: 'GET',
+                                             headers: {
+                                                  'Content-Type': 'application/json',
+                                                  'apikey': binCheckerAPIKey || ''
+                                             },
+                                             redirect: 'follow'
+                                        }
+                                   );
+                                   if (response.ok) {
+                                        const data: BinLookupResult = await response.json();
+                                        setBinData(data);
+                                        setCardScheme(data.scheme?.toLowerCase() || '');
+                                   }
+                              } catch { }
+                         })();
+                    }
+               }
+          }
+     }, [clientBillingInfo, binCheckerAPIKey]);
 
      const handleCardNumberChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
           const formattedValue = e.target.value
@@ -75,8 +119,6 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userD
                     if (response.ok) {
                          const data: BinLookupResult = await response.json();
                          setBinData(data);
-
-                         // 🛠 Set cardScheme immediately after new binData
                          setCardScheme(data.scheme?.toLowerCase() || '');
                     } else {
                          setBinData(null);
@@ -92,7 +134,8 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userD
      };
 
      const formik = useFormik({
-          initialValues: clientBillingInformationInitialValues,
+          enableReinitialize: true,
+          initialValues: getInitialValues(),
           validationSchema: Yup.object({
                card_number: Yup.string().required('Card number is required'),
                expiration_date: Yup.string()
@@ -121,7 +164,6 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userD
                     createOrUpdateClientBillingInformationSuccess,
                     createOrUpdateClientBillingInformationError,
                     createOrUpdateClientBillingInformationData,
-
                } = await createOrUpdateClientBillingInformation(
                     {
                          ...values,
@@ -131,7 +173,7 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userD
                )
 
                if (createOrUpdateClientBillingInformationSuccess) {
-                    toast.success('Card added successfully!');
+                    toast.success(clientBillingInfo ? 'Card updated successfully!' : 'Card added successfully!');
                } else {
                     const errorMessage = createOrUpdateClientBillingInformationError?.message || '';
 
@@ -147,11 +189,12 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userD
 
      return (
           <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-               <DialogTitle>Add a Card</DialogTitle>
+               <DialogTitle>{clientBillingInfo ? 'Modify Card' : 'Add a Card'}</DialogTitle>
                <DialogContent dividers>
                     <Typography gutterBottom>
-                         Add your credit card details below.
-                         Please ensure your CVC and postal codes match what is on file for your card.
+                         {clientBillingInfo
+                              ? 'Modify your credit card details below. Please ensure your CVC and postal codes match what is on file for your card.'
+                              : 'Add your credit card details below. Please ensure your CVC and postal codes match what is on file for your card.'}
                     </Typography>
 
                     <form onSubmit={formik.handleSubmit}>
@@ -384,7 +427,7 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userD
                                    loading={formik.isSubmitting}
                                    disabled={!formik.isValid || !formik.dirty || !luhnCheck(formik.values.card_number!.replace(/\s/g, ''))}
                               >
-                                   Add Card
+                                   {clientBillingInfo ? 'Update Card' : 'Add Card'}
                               </Button>
                          </DialogActions>
                     </form>
