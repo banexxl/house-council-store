@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { ChangeEvent, useEffect, useRef, useState } from 'react';
 import {
      Dialog, DialogTitle, DialogContent, DialogActions,
      Button, TextField, FormControlLabel, Checkbox,
@@ -33,7 +33,7 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userD
      const [isValidCardNumber, setIsValidCardNumber] = useState(false);
      const [binData, setBinData] = useState<BinLookupResult | null>(null);
      const [cardScheme, setCardScheme] = useState<string>('');
-     const autoCompleteRef = React.useRef<AddressAutocompleteRef>(null);
+     const autoCompleteRef = useRef<AddressAutocompleteRef>(null);
 
      // Prefill form values if editing
      const getInitialValues = () => {
@@ -46,7 +46,7 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userD
           return clientBillingInformationInitialValues;
      };
 
-     React.useEffect(() => {
+     useEffect(() => {
           if (clientBillingInfo) {
                // Set card scheme if editing
                if (clientBillingInfo.card_number) {
@@ -78,7 +78,7 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ open, onClose, userD
           }
      }, [clientBillingInfo, binCheckerAPIKey]);
 
-     const handleCardNumberChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+     const handleCardNumberChange = async (e: ChangeEvent<HTMLInputElement>) => {
           const formattedValue = e.target.value
                .replace(/[^\d]/g, '')
                .replace(/(\d{4})(?=\d)/g, '$1 ')

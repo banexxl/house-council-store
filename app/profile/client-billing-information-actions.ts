@@ -13,7 +13,7 @@ export const createOrUpdateClientBillingInformation = async (clientBillingInform
      const supabase = await useServerSideSupabaseServiceRoleClient();
      let result;
 
-     if (clientBillingInformation.id && clientBillingInformation.id && clientBillingInformation.id !== "") {
+     if (clientBillingInformation.id && clientBillingInformation.id !== "") {
           // Update existing client billing information
           result = await supabase
                .from('tblBillingInformation')
@@ -33,7 +33,15 @@ export const createOrUpdateClientBillingInformation = async (clientBillingInform
                .select()
                .single();
      } else {
-          // Insert new client billing information
+          // Check if a default payment method exists for this client
+          const { data: existingDefaults, error: defaultError } = await supabase
+               .from('tblBillingInformation')
+               .select('id')
+               .eq('client_id', clientBillingInformation.client_id)
+               .eq('default_payment_method', true);
+
+          const setAsDefault = !existingDefaults || existingDefaults.length === 0;
+
           result = await supabase
                .from('tblBillingInformation')
                .insert({
@@ -46,7 +54,8 @@ export const createOrUpdateClientBillingInformation = async (clientBillingInform
                     cvc: clientBillingInformation.cvc,
                     expiration_date: clientBillingInformation.expiration_date,
                     payment_method: clientBillingInformation.payment_method,
-                    cash_amount: Number(clientBillingInformation.cash_amount)
+                    cash_amount: Number(clientBillingInformation.cash_amount),
+                    default_payment_method: setAsDefault
                })
                .select()
                .single();

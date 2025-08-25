@@ -23,7 +23,6 @@ import DownloadIcon from "@mui/icons-material/Download"
 import { ClientBillingInformation } from "@/app/types/billing-information"
 import { Payment } from "@/app/types/payment"
 import { useState } from "react"
-import { makePaymentAction } from "../../payment-actions"
 import { Client } from "@/app/types/client"
 import { User } from "@supabase/supabase-js"
 import toast from "react-hot-toast"
@@ -31,6 +30,7 @@ import { Currency } from "@/app/types/currency"
 import { ClientSubscription, SubscriptionPlan } from "@/app/types/subscription-plan"
 import { generateInvoiceString } from "@/app/lib/invoice-num-creator"
 import theme from "@/app/theme"
+import { makePaymentAction } from "../../client-payment-actions"
 
 interface PaymentsTabProps {
      clientPayments: Payment[],
@@ -77,7 +77,7 @@ export default function PaymentsTab({ clientPayments, userData, clientSubscripti
                invoice_number: generateInvoiceString(),
                subscription_plan: clientSubscriptionObject?.subscription_plan_id!,
                client: userData.client.id,
-               billing_information: allClientBillingInformation.find(info => info.default_payment_method)?.id || "",
+               billing_information: allClientBillingInformation.find(billingInfo => billingInfo.default_payment_method)?.id || "",
                currency: currencies.find(currency => currency.code === "USD")?.id || "",
                refunded_at: null,
                is_recurring: false,
@@ -88,7 +88,7 @@ export default function PaymentsTab({ clientPayments, userData, clientSubscripti
           if (success) {
                toast.success("Payment added successfully!");
           } else {
-               toast.error(`Error adding payment: ${error}`);
+               toast.error(`Error adding payment`);
           }
           setPaymentLoading(false)
           handleClose()

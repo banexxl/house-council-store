@@ -4,62 +4,23 @@ import { revalidatePath } from 'next/cache';
 import { useServerSideSupabaseServiceRoleClient } from '../lib/ss-supabase-service-role-client';
 import { logServerAction } from '../lib/server-logging';
 import { Payment } from '../types/payment';
+import { Currency } from '../types/currency';
+import { BaseEntity } from '../types/base-entity';
 
-export const createOrUpdateClientPayment = async (
-     payment: Payment
-): Promise<{
-     success: boolean;
-     data?: Payment;
-     error?: string;
-}> => {
+export const makePaymentAction = async (
+     payment: Payment,
+): Promise<{ success: boolean; error?: string }> => {
+
      const start = Date.now();
      const supabase = await useServerSideSupabaseServiceRoleClient();
-     let result;
+     console.log('payment', payment);
 
-     if (payment.id) {
-          result = await supabase
-               .from('tblInvoices')
-               .update({
-                    updated_at: new Date().toISOString(),
-                    total_paid: payment.total_paid,
-                    invoice_number: payment.invoice_number,
-                    subscription_plan: payment.subscription_plan,
-                    client: payment.client,
-                    billing_information: payment.billing_information,
-                    status: payment.status,
-                    currency: payment.currency,
-                    refunded_at: payment.refunded_at,
-                    is_recurring: payment.is_recurring,
-               })
-               .eq('id', payment.id)
-               .select()
-               .single();
-     } else {
-          result = await supabase
-               .from('tblInvoices')
-               .insert({
-                    id: payment.id,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString(),
-                    total_paid: payment.total_paid,
-                    invoice_number: payment.invoice_number,
-                    subscription_plan: payment.subscription_plan,
-                    client: payment.client,
-                    billing_information: payment.billing_information,
-                    status: payment.status,
-                    currency: payment.currency,
-                    refunded_at: payment.refunded_at,
-                    is_recurring: payment.is_recurring,
-               })
-               .select()
-               .single();
-     }
+     const { data, error } = await supabase.from('tblInvoices').insert(payment).select('*').single();
 
-     const { data, error } = result;
      if (error) {
           await logServerAction({
                user_id: payment.client,
-               action: 'Create or Update Client Payment - Error',
+               action: 'Make Payment - Error',
                payload: { payment },
                status: 'fail',
                error: error.message,
@@ -71,16 +32,16 @@ export const createOrUpdateClientPayment = async (
 
      await logServerAction({
           user_id: payment.client,
-          action: 'Create or Update Client Payment - Success',
+          action: 'Make Payment - Success',
           payload: { payment },
           status: 'success',
           error: '',
           duration_ms: Date.now() - start,
-          type: 'db',
+          type: 'action',
      });
 
-     revalidatePath(`/profile/${payment.client}`);
-     return { success: true, data };
+     revalidatePath('/profile');
+     return { success: true };
 };
 
 export const readClientPayment = async (
@@ -180,3 +141,41 @@ export const readAllClientPaymentsAction = async (
 
      return { success: true, data };
 };
+
+export const readCurrencyByCodeAction = async (code: string): Promise<{ success: boolean; currency?: Currency; error?: string }> => {
+     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const { data, error } = await supabase.from('tblCurrency').select('*').eq('code', code).single();
+     if (error) {
+          return { success: false, error: error.message }
+     }
+     return { success: true, currency: data }
+};
+
+export const readCurrencyByCurrencyNumberAction = async (currencyNumber: number): Promise<{ success: boolean; currency?: Currency; error?: string }> => {
+     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const { data, error } = await supabase.from('tblCurrency').select('*').eq('number', currencyNumber).single();
+     if (error) {
+          return { success: false, error: error.message }
+     }
+     return { success: true, currency: data }
+}
+
+export const readAllCurrenciesAction = async (): Promise<{ success: boolean; currencies?: Currency[]; error?: string }> => {
+     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const { data, error } = await supabase.from('tblCurrencies').select('*');
+     if (error) {
+          return { success: false, error: error.message }
+     }
+     return { success: true, currencies: data }
+}
+
+export const readAllPaymentMethodsAction = async (): Promise<{ success: boolean; paymentMethods?: BaseEntity[]; error?: string }> => {
+
+     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const { data, error } = await supabase.from('tblPaymentMethods').select('*');
+     if (error) {
+          return { success: false, error: error.message }
+     }
+
+     return { success: true, paymentMethods: data }
+}

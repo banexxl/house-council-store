@@ -10,8 +10,7 @@ import { clientInitialValues } from "../types/client";
 import { readClientSubscriptionPlanFromClientId, readSubscriptionPlanFeatures } from "./subscription-plan-actions";
 import { readAllClientsBillingInformation } from "./client-billing-information-actions";
 import { redirect } from "next/navigation";
-import { readAllClientPaymentsAction } from "./client-payment-actions";
-import { readAllCurrenciesAction, readAllPaymentMethodsAction } from "./payment-actions";
+import { readAllClientPaymentsAction, readAllCurrenciesAction, readAllPaymentMethodsAction } from "./client-payment-actions";
 import { useServerSideSupabaseServiceRoleClient } from "../lib/ss-supabase-service-role-client";
 
 export default async function Page() {
