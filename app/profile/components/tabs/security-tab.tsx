@@ -74,6 +74,7 @@ export default function SecurityTab({ userData }: SecurityTabProps) {
                setLoading(false)
           }
      }
+
      const handleVerify = async () => {
           setLoading(true)
           if (!factorId) return toast.error("Missing factor ID")
@@ -147,6 +148,7 @@ export default function SecurityTab({ userData }: SecurityTabProps) {
                setLoading(false)
           }
      }
+
      const handleConfirmDelete = async () => {
           setConfirmDeleteLoading(true)
           const deleteAccount = await deleteAccountAction(userData.session.id, userData.client.email);
@@ -187,14 +189,10 @@ export default function SecurityTab({ userData }: SecurityTabProps) {
                          formik.resetForm()
                          setShowPasswordChange(false)
                     } else {
-                         toast.error("Error resetting password: " + resetPasswordResponse.error, {
-                              // position: "top-center",
-                         });
+                         toast.error("Error resetting password");
                     }
                } catch (error) {
-                    toast.error("Error resetting password: " + error, {
-                         // position: "top-center",
-                    });
+                    toast.error("Error resetting password");
                     formik.setErrors({ newPassword: "Failed to reset password. Please try again." })
                } finally {
                     setResetingPassword(false)
