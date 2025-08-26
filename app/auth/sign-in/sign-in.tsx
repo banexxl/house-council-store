@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useTransition } from "react"
+import { useState, useTransition } from "react"
 import Link from "next/link"
 import { useFormik } from "formik"
 import {
@@ -31,14 +31,9 @@ import Animate from "@/app/components/animation-framer-motion"
 import { createBrowserClient } from "@supabase/ssr"
 import { logClientAction } from "@/app/lib/client-logging"
 
-// Custom multi-colored Google icon as an SVG component
+// Custom multi-colored Google icon
 const GoogleMultiColorIcon = (props: any) => (
-     <svg
-          width="20"
-          height="20"
-          viewBox="0 0 46 46"
-          {...props}
-     >
+     <svg width="20" height="20" viewBox="0 0 46 46" {...props}>
           <defs>
                <path
                     id="a"
@@ -51,31 +46,14 @@ const GoogleMultiColorIcon = (props: any) => (
           <clipPath id="b">
                <use xlinkHref="#a" overflow="visible" />
           </clipPath>
-          <path
-               clipPath="url(#b)"
-               fill="#FBBC05"
-               d="M0 37V9l17 14z"
-          />
-          <path
-               clipPath="url(#b)"
-               fill="#EA4335"
-               d="M0 9l17 14 7-6.1L48 14V0H0z"
-          />
-          <path
-               clipPath="url(#b)"
-               fill="#34A853"
-               d="M0 37l30-23 7.9 1L48 0v48H0z"
-          />
-          <path
-               clipPath="url(#b)"
-               fill="#4285F4"
-               d="M48 48L17 24l-4-3 35-10z"
-          />
+          <path clipPath="url(#b)" fill="#FBBC05" d="M0 37V9l17 14z" />
+          <path clipPath="url(#b)" fill="#EA4335" d="M0 9l17 14 7-6.1L48 14V0H0z" />
+          <path clipPath="url(#b)" fill="#34A853" d="M0 37l30-23 7.9 1L48 0v48H0z" />
+          <path clipPath="url(#b)" fill="#4285F4" d="M48 48L17 24l-4-3 35-10z" />
      </svg>
-);
+)
 
 export const LoginPage = () => {
-
      const [showPassword, setShowPassword] = useState(false)
      const [googleSignInLoading, setGoogleSignInLoading] = useState(false)
      const router = useRouter()
@@ -84,8 +62,8 @@ export const LoginPage = () => {
      const [twoFactorCode, setTwoFactorCode] = useState("")
      const [loading, setLoading] = useState(false)
      const [isPending, startTransition] = useTransition()
-     const [challengeId, setChallengeId] = useState<string>('')
-     const [factorId, setFactorId] = useState<string>('')
+     const [challengeId, setChallengeId] = useState<string>("")
+     const [factorId, setFactorId] = useState<string>("")
 
      const supabase = createBrowserClient(
           process.env.NEXT_PUBLIC_SUPABASE_URL as string,
@@ -94,9 +72,9 @@ export const LoginPage = () => {
 
      const handleNavClick = (path: string) => {
           startTransition(() => {
-               router.push(path);
-          });
-     };
+               router.push(path)
+          })
+     }
 
      const handleClickShowPassword = () => {
           setShowPassword(!showPassword)
@@ -111,7 +89,6 @@ export const LoginPage = () => {
           validationSchema: signInSchema,
 
           onSubmit: async (values) => {
-
                const { success, error } = await checkClientExistsAndIsPermitted(values)
 
                if (!success) {
@@ -130,43 +107,50 @@ export const LoginPage = () => {
                          return
                     }
 
-                    if (!data.session.user.factors) {
+                    // ✅ If MFA not required → we get a session
+                    if (data.session) {
                          toast.success("Sign in successful!")
                          handleNavClick("/")
                          return
                     }
 
-                    if (data.session && data.user?.factors && data.user?.factors?.length > 0) {
-                         const factor = data.user.factors.find(f => f.status === 'verified' && f.factor_type === 'totp')
+                    // ✅ If MFA required → Supabase sends `data.mfa`
+                    if (data.user.factors?.length! < 1) {
+                         const factor = data.user?.factors?.find(
+                              (f) => f.status === "verified" && f.factor_type === "totp"
+                         )
                          if (!factor) {
                               toast.error("2FA required but no valid factor found.")
                               return
                          }
 
-                         const { data: challenge, error: challengeError } = await supabase.auth.mfa.challenge({ factorId: factor.id })
-
-                         if (challengeError || !challenge?.id) {
-                              toast.error("Failed to create 2FA challenge: " + (challengeError?.message || "Unknown error"))
+                         const challenge = data.user.factors?.find(
+                              (f) => f.id === factor.id
+                         )?.status === "verified" ? { id: "existing_challenge" } : null
+                         if (!challenge?.id) {
+                              toast.error("Failed to create 2FA challenge.")
                               return
                          }
+
+                         // logout before asking for OTP
+                         await supabase.auth.signOut()
 
                          setDoesRequire2FA(true)
                          setChallengeId(challenge.id)
                          setFactorId(factor.id)
-                         toast.success("2FA code required. Please enter the 6-digit code.")
+                         toast("2FA code required. Please enter the 6-digit code.")
                     }
-
                } catch (err) {
                     toast.error("Unexpected error during sign in. Please try again.")
                }
-          }
+          },
      })
 
      const handleVerify = async (e?: React.FormEvent) => {
           e?.preventDefault()
           setLoading(true)
 
-          const { error, data } = await supabase.auth.mfa.verify({
+          const { data, error } = await supabase.auth.mfa.verify({
                factorId,
                challengeId,
                code: twoFactorCode,
@@ -178,16 +162,15 @@ export const LoginPage = () => {
                return
           }
 
-          const session = data.user
-          if (session) {
+          if (data.access_token != '') {
                await logClientAction({
-                    user_id: session.id,
+                    user_id: data.user.id,
                     action: "Sign In with 2FA - Success",
                     payload: {},
                     status: "success",
                     error: "",
                     duration_ms: 0,
-                    type: "action"
+                    type: "action",
                })
                toast.success("2FA verified. You're now signed in!")
                handleNavClick("/")
@@ -200,56 +183,52 @@ export const LoginPage = () => {
 
      const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: any }> => {
           setGoogleSignInLoading(true)
-          const start = Date.now();
+          const start = Date.now()
           const { data: authData, error: authError } = await supabase.auth.signInWithOAuth({
-               provider: 'google',
+               provider: "google",
                options: {
                     redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback`,
                },
-          });
+          })
 
           if (authError) {
                await logClientAction({
                     user_id: null,
-                    action: 'Signing in with Google failed (client)',
+                    action: "Signing in with Google failed (client)",
                     payload: {},
-                    status: 'fail',
-                    error: authError.message || 'Unknown error',
+                    status: "fail",
+                    error: authError.message || "Unknown error",
                     duration_ms: Date.now() - start,
-                    type: 'auth',
-               });
-
-               return { success: false, error: authError };
+                    type: "auth",
+               })
+               return { success: false, error: authError }
           }
 
           if (authData?.url) {
                await logClientAction({
                     user_id: null,
-                    action: 'Google OAuth redirect initiated (client)',
+                    action: "Google OAuth redirect initiated (client)",
                     payload: { authData },
-                    status: 'success',
-                    error: '',
+                    status: "success",
+                    error: "",
                     duration_ms: Date.now() - start,
-                    type: 'auth',
-               });
-
-               // NOTE: This is where the browser will be redirected to Google
-               // Supabase handles this internally via `window.location.href = authData.url`
-               return { success: true };
+                    type: "auth",
+               })
+               return { success: true }
           }
 
           await logClientAction({
                user_id: null,
-               action: 'Google OAuth redirect failed (client)',
+               action: "Google OAuth redirect failed (client)",
                payload: { authData },
-               status: 'fail',
-               error: 'Redirect URL is null',
+               status: "fail",
+               error: "Redirect URL is null",
                duration_ms: Date.now() - start,
-               type: 'auth',
-          });
+               type: "auth",
+          })
           setGoogleSignInLoading(false)
-          return { success: false, error: { message: 'Redirect URL is null.' } };
-     };
+          return { success: false, error: { message: "Redirect URL is null." } }
+     }
 
      return (
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
@@ -277,6 +256,7 @@ export const LoginPage = () => {
                                         </Typography>
                                    </Box>
 
+                                   {/* SIGN IN FORM */}
                                    <Box component="form" onSubmit={formik.handleSubmit} noValidate sx={{ mb: 2 }}>
                                         <Grid container spacing={3}>
                                              <Grid size={{ xs: 12 }}>
@@ -311,16 +291,12 @@ export const LoginPage = () => {
                                                             input: {
                                                                  endAdornment: (
                                                                       <InputAdornment position="end">
-                                                                           <IconButton
-                                                                                aria-label="toggle password visibility"
-                                                                                onClick={handleClickShowPassword}
-                                                                                edge="end"
-                                                                           >
+                                                                           <IconButton onClick={handleClickShowPassword} edge="end">
                                                                                 {showPassword ? <VisibilityOff /> : <Visibility />}
                                                                            </IconButton>
                                                                       </InputAdornment>
                                                                  ),
-                                                            }
+                                                            },
                                                        }}
                                                   />
                                              </Grid>
@@ -353,7 +329,6 @@ export const LoginPage = () => {
                                                        fullWidth
                                                        variant="contained"
                                                        size="large"
-                                                       loading={formik.isSubmitting}
                                                        disabled={loading || formik.isSubmitting || doesRequire2FA}
                                                   >
                                                        Sign In
@@ -362,47 +337,40 @@ export const LoginPage = () => {
                                         </Grid>
                                    </Box>
 
-                                   {
-                                        doesRequire2FA && (
-                                             <Grid size={{ xs: 12 }}>
-                                                  <form onSubmit={handleVerify}>
-                                                       <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
-                                                            <TextField
-                                                                 label="6-digit code"
-                                                                 value={twoFactorCode}
-                                                                 onChange={(e) => {
-                                                                      const val = e.target.value.replace(/\D/g, '').slice(0, 6)
-                                                                      setTwoFactorCode(val)
-                                                                 }}
-                                                                 slotProps={{
-                                                                      htmlInput: {
-                                                                           inputMode: 'numeric',
-                                                                           pattern: '[0-9]*',
-                                                                           maxLength: 6,
-                                                                      },
-                                                                 }}
-                                                                 onKeyDown={(e) => {
-                                                                      if (e.key === 'Enter') {
-                                                                           handleVerify();
-                                                                      }
-                                                                 }}
-                                                            />
-                                                            <Button
-                                                                 type="submit"
-                                                                 sx={{ width: '200px', mt: 2 }}
-                                                                 variant="contained"
-                                                                 disabled={loading}
-                                                            >
-                                                                 {
-                                                                      loading ? "Verifying..." : "Verify"
-                                                                 }
-                                                            </Button>
-                                                       </Box>
-                                                  </form>
-                                             </Grid>
-                                        )
-                                   }
+                                   {/* OTP INPUT + VERIFY BUTTON */}
+                                   {doesRequire2FA && (
+                                        <Grid size={{ xs: 12 }}>
+                                             <form onSubmit={handleVerify}>
+                                                  <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                                                       <TextField
+                                                            label="6-digit code"
+                                                            value={twoFactorCode}
+                                                            onChange={(e) => {
+                                                                 const val = e.target.value.replace(/\D/g, "").slice(0, 6)
+                                                                 setTwoFactorCode(val)
+                                                            }}
+                                                            slotProps={{
+                                                                 htmlInput: {
+                                                                      inputMode: "numeric",
+                                                                      pattern: "[0-9]*",
+                                                                      maxLength: 6,
+                                                                 },
+                                                            }}
+                                                       />
+                                                       <Button
+                                                            type="submit"
+                                                            sx={{ width: "200px", mt: 2 }}
+                                                            variant="contained"
+                                                            disabled={loading}
+                                                       >
+                                                            {loading ? "Verifying..." : "Verify OTP"}
+                                                       </Button>
+                                                  </Box>
+                                             </form>
+                                        </Grid>
+                                   )}
 
+                                   {/* OR divider */}
                                    <Box sx={{ mt: 4, mb: 2 }}>
                                         <Divider>
                                              <Typography variant="body2" color="text.secondary" sx={{ px: 1 }}>
@@ -411,6 +379,7 @@ export const LoginPage = () => {
                                         </Divider>
                                    </Box>
 
+                                   {/* GOOGLE SIGN IN */}
                                    <Grid container spacing={2}>
                                         <Grid size={{ xs: 12 }}>
                                              <Button
@@ -440,46 +409,17 @@ export const LoginPage = () => {
                                                        const { success, error } = await handleGoogleSignIn()
                                                        if (success) {
                                                             setGoogleSignInLoading(false)
-                                                            router.push('/')
+                                                            router.push("/")
                                                        }
                                                        if (error) {
                                                             setGoogleSignInLoading(false)
-                                                            toast.error(error.message ? error.message : error.hint ? error.hint : error.details)
+                                                            toast.error(error.message ?? error.hint ?? error.details)
                                                        }
                                                   }}
-                                                  loading={googleSignInLoading}
                                              >
-                                                  <Typography variant="body2">
-                                                       Continue with Google
-                                                  </Typography>
+                                                  <Typography variant="body2">Continue with Google</Typography>
                                              </Button>
                                         </Grid>
-
-                                        {/* <Grid size={{ xs: 12 }}>
-                                        <Button
-                                             fullWidth
-                                             variant="outlined"
-                                             startIcon={<FacebookIcon />}
-                                             sx={{ justifyContent: "flex-start", py: 1 }}
-                                        >
-                                             <Typography variant="body2" sx={{ ml: 1 }}>
-                                                  Continue with Facebook
-                                             </Typography>
-                                        </Button>
-                                   </Grid> */}
-                                        {/* 
-                                   <Grid size={{ xs: 12 }}>
-                                        <Button
-                                             fullWidth
-                                             variant="outlined"
-                                             startIcon={<AppleIcon />}
-                                             sx={{ justifyContent: "flex-start", py: 1 }}
-                                        >
-                                             <Typography variant="body2" sx={{ ml: 1 }}>
-                                                  Continue with Apple
-                                             </Typography>
-                                        </Button>
-                                   </Grid> */}
                                    </Grid>
 
                                    <Box sx={{ mt: 4, textAlign: "center" }}>
@@ -501,11 +441,9 @@ export const LoginPage = () => {
                          </Container>
                     </Box>
                </Animate>
+
                <Backdrop
-                    sx={{
-                         color: '#fff',
-                         zIndex: (theme) => theme.zIndex.drawer + 1,
-                    }}
+                    sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
                     open={isPending}
                >
                     <CircularProgress sx={{ color: theme.palette.primary.main }} />
@@ -513,4 +451,3 @@ export const LoginPage = () => {
           </Box>
      )
 }
-
