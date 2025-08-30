@@ -236,10 +236,10 @@ export const ContactPage = ({ mapKey }: ContactProps) => {
                                                             Phone
                                                        </Typography>
                                                        <Typography variant="body2" color="text.secondary">
-                                                            +1 (555) 123-4567
+                                                            +1 (381) 66 415651
                                                        </Typography>
                                                        <Typography variant="body2" color="text.secondary">
-                                                            Monday - Friday, 9am - 5pm EST
+                                                            Monday - Friday, 8am - 4pm CET
                                                        </Typography>
                                                   </Box>
                                              </Box>
@@ -251,13 +251,13 @@ export const ContactPage = ({ mapKey }: ContactProps) => {
                                                             Office
                                                        </Typography>
                                                        <Typography variant="body2" color="text.secondary">
-                                                            123 Community Lane
+                                                            Branka Ćopića
                                                        </Typography>
                                                        <Typography variant="body2" color="text.secondary">
-                                                            Suite 456
+                                                            33
                                                        </Typography>
                                                        <Typography variant="body2" color="text.secondary">
-                                                            Boston, MA 02110
+                                                            Novi Sad, Serbia
                                                        </Typography>
                                                   </Box>
                                              </Box>
