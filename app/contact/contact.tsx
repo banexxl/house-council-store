@@ -270,7 +270,7 @@ export const ContactPage = ({ mapKey }: ContactProps) => {
                                              <Box sx={{ mt: 2 }}>
                                                   <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
                                                        <Typography variant="body2">Monday - Friday</Typography>
-                                                       <Typography variant="body2">9:00 AM - 5:00 PM</Typography>
+                                                       <Typography variant="body2">8:00 AM - 4:00 PM</Typography>
                                                   </Box>
                                                   <Divider sx={{ my: 1 }} />
                                                   <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
