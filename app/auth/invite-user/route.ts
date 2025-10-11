@@ -8,8 +8,14 @@ export async function GET(request: Request) {
      const requestUrl = new URL(request.url);
      const token = requestUrl.searchParams.get('token');
 
+     console.log('=== INVITE USER ROUTE START ===');
+     console.log('Request URL:', requestUrl.href);
+     console.log('Token received:', token ? `${token.substring(0, 10)}...` : 'null');
+
      // Validate token parameter
      if (!token) {
+          console.log('ERROR: No token provided in request');
+
           await logServerAction({
                action: 'Invite user validation failed',
                error: 'No token provided',
@@ -24,15 +30,28 @@ export async function GET(request: Request) {
      }
 
      try {
+          console.log('Initializing Supabase service role client...');
           const supabase = await useServerSideSupabaseServiceRoleClient();
+          console.log('Supabase client initialized successfully');
 
+          console.log('Attempting to verify invite token...');
           // Verify the invite token using Supabase's built-in invite verification
           const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
                token_hash: token,
                type: 'invite'
           });
 
+          console.log('Verify result:', {
+               hasData: !!verifyData,
+               hasUser: !!verifyData?.user,
+               hasSession: !!verifyData?.session,
+               error: verifyError?.message
+          });
+
           if (verifyError || !verifyData.user) {
+               console.log('ERROR: Token verification failed');
+               console.log('Verify error:', verifyError);
+
                await logServerAction({
                     action: 'Invite user validation failed',
                     error: 'Invalid or expired invite token',
@@ -51,6 +70,13 @@ export async function GET(request: Request) {
           const userEmail = user.email;
           const userName = user.user_metadata?.name || user.email?.split('@')[0] || '';
 
+          console.log('User details extracted:');
+          console.log('- User ID:', userId);
+          console.log('- Email:', userEmail);
+          console.log('- Name:', userName);
+          console.log('- User metadata:', user.user_metadata);
+
+          console.log('Checking if user already exists in tblSuperAdmins...');
           // Check if user already exists in tblSuperAdmins
           const { data: existingSuperAdmin, error: superAdminCheckError } = await supabase
                .from('tblSuperAdmins')
@@ -58,22 +84,40 @@ export async function GET(request: Request) {
                .eq('email', userEmail)
                .single();
 
+          console.log('SuperAdmin check result:', {
+               exists: !!existingSuperAdmin,
+               error: superAdminCheckError?.message
+          });
+
           if (!existingSuperAdmin) {
+               console.log('User not found in tblSuperAdmins, creating new super admin...');
+
                // Generate a secret for the super admin
                const secret = randomBytes(16).toString('hex');
+               console.log('Generated secret:', `${secret.substring(0, 8)}...`);
+
+               const insertData = {
+                    name: userName,
+                    email: userEmail,
+                    secret: secret,
+                    user_id: userId,
+                    created_at: new Date().toISOString()
+               };
+
+               console.log('Inserting super admin data:', {
+                    ...insertData,
+                    secret: `${secret.substring(0, 8)}...`
+               });
 
                // Add user to tblSuperAdmins
                const { error: insertError } = await supabase
                     .from('tblSuperAdmins')
-                    .insert({
-                         name: userName,
-                         email: userEmail,
-                         secret: secret,
-                         user_id: userId,
-                         created_at: new Date().toISOString()
-                    });
+                    .insert(insertData);
 
                if (insertError) {
+                    console.log('ERROR: Failed to insert super admin');
+                    console.log('Insert error:', insertError);
+
                     await logServerAction({
                          action: 'Invite user super admin creation failed',
                          error: insertError.message,
@@ -90,8 +134,13 @@ export async function GET(request: Request) {
 
                     return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=Failed to create admin account`);
                }
+
+               console.log('Super admin created successfully');
+          } else {
+               console.log('User already exists in tblSuperAdmins, skipping creation');
           }
 
+          console.log('Logging successful invite acceptance...');
           // Log successful invite acceptance
           await logServerAction({
                action: 'Invite user accepted successfully',
@@ -106,10 +155,20 @@ export async function GET(request: Request) {
                type: 'auth'
           });
 
+          console.log('Preparing redirect...');
+          const callbackUrl = `${requestUrl.origin}/auth/callback?code=${verifyData.session?.access_token}`;
+          console.log('Redirecting to:', callbackUrl);
+
           // Redirect to the callback URL to complete the authentication flow
-          return NextResponse.redirect(`${requestUrl.origin}/auth/callback?code=${verifyData.session?.access_token}`);
+          return NextResponse.redirect(callbackUrl);
 
      } catch (error) {
+          console.log('=== UNEXPECTED ERROR ===');
+          console.log('Error type:', error instanceof Error ? 'Error' : typeof error);
+          console.log('Error message:', error instanceof Error ? error.message : 'Unknown error');
+          console.log('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+          console.log('Error object:', error);
+
           await logServerAction({
                action: 'Invite user processing error',
                error: error instanceof Error ? error.message : 'Unknown error',
@@ -120,6 +179,10 @@ export async function GET(request: Request) {
                type: 'auth'
           });
 
+          console.log('Redirecting to error page...');
           return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=An unexpected error occurred`);
+     } finally {
+          console.log('=== INVITE USER ROUTE END ===');
+          console.log('Total duration:', Date.now() - start, 'ms');
      }
 }
