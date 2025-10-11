@@ -181,7 +181,7 @@ export async function GET(request: Request) {
                     type: 'auth'
                });
 
-               return NextResponse.redirect(`${requestUrl.origin}/?message=User is already a super admin`);
+               return NextResponse.redirect('https://dashboard.nest-link.app');
           }
 
           // Add user to tblSuperAdmins using their existing auth.users ID
