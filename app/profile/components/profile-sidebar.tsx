@@ -317,7 +317,12 @@ export default function ProfileSidebar({ userData, clientSubscriptionObject, rec
                          <Chip label={userData.client.client_status} color={getStatusColor(userData.client.client_status)} size="small" sx={{ mb: 1 }} />
 
                          <Typography variant="body2" color="text.secondary" gutterBottom>
-                              {userData.client.client_role}
+                              {userData.client.updated_at
+                                   ? `Last updated ${new Intl.DateTimeFormat(undefined, {
+                                        dateStyle: "medium",
+                                        timeStyle: "short",
+                                   }).format(new Date(userData.client.updated_at))}`
+                                   : "No updates yet"}
                          </Typography>
 
                          <Divider sx={{ my: 2 }} />

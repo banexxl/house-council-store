@@ -4,8 +4,6 @@ export type ClientStatus = 'active' | 'inactive' | 'pending_activation' | 'suspe
 
 export type ClientType = 'agency' | 'business' | 'enterprise' | 'government' | 'individual';
 
-export type ClientRole = 'admin' | 'client' | 'tenant';
-
 export interface Client {
   id: string;
   created_at?: Date;
@@ -18,7 +16,6 @@ export interface Client {
   contact_person: string;
   client_type: ClientType;
   client_status: ClientStatus;
-  client_role: ClientRole;
   notes?: string;
   address_2?: string;
   mobile_phone?: string;
@@ -77,9 +74,6 @@ export const clientValidationSchema = (t: (key: string) => string) => {
       .oneOf(['active', 'inactive', 'pending_activation', 'suspended', 'trial', 'archived', 'vip'],
         t('clients.clientStatusMustBeValid'))
       .required(t('clients.clientStatusRequired')),
-    client_role: Yup.string()
-      .oneOf(['admin', 'client', 'tenant'], t('clients.clientRoleMustBeValid'))
-      .required(t('clients.clientRoleRequired')),
     subscription_plan: Yup.string().max(40).nullable(),
     next_billing_date: Yup.date().nullable(),
     billing_information: Yup.string().max(255).nullable(),
@@ -105,7 +99,6 @@ export const clientInitialValues: Client = {
   contact_person: '',
   client_type: 'individual',
   client_status: 'active',
-  client_role: 'client',
   address_2: '',
   phone: '',
   mobile_phone: '',

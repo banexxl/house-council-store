@@ -160,13 +160,13 @@ export async function GET(request: Request) {
                email: user.email,
                client_type: 'individual',
                client_status: 'active',
-               client_role: 'client',
                has_accepted_terms_and_conditions: false,
                has_accepted_privacy_policy: false,
                has_accepted_marketing: false,
                is_verified: true,
                user_id: sessionData.session.user.id
           });
+          console.log('insert to tblClients error', insertError);
 
           data ?? await logServerAction({
                action: 'Auth callback success',
