@@ -77,7 +77,7 @@ export const RegisterPage = () => {
                     if (error.code === '23505') {
                          toast.error(error.details)
                     } else if (error.code === '23503') {
-                         toast.error("Foreign key violation")
+                         toast.error("This email has other role!")
                     } else if (error.code === '23502') {
                          toast.error("Not null violation")
                     } else if (error.code === '22P02') {
