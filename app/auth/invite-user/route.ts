@@ -228,8 +228,8 @@ export async function GET(request: Request) {
                type: 'auth'
           });
 
-          console.log('Redirecting to success page...');
-          return NextResponse.redirect(`${requestUrl.origin}/?message=User successfully added as super admin`);
+          console.log('Redirecting to dashboard...');
+          return NextResponse.redirect('https://dashboard.nest-link.app');
 
      } catch (error) {
           console.log('=== UNEXPECTED ERROR ===');
