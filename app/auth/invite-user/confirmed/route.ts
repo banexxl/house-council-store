@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { useServerSideSupabaseAnonClient } from '@/app/lib/ss-supabase-anon-client';
 import { useServerSideSupabaseServiceRoleClient } from '@/app/lib/ss-supabase-service-role-client';
 import { logServerAction } from '@/app/lib/server-logging';
 import { randomBytes } from 'crypto';
@@ -11,13 +12,17 @@ export async function GET(request: Request) {
      console.log('Request URL:', requestUrl.href);
 
      try {
-          console.log('Initializing Supabase service role client...');
-          const supabase = await useServerSideSupabaseServiceRoleClient();
-          console.log('Supabase client initialized successfully');
+          console.log('Initializing Supabase anon client for session...');
+          const supabaseAnon = await useServerSideSupabaseAnonClient();
+          console.log('Supabase anon client initialized successfully');
+
+          console.log('Initializing Supabase service role client for admin operations...');
+          const supabaseAdmin = await useServerSideSupabaseServiceRoleClient();
+          console.log('Supabase service role client initialized successfully');
 
           // Get the current session (user should be authenticated after confirmation)
           console.log('Getting current session...');
-          const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+          const { data: sessionData, error: sessionError } = await supabaseAnon.auth.getSession();
 
           console.log('Session result:', {
                hasSession: !!sessionData?.session,
@@ -53,8 +58,8 @@ export async function GET(request: Request) {
           console.log('- User metadata:', user.user_metadata);
 
           console.log('Checking if user already exists in tblSuperAdmins...');
-          // Check if user already exists in tblSuperAdmins
-          const { data: existingSuperAdmin, error: superAdminCheckError } = await supabase
+          // Check if user already exists in tblSuperAdmins (use admin client for database operations)
+          const { data: existingSuperAdmin, error: superAdminCheckError } = await supabaseAdmin
                .from('tblSuperAdmins')
                .select('id')
                .eq('email', userEmail)
@@ -85,8 +90,8 @@ export async function GET(request: Request) {
                     secret: `${secret.substring(0, 8)}...`
                });
 
-               // Add user to tblSuperAdmins
-               const { error: insertError } = await supabase
+               // Add user to tblSuperAdmins (use admin client for database operations)
+               const { error: insertError } = await supabaseAdmin
                     .from('tblSuperAdmins')
                     .insert(insertData);
 
