@@ -7,32 +7,69 @@ export async function GET(request: Request) {
      const start = Date.now();
      const requestUrl = new URL(request.url);
      const email = requestUrl.searchParams.get('email');
+     const token = requestUrl.searchParams.get('token');
 
      console.log('=== INVITE USER ROUTE START ===');
      console.log('Request URL:', requestUrl.href);
      console.log('Email received:', email);
+     console.log('Token received:', token ? `${token.substring(0, 10)}...` : 'null');
 
-     // Validate email parameter
-     if (!email) {
-          console.log('ERROR: No email provided in request');
+     // Validate email and token parameters
+     if (!email || !token) {
+          console.log('ERROR: Missing required parameters (email or token)');
 
           await logServerAction({
                action: 'Invite user validation failed',
-               error: 'No email provided',
+               error: 'Missing email or token parameter',
                duration_ms: Date.now() - start,
-               payload: { requestUrl: requestUrl.href },
+               payload: { requestUrl: requestUrl.href, hasEmail: !!email, hasToken: !!token },
                status: 'fail',
                user_id: null,
                type: 'auth'
           });
 
-          return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=Invalid invite link`);
+          return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=Invalid invite link - missing parameters`);
      }
 
      try {
           console.log('Initializing Supabase service role client...');
           const supabase = await useServerSideSupabaseServiceRoleClient();
           console.log('Supabase client initialized successfully');
+
+          // First, verify the token is valid for the given email
+          console.log('Verifying invite token...');
+          const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
+               token_hash: token,
+               type: 'invite'
+          });
+
+          console.log('Token verification result:', {
+               hasData: !!verifyData,
+               hasUser: !!verifyData?.user,
+               userEmail: verifyData?.user?.email,
+               error: verifyError?.message
+          });
+
+          // Check if token is valid and matches the email
+          if (verifyError || !verifyData?.user || verifyData.user.email !== email) {
+               console.log('ERROR: Invalid token or email mismatch');
+               console.log('Expected email:', email);
+               console.log('Token email:', verifyData?.user?.email);
+
+               await logServerAction({
+                    action: 'Invite token verification failed',
+                    error: verifyError?.message || 'Token/email mismatch',
+                    duration_ms: Date.now() - start,
+                    payload: { email, tokenError: verifyError?.message },
+                    status: 'fail',
+                    user_id: null,
+                    type: 'auth'
+               });
+
+               return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=Invalid or expired invite token`);
+          }
+
+          console.log('Token verified successfully for email:', email);
 
           // Find the user in auth.users by email (user should already exist from Supabase dashboard invite)
           console.log('Looking up user in auth.users by email...');
@@ -68,6 +105,46 @@ export async function GET(request: Request) {
                created_at: user.created_at,
                email_confirmed_at: user.email_confirmed_at
           });
+
+          // Check if email exists in other role tables first (security check)
+          console.log('Checking if email exists in other role tables...');
+
+          const [clientCheck, clientMemberCheck, tenantCheck] = await Promise.all([
+               supabase.from('tblClients').select('id').eq('email', email).single(),
+               supabase.from('tblClientMembers').select('id').eq('email', email).single(),
+               supabase.from('tblTenants').select('id').eq('email', email).single()
+          ]);
+
+          const existingRoles = [];
+          if (clientCheck.data) existingRoles.push('Client');
+          if (clientMemberCheck.data) existingRoles.push('Client Member');
+          if (tenantCheck.data) existingRoles.push('Tenant');
+
+          console.log('Existing role check results:', {
+               hasClientRole: !!clientCheck.data,
+               hasClientMemberRole: !!clientMemberCheck.data,
+               hasTenantRole: !!tenantCheck.data,
+               existingRoles
+          });
+
+          if (existingRoles.length > 0) {
+               console.log('ERROR: User already has other roles, cannot create super admin');
+               console.log('Existing roles:', existingRoles);
+
+               await logServerAction({
+                    action: 'Invite user failed - existing roles conflict',
+                    error: `User already has roles: ${existingRoles.join(', ')}`,
+                    duration_ms: Date.now() - start,
+                    payload: { email, userId: user.id, existingRoles },
+                    status: 'fail',
+                    user_id: user.id,
+                    type: 'auth'
+               });
+
+               return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=User already has existing roles: ${encodeURIComponent(existingRoles.join(', '))}`);
+          }
+
+          console.log('No conflicting roles found, proceeding with super admin creation');
 
           // Check if user already exists in tblSuperAdmins
           console.log('Checking if user already exists in tblSuperAdmins...');
@@ -150,7 +227,7 @@ export async function GET(request: Request) {
                action: 'Invite user processing error',
                error: error instanceof Error ? error.message : 'Unknown error',
                duration_ms: Date.now() - start,
-               payload: { email, error: error instanceof Error ? error.message : 'Unknown error' },
+               payload: { email, token: token ? `${token.substring(0, 10)}...` : null, error: error instanceof Error ? error.message : 'Unknown error' },
                status: 'fail',
                user_id: null,
                type: 'auth'
