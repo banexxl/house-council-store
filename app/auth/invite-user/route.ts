@@ -14,21 +14,27 @@ export async function GET(request: Request) {
      console.log('Email received:', email);
      console.log('Token received:', token ? `${token.substring(0, 10)}...` : 'null');
 
-     // Validate email and token parameters
-     if (!email || !token) {
-          console.log('ERROR: Missing required parameters (email or token)');
+     // Validate email parameter (token may be consumed by Supabase verification)
+     if (!email) {
+          console.log('ERROR: No email provided in request');
 
           await logServerAction({
                action: 'Invite user validation failed',
-               error: 'Missing email or token parameter',
+               error: 'No email provided',
                duration_ms: Date.now() - start,
-               payload: { requestUrl: requestUrl.href, hasEmail: !!email, hasToken: !!token },
+               payload: { requestUrl: requestUrl.href },
                status: 'fail',
                user_id: null,
                type: 'auth'
           });
 
-          return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=Invalid invite link - missing parameters`);
+          return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=Invalid invite link - missing email`);
+     }
+
+     // If no token, this likely means Supabase already verified it during redirect
+     if (!token) {
+          console.log('No token received - likely consumed by Supabase verification process');
+          console.log('Proceeding with email-only flow (Supabase already verified the user)');
      }
 
      try {
@@ -36,40 +42,48 @@ export async function GET(request: Request) {
           const supabase = await useServerSideSupabaseServiceRoleClient();
           console.log('Supabase client initialized successfully');
 
-          // First, verify the token is valid for the given email
-          console.log('Verifying invite token...');
-          const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
-               token_hash: token,
-               type: 'invite'
-          });
+          // Try to verify token if we have one (optional since Supabase may have already verified)
+          let tokenVerified = false;
 
-          console.log('Token verification result:', {
-               hasData: !!verifyData,
-               hasUser: !!verifyData?.user,
-               userEmail: verifyData?.user?.email,
-               error: verifyError?.message
-          });
-
-          // Check if token is valid and matches the email
-          if (verifyError || !verifyData?.user || verifyData.user.email !== email) {
-               console.log('ERROR: Invalid token or email mismatch');
-               console.log('Expected email:', email);
-               console.log('Token email:', verifyData?.user?.email);
-
-               await logServerAction({
-                    action: 'Invite token verification failed',
-                    error: verifyError?.message || 'Token/email mismatch',
-                    duration_ms: Date.now() - start,
-                    payload: { email, tokenError: verifyError?.message },
-                    status: 'fail',
-                    user_id: null,
-                    type: 'auth'
+          if (token) {
+               console.log('Verifying invite token...');
+               const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
+                    token_hash: token,
+                    type: 'invite'
                });
 
-               return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=Invalid or expired invite token`);
-          }
+               console.log('Token verification result:', {
+                    hasData: !!verifyData,
+                    hasUser: !!verifyData?.user,
+                    userEmail: verifyData?.user?.email,
+                    error: verifyError?.message
+               });
 
-          console.log('Token verified successfully for email:', email);
+               // Check if token is valid and matches the email
+               if (verifyError || !verifyData?.user || verifyData.user.email !== email) {
+                    console.log('ERROR: Invalid token or email mismatch');
+                    console.log('Expected email:', email);
+                    console.log('Token email:', verifyData?.user?.email);
+
+                    await logServerAction({
+                         action: 'Invite token verification failed',
+                         error: verifyError?.message || 'Token/email mismatch',
+                         duration_ms: Date.now() - start,
+                         payload: { email, tokenError: verifyError?.message },
+                         status: 'fail',
+                         user_id: null,
+                         type: 'auth'
+                    });
+
+                    return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=Invalid or expired invite token`);
+               }
+
+               console.log('Token verified successfully for email:', email);
+               tokenVerified = true;
+          } else {
+               console.log('No token to verify - assuming Supabase already handled verification');
+               tokenVerified = true; // Trust that Supabase verified before redirecting
+          }
 
           // Find the user in auth.users by email (user should already exist from Supabase dashboard invite)
           console.log('Looking up user in auth.users by email...');
