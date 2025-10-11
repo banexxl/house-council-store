@@ -34,29 +34,100 @@ export async function GET(request: Request) {
           const supabase = await useServerSideSupabaseServiceRoleClient();
           console.log('Supabase client initialized successfully');
 
-          console.log('Attempting to verify invite token...');
-          // Verify the invite token using Supabase's built-in invite verification
-          const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
-               token_hash: token,
-               type: 'invite'
-          });
+          console.log('Attempting to verify invite token with different methods...');
 
-          console.log('Verify result:', {
-               hasData: !!verifyData,
-               hasUser: !!verifyData?.user,
-               hasSession: !!verifyData?.session,
-               error: verifyError?.message
-          });
+          // First, try to verify as an invite token
+          console.log('Method 1: Trying verifyOtp with type "invite"...');
+          let verifyData, verifyError;
 
-          if (verifyError || !verifyData.user) {
-               console.log('ERROR: Token verification failed');
-               console.log('Verify error:', verifyError);
+          try {
+               const result = await supabase.auth.verifyOtp({
+                    token_hash: token,
+                    type: 'invite'
+               });
+               verifyData = result.data;
+               verifyError = result.error;
+               console.log('Method 1 result:', {
+                    hasData: !!verifyData,
+                    hasUser: !!verifyData?.user,
+                    hasSession: !!verifyData?.session,
+                    error: verifyError?.message
+               });
+          } catch (error) {
+               console.log('Method 1 failed with exception:', error);
+               verifyError = error;
+          }
+
+          // If that fails, try as email confirmation
+          if (verifyError || !verifyData?.user) {
+               console.log('Method 2: Trying verifyOtp with type "email"...');
+               try {
+                    const result = await supabase.auth.verifyOtp({
+                         token_hash: token,
+                         type: 'email'
+                    });
+                    verifyData = result.data;
+                    verifyError = result.error;
+                    console.log('Method 2 result:', {
+                         hasData: !!verifyData,
+                         hasUser: !!verifyData?.user,
+                         hasSession: !!verifyData?.session,
+                         error: verifyError?.message
+                    });
+               } catch (error) {
+                    console.log('Method 2 failed with exception:', error);
+                    verifyError = error;
+               }
+          }
+
+          // If still failing, try to exchange the token directly
+          if (verifyError || !verifyData?.user) {
+               console.log('Method 3: Trying exchangeCodeForSession...');
+               try {
+                    const result = await supabase.auth.exchangeCodeForSession(token);
+                    verifyData = result.data;
+                    verifyError = result.error;
+                    console.log('Method 3 result:', {
+                         hasData: !!verifyData,
+                         hasUser: !!verifyData?.user,
+                         hasSession: !!verifyData?.session,
+                         error: verifyError?.message
+                    });
+               } catch (error) {
+                    console.log('Method 3 failed with exception:', error);
+                    verifyError = error;
+               }
+          }
+
+          // If all methods fail, try to get user info directly using the token as access token
+          if (verifyError || !verifyData?.user) {
+               console.log('Method 4: Trying to get user with token as access token...');
+               try {
+                    const result = await supabase.auth.getUser(token);
+                    if (result.data?.user && !result.error) {
+                         verifyData = { user: result.data.user, session: null };
+                         verifyError = null;
+                         console.log('Method 4 success: Found user with token as access token');
+                    } else {
+                         console.log('Method 4 failed:', result.error?.message);
+                    }
+               } catch (error) {
+                    console.log('Method 4 failed with exception:', error);
+               }
+          }
+
+          if (verifyError || !verifyData?.user) {
+               console.log('ERROR: All token verification methods failed');
+               console.log('Final verify error:', verifyError);
 
                await logServerAction({
                     action: 'Invite user validation failed',
                     error: 'Invalid or expired invite token',
                     duration_ms: Date.now() - start,
-                    payload: { token, verifyError: verifyError?.message },
+                    payload: {
+                         token,
+                         verifyError: verifyError instanceof Error ? verifyError.message : 'Unknown error'
+                    },
                     status: 'fail',
                     user_id: null,
                     type: 'auth'
