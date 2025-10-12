@@ -88,14 +88,11 @@ export async function uploadClientAvatarAction(formData: FormData): Promise<{ su
  */
 export async function deleteClientAvatarAction(formData: FormData): Promise<{ success: boolean; message: string }> {
      const awsUrl = formData.get('awsUrl') as string;
-     console.log('formData', formData);
-
      if (!awsUrl) {
           throw new Error('Missing awsUrl');
      }
 
      const key = extractStorageKeyFromUrl(awsUrl);
-     console.log('key', key);
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
 

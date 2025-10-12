@@ -86,8 +86,6 @@ export const readSubscriptionPlansByStatus = async (
 }> => {
      const supabase = await useServerSideSupabaseAnonClient();
      const userId = (await supabase.auth.getUser()).data.user?.id;
-     console.log('status:', status);
-
      const { data: subscriptionPlans, error: planError } = await supabase
           .from("tblSubscriptionPlans")
           .select(`*,
