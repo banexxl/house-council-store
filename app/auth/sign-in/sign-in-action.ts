@@ -60,11 +60,26 @@ export const checkClientExistsAndIsPermitted = async (
                duration_ms: Date.now() - start,
                type: 'auth'
           })
+          let hint = `Your email is registered, but your account status "${data.client_status}" does not permit sign-in. Please contact support for assistance.`;
+          switch (data.client_status) {
+               case 'inactive':
+                    hint = 'Your account is inactive. Please contact support to activate your account.';
+                    break;
+               case 'pending_activation':
+                    hint = 'Your account is pending activation. Please check your email for activation instructions or contact support.';
+                    break;
+               case 'suspended':
+                    hint = 'Your account has been suspended. Please contact support for more information.';
+                    break;
+               case 'archived':
+                    hint = 'Your account has been archived and cannot be used. Please contact support if you believe this is an error.';
+                    break;
+          }
           return {
                success: false, error: {
                     code: 'ClientRestricted',
                     details: 'Your account is restricted',
-                    hint: 'Please contact support for assistance',
+                    hint,
                }
           }
      }
