@@ -96,7 +96,34 @@ export default function PaymentsTab({ clientPayments, userData, clientSubscripti
           if (success) {
                toast.success("Payment added successfully!");
           } else {
-               toast.error(`Error adding payment`);
+               // Display specific error messages based on the error type
+               if (error?.includes('No subscription found')) {
+                    toast.error("No active subscription found. Please contact support.");
+               } else if (error?.includes('Subscription is canceled')) {
+                    toast.error("Cannot make payment on a canceled subscription. Please reactivate your subscription.");
+               } else if (error?.includes('Subscription is paused')) {
+                    toast.error("Cannot make payment on a paused subscription. Please resume your subscription first.");
+               } else if (error?.includes('Subscription is expired')) {
+                    toast.error("Cannot make payment on an expired subscription. Please renew your subscription.");
+               } else if (error?.includes('does not match the subscription price')) {
+                    // Extract the expected amount from the error message
+                    const amountMatch = error.match(/subscription price (\d+(?:\.\d+)?)/);
+                    const expectedAmount = amountMatch ? amountMatch[1] : 'the correct amount';
+                    toast.error(`Payment amount is incorrect. Please pay exactly ${currency?.code} ${expectedAmount}.`);
+               } else if (error?.includes('already made a payment for this billing period')) {
+                    toast.error("You have already paid for this billing period. Only one payment per billing cycle is allowed.");
+               } else if (error?.includes('Payment is too early')) {
+                    // Extract the date from the error message
+                    const dateMatch = error.match(/starting (.+?)\./);
+                    const allowedDate = dateMatch ? dateMatch[1] : 'soon';
+                    toast.error(`Payment is too early. You can make your next payment starting ${allowedDate}.`);
+               } else if (error?.includes('already has a paid invoice')) {
+                    toast.error("This billing period has already been paid. Your next payment will be due in the next cycle.");
+               } else if (error?.includes('payment is not allowed')) {
+                    toast.error("Payment is not allowed for the current subscription status. Please contact support.");
+               } else {
+                    toast.error(`Error adding payment: ${error || 'Unknown error occurred'}`);
+               }
           }
           setPaymentLoading(false)
           handleClose()
