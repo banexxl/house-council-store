@@ -44,7 +44,6 @@ const notificationPreferences = [
 type ProfilePageProps = {
      sessionAndClientDataCombined?: { client: Client, session: User }
      clientSubscriptionObject: ClientSubscription & { subscription_plan: SubscriptionPlan }
-     paymentMethods: BaseEntity[]
      allClientBillingInformation: ClientBillingInformation[]
      recentActivity: ActivityItem[]
      binCheckerAPIKey?: string,
@@ -52,7 +51,7 @@ type ProfilePageProps = {
      subsrciptioFeatures: SubscriptionPlan & { features: Feature[] } | null
      currencies?: Currency[],
 }
-export const ProfilePage = ({ sessionAndClientDataCombined, clientSubscriptionObject, paymentMethods, allClientBillingInformation, recentActivity, binCheckerAPIKey, clientPayments, subsrciptioFeatures, currencies }: ProfilePageProps) => {
+export const ProfilePage = ({ sessionAndClientDataCombined, clientSubscriptionObject, allClientBillingInformation, recentActivity, binCheckerAPIKey, clientPayments, subsrciptioFeatures, currencies }: ProfilePageProps) => {
 
      const [editMode, setEditMode] = useState(false)
      const [notificationSettings, setNotificationSettings] = useState(notificationPreferences)
@@ -80,7 +79,6 @@ export const ProfilePage = ({ sessionAndClientDataCombined, clientSubscriptionOb
                                              editMode={editMode}
                                              setEditMode={setEditMode}
                                              clientSubscriptionObject={clientSubscriptionObject}
-                                             paymentMethods={paymentMethods}
                                              allClientBillingInformation={allClientBillingInformation}
                                              notificationSettings={notificationSettings}
                                              setNotificationSettings={setNotificationSettings}

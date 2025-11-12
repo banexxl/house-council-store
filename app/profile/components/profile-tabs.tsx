@@ -14,7 +14,7 @@ import AccountTab from "./tabs/account-tab"
 import NotificationsTab from "./tabs/notifications-tab"
 import SecurityTab from "./tabs/security-tab"
 import PaymentsTab from "./tabs/payments-tab"
-import { Session, User } from "@supabase/supabase-js"
+import { User } from "@supabase/supabase-js"
 import { Client } from "@/app/types/client"
 import { ClientSubscription, SubscriptionPlan } from "@/app/types/subscription-plan"
 import { ClientBillingInformation } from "@/app/types/billing-information"
@@ -23,7 +23,6 @@ import { Feature } from "@/app/types/feature"
 import { BillingTab } from "./tabs/billing-tab"
 import SubscriptionTab from "./tabs/subscription-tab"
 import { Payment } from "@/app/types/payment"
-import { BaseEntity } from "@/app/types/base-entity"
 import { Currency } from "@/app/types/currency"
 
 interface TabPanelProps {
@@ -53,7 +52,6 @@ interface ProfileTabsProps {
      editMode: boolean
      setEditMode: (value: boolean) => void
      clientSubscriptionObject: ClientSubscription & { subscription_plan: SubscriptionPlan } | null
-     paymentMethods: any[]
      allClientBillingInformation: ClientBillingInformation[]
      notificationSettings: any[]
      setNotificationSettings: (value: any) => void
@@ -70,7 +68,6 @@ export default function ProfileTabs({
      editMode,
      setEditMode,
      clientSubscriptionObject,
-     paymentMethods,
      allClientBillingInformation,
      notificationSettings,
      setNotificationSettings,

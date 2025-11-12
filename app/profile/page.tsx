@@ -32,7 +32,7 @@ export default async function Page() {
      }
 
      // Fetch related data in parallel
-     const [clientSubscriptionObject, billingInformation, recentActivity, clientPayments, currencies, paymentMethodsData] = await Promise.all([
+     const [clientSubscriptionObject, billingInformation, recentActivity, clientPayments, currencies] = await Promise.all([
           readClientSubscriptionPlanFromClientId(client.id),
           readAllClientsBillingInformation(client.id),
           readClientRecentActivityAction(user.email, client.id),
@@ -63,7 +63,6 @@ export default async function Page() {
                     clientSubscriptionObject={clientSubscriptionObject?.clientSubscriptionPlanData! ?? null}
                     allClientBillingInformation={billingInformation.readAllClientBillingInformationData ?? []}
                     clientPayments={clientPayments.data ?? []}
-                    paymentMethods={paymentMethodsData.paymentMethods!}
                     recentActivity={recentActivity.data ?? []}
                     binCheckerAPIKey={binCheckerAPIKey ?? ""}
                     subsrciptioFeatures={subsrciptionFeatures?.subscriptionPlanFeatures ?? null}
