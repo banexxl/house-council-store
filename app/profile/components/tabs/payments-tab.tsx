@@ -83,6 +83,14 @@ export default function PaymentsTab({ clientPayments, userData, clientSubscripti
                is_recurring: false,
                tax_percentage: 18
           }
+
+          if (!newPayment.billing_information) {
+               toast.error("Please set a default payment method in your billing information before making a payment.")
+               setPaymentLoading(false)
+               setOpen(false)
+               return
+          }
+
           const { success, error } = await makePaymentAction(newPayment)
 
           if (success) {

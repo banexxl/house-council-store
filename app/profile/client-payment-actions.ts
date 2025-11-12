@@ -1,18 +1,18 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { useServerSideSupabaseServiceRoleClient } from '../lib/ss-supabase-service-role-client';
 import { logServerAction } from '../lib/server-logging';
 import { Payment } from '../types/payment';
 import { Currency } from '../types/currency';
 import { BaseEntity } from '../types/base-entity';
+import { useServerSideSupabaseAnonClient } from '../lib/ss-supabase-anon-client';
 
 export const makePaymentAction = async (
      payment: Payment,
 ): Promise<{ success: boolean; error?: string }> => {
 
      const start = Date.now();
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
      const { data, error } = await supabase.from('tblInvoices').insert(payment).select('*').single();
 
      if (error) {
@@ -46,7 +46,7 @@ export const readClientPayment = async (
      id: string
 ): Promise<{ success: boolean; data?: Payment; error?: string }> => {
      const start = Date.now();
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      const { data, error } = await supabase.from('tblInvoices').select('*').eq('id', id).single();
 
@@ -71,7 +71,7 @@ export const deleteClientPayment = async (
      ids: string[]
 ): Promise<{ success: boolean; error?: string }> => {
      const start = Date.now();
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      const { error } = await supabase.from('tblInvoices').delete().in('id', ids);
 
@@ -106,7 +106,7 @@ export const readAllClientPaymentsAction = async (
      clientId: string
 ): Promise<{ success: boolean; data?: Payment[]; error?: string }> => {
      const start = Date.now();
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      const { data, error } = await supabase
           .from('tblInvoices')
@@ -141,7 +141,7 @@ export const readAllClientPaymentsAction = async (
 };
 
 export const readCurrencyByCodeAction = async (code: string): Promise<{ success: boolean; currency?: Currency; error?: string }> => {
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
      const { data, error } = await supabase.from('tblCurrency').select('*').eq('code', code).single();
      if (error) {
           return { success: false, error: error.message }
@@ -150,7 +150,7 @@ export const readCurrencyByCodeAction = async (code: string): Promise<{ success:
 };
 
 export const readCurrencyByCurrencyNumberAction = async (currencyNumber: number): Promise<{ success: boolean; currency?: Currency; error?: string }> => {
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
      const { data, error } = await supabase.from('tblCurrency').select('*').eq('number', currencyNumber).single();
      if (error) {
           return { success: false, error: error.message }
@@ -159,7 +159,7 @@ export const readCurrencyByCurrencyNumberAction = async (currencyNumber: number)
 }
 
 export const readAllCurrenciesAction = async (): Promise<{ success: boolean; currencies?: Currency[]; error?: string }> => {
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
      const { data, error } = await supabase.from('tblCurrencies').select('*');
      if (error) {
           return { success: false, error: error.message }
@@ -169,7 +169,7 @@ export const readAllCurrenciesAction = async (): Promise<{ success: boolean; cur
 
 export const readAllPaymentMethodsAction = async (): Promise<{ success: boolean; paymentMethods?: BaseEntity[]; error?: string }> => {
 
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
      const { data, error } = await supabase.from('tblPaymentMethods').select('*');
      if (error) {
           return { success: false, error: error.message }
