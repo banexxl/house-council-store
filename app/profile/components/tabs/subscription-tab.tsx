@@ -132,7 +132,7 @@ export default function SubscriptionTab({ clientSubscriptionObject, payment, sub
                                              <>Trial period until: {renderDate(clientSubscriptionObject?.next_payment_date!)}</>
                                         ) : payment ? (
                                              <>
-                                                  Last Payment: {renderDate(payment.created_at)}aaaa
+                                                  Last Payment: {renderDate(payment.created_at)}
                                                   {/* {payment.total_paid > 0 && (
                                                   <> - {formattedPrice}</>
                                                   )} */}
