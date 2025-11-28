@@ -222,7 +222,7 @@ const LandingPage = () => {
                                    fullWidth sx={{ maxWidth: 300, mb: 2 }}
                                    onClick={() => handleNavClick('/pricing')}
                               >
-                                   View Pricing Plans
+                                   View Subscription Plans
                               </Button>
                               <Typography variant="caption" color="text.secondary">
                                    Free trial available. No credit card required.
