@@ -62,7 +62,7 @@ export const Header = ({ user }: HeaderProps) => {
   const navItems = [
     { name: "Home", path: "/" },
     { name: "Documentation", path: "/docs" },
-    { name: "Pricing", path: "/pricing" },
+    { name: "Subscriptions", path: "/pricing" },
     { name: "Contact", path: "/contact" },
   ];
 
