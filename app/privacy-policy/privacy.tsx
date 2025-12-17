@@ -529,13 +529,7 @@ export const PrivacyPage = () => {
                                                   <ListItem>
                                                        <ListItemText
                                                             primary="By email:"
-                                                            secondary="privacy@NestLink.com"
-                                                       />
-                                                  </ListItem>
-                                                  <ListItem>
-                                                       <ListItemText
-                                                            primary="By mail:"
-                                                            secondary="NestLink, 123 Community Lane, Suite 456, Boston, MA 02110, United States"
+                                                            secondary="support@nest-link.app"
                                                        />
                                                   </ListItem>
                                              </List>
