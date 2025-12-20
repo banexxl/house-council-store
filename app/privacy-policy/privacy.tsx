@@ -169,13 +169,13 @@ export const PrivacyPage = () => {
                                              <Typography variant="h5" component="h2" gutterBottom>
                                                   Introduction
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography >
                                                   NestLink ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website and use our services, including our mobile application (collectively, the "Service").
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography >
                                                   Please read this Privacy Policy carefully. By accessing or using our Service, you acknowledge that you have read, understood, and agree to be bound by all the terms of this Privacy Policy. If you do not agree with our policies and practices, please do not use our Service.
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography >
                                                   This Privacy Policy applies to all users of the Service, including without limitation users who are browsers, customers, merchants, vendors, and/or contributors of content.
                                              </Typography>
                                              <Divider sx={{ my: 4 }} />
@@ -185,13 +185,13 @@ export const PrivacyPage = () => {
                                              <Typography variant="h5" component="h2" gutterBottom>
                                                   Information We Collect
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography >
                                                   We collect several types of information from and about users of our Service, including:
                                              </Typography>
                                              <Typography variant="h6" component="h3" gutterBottom>
                                                   Personal Information
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography >
                                                   Personal Information is information that identifies you as an individual or relates to an identifiable individual. We may collect the following types of Personal Information:
                                              </Typography>
                                              <List>
@@ -224,7 +224,7 @@ export const PrivacyPage = () => {
                                              <Typography variant="h6" component="h3" gutterBottom sx={{ mt: 2 }}>
                                                   Usage and Technical Information
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography >
                                                   We automatically collect certain information when you visit, use, or navigate our Service. This information does not reveal your specific identity but may include:
                                              </Typography>
                                              <List>
@@ -260,7 +260,7 @@ export const PrivacyPage = () => {
                                              <Typography variant="h5" component="h2" gutterBottom>
                                                   How We Use Your Information
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography >
                                                   We use the information we collect for various purposes, including:
                                              </Typography>
                                              <TableContainer>
@@ -306,7 +306,7 @@ export const PrivacyPage = () => {
                                              <Typography variant="h5" component="h2" gutterBottom>
                                                   Information Sharing and Disclosure
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography >
                                                   We may share your information in the following situations:
                                              </Typography>
                                              <List>
@@ -348,10 +348,10 @@ export const PrivacyPage = () => {
                                              <Typography variant="h5" component="h2" gutterBottom>
                                                   Data Security
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography >
                                                   We have implemented appropriate technical and organizational security measures designed to protect the security of any personal information we process. However, despite our safeguards and efforts to secure your information, no electronic transmission over the Internet or information storage technology can be guaranteed to be 100% secure.
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography >
                                                   We use industry-standard encryption technologies when transferring and receiving personal information. We also have appropriate security measures in place in our physical facilities to protect against the loss, misuse, or alteration of information that we have collected from you.
                                              </Typography>
                                              <Divider sx={{ my: 4 }} />
@@ -361,10 +361,10 @@ export const PrivacyPage = () => {
                                              <Typography variant="h5" component="h2" gutterBottom>
                                                   Data Retention
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography >
                                                   We will retain your personal information only for as long as is necessary for the purposes set out in this Privacy Policy. We will retain and use your information to the extent necessary to comply with our legal obligations, resolve disputes, and enforce our policies.
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography >
                                                   If you request that your account be deleted, we will delete your information as soon as practicable, although we may retain certain information as required by law or for legitimate business purposes. We may also retain cached or archived copies of your information for a certain period of time.
                                              </Typography>
                                              <Divider sx={{ my: 4 }} />
@@ -374,7 +374,7 @@ export const PrivacyPage = () => {
                                              <Typography variant="h5" component="h2" gutterBottom>
                                                   Your Rights
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography >
                                                   Depending on your location, you may have certain rights regarding your personal information, including:
                                              </Typography>
                                              <List>
@@ -415,7 +415,7 @@ export const PrivacyPage = () => {
                                                        />
                                                   </ListItem>
                                              </List>
-                                             <Typography paragraph sx={{ mt: 2 }}>
+                                             <Typography sx={{ mt: 2 }}>
                                                   If you wish to exercise any of these rights, please contact us using the contact information provided below. We may ask you to verify your identity before responding to such requests.
                                              </Typography>
                                              <Divider sx={{ my: 4 }} />
@@ -425,10 +425,10 @@ export const PrivacyPage = () => {
                                              <Typography variant="h5" component="h2" gutterBottom>
                                                   Cookies and Tracking Technologies
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography >
                                                   We use cookies and similar tracking technologies to track activity on our Service and store certain information. Cookies are files with a small amount of data which may include an anonymous unique identifier. Cookies are sent to your browser from a website and stored on your device.
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography >
                                                   We use the following types of cookies:
                                              </Typography>
                                              <List>
@@ -457,7 +457,7 @@ export const PrivacyPage = () => {
                                                        />
                                                   </ListItem>
                                              </List>
-                                             <Typography paragraph sx={{ mt: 2 }}>
+                                             <Typography sx={{ mt: 2 }}>
                                                   You can instruct your browser to refuse all cookies or to indicate when a cookie is being sent. However, if you do not accept cookies, you may not be able to use some portions of our Service.
                                              </Typography>
                                              <Divider sx={{ my: 4 }} />
@@ -467,13 +467,13 @@ export const PrivacyPage = () => {
                                              <Typography variant="h5" component="h2" gutterBottom>
                                                   Third-Party Services
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography >
                                                   Our Service may contain links to other websites, applications, or services that are not operated by us. If you click on a third-party link, you will be directed to that third party's site. We strongly advise you to review the Privacy Policy of every site you visit.
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography >
                                                   We have no control over and assume no responsibility for the content, privacy policies, or practices of any third-party sites or services.
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography >
                                                   We may use third-party service providers to help us operate our Service or administer activities on our behalf, such as sending out newsletters or surveys. We may share your information with these third parties for those limited purposes.
                                              </Typography>
                                              <Divider sx={{ my: 4 }} />
@@ -483,7 +483,7 @@ export const PrivacyPage = () => {
                                              <Typography variant="h5" component="h2" gutterBottom>
                                                   Children's Privacy
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography >
                                                   Our Service is not directed to individuals under the age of 18. We do not knowingly collect personal information from children under 18. If you are a parent or guardian and you are aware that your child has provided us with personal information, please contact us. If we become aware that we have collected personal information from children without verification of parental consent, we take steps to remove that information from our servers.
                                              </Typography>
                                              <Divider sx={{ my: 4 }} />
@@ -493,10 +493,10 @@ export const PrivacyPage = () => {
                                              <Typography variant="h5" component="h2" gutterBottom>
                                                   International Data Transfers
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography >
                                                   Your information, including personal information, may be transferred to and maintained on computers located outside of your state, province, country, or other governmental jurisdiction where the data protection laws may differ from those of your jurisdiction.
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography >
                                                   If you are located outside the United States and choose to provide information to us, please note that we transfer the data, including personal information, to the United States and process it there. Your consent to this Privacy Policy followed by your submission of such information represents your agreement to that transfer.
                                              </Typography>
                                              <Divider sx={{ my: 4 }} />
@@ -506,13 +506,13 @@ export const PrivacyPage = () => {
                                              <Typography variant="h5" component="h2" gutterBottom>
                                                   Changes to This Privacy Policy
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography >
                                                   We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last Updated" date at the top of this Privacy Policy.
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography >
                                                   You are advised to review this Privacy Policy periodically for any changes. Changes to this Privacy Policy are effective when they are posted on this page.
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography >
                                                   Your continued use of the Service following the posting of changes to this Privacy Policy will be deemed your acceptance of those changes.
                                              </Typography>
                                              <Divider sx={{ my: 4 }} />
@@ -522,7 +522,7 @@ export const PrivacyPage = () => {
                                              <Typography variant="h5" component="h2" gutterBottom>
                                                   Contact Us
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography >
                                                   If you have any questions about this Privacy Policy, please contact us:
                                              </Typography>
                                              <List>
