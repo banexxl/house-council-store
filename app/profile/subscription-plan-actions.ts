@@ -95,7 +95,7 @@ export const readSubscriptionPlansByStatus = async (
          )
        `)
           .eq('status', status)
-          .order("monthly_total_price", { ascending: true });
+          .order("monthly_total_price_per_apartment", { ascending: true });
 
      if (planError) {
           await logServerAction({

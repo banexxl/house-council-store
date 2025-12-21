@@ -149,8 +149,8 @@ export default function FreeTrialConfirmation({ subscriptionPlan, billingCycle, 
                                         </Typography>
                                         <Typography variant="h6" sx={{ mb: 1, color: theme.palette.primary.main, fontWeight: 700 }}>
                                              ${billingCycle === "monthly"
-                                                  ? subscriptionPlan.monthly_total_price
-                                                  : subscriptionPlan.total_price_with_discounts}
+                                                  ? subscriptionPlan.monthly_total_price_per_apartment
+                                                  : subscriptionPlan.total_price_per_apartment_with_discounts}
                                         </Typography>
                                    </Box>
 

@@ -36,7 +36,7 @@ const getSubscription = async (supabase: any, clientId: string, planId: string) 
                expired, 
                renewal_period,
                subscription_plan_id,
-               tblSubscriptionPlans!inner(total_price_with_discounts)
+               tblSubscriptionPlans!inner(total_price_per_apartment_with_discounts)
           `)
           .eq('client_id', clientId)
           .eq('subscription_plan_id', planId)
@@ -54,7 +54,7 @@ const getSubscription = async (supabase: any, clientId: string, planId: string) 
           renewal_period: RenewalPeriod | null;
           subscription_plan_id: string;
           tblSubscriptionPlans: {
-               total_price_with_discounts: number;
+               total_price_per_apartment_with_discounts: number;
           };
      } | null;
 }
@@ -96,7 +96,7 @@ export const makePaymentAction = async (
           }
 
           // 2) Validate payment amount matches subscription plan price
-          const expectedAmount = sub.tblSubscriptionPlans.total_price_with_discounts;
+          const expectedAmount = sub.tblSubscriptionPlans.total_price_per_apartment_with_discounts;
           if (payment.total_paid !== expectedAmount) {
                throw new Error(`Payment amount ${payment.total_paid} does not match the subscription price ${expectedAmount}.`);
           }

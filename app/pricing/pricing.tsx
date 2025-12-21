@@ -130,8 +130,8 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
 
                                         // Use DB-calculated values
                                         const basePrice = isAnnual
-                                             ? plan.total_price_with_discounts
-                                             : plan.monthly_total_price;
+                                             ? plan.total_price_per_apartment_with_discounts
+                                             : plan.monthly_total_price_per_apartment;
 
                                         // Optional: apply additional general discount on top (if business logic allows)
                                         const shouldApplyGeneralDiscount = hasGeneralDiscount && !(isAnnual && isBilledYearly);
@@ -141,7 +141,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
 
                                         // For original strikethrough price display
                                         const originalAnnualPrice = isAnnual && hasAnnualDiscount
-                                             ? Math.round((plan.total_price_with_discounts * 100) / (100 - plan.annual_discount_percentage))
+                                             ? Math.round((plan.total_price_per_apartment_with_discounts * 100) / (100 - plan.annual_discount_percentage))
                                              : null;
 
                                         return (
