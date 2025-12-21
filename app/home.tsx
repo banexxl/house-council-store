@@ -86,6 +86,26 @@ const LandingPage = () => {
           el.style.setProperty('--my', `${y}%`);
      };
 
+     const chipSx = {
+          fontWeight: 700,
+          borderRadius: 999,
+          height: { xs: 34, sm: 36 },
+          bgcolor: "rgba(255,255,255,0.7)",
+          backdropFilter: "blur(10px)",
+          border: "1px solid rgba(255,255,255,0.35)",
+          transition: "transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease",
+          "&:active": {
+               transform: { xs: "scale(0.97)", sm: "none" }, // “tap” only on mobile-ish sizes
+          },
+          "@media (hover:hover) and (pointer:fine)": {
+               "&:hover": {
+                    transform: "translateY(-2px) scale(1.03)",
+                    boxShadow: "0 10px 30px rgba(0,0,0,0.10)",
+                    borderColor: "rgba(255,255,255,0.6)",
+               },
+          },
+     };
+
      return (
           <Box>
                <ParallaxSection backgroundImage="/background-images/background-image-3.png">
@@ -118,9 +138,9 @@ const LandingPage = () => {
                                    >
                                         <Reveal>
                                              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                                                  <Chip icon={<DashboardCustomizeIcon />} label="Web dashboard" />
-                                                  <Chip icon={<PhoneIphoneIcon />} label="Mobile app" />
-                                                  <Chip icon={<ApartmentIcon />} label="Pay per apartment" />
+                                                  <Chip icon={<DashboardCustomizeIcon />} label="Web dashboard" sx={chipSx} />
+                                                  <Chip icon={<PhoneIphoneIcon />} label="Mobile app" sx={chipSx} />
+                                                  <Chip icon={<ApartmentIcon />} label="Pay per apartment" sx={chipSx} />
                                              </Stack>
                                         </Reveal>
 
