@@ -429,7 +429,7 @@ const LandingPage = () => {
                     sx={{
                          position: 'relative',
                          py: { xs: 7, md: 10 },
-                         backgroundImage: 'url(/background-images/background-image-2.png)',
+                         backgroundImage: 'url(/background-images/background-image-4.png)',
                          backgroundSize: 'cover',
                          backgroundPosition: 'center',
                          backgroundRepeat: 'no-repeat',
