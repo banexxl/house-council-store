@@ -2,85 +2,455 @@
 
 import type React from "react"
 import Animate from "@/app/components/animation-framer-motion"
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import {
+     Alert,
      Box,
+     Button,
      Container,
+     Divider,
+     IconButton,
      InputAdornment,
      Link as MuiLink,
      List,
      ListItem,
      ListItemText,
      Paper,
-     Tab,
-     Tabs,
+     Stack,
      TextField,
      Typography,
      Grid,
+     Chip,
 } from "@mui/material"
 import SearchIcon from "@mui/icons-material/Search"
-import DescriptionIcon from "@mui/icons-material/Description"
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import ContentCopyIcon from "@mui/icons-material/ContentCopy"
+import LinkIcon from "@mui/icons-material/Link"
 import { Toaster } from "react-hot-toast"
 
-interface TabPanelProps {
-     children?: React.ReactNode
-     index: number
-     value: number
+type DocSection = {
+     id: string
+     navLabel: string
+     title: string
+     description: string
+     bullets?: string[]
+     role?: "Client" | "Member" | "Tenant" | "Platform"
+     tags?: string[]
 }
 
-function TabPanel(props: TabPanelProps) {
-     const { children, value, index, ...other } = props
+const HEADER_OFFSET_PX = 88 // adjust if your fixed header is taller/shorter
 
-     return (
-          <div
-               role="tabpanel"
-               hidden={value !== index}
-               id={`simple-tabpanel-${index}`}
-               aria-labelledby={`simple-tab-${index}`}
-               {...other}
-          >
-               {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-          </div>
+const sections: DocSection[] = [
+     // -----------------------------
+     // Getting started
+     // -----------------------------
+     {
+          id: "getting-started",
+          navLabel: "Getting Started",
+          title: "Getting Started",
+          description:
+               "NestLink is a web dashboard + tenant mobile app for managing building communities. This documentation explains the core concepts, roles, and every major feature so you can onboard a building quickly and use the platform confidently.",
+          tags: ["overview", "roles", "onboarding"],
+          role: "Platform",
+     },
+     {
+          id: "installation",
+          navLabel: "Installation",
+          title: "Installation",
+          description:
+               "There is no installation required for the web dashboard. Open NestLink in a modern browser and sign in. For tenants, install the mobile app (iOS/Android) if provided by the building, then sign in with the invitation flow.",
+          bullets: [
+               "Web dashboard: works in modern browsers (Chrome/Edge/Safari/Firefox)",
+               "Tenant mobile app: iOS/Android build distributed by the building/team",
+               "No local setup required for standard usage",
+          ],
+          role: "Platform",
+     },
+     {
+          id: "setup",
+          navLabel: "Setup",
+          title: "Initial Setup",
+          description:
+               "After subscription/signup, the Client (Owner/Manager) configures the organization and first building. This is the foundation for apartments, seats (members), and tenant invitations.",
+          bullets: [
+               "Create your first Building (address, city, building settings)",
+               "Add Apartments/Units and optionally attach owners/tenants later",
+               "Create Client Members (reserved seats) with specific permissions",
+               "Invite Tenants to apartments via email/phone/invite link",
+          ],
+          role: "Client",
+     },
+     {
+          id: "roles-and-permissions",
+          navLabel: "Roles & Permissions",
+          title: "Roles & Permissions",
+          description:
+               "NestLink is role-based by design. Permissions ensure people see only what they should and can perform only the actions assigned to them.",
+          bullets: [
+               "Client (Owner/Manager): subscription + configuration + full building management",
+               "Client Members: same dashboard, limited permissions (moderation/incidents/announcements/polls, etc.)",
+               "Tenants: mobile/web tenant experience (announcements, posts, polls, incident reporting, etc.)",
+          ],
+          role: "Platform",
+          tags: ["rbac", "security", "authorization"],
+     },
+
+     // -----------------------------
+     // Core modules
+     // -----------------------------
+     {
+          id: "buildings-apartments",
+          navLabel: "Buildings & Apartments",
+          title: "Buildings & Apartments",
+          description:
+               "Organize your community structure. Buildings contain apartments (units). Tenants are linked to apartments so permissions and visibility can be scoped correctly.",
+          bullets: [
+               "Create and edit buildings: address, status, amenities, configuration fields",
+               "Create apartments/units per building; track unit count and occupancy",
+               "Assign tenants to units (primary tenant, additional occupants)",
+               "Use building/unit scope for announcements, polls, incidents, and posts",
+          ],
+          role: "Client",
+          tags: ["structure", "units", "occupancy"],
+     },
+     {
+          id: "tenants-and-invites",
+          navLabel: "Tenants & Invitations",
+          title: "Tenants & Invitations",
+          description:
+               "Invite tenants to join and connect them to apartments. This enables tenant actions (poll voting, incident reporting, comments, etc.) and ensures the right people receive the right updates.",
+          bullets: [
+               "Invite tenants by email (and optionally phone number)",
+               "Link tenants to apartments and set primary/secondary status",
+               "Control what tenants can access based on unit/building membership",
+               "Handle re-invites and access resets cleanly",
+          ],
+          role: "Client",
+          tags: ["onboarding", "invites", "access"],
+     },
+     {
+          id: "announcements",
+          navLabel: "Announcements",
+          title: "Announcements",
+          description:
+               "Announcements are official messages for the building community. They are designed to replace fragmented chat threads with structured, searchable updates.",
+          bullets: [
+               "Create announcements scoped to a building (or specific audience if supported)",
+               "Include important details: what, when, who is affected, next steps",
+               "Tenants receive updates in-app (and optionally via other channels depending on setup)",
+               "Announcements remain searchable and auditable for later reference",
+          ],
+          role: "Platform",
+          tags: ["communication", "official", "updates"],
+     },
+     {
+          id: "posts-and-comments",
+          navLabel: "Posts & Comments",
+          title: "Posts & Comments (Community Feed)",
+          description:
+               "Posts are more conversational than announcements. Use them for community discussions, suggestions, questions, and informal communication between tenants and building staff.",
+          bullets: [
+               "Create posts with text and optional images (where enabled)",
+               "Comment threads keep context in one place",
+               "Like/react to posts and comments (optional feature depending on your implementation)",
+               "Moderation tools can be enabled for Client Members (remove/hide content)",
+          ],
+          role: "Platform",
+          tags: ["feed", "discussion", "moderation"],
+     },
+     {
+          id: "polls",
+          navLabel: "Polls & Voting",
+          title: "Polls & Voting",
+          description:
+               "Polls enable transparent decisions. Clients/Members create a poll, tenants vote, and results are tracked clearly. Perfect for repairs, budgets, contractor selection, and building rules.",
+          bullets: [
+               "Create polls with question, options, and voting window (open/close dates)",
+               "Track participation and outcomes in a transparent way",
+               "Restrict polls by building/audience rules as configured",
+               "Optionally enforce: one vote per tenant / per apartment (depends on your logic)",
+               "Archive results for accountability and future reference",
+          ],
+          role: "Platform",
+          tags: ["governance", "voting", "decisions"],
+     },
+     {
+          id: "incident-reporting",
+          navLabel: "Incidents & Service Requests",
+          title: "Incidents & Service Requests",
+          description:
+               "Tenants can report issues with details and photos. Client Members manage triage, status updates, and resolution. This creates a single source of truth for building problems.",
+          bullets: [
+               "Tenant submits report: category, description, location, urgency",
+               "Attach photos directly from mobile camera (where enabled)",
+               "Track status: submitted → in progress → resolved (example)",
+               "Assign responsibility to a member and keep notes/history",
+               "Close the incident with resolution details for transparency",
+          ],
+          role: "Platform",
+          tags: ["support", "maintenance", "camera"],
+     },
+     {
+          id: "notifications",
+          navLabel: "Notifications",
+          title: "Notifications",
+          description:
+               "Notifications keep everyone in sync. NestLink can notify tenants and members about announcements, poll events, incident status changes, and important activity.",
+          bullets: [
+               "In-app notifications for critical events",
+               "Push notifications for mobile users (when enabled)",
+               "Clear triggers: new announcement, poll opened/closed, incident update",
+               "Reduce missed information and unnecessary calls/messages",
+          ],
+          role: "Platform",
+          tags: ["push", "alerts", "updates"],
+     },
+
+     // -----------------------------
+     // Admin / product / billing
+     // -----------------------------
+     {
+          id: "subscriptions-and-billing",
+          navLabel: "Subscriptions & Billing",
+          title: "Subscriptions & Billing",
+          description:
+               "NestLink is subscription-based, commonly priced per apartment. Clients control plan status, renewal, and seat allocation for members.",
+          bullets: [
+               "Pay per apartment (scales with community size)",
+               "Add/remove member seats (reserved access for staff/team members)",
+               "Track subscription status (trial/active/inactive, if applicable to your system)",
+               "Centralized plan information for transparency",
+          ],
+          role: "Client",
+          tags: ["pricing", "plans", "seats"],
+     },
+     {
+          id: "member-seats",
+          navLabel: "Member Seats",
+          title: "Client Members (Reserved Seats)",
+          description:
+               "Reserved seats allow the Client to invite staff or committee members into the dashboard with controlled permissions. This helps you delegate moderation, incidents, and operations without sharing a super-admin account.",
+          bullets: [
+               "Invite members and assign role/permission sets",
+               "Give access only to needed modules (polls, announcements, incidents, moderation)",
+               "Audit actions by user (who created/edited/resolved)",
+               "Remove access quickly when someone leaves the team",
+          ],
+          role: "Client",
+          tags: ["delegation", "rbac", "team"],
+     },
+     {
+          id: "security",
+          navLabel: "Security",
+          title: "Security & Access Control",
+          description:
+               "NestLink is designed around least-privilege access and clear boundaries between clients, members, and tenants. Authentication flows can include modern security options depending on your setup.",
+          bullets: [
+               "Authentication and session management via your auth provider (e.g., Supabase Auth)",
+               "Optional 2FA (TOTP) for higher security accounts",
+               "Role-based authorization across dashboard and mobile",
+               "Data is scoped by client/building/apartment relations where configured",
+          ],
+          role: "Platform",
+          tags: ["auth", "2fa", "rls"],
+     },
+
+     // -----------------------------
+     // Links / integrations / API docs placeholders
+     // -----------------------------
+     // {
+     //      id: "api-authentication",
+     //      navLabel: "API: Authentication",
+     //      title: "API Reference: Authentication (Optional)",
+     //      description:
+     //           "If you expose APIs for integrations, authentication determines how requests are validated. Document this section based on your app’s real endpoints (tokens, session cookies, or service-to-service keys).",
+     //      bullets: [
+     //           "Use secure tokens (bearer tokens) or server-managed session cookies",
+     //           "Never expose admin keys in the browser",
+     //           "Scope API access by client/building as needed",
+     //      ],
+     //      role: "Platform",
+     //      tags: ["api", "security"],
+     // },
+     // {
+     //      id: "api-endpoints",
+     //      navLabel: "API: Endpoints",
+     //      title: "API Reference: Endpoints (Optional)",
+     //      description:
+     //           "List and document the endpoints your dashboard/mobile app relies on (or your server actions). Include request/response examples and required roles.",
+     //      bullets: [
+     //           "Document each endpoint: method, path, auth requirements, request body, response body",
+     //           "Include example errors and validation rules",
+     //           "Map endpoints to features (polls, announcements, incidents, tenants, buildings)",
+     //      ],
+     //      role: "Platform",
+     //      tags: ["api", "endpoints"],
+     // },
+     // {
+     //      id: "webhooks",
+     //      navLabel: "Webhooks",
+     //      title: "Webhooks (Optional)",
+     //      description:
+     //           "If you support outgoing webhooks (e.g., incident created, poll closed), document event types, payload format, and verification. If you don’t use webhooks yet, keep this as a placeholder for future integrations.",
+     //      bullets: [
+     //           "Define event types and payload schema",
+     //           "Sign/verify webhook requests (recommended)",
+     //           "Retry strategy and delivery logging",
+     //      ],
+     //      role: "Platform",
+     //      tags: ["integrations"],
+     // },
+
+     // -----------------------------
+     // FAQ
+     // -----------------------------
+     {
+          id: "faq",
+          navLabel: "FAQ",
+          title: "FAQ",
+          description: "Quick answers to common questions about using NestLink.",
+          bullets: [
+               "Is NestLink web-only or mobile-only? → Both (web dashboard + tenant mobile/web)",
+               "Can I limit what members can do? → Yes, permissions are role-based",
+               "How do incidents work? → Tenants submit; members manage status; resolution is tracked",
+               "How is pricing calculated? → Typically pay-per-apartment, plus optional member seats",
+          ],
+          role: "Platform",
+          tags: ["help"],
+     },
+]
+
+function groupForNav(s: DocSection) {
+     if (["getting-started", "installation", "setup", "roles-and-permissions"].includes(s.id)) return "Getting Started"
+     if (
+          [
+               "buildings-apartments",
+               "tenants-and-invites",
+               "announcements",
+               "posts-and-comments",
+               "polls",
+               "incident-reporting",
+               "notifications",
+          ].includes(s.id)
      )
+          return "Features"
+     if (["subscriptions-and-billing", "member-seats", "security"].includes(s.id)) return "Admin & Security"
+     if (["api-authentication", "api-endpoints", "webhooks"].includes(s.id)) return "API Reference"
+     if (s.id === "faq") return "FAQ"
+     return "Other"
+}
+
+function slugLink(id: string) {
+     return `/docs#${id}`
 }
 
 export const DocsPage = () => {
-     const [tabValue, setTabValue] = useState(0)
+     const [query, setQuery] = useState("")
+     const [copiedId, setCopiedId] = useState<string | null>(null)
 
-     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-          setTabValue(newValue)
+     const filtered = useMemo(() => {
+          const q = query.trim().toLowerCase()
+          if (!q) return sections
+          return sections.filter((s) => {
+               const hay = [
+                    s.title,
+                    s.description,
+                    s.navLabel,
+                    s.role ?? "",
+                    ...(s.bullets ?? []),
+                    ...(s.tags ?? []),
+                    s.id,
+               ]
+                    .join(" ")
+                    .toLowerCase()
+               return hay.includes(q)
+          })
+     }, [query])
+
+     const navGroups = useMemo(() => {
+          const map = new Map<string, DocSection[]>()
+          for (const s of filtered) {
+               const g = groupForNav(s)
+               map.set(g, [...(map.get(g) ?? []), s])
+          }
+          return Array.from(map.entries())
+     }, [filtered])
+
+     // ✅ Smooth scroll + header offset, including when you navigate directly to /docs#section
+     useEffect(() => {
+          const scrollToHash = () => {
+               const hash = window.location.hash?.replace("#", "")
+               if (!hash) return
+               const el = document.getElementById(hash)
+               if (!el) return
+
+               const y = el.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET_PX
+               window.scrollTo({ top: y, behavior: "smooth" })
+          }
+
+          scrollToHash()
+          window.addEventListener("hashchange", scrollToHash)
+          return () => window.removeEventListener("hashchange", scrollToHash)
+     }, [])
+
+     const handleCopyLink = async (id: string) => {
+          const full = `${window.location.origin}${slugLink(id)}`
+          try {
+               await navigator.clipboard.writeText(full)
+               setCopiedId(id)
+               setTimeout(() => setCopiedId(null), 1200)
+          } catch {
+               // fallback: do nothing
+          }
      }
 
      return (
-          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
+          <Box
+               sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    minHeight: "100vh",
+                    mt: 5,
+               }}
+          >
                <Animate>
+                    {/* HEADER */}
                     <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
                          <Container maxWidth="lg">
-                              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", py: 2 }}>
-                                   <Box sx={{ display: "flex", alignItems: "center" }}>
-                                        <DescriptionIcon sx={{ mr: 1 }} />
-                                        <Typography variant="h6">Documentation</Typography>
+                              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", py: 2, gap: 2 }}>
+                                   <Box sx={{ display: "flex", alignItems: "center", minWidth: 0 }}>
+                                        <MenuBookIcon sx={{ mr: 1 }} />
+                                        <Typography variant="h4" noWrap>
+                                             Docs
+                                        </Typography>
                                    </Box>
+
                                    <TextField
+                                        value={query}
+                                        onChange={(e) => setQuery(e.target.value)}
                                         placeholder="Search documentation..."
                                         variant="outlined"
                                         size="small"
-                                        sx={{ width: { xs: "100%", sm: 300 } }}
-                                        InputProps={{
-                                             startAdornment: (
-                                                  <InputAdornment position="start">
-                                                       <SearchIcon />
-                                                  </InputAdornment>
-                                             ),
+                                        sx={{ width: { xs: "100%", sm: 360 } }}
+                                        slotProps={{
+                                             input: {
+                                                  startAdornment: (
+                                                       <InputAdornment position="start">
+                                                            <SearchIcon />
+                                                       </InputAdornment>
+                                                  ),
+                                             },
                                         }}
                                    />
                               </Box>
                          </Container>
                     </Box>
 
+                    {/* MAIN */}
                     <Box component="main" sx={{ flexGrow: 1 }}>
                          <Container maxWidth="lg">
                               <Grid container spacing={4} sx={{ pt: 4 }}>
+                                   {/* LEFT NAV */}
                                    <Grid size={{ xs: 12, md: 3 }}>
                                         <Box
                                              component="nav"
@@ -89,244 +459,164 @@ export const DocsPage = () => {
                                                   top: { md: 24 },
                                                   height: { md: "calc(100vh - 180px)" },
                                                   overflowY: "auto",
+                                                  pr: { md: 1 },
                                              }}
                                         >
-                                             <Typography variant="h6" gutterBottom>
-                                                  Getting Started
-                                             </Typography>
-                                             <List dense disablePadding>
-                                                  <ListItem disablePadding>
-                                                       <MuiLink href="#installation" underline="hover" color="inherit">
-                                                            <ListItemText primary="Installation" />
-                                                       </MuiLink>
-                                                  </ListItem>
-                                                  <ListItem disablePadding>
-                                                       <MuiLink href="#setup" underline="hover" color="inherit">
-                                                            <ListItemText primary="Setup" />
-                                                       </MuiLink>
-                                                  </ListItem>
-                                                  <ListItem disablePadding>
-                                                       <MuiLink href="#first-steps" underline="hover" color="inherit">
-                                                            <ListItemText primary="First Steps" />
-                                                       </MuiLink>
-                                                  </ListItem>
-                                             </List>
+                                             {navGroups.map(([groupName, items]) => (
+                                                  <Box key={groupName} sx={{ mb: 3 }}>
+                                                       <Typography variant="h6" gutterBottom>
+                                                            {groupName}
+                                                       </Typography>
 
-                                             <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>
-                                                  Features
-                                             </Typography>
-                                             <List dense disablePadding>
-                                                  <ListItem disablePadding>
-                                                       <MuiLink href="#community-management" underline="hover" color="inherit">
-                                                            <ListItemText primary="Community Management" />
-                                                       </MuiLink>
-                                                  </ListItem>
-                                                  <ListItem disablePadding>
-                                                       <MuiLink href="#financial-tools" underline="hover" color="inherit">
-                                                            <ListItemText primary="Financial Tools" />
-                                                       </MuiLink>
-                                                  </ListItem>
-                                                  <ListItem disablePadding>
-                                                       <MuiLink href="#voting-system" underline="hover" color="inherit">
-                                                            <ListItemText primary="Voting System" />
-                                                       </MuiLink>
-                                                  </ListItem>
-                                                  <ListItem disablePadding>
-                                                       <MuiLink href="#notifications" underline="hover" color="inherit">
-                                                            <ListItemText primary="Notifications" />
-                                                       </MuiLink>
-                                                  </ListItem>
-                                             </List>
+                                                       <List dense disablePadding>
+                                                            {items.map((s) => (
+                                                                 <ListItem key={s.id} disablePadding sx={{ py: 0.25 }}>
+                                                                      <MuiLink href={`#${s.id}`} underline="hover" color="inherit" sx={{ width: "100%" }}>
+                                                                           <ListItemText
+                                                                                primary={s.navLabel}
+                                                                                primaryTypographyProps={{
+                                                                                     variant: "body2",
+                                                                                     sx: { lineHeight: 1.4 },
+                                                                                }}
+                                                                           />
+                                                                      </MuiLink>
+                                                                 </ListItem>
+                                                            ))}
+                                                       </List>
+                                                  </Box>
+                                             ))}
 
-                                             <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>
-                                                  API Reference
-                                             </Typography>
-                                             <List dense disablePadding>
-                                                  <ListItem disablePadding>
-                                                       <MuiLink href="#authentication" underline="hover" color="inherit">
-                                                            <ListItemText primary="Authentication" />
-                                                       </MuiLink>
-                                                  </ListItem>
-                                                  <ListItem disablePadding>
-                                                       <MuiLink href="#endpoints" underline="hover" color="inherit">
-                                                            <ListItemText primary="Endpoints" />
-                                                       </MuiLink>
-                                                  </ListItem>
-                                                  <ListItem disablePadding>
-                                                       <MuiLink href="#webhooks" underline="hover" color="inherit">
-                                                            <ListItemText primary="Webhooks" />
-                                                       </MuiLink>
-                                                  </ListItem>
-                                             </List>
-
-                                             <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>
-                                                  <MuiLink href="#faq" underline="hover" color="inherit">
-                                                       FAQ
-                                                  </MuiLink>
-                                             </Typography>
+                                             <Divider sx={{ my: 2 }} />
                                         </Box>
                                    </Grid>
 
+                                   {/* CONTENT */}
                                    <Grid size={{ xs: 12, md: 9 }}>
                                         <Box sx={{ typography: "body1" }}>
-                                             <Box id="getting-started">
-                                                  <Typography
-                                                       variant="h4"
-                                                       component="h2"
-                                                       gutterBottom
-                                                       sx={{ pb: 1, borderBottom: 1, borderColor: "divider" }}
+                                             {/* Intro note */}
+                                             <Alert variant="outlined" sx={{ mb: 3 }}>
+                                                  Every section has a stable anchor link. Example:{" "}
+                                                  <MuiLink href={slugLink("incident-reporting")} underline="hover">
+                                                       {slugLink("incident-reporting")}
+                                                  </MuiLink>
+                                                  . Use these links in the dashboard to deep-link and auto-scroll.
+                                             </Alert>
+
+                                             {filtered.map((s) => (
+                                                  <Paper
+                                                       key={s.id}
+                                                       id={s.id}
+                                                       elevation={0}
+                                                       sx={{
+                                                            p: { xs: 2, sm: 3 },
+                                                            mb: 3,
+                                                            border: "1px solid",
+                                                            borderColor: "divider",
+                                                            // ✅ makes native anchor jumps respect the header
+                                                            scrollMarginTop: `${HEADER_OFFSET_PX}px`,
+                                                       }}
                                                   >
-                                                       Getting Started
-                                                  </Typography>
-                                                  <Typography paragraph>
-                                                       Welcome to the NestLink documentation. This guide will help you get started with our platform
-                                                       and make the most of its features.
-                                                  </Typography>
+                                                       <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} alignItems={{ sm: "center" }}>
+                                                            <Stack direction="row" spacing={1} alignItems="center" sx={{ minWidth: 0, flexWrap: "wrap" }}>
+                                                                 <Typography variant="h5" component="h2" sx={{ fontWeight: 900 }}>
+                                                                      {s.title}
+                                                                 </Typography>
 
-                                                  <Typography variant="h5" component="h3" gutterBottom id="installation" sx={{ mt: 4 }}>
-                                                       Installation
-                                                  </Typography>
-                                                  <Typography paragraph>
-                                                       NestLink is a web-based platform, so there's no installation required. Simply sign up for an
-                                                       account and you can access it from any modern web browser.
-                                                  </Typography>
+                                                                 <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
+                                                                      {s.role && (
+                                                                           <Chip size="small" label={s.role} variant="outlined" sx={{ borderRadius: 999 }} />
+                                                                      )}
+                                                                      {(s.tags ?? []).slice(0, 4).map((t) => (
+                                                                           <Chip key={t} size="small" label={t} variant="outlined" sx={{ borderRadius: 999 }} />
+                                                                      ))}
+                                                                 </Stack>
+                                                            </Stack>
 
-                                                  <Typography variant="h5" component="h3" gutterBottom id="setup" sx={{ mt: 4 }}>
-                                                       Setup
-                                                  </Typography>
-                                                  <Typography paragraph>
-                                                       After signing up, you'll need to set up your community profile. This includes basic information
-                                                       about your residential community, such as:
-                                                  </Typography>
-                                                  <List>
-                                                       <ListItem>
-                                                            <ListItemText primary="Community name and address" />
-                                                       </ListItem>
-                                                       <ListItem>
-                                                            <ListItemText primary="Number of units/residents" />
-                                                       </ListItem>
-                                                       <ListItem>
-                                                            <ListItemText primary="Council member information" />
-                                                       </ListItem>
-                                                       <ListItem>
-                                                            <ListItemText primary="Community rules and bylaws" />
-                                                       </ListItem>
-                                                  </List>
+                                                            <Box sx={{ flex: 1 }} />
 
-                                                  <Typography variant="h5" component="h3" gutterBottom id="first-steps" sx={{ mt: 4 }}>
-                                                       First Steps
-                                                  </Typography>
-                                                  <Typography paragraph>Once your community is set up, you can:</Typography>
-                                                  <List>
-                                                       <ListItem>
-                                                            <ListItemText primary="1. Invite residents to join the platform" />
-                                                       </ListItem>
-                                                       <ListItem>
-                                                            <ListItemText primary="2. Set up your first announcement" />
-                                                       </ListItem>
-                                                       <ListItem>
-                                                            <ListItemText primary="3. Create a community event" />
-                                                       </ListItem>
-                                                       <ListItem>
-                                                            <ListItemText primary="4. Establish your financial accounts" />
-                                                       </ListItem>
-                                                  </List>
-                                             </Box>
+                                                            <Stack direction="row" spacing={1} alignItems="center">
+                                                                 <MuiLink
+                                                                      href={`#${s.id}`}
+                                                                      underline="hover"
+                                                                      color="inherit"
+                                                                      sx={{ display: "inline-flex", alignItems: "center", gap: 0.75 }}
+                                                                 >
+                                                                      <LinkIcon fontSize="small" />
+                                                                      <Typography variant="body2">{`#${s.id}`}</Typography>
+                                                                 </MuiLink>
 
-                                             <Box id="features" sx={{ mt: 6 }}>
-                                                  <Typography
-                                                       variant="h4"
-                                                       component="h2"
-                                                       gutterBottom
-                                                       sx={{ pb: 1, borderBottom: 1, borderColor: "divider" }}
-                                                  >
-                                                       Features
-                                                  </Typography>
+                                                                 <IconButton
+                                                                      size="small"
+                                                                      onClick={() => handleCopyLink(s.id)}
+                                                                      aria-label="Copy link"
+                                                                      title="Copy full link"
+                                                                 >
+                                                                      <ContentCopyIcon fontSize="small" />
+                                                                 </IconButton>
+                                                            </Stack>
+                                                       </Stack>
 
-                                                  <Typography variant="h5" component="h3" gutterBottom id="community-management" sx={{ mt: 4 }}>
-                                                       Community Management
-                                                  </Typography>
-                                                  <Typography paragraph>
-                                                       Our platform provides comprehensive tools for managing your residential community:
-                                                  </Typography>
-                                                  <List>
-                                                       <ListItem>
-                                                            <ListItemText primary="Resident directory with contact information" />
-                                                       </ListItem>
-                                                       <ListItem>
-                                                            <ListItemText primary="Document storage for community bylaws and rules" />
-                                                       </ListItem>
-                                                       <ListItem>
-                                                            <ListItemText primary="Event calendar for community gatherings" />
-                                                       </ListItem>
-                                                       <ListItem>
-                                                            <ListItemText primary="Announcement system for important updates" />
-                                                       </ListItem>
-                                                  </List>
+                                                       {copiedId === s.id && (
+                                                            <Typography variant="caption" color="success.main" sx={{ display: "block", mt: 1 }}>
+                                                                 Link copied ✅
+                                                            </Typography>
+                                                       )}
 
-                                                  <Paper sx={{ mt: 3, mb: 6 }}>
-                                                       <Tabs value={tabValue} onChange={handleTabChange} aria-label="example tabs">
-                                                            <Tab label="Example" />
-                                                            <Tab label="Code" />
-                                                       </Tabs>
-                                                       <TabPanel value={tabValue} index={0}>
-                                                            <Typography variant="subtitle2">Creating a new announcement:</Typography>
-                                                            <List>
-                                                                 <ListItem>
-                                                                      <ListItemText primary="1. Navigate to the Announcements section" />
-                                                                 </ListItem>
-                                                                 <ListItem>
-                                                                      <ListItemText primary="2. Click 'New Announcement'" />
-                                                                 </ListItem>
-                                                                 <ListItem>
-                                                                      <ListItemText primary="3. Fill in the title, content, and select recipients" />
-                                                                 </ListItem>
-                                                                 <ListItem>
-                                                                      <ListItemText primary="4. Choose notification methods (email, SMS, in-app)" />
-                                                                 </ListItem>
-                                                                 <ListItem>
-                                                                      <ListItemText primary="5. Click 'Publish'" />
-                                                                 </ListItem>
+                                                       <Typography paragraph sx={{ mt: 2, mb: 1.5, lineHeight: 1.75 }}>
+                                                            {s.description}
+                                                       </Typography>
+
+                                                       {s.bullets?.length ? (
+                                                            <List dense sx={{ mt: 0 }}>
+                                                                 {s.bullets.map((b) => (
+                                                                      <ListItem key={b} sx={{ py: 0.25 }}>
+                                                                           <ListItemText primary={b} />
+                                                                      </ListItem>
+                                                                 ))}
                                                             </List>
-                                                       </TabPanel>
-                                                       <TabPanel value={tabValue} index={1}>
-                                                            <Box
-                                                                 component="pre"
-                                                                 sx={{ p: 2, bgcolor: "background.paper", borderRadius: 1, overflow: "auto" }}
-                                                            >
-                                                                 <code>
-                                                                      {`// Example API call to create an announcement
-const createAnnouncement = async () => {
-  const response = await fetch('/api/announcements', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      title: 'Building Maintenance',
-      content: 'Water will be shut off on Friday from 10am-2pm',
-      recipients: 'all-residents',
-      notifyBy: ['email', 'app']
-    }),
-  });
-  
-  return response.json();
-};`}
-                                                                 </code>
-                                                            </Box>
-                                                       </TabPanel>
-                                                  </Paper>
+                                                       ) : null}
 
-                                                  {/* More documentation content would go here */}
-                                             </Box>
+                                                       <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} sx={{ mt: 2 }}>
+                                                            <Button
+                                                                 variant="outlined"
+                                                                 size="small"
+                                                                 startIcon={<LinkIcon />}
+                                                                 component="a"
+                                                                 href={slugLink(s.id)}
+                                                            >
+                                                                 Open link
+                                                            </Button>
+
+                                                            <Button
+                                                                 variant="text"
+                                                                 size="small"
+                                                                 startIcon={<ContentCopyIcon />}
+                                                                 onClick={() => handleCopyLink(s.id)}
+                                                            >
+                                                                 Copy link
+                                                            </Button>
+                                                       </Stack>
+                                                  </Paper>
+                                             ))}
+
+                                             {!filtered.length ? (
+                                                  <Paper sx={{ p: 3, border: "1px solid", borderColor: "divider" }} elevation={0}>
+                                                       <Typography variant="h6" sx={{ fontWeight: 900 }}>
+                                                            No results
+                                                       </Typography>
+                                                       <Typography color="text.secondary" sx={{ mt: 1 }}>
+                                                            Try a different search term (e.g. “polls”, “incidents”, “announcements”, “tenants”).
+                                                       </Typography>
+                                                  </Paper>
+                                             ) : null}
                                         </Box>
                                    </Grid>
                               </Grid>
                          </Container>
                     </Box>
                </Animate>
+
                <Toaster />
           </Box>
      )
 }
-

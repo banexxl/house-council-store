@@ -7,8 +7,6 @@ import {
      Container,
      Typography,
      Avatar,
-     Card,
-     CardContent,
      Grid,
      Chip,
      Stack,
@@ -24,9 +22,7 @@ import HowToRegIcon from '@mui/icons-material/HowToReg';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import PhoneIphoneIcon from '@mui/icons-material/PhoneIphone';
 import CameraAltIcon from '@mui/icons-material/CameraAlt';
-import ReportProblemIcon from '@mui/icons-material/ReportProblem';
 import PollIcon from '@mui/icons-material/Poll';
-import CampaignIcon from '@mui/icons-material/Campaign';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import CircularProgress from '@mui/material/CircularProgress';
 import Backdrop from '@mui/material/Backdrop';
@@ -34,44 +30,6 @@ import { useRouter } from 'next/navigation';
 import ParallaxSection from './components/paralax-section';
 import { motion } from 'framer-motion';
 import { Reveal, Stagger, itemVariants } from './components/motion';
-
-type BgImageSectionProps = {
-     backgroundImage: string;
-     children: React.ReactNode;
-     overlay?: boolean;
-};
-
-const BgImageSection = ({ backgroundImage, children, overlay = true }: BgImageSectionProps) => {
-     return (
-          <Box
-               sx={{
-                    position: 'relative',
-                    py: { xs: 7, md: 10 },
-                    backgroundImage: `url(${backgroundImage})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat',
-                    overflow: 'hidden',
-               }}
-          >
-               {overlay && (
-                    <Box
-                         sx={{
-                              position: 'absolute',
-                              inset: 0,
-                              // subtle dark overlay so text/cards stay readable
-                              background:
-                                   'linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.20) 40%, rgba(0,0,0,0.35) 100%)',
-                              zIndex: 0,
-                         }}
-                    />
-               )}
-
-               <Box sx={{ position: 'relative', zIndex: 1 }}>{children}</Box>
-          </Box>
-     );
-};
-
 
 const LandingPage = () => {
      const theme = useTheme();
