@@ -35,6 +35,44 @@ import ParallaxSection from './components/paralax-section';
 import { motion } from 'framer-motion';
 import { Reveal, Stagger, itemVariants } from './components/motion';
 
+type BgImageSectionProps = {
+     backgroundImage: string;
+     children: React.ReactNode;
+     overlay?: boolean;
+};
+
+const BgImageSection = ({ backgroundImage, children, overlay = true }: BgImageSectionProps) => {
+     return (
+          <Box
+               sx={{
+                    position: 'relative',
+                    py: { xs: 7, md: 10 },
+                    backgroundImage: `url(${backgroundImage})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                    overflow: 'hidden',
+               }}
+          >
+               {overlay && (
+                    <Box
+                         sx={{
+                              position: 'absolute',
+                              inset: 0,
+                              // subtle dark overlay so text/cards stay readable
+                              background:
+                                   'linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.20) 40%, rgba(0,0,0,0.35) 100%)',
+                              zIndex: 0,
+                         }}
+                    />
+               )}
+
+               <Box sx={{ position: 'relative', zIndex: 1 }}>{children}</Box>
+          </Box>
+     );
+};
+
+
 const LandingPage = () => {
      const theme = useTheme();
      const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -108,6 +146,7 @@ const LandingPage = () => {
 
      return (
           <Box>
+               {/* HERO */}
                <ParallaxSection backgroundImage="/background-images/background-image-3.png">
                     <Container
                          maxWidth="lg"
@@ -118,14 +157,10 @@ const LandingPage = () => {
                               // ✅ Push hero down on mobile so the fixed header doesn’t overlap it
                               pt: { xs: 'calc(56px + 24px)', sm: 'calc(64px + 24px)' },
                               pb: { xs: 6, md: 0 },
-                              mt: { xs: 56, md: 0 }
+                              mt: { xs: 56, md: 0 },
                          }}
                     >
-                         <Grid
-                              container
-                              spacing={{ xs: 3, sm: 4, md: 6 }}
-                              alignItems="center"
-                         >
+                         <Grid container spacing={{ xs: 3, sm: 4, md: 6 }} alignItems="center">
                               <Grid size={{ xs: 12, md: 7 }}>
                                    <Box
                                         sx={{
@@ -175,16 +210,13 @@ const LandingPage = () => {
                                                        }}
                                                   >
                                                        A subscription-based platform for house councils and building managers to run announcements, polls,
-                                                       tenant communication, and service/incident reporting — with role-based access for clients, members, and tenants.
+                                                       tenant communication, and service/incident reporting — with role-based access for clients, members,
+                                                       and tenants.
                                                   </Typography>
                                              </Reveal>
 
                                              <Reveal delay={0.18} y={12}>
-                                                  <Stack
-                                                       direction={{ xs: 'column', sm: 'row' }}
-                                                       spacing={2}
-                                                       sx={{ mt: 3 }}
-                                                  >
+                                                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 3 }}>
                                                        <Button
                                                             variant="contained"
                                                             size="large"
@@ -283,7 +315,7 @@ const LandingPage = () => {
                     }}
                />
 
-               {/* FEATURES with staggered slide-ins */}
+               {/* FEATURES (no background image) */}
                <Container
                     maxWidth="lg"
                     sx={{
@@ -325,12 +357,11 @@ const LandingPage = () => {
                                         overflowWrap: 'anywhere',
                                    }}
                               >
-                                   NestLink is a web dashboard + mobile app built around real building workflows: communication, governance,
-                                   and service/incident reporting — with clear roles and permissions.
+                                   NestLink is a web dashboard + mobile app built around real building workflows: communication, governance, and
+                                   service/incident reporting — with clear roles and permissions.
                               </Typography>
                          </Box>
                     </Reveal>
-
 
                     <Stagger>
                          <Grid container spacing={3}>
@@ -374,7 +405,10 @@ const LandingPage = () => {
                               ].map((item, idx) => (
                                    <Grid key={idx} size={{ xs: 12, sm: 6, md: 4 }}>
                                         <motion.div variants={itemVariants}>
-                                             <Box sx={{ ...glassSx, ...liftHoverSx, p: 3, height: '100%', minWidth: 0 }} onMouseMove={onMoveSheen}>
+                                             <Box
+                                                  sx={{ ...glassSx, ...liftHoverSx, p: 3, height: '100%', minWidth: 0 }}
+                                                  onMouseMove={onMoveSheen}
+                                             >
                                                   <Avatar sx={{ bgcolor: 'primary.main', mb: 2 }}>{item.icon}</Avatar>
                                                   <Typography variant="h6" gutterBottom sx={{ overflowWrap: 'anywhere' }}>
                                                        {item.title}
@@ -390,15 +424,47 @@ const LandingPage = () => {
                     </Stagger>
                </Container>
 
-               {/* ✅ PRODUCT WORKFLOWS (replaces your comment) */}
-               <Box sx={{ backgroundColor: '#f7f7f7' }}>
-                    <Container maxWidth="lg" sx={{ py: { xs: 7, md: 10 } }}>
+               {/* ✅ PRODUCT WORKFLOWS (WITH BACKGROUND IMAGE) */}
+               <Box
+                    sx={{
+                         position: 'relative',
+                         py: { xs: 7, md: 10 },
+                         backgroundImage: 'url(/background-images/background-image-2.png)',
+                         backgroundSize: 'cover',
+                         backgroundPosition: 'center',
+                         backgroundRepeat: 'no-repeat',
+                         overflow: 'hidden',
+                    }}
+               >
+                    <Box
+                         sx={{
+                              position: 'absolute',
+                              inset: 0,
+                              background:
+                                   'linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.20) 40%, rgba(0,0,0,0.35) 100%)',
+                              zIndex: 0,
+                         }}
+                    />
+
+                    <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
                          <Reveal>
                               <Box sx={{ textAlign: 'center', mb: 6 }}>
-                                   <Typography variant="h2" gutterBottom sx={{ overflowWrap: 'anywhere' }}>
+                                   <Typography
+                                        variant="h2"
+                                        gutterBottom
+                                        sx={{ overflowWrap: 'anywhere', color: 'common.white' }}
+                                   >
                                         Built around real building workflows
                                    </Typography>
-                                   <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 860, mx: 'auto', overflowWrap: 'anywhere' }}>
+                                   <Typography
+                                        variant="h6"
+                                        sx={{
+                                             maxWidth: 860,
+                                             mx: 'auto',
+                                             overflowWrap: 'anywhere',
+                                             color: 'rgba(255,255,255,0.82)',
+                                        }}
+                                   >
                                         Less chaos, fewer phone calls, more clarity. NestLink is structured so every request, decision, and update
                                         has a proper place.
                                    </Typography>
@@ -441,7 +507,10 @@ const LandingPage = () => {
                                    ].map((item, idx) => (
                                         <Grid key={idx} size={{ xs: 12, md: 6 }}>
                                              <motion.div variants={itemVariants}>
-                                                  <Box sx={{ ...glassSx, ...liftHoverSx, p: 3, height: '100%', minWidth: 0 }} onMouseMove={onMoveSheen}>
+                                                  <Box
+                                                       sx={{ ...glassSx, ...liftHoverSx, p: 3, height: '100%', minWidth: 0 }}
+                                                       onMouseMove={onMoveSheen}
+                                                  >
                                                        <Typography variant="h6" sx={{ fontWeight: 900, overflowWrap: 'anywhere' }}>
                                                             {item.title}
                                                        </Typography>
@@ -457,7 +526,7 @@ const LandingPage = () => {
                     </Container>
                </Box>
 
-               {/* ✅ PRICING TEASER */}
+               {/* ✅ PRICING TEASER (no background image) */}
                <Container maxWidth="lg" sx={{ py: { xs: 7, md: 10 } }}>
                     <Grid container spacing={{ xs: 3, md: 4 }} alignItems="stretch">
                          <Grid size={{ xs: 12, md: 6 }}>
@@ -466,16 +535,30 @@ const LandingPage = () => {
                                         <Typography variant="h4" sx={{ fontWeight: 900, overflowWrap: 'anywhere' }}>
                                              Simple pricing that scales with your building
                                         </Typography>
-                                        <Typography variant="body1" color="text.secondary" sx={{ mt: 1.5, lineHeight: 1.7, overflowWrap: 'anywhere' }}>
-                                             Pay per apartment — perfect for small buildings and scalable for larger communities.
-                                             Add member seats as needed and keep everything organized in one platform.
+                                        <Typography
+                                             variant="body1"
+                                             color="text.secondary"
+                                             sx={{ mt: 1.5, lineHeight: 1.7, overflowWrap: 'anywhere' }}
+                                        >
+                                             Pay per apartment — perfect for small buildings and scalable for larger communities. Add member seats as
+                                             needed and keep everything organized in one platform.
                                         </Typography>
 
                                         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 3 }}>
-                                             <Button variant="contained" size="large" onClick={() => handleNavClick('/pricing')} sx={{ minHeight: 48 }}>
+                                             <Button
+                                                  variant="contained"
+                                                  size="large"
+                                                  onClick={() => handleNavClick('/pricing')}
+                                                  sx={{ minHeight: 48 }}
+                                             >
                                                   View Plans
                                              </Button>
-                                             <Button variant="outlined" size="large" onClick={() => handleNavClick('/auth/register')} sx={{ minHeight: 48 }}>
+                                             <Button
+                                                  variant="outlined"
+                                                  size="large"
+                                                  onClick={() => handleNavClick('/auth/register')}
+                                                  sx={{ minHeight: 48 }}
+                                             >
                                                   Start Free Trial
                                              </Button>
                                         </Stack>
@@ -500,7 +583,16 @@ const LandingPage = () => {
                                                   'Role-based permissions for clients, members, tenants',
                                              ].map((t) => (
                                                   <Stack key={t} direction="row" spacing={1.5} alignItems="flex-start">
-                                                       <Box sx={{ mt: '4px', width: 8, height: 8, borderRadius: '999px', bgcolor: 'primary.main', flex: '0 0 auto' }} />
+                                                       <Box
+                                                            sx={{
+                                                                 mt: '4px',
+                                                                 width: 8,
+                                                                 height: 8,
+                                                                 borderRadius: '999px',
+                                                                 bgcolor: 'primary.main',
+                                                                 flex: '0 0 auto',
+                                                            }}
+                                                       />
                                                        <Typography variant="body2" color="text.secondary" sx={{ overflowWrap: 'anywhere' }}>
                                                             {t}
                                                        </Typography>
@@ -513,15 +605,43 @@ const LandingPage = () => {
                     </Grid>
                </Container>
 
-               {/* ✅ FAQ */}
-               <Box sx={{ backgroundColor: '#f7f7f7' }}>
-                    <Container maxWidth="lg" sx={{ py: { xs: 7, md: 10 } }}>
+               {/* ✅ FAQ (WITH BACKGROUND IMAGE) */}
+               <Box
+                    sx={{
+                         position: 'relative',
+                         py: { xs: 7, md: 10 },
+                         backgroundImage: 'url(/background-images/background-image-1.png)',
+                         backgroundSize: 'cover',
+                         backgroundPosition: 'center',
+                         backgroundRepeat: 'no-repeat',
+                         overflow: 'hidden',
+                    }}
+               >
+                    <Box
+                         sx={{
+                              position: 'absolute',
+                              inset: 0,
+                              background:
+                                   'linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.20) 40%, rgba(0,0,0,0.35) 100%)',
+                              zIndex: 0,
+                         }}
+                    />
+
+                    <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
                          <Reveal>
                               <Box sx={{ textAlign: 'center', mb: 6 }}>
-                                   <Typography variant="h2" gutterBottom sx={{ overflowWrap: 'anywhere' }}>
+                                   <Typography variant="h2" gutterBottom sx={{ overflowWrap: 'anywhere', color: 'common.white' }}>
                                         FAQ
                                    </Typography>
-                                   <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 860, mx: 'auto', overflowWrap: 'anywhere' }}>
+                                   <Typography
+                                        variant="h6"
+                                        sx={{
+                                             maxWidth: 860,
+                                             mx: 'auto',
+                                             overflowWrap: 'anywhere',
+                                             color: 'rgba(255,255,255,0.82)',
+                                        }}
+                                   >
                                         Quick answers to common questions.
                                    </Typography>
                               </Box>
@@ -565,22 +685,36 @@ const LandingPage = () => {
                     </Container>
                </Box>
 
-               {/* ✅ FINAL CTA */}
+               {/* ✅ FINAL CTA (no background image) */}
                <Container maxWidth="lg" sx={{ py: { xs: 7, md: 10 } }}>
                     <Reveal>
                          <Box sx={{ ...glassSx, p: { xs: 3, md: 4 }, textAlign: 'center' }} onMouseMove={onMoveSheen}>
                               <Typography variant="h3" sx={{ fontWeight: 950, overflowWrap: 'anywhere' }}>
                                    Ready to bring your tenants together?
                               </Typography>
-                              <Typography variant="h6" color="text.secondary" sx={{ mt: 1.5, maxWidth: 860, mx: 'auto', overflowWrap: 'anywhere' }}>
+                              <Typography
+                                   variant="h6"
+                                   color="text.secondary"
+                                   sx={{ mt: 1.5, maxWidth: 860, mx: 'auto', overflowWrap: 'anywhere' }}
+                              >
                                    Start your free trial and set up your first building in minutes.
                               </Typography>
 
                               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 3, justifyContent: 'center' }}>
-                                   <Button variant="contained" size="large" onClick={() => handleNavClick('/auth/register')} sx={{ minHeight: 48 }}>
+                                   <Button
+                                        variant="contained"
+                                        size="large"
+                                        onClick={() => handleNavClick('/auth/register')}
+                                        sx={{ minHeight: 48 }}
+                                   >
                                         Start Free Trial
                                    </Button>
-                                   <Button variant="outlined" size="large" onClick={() => handleNavClick('/pricing')} sx={{ minHeight: 48 }}>
+                                   <Button
+                                        variant="outlined"
+                                        size="large"
+                                        onClick={() => handleNavClick('/pricing')}
+                                        sx={{ minHeight: 48 }}
+                                   >
                                         See Pricing
                                    </Button>
                               </Stack>
@@ -591,8 +725,9 @@ const LandingPage = () => {
                <Backdrop sx={{ color: '#fff', zIndex: (t) => t.zIndex.drawer + 1 }} open={isPending}>
                     <CircularProgress sx={{ color: theme.palette.primary.main }} />
                </Backdrop>
-          </Box >
+          </Box>
      );
+
 
 };
 
