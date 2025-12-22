@@ -176,15 +176,6 @@ const LandingPage = () => {
                                              <Reveal delay={0.18} y={12}>
                                                   <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 3 }}>
                                                        <Button
-                                                            variant="contained"
-                                                            size="large"
-                                                            endIcon={<ArrowForwardIcon />}
-                                                            onClick={() => handleNavClick('/auth/register')}
-                                                            sx={{ minHeight: 48 }}
-                                                       >
-                                                            Start Free Trial
-                                                       </Button>
-                                                       <Button
                                                             variant="outlined"
                                                             size="large"
                                                             onClick={() => handleNavClick('/pricing')}
@@ -511,14 +502,6 @@ const LandingPage = () => {
                                              >
                                                   View Plans
                                              </Button>
-                                             <Button
-                                                  variant="outlined"
-                                                  size="large"
-                                                  onClick={() => handleNavClick('/auth/register')}
-                                                  sx={{ minHeight: 48 }}
-                                             >
-                                                  Start Free Trial
-                                             </Button>
                                         </Stack>
                                    </Box>
                               </Reveal>
@@ -659,14 +642,6 @@ const LandingPage = () => {
                               </Typography>
 
                               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 3, justifyContent: 'center' }}>
-                                   <Button
-                                        variant="contained"
-                                        size="large"
-                                        onClick={() => handleNavClick('/auth/register')}
-                                        sx={{ minHeight: 48 }}
-                                   >
-                                        Start Free Trial
-                                   </Button>
                                    <Button
                                         variant="outlined"
                                         size="large"
