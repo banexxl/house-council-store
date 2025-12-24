@@ -1,5 +1,3 @@
-'use server'
-
 import type { Metadata } from "next";
 import { getSessionUser } from "@/app/lib/get-session";
 import { Footer } from "@/app/components/footer";
@@ -18,15 +16,15 @@ import { buildCanonicalUrl } from "../lib/seo";
 const canonicalUrl = buildCanonicalUrl("/profile");
 
 export const metadata: Metadata = {
-  title: "Account Dashboard | NestLink",
-  description: "Manage your NestLink subscription, billing details, and tenant communications from your account dashboard.",
-  alternates: {
-    canonical: canonicalUrl,
-  },
-  robots: {
-    index: false,
-    follow: false,
-  },
+     title: "Account Dashboard | NestLink",
+     description: "Manage your NestLink subscription, billing details, and tenant communications from your account dashboard.",
+     alternates: {
+          canonical: canonicalUrl,
+     },
+     robots: {
+          index: false,
+          follow: false,
+     },
 };
 
 export default async function Page() {

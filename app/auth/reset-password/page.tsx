@@ -1,5 +1,3 @@
-'use server'
-
 import type { Metadata } from "next";
 import { getSessionUser } from "@/app/lib/get-session";
 import { Footer } from "@/app/components/footer";
