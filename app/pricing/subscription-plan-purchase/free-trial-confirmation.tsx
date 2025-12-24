@@ -89,20 +89,21 @@ export default function FreeTrialConfirmation({ subscriptionPlan, billingCycle, 
 
      if (hasUsedFreeTrial) {
           return (
-               <Container maxWidth="md" sx={{ py: 8 }}>
-                    <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
+               <Container component="main" maxWidth="md" sx={{ py: 8 }}>
+                    <Paper component="section" elevation={3} sx={{ p: 4, borderRadius: 2 }}>
                          <Alert severity="info" sx={{ mb: 4 }}>
-                              <Typography variant="h6">You've already used your free trial</Typography>
-                              <Typography variant="body2">
+                              <Typography component="h1" variant="h5">You've already used your free trial</Typography>
+                              <Typography component="p" variant="body2">
                                    Our records show that you've already used a free trial with this account. You can subscribe directly to
-                                   continue using our services.
+                                   continue using our services without interruption.
                               </Typography>
                          </Alert>
 
                          <Box sx={{ display: "flex", justifyContent: "space-between", mt: 4 }}>
                               <Button
+                                   component="a"
+                                   href={`/pricing/subscribe?plan_id=${subscriptionPlan.id}`}
                                    variant="contained"
-                                   onClick={() => router.push(`/pricing/subscribe?plan_id=${subscriptionPlan.id}`)}
                               >
                                    Subscribe Now
                               </Button>
@@ -113,31 +114,37 @@ export default function FreeTrialConfirmation({ subscriptionPlan, billingCycle, 
      }
 
      return (
-          <Container maxWidth="md" sx={{ py: 8 }}>
+          <Container component="main" maxWidth="md" sx={{ py: 8 }}>
                <Animate>
-                    <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
+                    <Paper component="section" elevation={3} sx={{ p: 4, borderRadius: 2 }}>
                          <Box sx={{ textAlign: "center", mb: 4 }}>
-                              <Typography variant="h4" gutterBottom sx={{ color: theme.palette.primary.main }}>
-                                   Start Your Free Trial
+                              <Typography component="h1" variant="h4" gutterBottom sx={{ color: theme.palette.primary.main }}>
+                                   Start Your House Council Free Trial
                               </Typography>
-                              <Typography variant="body1" color="text.secondary">
-                                   You're about to start a 30-day free trial of our <span style={{ color: theme.palette.primary.main }}>{subscriptionPlan.name}</span> subscription. No payment required during the trial period.
+                              <Typography component="p" variant="body1" color="text.secondary">
+                                   Review your plan details, trial end date, and first billing date before confirming your 30-day free trial. No payment is required during the trial period.
                               </Typography>
                          </Box>
 
                          <Divider sx={{ my: 3 }} />
 
-                         <Box sx={{ mb: 4 }}>
-                              <Typography variant="h5" gutterBottom>
+                         <Box component="section" aria-labelledby="plan-details-heading" sx={{ mb: 4 }}>
+                              <Typography id="plan-details-heading" component="h2" variant="h5" gutterBottom>
                                    Plan Details
                               </Typography>
 
                               <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                                   <Typography variant="h6" sx={{ mr: 2 }}>
+                                   <Typography component="h3" variant="h6" sx={{ mr: 2 }}>
                                         {subscriptionPlan.name} Plan
                                    </Typography>
                                    <Chip label="30-day free trial" color="primary" size="small" />
                               </Box>
+
+                              {subscriptionPlan.description && (
+                                   <Typography component="p" variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                        {subscriptionPlan.description}
+                                   </Typography>
+                              )}
 
                               <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 4, mb: 3 }}>
                                    <Box>
@@ -159,7 +166,7 @@ export default function FreeTrialConfirmation({ subscriptionPlan, billingCycle, 
                                    </Box>
                               </Box>
 
-                              <List>
+                              <List component="section" aria-label="Trial timeline">
                                    <ListItem>
                                         <ListItemIcon>
                                              <CalendarTodayIcon color="primary" />

@@ -103,7 +103,7 @@ const LandingPage = () => {
      };
 
      return (
-          <Box>
+          <Box component="main">
                {/* HERO */}
                <ParallaxSection backgroundImage="/background-images/background-image-3.png">
                     <Container
@@ -140,6 +140,7 @@ const LandingPage = () => {
                                         <Box sx={{ mt: 2 }}>
                                              <Reveal delay={0.05} y={22}>
                                                   <Typography
+                                                       component="h1"
                                                        variant={isMobile ? 'h3' : 'h1'}
                                                        sx={{
                                                             lineHeight: 1.08,
