@@ -428,7 +428,7 @@ export const DocsPage = () => {
                                    <TextField
                                         value={query}
                                         onChange={(e) => setQuery(e.target.value)}
-                                        placeholder="Search documentation..."
+                                        placeholder="Search docs..."
                                         variant="outlined"
                                         size="small"
                                         sx={{ width: { xs: "100%", sm: 360 } }}

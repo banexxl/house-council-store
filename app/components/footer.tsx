@@ -59,7 +59,7 @@ export const Footer = () => {
 
                   <ListItem disablePadding>
                     <ListItemButton onClick={() => handleNavClick("/docs")}>
-                      <ListItemText primary="Documentation" sx={{ color: theme.palette.primary.main }} />
+                      <ListItemText primary="Docs" sx={{ color: theme.palette.primary.main }} />
                     </ListItemButton>
                   </ListItem>
                 </List>

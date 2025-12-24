@@ -197,7 +197,7 @@ export default function SubscriptionSuccessPage({
                                              Need help? Check out our{" "}
                                              <Link href="/docs" passHref>
                                                   <Typography variant="body2" color="primary">
-                                                       documentation
+                                                       docs
                                                   </Typography>
                                              </Link>{" "}
                                              or{" "}
