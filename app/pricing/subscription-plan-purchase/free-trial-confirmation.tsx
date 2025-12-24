@@ -100,9 +100,6 @@ export default function FreeTrialConfirmation({ subscriptionPlan, billingCycle, 
                          </Alert>
 
                          <Box sx={{ display: "flex", justifyContent: "space-between", mt: 4 }}>
-                              <Button variant="outlined" onClick={() => router.push("/pricing")}>
-                                   Back to Subscriptions
-                              </Button>
                               <Button
                                    variant="contained"
                                    onClick={() => router.push(`/pricing/subscribe?plan_id=${subscriptionPlan.id}`)}
@@ -198,9 +195,6 @@ export default function FreeTrialConfirmation({ subscriptionPlan, billingCycle, 
                          </Alert>
 
                          <Box sx={{ display: "flex", justifyContent: "space-between", mt: 4 }}>
-                              <Button variant="outlined" onClick={() => router.push("/pricing")}>
-                                   Back to Subscriptions
-                              </Button>
                               <Button
                                    variant="contained"
                                    onClick={handleStartFreeTrial}
