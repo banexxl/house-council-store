@@ -19,13 +19,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html lang="en">
-      <head>
-        <title>NestLink - Residential Community Management</title>
-        <meta
-          name="description"
-          content="Simplify your house council management with our comprehensive platform."
-        />
-      </head>
       <body className={inter.className}>
         <ThemeProvider theme={theme}>
           <CssBaseline />

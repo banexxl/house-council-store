@@ -6,14 +6,10 @@ import { Header } from "@/app/components/header";
 import { Footer } from "@/app/components/footer";
 import { readAccountByEmailAction } from "@/app/profile/account-action";
 import { logServerAction } from "@/app/lib/server-logging";
+import { buildCanonicalUrl, getBaseUrl } from "@/app/lib/seo";
 
-const rawBaseUrl =
-     process.env.NEXT_PUBLIC_BASE_URL ||
-     process.env.BASE_URL ||
-     "https://www.apoteka-dar.rs";
-
-const baseUrl = rawBaseUrl.replace(/\/$/, "");
-const canonicalUrl = `${baseUrl}/pricing/subscription-plan-purchase`;
+const baseUrl = getBaseUrl();
+const canonicalUrl = buildCanonicalUrl("/pricing/subscription-plan-purchase");
 
 export const metadata: Metadata = {
      title: "Start Your Free Trial | House Council Subscription",

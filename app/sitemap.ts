@@ -1,9 +1,7 @@
 import type { MetadataRoute } from 'next';
+import { getBaseUrl } from './lib/seo';
 
-const rawBaseUrl =
-  process.env.NEXT_PUBLIC_BASE_URL!
-
-const baseUrl = rawBaseUrl.replace(/\/$/, '');
+const baseUrl = getBaseUrl();
 
 type RouteConfig = {
   path: string;

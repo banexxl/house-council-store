@@ -1,5 +1,3 @@
-'use server'
-
 import type { Metadata } from "next";
 import { getSessionUser } from "@/app/lib/get-session";
 import HomePage from "./home";
@@ -40,8 +38,22 @@ export default async function Page() {
 
   const user = await getSessionUser();
 
+  const organizationLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "NestLink",
+    url: canonicalUrl,
+    description:
+      "NestLink is a building communication platform for announcements, polls, incident reporting, and tenant engagement.",
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        // Organization structured data for brand/entity clarity in search
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationLd) }}
+      />
       <Header user={user ? user : null} />
       <HomePage />
       <Footer />
