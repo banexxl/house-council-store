@@ -57,7 +57,6 @@ interface PricingPageProps {
 }
 
 export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, clientSubscriptionPlanData }) => {
-
      const router = useRouter()
      const [billingCycle, setBillingCycle] = useState<"monthly" | "annually">("monthly")
      const [loading, setLoading] = useState(false)
@@ -136,12 +135,12 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
                                         // Optional: apply additional general discount on top (if business logic allows)
                                         const shouldApplyGeneralDiscount = hasGeneralDiscount && !(isAnnual && isBilledYearly);
                                         const finalPrice = shouldApplyGeneralDiscount
-                                             ? Math.round(basePrice * (1 - plan.discount_percentage / 100))
-                                             : Math.round(basePrice);
+                                             ? (basePrice * (1 - plan.discount_percentage / 100))
+                                             : basePrice
 
                                         // For original strikethrough price display
                                         const originalAnnualPrice = isAnnual && hasAnnualDiscount
-                                             ? Math.round((plan.total_price_per_apartment_with_discounts * 100) / (100 - plan.annual_discount_percentage))
+                                             ? ((plan.total_price_per_apartment_with_discounts * 100) / (100 - plan.annual_discount_percentage))
                                              : null;
 
                                         return (
@@ -159,7 +158,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
                                                                  <Typography variant="h3" display="block">
                                                                       ${finalPrice}
                                                                       <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
-                                                                           {isAnnual ? "/year" : "/month"}
+                                                                           {isAnnual ? "per apartment/year" : "per apartment/month"}
                                                                       </Typography>
                                                                  </Typography>
 
@@ -178,14 +177,14 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
                                                                  {/* Monthly equivalent for annual plans */}
                                                                  {isAnnual && isBilledYearly && (
                                                                       <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
-                                                                           Equivalent to ${Math.round((originalAnnualPrice ?? finalPrice) / 12)} / month before discount
+                                                                           Equivalent to ${((originalAnnualPrice ?? finalPrice) / 12)} / month before discount
                                                                       </Typography>
                                                                  )}
 
-                                                                 {/* Label for monthly-only plans */}
+                                                                 {/* Label for monthly plans */}
                                                                  {!isBilledYearly && (
                                                                       <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
-                                                                           Billed monthly only
+                                                                           Billed monthly
                                                                       </Typography>
                                                                  )}
 
