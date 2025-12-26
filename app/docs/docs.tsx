@@ -493,15 +493,6 @@ export const DocsPage = () => {
                                    {/* CONTENT */}
                                    <Grid size={{ xs: 12, md: 9 }}>
                                         <Box sx={{ typography: "body1" }}>
-                                             {/* Intro note */}
-                                             <Alert variant="outlined" sx={{ mb: 3 }}>
-                                                  Every section has a stable anchor link. Example:{" "}
-                                                  <MuiLink href={slugLink("incident-reporting")} underline="hover">
-                                                       {slugLink("incident-reporting")}
-                                                  </MuiLink>
-                                                  . Use these links in the dashboard to deep-link and auto-scroll.
-                                             </Alert>
-
                                              {filtered.map((s) => (
                                                   <Paper
                                                        key={s.id}
