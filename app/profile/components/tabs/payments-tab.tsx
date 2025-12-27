@@ -22,7 +22,7 @@ import {
 import DownloadIcon from "@mui/icons-material/Download"
 import { ClientBillingInformation } from "@/app/types/billing-information"
 import { Payment } from "@/app/types/payment"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { Client } from "@/app/types/client"
 import { User } from "@supabase/supabase-js"
 import toast from "react-hot-toast"
@@ -49,6 +49,59 @@ export default function PaymentsTab({ clientPayments, userData, clientSubscripti
      const handleOpen = () => setOpen(true)
      const [page, setPage] = useState(0)
      const [rowsPerPage, setRowsPerPage] = useState(5)
+     const [checkoutLoading, setCheckoutLoading] = useState(false);
+
+     const polarProductIds = useMemo(() => {
+          // Map your SubscriptionPlan to Polar product id(s)
+          // Example: store polar_product_id on SubscriptionPlan in DB ideally
+          const plan = clientSubscriptionObject?.subscription_plan;
+
+          if (!plan) return [];
+
+          // Replace with your mapping logic:
+          // e.g. plan.interval === "month" ? process.env.NEXT_PUBLIC_POLAR_PRODUCT_ID_MONTHLY : ...
+          if (clientSubscriptionObject.next_payment_date === "month") return [process.env.NEXT_PUBLIC_POLAR_PRODUCT_ID_MONTHLY!];
+          if (clientSubscriptionObject.next_payment_date === "year") return [process.env.NEXT_PUBLIC_POLAR_PRODUCT_ID_YEARLY!];
+
+          return [];
+     }, [clientSubscriptionObject]);
+
+     const startPolarCheckout = async () => {
+          try {
+               if (!clientSubscriptionObject) {
+                    toast.error("No active subscription plan selected.");
+                    return;
+               }
+
+               if (!polarProductIds.length) {
+                    toast.error("Missing Polar product mapping for this plan.");
+                    return;
+               }
+
+               setCheckoutLoading(true);
+
+               const res = await fetch("/api/polar/checkout", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                         clientId: userData.client.id,
+                         subscriptionPlanId: clientSubscriptionObject.subscription_plan_id,
+                         productIds: polarProductIds,
+                         successUrl: `${window.location.origin}/profile?tab=payments&polar=success`,
+                         returnUrl: `${window.location.origin}/profile?tab=payments`,
+                    }),
+               });
+
+               const data = await res.json();
+               if (!res.ok) throw new Error(data?.error ?? "Failed to create checkout");
+
+               window.location.href = data.url as string;
+          } catch (e: any) {
+               toast.error(e?.message ?? "Failed to start checkout");
+          } finally {
+               setCheckoutLoading(false);
+          }
+     };
 
      const handleClose = () => {
           setAmount("")
@@ -215,11 +268,12 @@ export default function PaymentsTab({ clientPayments, userData, clientSubscripti
 
                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <Button
-                         onClick={handleOpen}
+                         onClick={startPolarCheckout}
                          variant="outlined"
-                         disabled={!clientSubscriptionObject}
+                         disabled={!clientSubscriptionObject || checkoutLoading}
+                         loading={checkoutLoading}
                     >
-                         Make Payment
+                         Pay with Polar
                     </Button>
                     <Typography variant="body2" color="text.secondary">
                          Showing {Math.min((page + 1) * rowsPerPage, clientPayments.length)} of {clientPayments.length} payments

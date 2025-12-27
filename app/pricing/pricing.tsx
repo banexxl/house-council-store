@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useTransition } from "react"
+import React, { useMemo, useState, useTransition } from "react"
 import {
      Box,
      Button,
@@ -9,8 +9,8 @@ import {
      CardContent,
      Container,
      Paper,
-     Tab,
-     Tabs,
+     ToggleButton,
+     ToggleButtonGroup,
      Typography,
      List,
      ListItem,
@@ -58,9 +58,8 @@ interface PricingPageProps {
 
 export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, clientSubscriptionPlanData }) => {
      const router = useRouter()
-     const [billingCycle, setBillingCycle] = useState<"monthly" | "annually">("monthly")
-     const [loading, setLoading] = useState(false)
-     const [loadingIndex, setLoadingIndex] = useState<number | null>(null);
+     const [loadingKey, setLoadingKey] = useState<string | null>(null);
+     const [planBillingCycles, setPlanBillingCycles] = useState<Record<string, "monthly" | "annually">>({});
      const theme = useTheme()
 
      const [isPending, startTransition] = useTransition()
@@ -71,31 +70,36 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
           });
      };
 
-     const handleBillingCycleChange = (event: React.SyntheticEvent, newValue: "monthly" | "annually") => {
-          setBillingCycle(newValue)
-     }
-
-     const handleStartFreeTrial = (plan: SubscriptionPlan, index: number) => {
+     const handleStartFreeTrial = (plan: SubscriptionPlan, billingCycle: "monthly" | "annually") => {
 
           if (clientSubscriptionPlanData && clientSubscriptionPlanData.status === "trialing") {
                toast.error("You are currently in a free trial. Please wait for it to finish before starting a new one.")
                return
           }
 
-          setLoadingIndex(index);
+          const key = `${plan.id}-${billingCycle}`;
+          setLoadingKey(key);
           router.push(`/pricing/subscription-plan-purchase?plan_id=${plan.id}&billing_cycle=${billingCycle}`, {
                scroll: false,
           })
 
           setTimeout(() => {
-               setLoading(false)
-               setLoadingIndex(null)
+               setLoadingKey(null)
           }, 3000)
      }
 
-     // Determine if ANY plan supports annual billing
-     const hasAnnualPlans = subscriptionPlans.some((plan) => plan.is_billed_annually);
+     const handlePlanBillingCycleChange = (planKey: string, newValue: "monthly" | "annually" | null) => {
+          if (!newValue) return;
+          setPlanBillingCycles((prev) => ({ ...prev, [planKey]: newValue }));
+     }
 
+     const sortedPlans = useMemo(
+          () =>
+               [...subscriptionPlans].sort(
+                    (a, b) => (a.features?.length ?? 0) - (b.features?.length ?? 0)
+               ),
+          [subscriptionPlans]
+     );
 
      return (
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
@@ -111,118 +115,156 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
                                    </Typography>
                               </Box>
 
-                              {hasAnnualPlans && (
-                                   <Box sx={{ display: "flex", justifyContent: "center", mb: 6 }}>
-                                        <Tabs value={billingCycle} onChange={handleBillingCycleChange}>
-                                             <Tab label="Monthly" value="monthly" />
-                                             <Tab label="Annually (Save 10%)" value="annually" />
-                                        </Tabs>
-                                   </Box>
-                              )}
-
                               <Grid container spacing={4} justifyContent="center">
-                                   {subscriptionPlans.map((plan, index) => {
-                                        const isAnnual = billingCycle === "annually";
-                                        const isBilledYearly = plan.is_billed_annually;
-                                        const hasAnnualDiscount = plan.annual_discount_percentage > 0;
+                                   {sortedPlans.map((plan, index) => {
+                                        const planKey = plan.id ?? `plan-${index}`;
+                                        const supportsAnnualBilling = plan.is_billed_annually;
+                                        const hasAnnualDiscount = supportsAnnualBilling && plan.annual_discount_percentage > 0;
                                         const hasGeneralDiscount = plan.discount_percentage > 0;
 
-                                        // Use DB-calculated values
-                                        const basePrice = isAnnual
+                                        const selectedCycle = planBillingCycles[planKey] ?? "monthly";
+                                        const billingCycle = supportsAnnualBilling ? selectedCycle : "monthly";
+                                        const isAnnual = billingCycle === "annually";
+
+                                        const monthlyBasePrice = plan.monthly_total_price_per_apartment;
+                                        const monthlyPrice = hasGeneralDiscount
+                                             ? (monthlyBasePrice * (1 - plan.discount_percentage / 100))
+                                             : monthlyBasePrice;
+
+                                        const annualPrice = supportsAnnualBilling
                                              ? plan.total_price_per_apartment_with_discounts
-                                             : plan.monthly_total_price_per_apartment;
-
-                                        // Optional: apply additional general discount on top (if business logic allows)
-                                        const shouldApplyGeneralDiscount = hasGeneralDiscount && !(isAnnual && isBilledYearly);
-                                        const finalPrice = shouldApplyGeneralDiscount
-                                             ? (basePrice * (1 - plan.discount_percentage / 100))
-                                             : basePrice
-
-                                        // For original strikethrough price display
-                                        const originalAnnualPrice = isAnnual && hasAnnualDiscount
-                                             ? ((plan.total_price_per_apartment_with_discounts * 100) / (100 - plan.annual_discount_percentage))
                                              : null;
 
+                                        const originalAnnualPrice = isAnnual && hasAnnualDiscount && annualPrice
+                                             ? ((annualPrice * 100) / (100 - plan.annual_discount_percentage))
+                                             : null;
+
+                                        const displayedPrice = isAnnual && supportsAnnualBilling ? (annualPrice ?? 0) : monthlyPrice;
+                                        const priceSuffix = isAnnual && supportsAnnualBilling ? "per apartment/year" : "per apartment/month";
+                                        const buttonLabel = isAnnual && supportsAnnualBilling
+                                             ? `Start Annual${hasAnnualDiscount ? ` (Save ${plan.annual_discount_percentage}%)` : ""} Trial`
+                                             : "Start Monthly Trial";
+                                        const previousPlan = index > 0 ? sortedPlans[index - 1] : null;
+                                        const previousFeatures = previousPlan?.features ?? [];
+                                        const featuresToDisplay =
+                                             index === 0
+                                                  ? (plan.features ?? [])
+                                                  : (plan.features ?? []).filter((feature) => {
+                                                       const matchesById = previousFeatures.some((prev) => prev.id && prev.id === feature.id);
+                                                       const matchesByName = previousFeatures.some(
+                                                            (prev) => !prev.id && prev.name === feature.name
+                                                       );
+                                                       return !(matchesById || matchesByName);
+                                                  });
+
                                         return (
-                                             <Grid key={plan.id} size={{ xs: 12, sm: 6, md: 4 }}>
+                                             <Grid key={plan.id ?? planKey} size={{ xs: 12, sm: 6, md: 4 }}>
                                                   <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
                                                        <CardContent sx={{ flexGrow: 1 }}>
                                                             <Typography variant="h5" gutterBottom>
                                                                  {plan.name}
                                                             </Typography>
-                                                            <Typography variant="body2" color="text.secondary" gutterBottom>
+                                                            <Typography
+                                                                 variant="body2"
+                                                                 color="text.secondary"
+                                                                 gutterBottom
+                                                                 sx={{
+                                                                      minHeight: 140,
+                                                                      maxHeight: 160,
+                                                                      overflowY: "auto",
+                                                                 }}
+                                                            >
                                                                  {plan.description}
                                                             </Typography>
 
-                                                            <Box sx={{ my: 3 }}>
-                                                                 <Typography variant="h3" display="block">
-                                                                      ${finalPrice}
-                                                                      <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
-                                                                           {isAnnual ? "per apartment/year" : "per apartment/month"}
-                                                                      </Typography>
-                                                                 </Typography>
-
-                                                                 {/* Strikethrough original annual price */}
-                                                                 {originalAnnualPrice && (
-                                                                      <Typography
-                                                                           variant="body2"
-                                                                           color="text.secondary"
-                                                                           display="block"
-                                                                           sx={{ textDecoration: "line-through", mt: 0.5 }}
+                                                            <Box sx={{ my: 3, display: "flex", flexDirection: "column", gap: 2 }}>
+                                                                 {supportsAnnualBilling && (
+                                                                      <ToggleButtonGroup
+                                                                           size="small"
+                                                                           exclusive
+                                                                           value={billingCycle}
+                                                                           onChange={(_, value) => handlePlanBillingCycleChange(planKey, value)}
                                                                       >
-                                                                           ${originalAnnualPrice} /year
-                                                                      </Typography>
+                                                                           <ToggleButton value="monthly">Monthly</ToggleButton>
+                                                                           <ToggleButton value="annually">Annually</ToggleButton>
+                                                                      </ToggleButtonGroup>
                                                                  )}
 
-                                                                 {/* Monthly equivalent for annual plans */}
-                                                                 {isAnnual && isBilledYearly && (
-                                                                      <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
-                                                                           Equivalent to ${((originalAnnualPrice ?? finalPrice) / 12)} / month before discount
+                                                                 <Paper variant="outlined" sx={{ p: 2 }}>
+                                                                      <Typography variant="subtitle2" color="text.secondary">
+                                                                           {isAnnual && supportsAnnualBilling ? "Annual billing" : "Monthly billing"}
                                                                       </Typography>
-                                                                 )}
-
-                                                                 {/* Label for monthly plans */}
-                                                                 {!isBilledYearly && (
-                                                                      <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
-                                                                           Billed monthly
+                                                                      <Typography variant="h4" display="block">
+                                                                           ${displayedPrice}
+                                                                           <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                                                                                {priceSuffix}
+                                                                           </Typography>
                                                                       </Typography>
-                                                                 )}
-
-                                                                 {/* Discount tags */}
-                                                                 {hasAnnualDiscount && isAnnual && (
-                                                                      <Typography variant="caption" color={theme.palette.primary.main} display="block" sx={{ mt: 0.5 }}>
-                                                                           Annual discount: {plan.annual_discount_percentage}% off
-                                                                      </Typography>
-                                                                 )}
-
-                                                                 {hasGeneralDiscount && shouldApplyGeneralDiscount && (
-                                                                      <Typography variant="caption" color={theme.palette.primary.main} display="block" sx={{ mt: 0.5 }}>
-                                                                           Extra discount: {plan.discount_percentage}% off applied
-                                                                      </Typography>
-                                                                 )}
+                                                                      {originalAnnualPrice && (
+                                                                           <Typography
+                                                                                variant="body2"
+                                                                                color="text.secondary"
+                                                                                display="block"
+                                                                                sx={{ textDecoration: "line-through", mt: 0.5 }}
+                                                                           >
+                                                                                ${originalAnnualPrice.toFixed(2)} /year before discount
+                                                                           </Typography>
+                                                                      )}
+                                                                      {isAnnual && supportsAnnualBilling && (
+                                                                           <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
+                                                                                Equivalent to ${((displayedPrice ?? 0) / 12).toFixed(2)} / month
+                                                                           </Typography>
+                                                                      )}
+                                                                      {isAnnual && supportsAnnualBilling && hasAnnualDiscount && (
+                                                                           <Typography variant="caption" color={theme.palette.primary.main} display="block" sx={{ mt: 0.5 }}>
+                                                                                Annual discount: {plan.annual_discount_percentage}% off
+                                                                           </Typography>
+                                                                      )}
+                                                                      {!isAnnual && hasGeneralDiscount && (
+                                                                           <Typography variant="caption" color={theme.palette.primary.main} display="block" sx={{ mt: 0.5 }}>
+                                                                                Includes {plan.discount_percentage}% discount
+                                                                           </Typography>
+                                                                      )}
+                                                                      {!supportsAnnualBilling && (
+                                                                           <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
+                                                                                Billed monthly
+                                                                           </Typography>
+                                                                      )}
+                                                                 </Paper>
                                                             </Box>
 
+                                                            {index > 0 && (
+                                                                 <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: "block" }}>
+                                                                      All of the {previousPlan?.name ?? "previous"} features plus:
+                                                                 </Typography>
+                                                            )}
+
                                                             <List dense>
-                                                                 {plan.features?.map((feature: Feature) => (
-                                                                      <ListItem key={feature.id} disablePadding sx={{ py: 0.5 }}>
+                                                                 {featuresToDisplay.map((feature: Feature) => (
+                                                                      <ListItem key={feature.id ?? feature.name} disablePadding sx={{ py: 0.5 }}>
                                                                            <ListItemIcon sx={{ minWidth: 32 }}>
                                                                                 <CheckIcon color="primary" fontSize="small" />
                                                                            </ListItemIcon>
                                                                            <ListItemText primary={feature.name} />
                                                                       </ListItem>
                                                                  ))}
+                                                                 {featuresToDisplay.length === 0 && (
+                                                                      <ListItem disablePadding sx={{ py: 0.5 }}>
+                                                                           <ListItemText primary="No additional features" />
+                                                                      </ListItem>
+                                                                 )}
                                                             </List>
                                                        </CardContent>
 
-                                                       <CardActions sx={{ p: 2, pt: 0 }}>
+                                                       <CardActions sx={{ p: 2, pt: 0, display: "flex", flexDirection: "column", gap: 1 }}>
                                                             <Button
                                                                  variant="contained"
                                                                  fullWidth
-                                                                 onClick={() => handleStartFreeTrial(plan, index)}
-                                                                 disabled={loadingIndex !== null && loadingIndex !== index}
-                                                                 loading={loadingIndex === index}
+                                                                 onClick={() => handleStartFreeTrial(plan, billingCycle)}
+                                                                 disabled={loadingKey !== null && loadingKey !== `${plan.id}-${billingCycle}`}
+                                                                 startIcon={loadingKey === `${plan.id}-${billingCycle}` ? <CircularProgress size={20} color="inherit" /> : undefined}
                                                             >
-                                                                 Start Free Trial
+                                                                 {buttonLabel}
                                                             </Button>
                                                        </CardActions>
                                                   </Card>
