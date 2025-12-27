@@ -54,9 +54,10 @@ const faqs = [
 interface PricingPageProps {
      subscriptionPlans: SubscriptionPlan[]
      clientSubscriptionPlanData?: ClientSubscription & { subscription_plan: SubscriptionPlan } | null
+     apartmentCount?: number
 }
 
-export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, clientSubscriptionPlanData }) => {
+export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, clientSubscriptionPlanData, apartmentCount }) => {
      const router = useRouter()
      const [loadingKey, setLoadingKey] = useState<string | null>(null);
      const [planBillingCycles, setPlanBillingCycles] = useState<Record<string, "monthly" | "annually">>({});
@@ -112,6 +113,9 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
                                    </Typography>
                                    <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 700, mx: "auto" }}>
                                         Choose the plan that's right for your community. All plans include a 30-day free trial.
+                                   </Typography>
+                                   <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 700, mx: "auto", mt: 1 }}>
+                                        Pricing is billed per apartment. {apartmentCount !== undefined ? `You currently have ${apartmentCount} apartment${apartmentCount === 1 ? "" : "s"} on your account.` : "Sign in to see your apartment count."}
                                    </Typography>
                               </Box>
 

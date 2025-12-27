@@ -4,7 +4,7 @@ import { getSessionUser } from "@/app/lib/get-session";
 import { Footer } from "@/app/components/footer";
 import { Header } from "@/app/components/header";
 import { PricingPage } from "./pricing";
-import { readSubscriptionPlansByStatus, readClientSubscriptionPlanFromClientId } from "../profile/subscription-plan-actions";
+import { readSubscriptionPlansByStatus, readClientSubscriptionPlanFromClientId, getApartmentCountForClient } from "../profile/subscription-plan-actions";
 import { logServerAction } from "../lib/server-logging";
 import { readAccountByEmailAction } from "../profile/account-action";
 import { buildCanonicalUrl } from "@/app/lib/seo";
@@ -41,11 +41,17 @@ export default async function Page() {
   const { client, error } = await readAccountByEmailAction(user?.email!);
   const { subscriptionPlanData } = await readSubscriptionPlansByStatus('active')
   const { clientSubscriptionPlanData } = await readClientSubscriptionPlanFromClientId(client?.id!)
+  const apartmentCountResult = client?.id ? await getApartmentCountForClient(client.id) : { success: false };
+  const apartmentCount = apartmentCountResult.success ? apartmentCountResult.apartmentCount ?? 0 : undefined;
 
   return (
     <>
       <Header user={user ? user : null} />
-      <PricingPage subscriptionPlans={subscriptionPlanData || []} clientSubscriptionPlanData={clientSubscriptionPlanData} />
+      <PricingPage
+        subscriptionPlans={subscriptionPlanData || []}
+        clientSubscriptionPlanData={clientSubscriptionPlanData}
+        apartmentCount={apartmentCount}
+      />
       <Footer />
     </>
 

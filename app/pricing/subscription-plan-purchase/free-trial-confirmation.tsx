@@ -146,8 +146,8 @@ export default function FreeTrialConfirmation({ subscriptionPlan, billingCycle, 
                                    </Typography>
                               )}
 
-                              <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 4, mb: 3 }}>
-                                   <Box>
+                             <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 4, mb: 3 }}>
+                                  <Box>
                                         <Typography variant="subtitle2" color="text.secondary">
                                              Price after trial
                                         </Typography>
@@ -156,17 +156,43 @@ export default function FreeTrialConfirmation({ subscriptionPlan, billingCycle, 
                                                   ? subscriptionPlan.monthly_total_price_per_apartment
                                                   : subscriptionPlan.total_price_per_apartment_with_discounts}
                                         </Typography>
-                                   </Box>
+                                  </Box>
 
-                                   <Box>
+                                  <Box>
                                         <Typography variant="subtitle2" color="text.secondary">
                                              Billing cycle
                                         </Typography>
                                         <Typography variant="h6" sx={{ mb: 1, color: theme.palette.primary.main, fontWeight: 700 }}>{billingCycle.toUpperCase()}</Typography>
-                                   </Box>
+                                  </Box>
+                             </Box>
+
+                              <Box sx={{ mb: 3, p: 2, border: `1px solid ${theme.palette.divider}`, borderRadius: 1 }}>
+                                   <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+                                        Billing is per apartment
+                                   </Typography>
+                                   <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                                        You will be charged {billingCycle === "monthly" ? "each month" : "once per year"} for every apartment on your account.
+                                   </Typography>
+                                   <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
+                                        Per-apartment rate: ${billingCycle === "monthly" ? subscriptionPlan.monthly_total_price_per_apartment : subscriptionPlan.total_price_per_apartment_with_discounts} {billingCycle === "monthly" ? "/ month" : "/ year"}
+                                   </Typography>
+                                   <Typography variant="body2" color="text.secondary">
+                                        Examples:
+                                   </Typography>
+                                   {[10, 20, 50].map((count) => {
+                                        const unit = billingCycle === "monthly"
+                                             ? subscriptionPlan.monthly_total_price_per_apartment
+                                             : subscriptionPlan.total_price_per_apartment_with_discounts;
+                                        const total = (unit || 0) * count;
+                                        return (
+                                             <Typography key={count} variant="body2" color="text.secondary">
+                                                  • {count} apartments → ${total.toFixed(2)} {billingCycle === "monthly" ? "per month" : "per year"}
+                                             </Typography>
+                                        );
+                                   })}
                               </Box>
 
-                              <List component="section" aria-label="Trial timeline">
+                             <List component="section" aria-label="Trial timeline">
                                    <ListItem>
                                         <ListItemIcon>
                                              <CalendarTodayIcon color="primary" />

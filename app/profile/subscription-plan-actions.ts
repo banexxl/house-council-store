@@ -365,3 +365,75 @@ export const readClientSubscriptionPlanFromClientId = async (clientId: string): 
      return { success: true, clientSubscriptionPlanData };
 
 }
+
+export const getApartmentCountForClient = async (clientId: string): Promise<{ success: boolean, apartmentCount?: number, error?: string }> => {
+     if (!clientId) {
+          return { success: false, error: "Client ID is required" };
+     }
+     const supabase = await useServerSideSupabaseAnonClient();
+     const userId = (await supabase.auth.getUser()).data.user?.id;
+
+     // Fetch building ids for the client
+     const { data: buildings, error: buildingError } = await supabase
+          .from("tblBuildings")
+          .select("id")
+          .eq("client_id", clientId);
+
+     if (buildingError) {
+          await logServerAction({
+               user_id: userId ?? '',
+               action: "Get Apartment Count - Buildings",
+               payload: { clientId },
+               status: "fail",
+               error: buildingError.message,
+               duration_ms: 0,
+               type: "db",
+          });
+          return { success: false, error: buildingError.message };
+     }
+
+     const buildingIds = (buildings ?? []).map((b: { id: string }) => b.id);
+
+     if (!buildingIds.length) {
+          await logServerAction({
+               user_id: userId ?? '',
+               action: "Get Apartment Count - Buildings",
+               payload: { clientId },
+               status: "success",
+               error: "",
+               duration_ms: 0,
+               type: "db",
+          });
+          return { success: true, apartmentCount: 0 };
+     }
+
+     const { count, error: apartmentError } = await supabase
+          .from("tblApartments")
+          .select("id", { count: "exact", head: true })
+          .in("building_id", buildingIds);
+
+     if (apartmentError) {
+          await logServerAction({
+               user_id: userId ?? '',
+               action: "Get Apartment Count - Apartments",
+               payload: { clientId, buildingIds },
+               status: "fail",
+               error: apartmentError.message,
+               duration_ms: 0,
+               type: "db",
+          });
+          return { success: false, error: apartmentError.message };
+     }
+
+     await logServerAction({
+          user_id: userId ?? '',
+          action: "Get Apartment Count - Apartments",
+          payload: { clientId, buildingCount: buildingIds.length },
+          status: "success",
+          error: "",
+          duration_ms: 0,
+          type: "db",
+     });
+
+     return { success: true, apartmentCount: count ?? 0 };
+}
