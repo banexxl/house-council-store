@@ -31,6 +31,7 @@ import { useRouter } from "next/navigation"
 import Animate from "@/app/components/animation-framer-motion"
 import CircularProgress from '@mui/material/CircularProgress';
 import Backdrop from '@mui/material/Backdrop';
+import { Client } from "../types/client"
 
 const faqs = [
      {
@@ -55,14 +56,14 @@ interface PricingPageProps {
      subscriptionPlans: SubscriptionPlan[]
      clientSubscriptionPlanData?: ClientSubscription & { subscription_plan: SubscriptionPlan } | null
      apartmentCount?: number
+     client?: Client | null
 }
 
-export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, clientSubscriptionPlanData, apartmentCount }) => {
+export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, clientSubscriptionPlanData, apartmentCount, client }) => {
      const router = useRouter()
      const [loadingKey, setLoadingKey] = useState<string | null>(null);
      const [planBillingCycles, setPlanBillingCycles] = useState<Record<string, "monthly" | "annually">>({});
      const theme = useTheme()
-
      const [isPending, startTransition] = useTransition()
 
      const handleNavClick = (path: string) => {
@@ -72,22 +73,8 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
      };
 
      const handleStartFreeTrial = (plan: SubscriptionPlan, billingCycle: "monthly" | "annually") => {
-
-          if (clientSubscriptionPlanData && clientSubscriptionPlanData.status === "trialing") {
-               toast.error("You are currently in a free trial. Please wait for it to finish before starting a new one.")
-               return
-          }
-
-          const key = `${plan.id}-${billingCycle}`;
-          setLoadingKey(key);
-          router.push(`/pricing/subscription-plan-purchase?plan_id=${plan.id}&billing_cycle=${billingCycle}`, {
-               scroll: false,
-          })
-
-          setTimeout(() => {
-               setLoadingKey(null)
-          }, 3000)
-     }
+          void startPolarCheckout(plan, billingCycle);
+     };
 
      const handlePlanBillingCycleChange = (planKey: string, newValue: "monthly" | "annually" | null) => {
           if (!newValue) return;
@@ -101,6 +88,61 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
                ),
           [subscriptionPlans]
      );
+
+     const startPolarCheckout = async (plan: SubscriptionPlan, billingCycle: "monthly" | "annually") => {
+
+          if (!client?.id) {
+               toast.error("Please sign in to start a trial.");
+               router.push("/auth/sign-in");
+               return;
+          }
+
+          if (clientSubscriptionPlanData && clientSubscriptionPlanData.status === "trialing") {
+               toast.error("You are currently in a free trial. Please wait for it to finish before starting a new one.");
+               return;
+          }
+
+          const key = `${plan.id}-${billingCycle}`;
+          setLoadingKey(key);
+
+          try {
+               const successUrl = `${window.location.origin}/pricing/subscription-plan-purchase/success`;
+               const returnUrl = `${window.location.origin}/pricing`;
+
+               const res = await fetch("/api/polar/", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                         clientId: client.id!,
+                         subscriptionPlanId: plan.id,
+                         renewal_period: billingCycle, // or "renewalPeriod" depending on your API
+                         successUrl,
+                         returnUrl,
+                         productIds: billingCycle === "annually"
+                              ? [plan.polar_product_id_annually]
+                              : [plan.polar_product_id_monthly],
+                    }),
+               });
+
+               const data = await res.json();
+
+               if (!res.ok) {
+                    throw new Error(data?.error || "Failed to create checkout session.");
+               }
+
+               if (!data?.url) {
+                    throw new Error("Checkout URL missing from response.");
+               }
+
+               // ✅ Redirect to Polar Checkout
+               window.location.href = data.url;
+          } catch (err: any) {
+               console.error(err);
+               toast.error(err?.message || "Could not start checkout. Please try again.");
+               setLoadingKey(null);
+          }
+     };
+
 
      return (
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
@@ -125,10 +167,12 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
                                         const supportsAnnualBilling = plan.is_billed_annually;
                                         const hasAnnualDiscount = supportsAnnualBilling && plan.annual_discount_percentage > 0;
                                         const hasGeneralDiscount = plan.discount_percentage > 0;
-
                                         const selectedCycle = planBillingCycles[planKey] ?? "monthly";
                                         const billingCycle = supportsAnnualBilling ? selectedCycle : "monthly";
                                         const isAnnual = billingCycle === "annually";
+                                        const key = `${plan.id}-${billingCycle}`;
+                                        const isThisLoading = loadingKey === key;
+                                        const isAnyLoading = loadingKey !== null;
 
                                         const monthlyBasePrice = plan.monthly_total_price_per_apartment;
                                         const monthlyPrice = hasGeneralDiscount
@@ -146,8 +190,8 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
                                         const displayedPrice = isAnnual && supportsAnnualBilling ? (annualPrice ?? 0) : monthlyPrice;
                                         const priceSuffix = isAnnual && supportsAnnualBilling ? "per apartment/year" : "per apartment/month";
                                         const buttonLabel = isAnnual && supportsAnnualBilling
-                                             ? `Start Annual${hasAnnualDiscount ? ` (Save ${plan.annual_discount_percentage}%)` : ""} Trial`
-                                             : "Start Monthly Trial";
+                                             ? `Start ${hasAnnualDiscount ? ` (Save ${plan.annual_discount_percentage}%)` : ""} Trial`
+                                             : "Start Trial";
                                         const previousPlan = index > 0 ? sortedPlans[index - 1] : null;
                                         const previousFeatures = previousPlan?.features ?? [];
                                         const featuresToDisplay =
@@ -265,10 +309,10 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
                                                                  variant="contained"
                                                                  fullWidth
                                                                  onClick={() => handleStartFreeTrial(plan, billingCycle)}
-                                                                 disabled={loadingKey !== null && loadingKey !== `${plan.id}-${billingCycle}`}
-                                                                 startIcon={loadingKey === `${plan.id}-${billingCycle}` ? <CircularProgress size={20} color="inherit" /> : undefined}
+                                                                 disabled={isAnyLoading && !isThisLoading}
+                                                                 startIcon={isThisLoading ? <CircularProgress size={20} color="inherit" /> : undefined}
                                                             >
-                                                                 {buttonLabel}
+                                                                 {isThisLoading ? "Redirecting..." : buttonLabel}
                                                             </Button>
                                                        </CardActions>
                                                   </Card>

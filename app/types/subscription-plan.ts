@@ -15,7 +15,9 @@ export type SubscriptionPlan = {
      features?: Feature[];
      base_price: number;
      monthly_total_price_per_apartment: number;
-     total_price_per_apartment_with_discounts: number; // optional, calculated field
+     total_price_per_apartment_with_discounts: number;
+     polar_product_id_monthly: string;
+     polar_product_id_annually: string;
 };
 
 export const subscriptionPlanInitialValues: SubscriptionPlan = {
@@ -31,7 +33,9 @@ export const subscriptionPlanInitialValues: SubscriptionPlan = {
      features: [],
      base_price: 0,
      monthly_total_price_per_apartment: 0,
-     total_price_per_apartment_with_discounts: 0
+     total_price_per_apartment_with_discounts: 0,
+     polar_product_id_monthly: '',
+     polar_product_id_annually: ''
 };
 
 export const subscriptionPlanValidationSchema = Yup.object({

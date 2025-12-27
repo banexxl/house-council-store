@@ -51,6 +51,7 @@ export default async function Page() {
         subscriptionPlans={subscriptionPlanData || []}
         clientSubscriptionPlanData={clientSubscriptionPlanData}
         apartmentCount={apartmentCount}
+        client={client || null}
       />
       <Footer />
     </>
