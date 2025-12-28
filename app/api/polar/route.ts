@@ -6,15 +6,17 @@ export const runtime = "nodejs";
 export async function POST(req: Request) {
      try {
           const body = await req.json();
-          const { clientId, subscriptionPlanId, successUrl, returnUrl, productIds } = body as {
+          const { clientId, subscriptionPlanId, renewal_period, successUrl, returnUrl, productIds, amount } = body as {
                clientId: string;
                subscriptionPlanId: string;
+               renewal_period: "monthly" | "annually";
                successUrl: string;
                returnUrl: string;
                productIds: string[];
+               amount: number;
           };
 
-          if (!clientId || !subscriptionPlanId || !successUrl || !returnUrl || !productIds?.length) {
+          if (!clientId || !subscriptionPlanId || !successUrl || !returnUrl || !productIds?.length || !amount) {
                return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
           }
 
@@ -26,6 +28,7 @@ export async function POST(req: Request) {
                metadata: {
                     clientId,
                     subscriptionPlanId,
+                    apartments_count: amount
                },
           });
 

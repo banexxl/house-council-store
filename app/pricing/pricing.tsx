@@ -121,13 +121,14 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
                          productIds: billingCycle === "annually"
                               ? [plan.polar_product_id_annually]
                               : [plan.polar_product_id_monthly],
+                         amount: apartmentCount
                     }),
                });
 
                const data = await res.json();
 
                if (!res.ok) {
-                    throw new Error(data?.error || "Failed to create checkout session.");
+                    throw new Error("Failed to create checkout session.");
                }
 
                if (!data?.url) {
