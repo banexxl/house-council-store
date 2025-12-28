@@ -114,6 +114,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                          clientId: client.id!,
+                         customerEmail: client.email,
                          subscriptionPlanId: plan.id,
                          renewal_period: billingCycle, // or "renewalPeriod" depending on your API
                          successUrl,
