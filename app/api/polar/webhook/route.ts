@@ -8,7 +8,7 @@ export const runtime = "nodejs";
 // Use service role for webhooks (bypasses RLS) — never expose to client
 const supabase = createClient(
      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-     process.env.SUPABASE_ANON_KEY!
+     process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
 // --- helpers -------------------------------------------------------------
@@ -76,7 +76,7 @@ async function upsertClientSubscription(args: {
      status: string;
      polarCustomerId?: string | null;
      polarSubscriptionId?: string | null;
-     nextPaymentDate?: string | null; // ISO
+     nextPaymentDate?: string | null;
      isAutoRenew?: boolean | null;
      expired?: boolean | null;
 }) {
@@ -92,9 +92,16 @@ async function upsertClientSubscription(args: {
           expired,
      } = args;
 
-     // Decide your unique key:
-     // - If a client can only have one subscription, use unique on client_id and upsert on that.
-     // For now, we upsert by (client_id) expectation.
+     // Read existing to avoid overwriting IDs with null
+     const { data: existing } = await supabase
+          .from("tblClient_Subscription")
+          .select("polar_customer_id, polar_subscription_id, created_at")
+          .eq("client_id", clientId)
+          .maybeSingle();
+
+     const finalPolarCustomerId = polarCustomerId ?? existing?.polar_customer_id ?? null;
+     const finalPolarSubscriptionId = polarSubscriptionId ?? existing?.polar_subscription_id ?? null;
+
      const { error } = await supabase
           .from("tblClient_Subscription")
           .upsert(
@@ -104,16 +111,15 @@ async function upsertClientSubscription(args: {
                     renewal_period: renewalPeriod ?? "monthly",
                     status,
                     updated_at: nowIso(),
-                    // Keep created_at only when inserting: Supabase upsert will set it if missing
-                    polar_customer_id: polarCustomerId ?? null,
-                    polar_subscription_id: polarSubscriptionId ?? null,
+                    created_at: existing?.created_at ?? nowIso(),
+                    polar_customer_id: finalPolarCustomerId,
+                    polar_subscription_id: finalPolarSubscriptionId,
                     next_payment_date: nextPaymentDate ?? null,
                     is_auto_renew: isAutoRenew ?? true,
                     expired: expired ?? false,
                },
                { onConflict: "client_id" } // requires UNIQUE(client_id)
           );
-     console.log('tblClient_Subscription upsert for client:', clientId, 'status:', status);
 
      if (error) throw error;
 }
