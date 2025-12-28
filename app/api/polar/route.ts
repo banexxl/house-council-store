@@ -22,17 +22,24 @@ export async function POST(req: Request) {
           }
 
           // Polar Checkout Session API: create session from list of products
-          const checkout = await polar.checkouts.create({
-               products: productIds,
-               successUrl: successUrl,
-               returnUrl: returnUrl,
-               customerEmail: customerEmail,
-               metadata: {
-                    clientId,
-                    subscriptionPlanId,
-                    apartments_count: amount
-               },
-          });
+          let checkout;
+          try {
+               checkout = await polar.checkouts.create({
+                    products: productIds,
+                    successUrl: successUrl,
+                    returnUrl: returnUrl,
+                    customerEmail: customerEmail,
+                    metadata: {
+                         clientId,
+                         subscriptionPlanId,
+                         apartments_count: amount
+                    },
+               });
+          } catch (err: any) {
+               console.log(err);
+
+               return NextResponse.json({ error: err?.message ?? "Failed to create checkout session" }, { status: 500 });
+          }
 
           return NextResponse.json({ url: checkout.url, checkoutId: checkout.id });
      } catch (e: any) {

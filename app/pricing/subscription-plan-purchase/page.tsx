@@ -38,7 +38,7 @@ export const metadata: Metadata = {
      },
 };
 
-export default async function FreeTrialPage({ searchParams, }: { searchParams: Promise<{ plan_id: string, billing_cycle: 'monthly' | 'annually' }> }) {
+export default async function FreeTrialPage({ searchParams }: { searchParams: Promise<{ plan_id: string, billing_cycle: 'monthly' | 'annually' }> }) {
 
      const { plan_id, billing_cycle } = await searchParams;
 

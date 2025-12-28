@@ -1,7 +1,6 @@
 import { Polar } from "@polar-sh/sdk";
 
-console.log('process.env.NODE_ENV', process.env.NODE_ENV);
-
+console.log('Using Polar access token:', process.env.NODE_ENV === "development" ? process.env.POLAR_ACCESS_TOKEN_SANDBOX : process.env.POLAR_ACCESS_TOKEN);
 
 export const polar = new Polar({
      accessToken: process.env.NODE_ENV === "development" ? process.env.POLAR_ACCESS_TOKEN_SANDBOX! : process.env.POLAR_ACCESS_TOKEN!,

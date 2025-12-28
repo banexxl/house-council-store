@@ -121,7 +121,7 @@ async function upsertClientSubscription(args: {
 // --- webhook handler ------------------------------------------------------
 
 export const POST = Webhooks({
-     webhookSecret: process.env.POLAR_WEBHOOK_SECRET!,
+     webhookSecret: process.env.NODE_ENV === "development" ? process.env.POLAR_WEBHOOK_SECRET_SANDBOX! : process.env.POLAR_WEBHOOK_SECRET!,
      onPayload: async (payload) => {
           const eventType = (payload as any)?.type ?? "";
           const data = (payload as any)?.data ?? {};

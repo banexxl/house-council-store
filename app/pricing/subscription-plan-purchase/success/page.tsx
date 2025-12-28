@@ -30,13 +30,9 @@ export const metadata: Metadata = {
      },
 }
 
-type SuccessPageSearchParams = {
-     customer_session_token?: string | string[]
-}
-
-export default async function FreeTrialSuccessPage({ searchParams }: { searchParams?: SuccessPageSearchParams }) {
-     const tokenParam = searchParams?.customer_session_token
-     const customerSessionToken = Array.isArray(tokenParam) ? tokenParam[0] : tokenParam
+export default async function FreeTrialSuccessPage({ searchParams }: { searchParams: Promise<{ customer_session_token?: string | string[] }> }) {
+     const { customer_session_token } = await searchParams
+     const customerSessionToken = Array.isArray(customer_session_token) ? customer_session_token[0] : customer_session_token
 
      const isValidCustomerSessionToken =
           typeof customerSessionToken === "string" &&
