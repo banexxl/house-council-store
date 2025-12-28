@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { redirect } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import { getSessionUser } from "@/app/lib/get-session"
 import { Header } from "@/app/components/header"
 import { Footer } from "@/app/components/footer"
@@ -30,21 +30,41 @@ export const metadata: Metadata = {
      },
 }
 
-export default async function FreeTrialSuccessPage() {
+type SuccessPageSearchParams = {
+     customer_session_token?: string | string[]
+}
+
+export default async function FreeTrialSuccessPage({ searchParams }: { searchParams?: SuccessPageSearchParams }) {
+     const tokenParam = searchParams?.customer_session_token
+     const customerSessionToken = Array.isArray(tokenParam) ? tokenParam[0] : tokenParam
+
+     const isValidCustomerSessionToken =
+          typeof customerSessionToken === "string" &&
+          customerSessionToken.startsWith("polar_cst_") &&
+          customerSessionToken.length > "polar_cst_".length
+
+     if (!isValidCustomerSessionToken) {
+          notFound()
+     }
+
      // Get the user session
      const session = await getSessionUser()
-
-     // Fetch client data
-     const { client, error } = await readAccountByEmailAction(session?.email!);
-
-     const dashboardUrl = process.env.NEXT_PUBLIC_DASHBOARD_URL!
-
-     const { clientSubscriptionPlanData } = await readClientSubscriptionPlanFromClientId(client?.id!)
 
      if (!session) {
           // Redirect to login if not authenticated
           redirect("/auth/sign-in")
      }
+
+     // Fetch client data
+     const { client, error } = await readAccountByEmailAction(session.email!);
+
+     if (!client?.id) {
+          notFound()
+     }
+
+     const dashboardUrl = process.env.NEXT_PUBLIC_DASHBOARD_URL!
+
+     const { clientSubscriptionPlanData } = await readClientSubscriptionPlanFromClientId(client.id)
 
      await logServerAction({
           user_id: session ? session.id : null,
