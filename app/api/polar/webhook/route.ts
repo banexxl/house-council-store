@@ -113,6 +113,7 @@ async function upsertClientSubscription(args: {
                },
                { onConflict: "client_id" } // requires UNIQUE(client_id)
           );
+     console.log('tblClient_Subscription upsert for client:', clientId, 'status:', status);
 
      if (error) throw error;
 }
