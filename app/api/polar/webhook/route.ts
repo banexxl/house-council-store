@@ -1,4 +1,5 @@
 // app/api/polar/webhook/route.ts
+import { logServerAction } from "@/app/lib/server-logging";
 import { Webhooks } from "@polar-sh/nextjs";
 import { createClient } from "@supabase/supabase-js";
 
@@ -120,6 +121,18 @@ async function upsertClientSubscription(args: {
                },
                { onConflict: "client_id" } // requires UNIQUE(client_id)
           );
+
+     if (error) {
+          await logServerAction({
+               user_id: null,
+               action: 'Upsert Client Subscription Failed',
+               payload: { clientId, subscriptionPlanId, renewalPeriod, status },
+               status: 'fail',
+               error: error.message,
+               duration_ms: 0,
+               type: 'internal',
+          })
+     }
 
      if (error) throw error;
 }
