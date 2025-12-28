@@ -66,43 +66,6 @@ export default function PaymentsTab({ clientPayments, userData, clientSubscripti
           return [];
      }, [clientSubscriptionObject]);
 
-     const startPolarCheckout = async () => {
-          try {
-               if (!clientSubscriptionObject) {
-                    toast.error("No active subscription plan selected.");
-                    return;
-               }
-
-               if (!polarProductIds.length) {
-                    toast.error("Missing Polar product mapping for this plan.");
-                    return;
-               }
-
-               setCheckoutLoading(true);
-
-               const res = await fetch("/api/polar/checkout", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                         clientId: userData.client.id,
-                         subscriptionPlanId: clientSubscriptionObject.subscription_plan_id,
-                         productIds: polarProductIds,
-                         successUrl: `${window.location.origin}/profile?tab=payments&polar=success`,
-                         returnUrl: `${window.location.origin}/profile?tab=payments`,
-                    }),
-               });
-
-               const data = await res.json();
-               if (!res.ok) throw new Error(data?.error ?? "Failed to create checkout");
-
-               window.location.href = data.url as string;
-          } catch (e: any) {
-               toast.error(e?.message ?? "Failed to start checkout");
-          } finally {
-               setCheckoutLoading(false);
-          }
-     };
-
      const handleClose = () => {
           setAmount("")
           setOpen(false)
@@ -268,7 +231,7 @@ export default function PaymentsTab({ clientPayments, userData, clientSubscripti
 
                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <Button
-                         onClick={startPolarCheckout}
+                         onClick={() => handleOpen()}
                          variant="outlined"
                          disabled={!clientSubscriptionObject || checkoutLoading}
                          loading={checkoutLoading}
