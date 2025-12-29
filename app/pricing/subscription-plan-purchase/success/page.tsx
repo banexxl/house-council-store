@@ -60,17 +60,19 @@ export default async function FreeTrialSuccessPage({ searchParams }: { searchPar
 
      const dashboardUrl = process.env.NEXT_PUBLIC_DASHBOARD_URL!
 
-     const { clientSubscriptionPlanData } = await readClientSubscriptionPlanFromClientId(client.id)
-
-     await logServerAction({
-          user_id: session ? session.id : null,
-          action: 'Render Subscription Success Page',
-          payload: {},
-          status: 'success',
-          error: '',
-          duration_ms: 0,
-          type: 'internal',
-     })
+     const { clientSubscriptionPlanData, error: clientSubscriptionPlanError } = await readClientSubscriptionPlanFromClientId(client.id)
+     if (!clientSubscriptionPlanData) {
+          await logServerAction({
+               user_id: session ? session.id : null,
+               action: 'Try Render Subscription Success Page',
+               payload: {},
+               status: 'fail',
+               error: `${clientSubscriptionPlanError}`,
+               duration_ms: 0,
+               type: 'webhook',
+          })
+          redirect("/subscription-plan-purchase/error")
+     }
 
      return (
           <>
