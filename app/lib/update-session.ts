@@ -36,7 +36,18 @@ export async function updateSession(request: NextRequest) {
      const { pathname } = request.nextUrl;
 
      // Define public routes that don't require authentication
-     const publicRoutes = ['/auth/sign-in', '/auth/callback', '/auth/error', '/auth/register', '/auth/reset-password', '/', '/documentation', '/pricing', '/contact'];
+     const publicRoutes = [
+          '/auth/sign-in',
+          '/auth/callback',
+          '/auth/error',
+          '/auth/register',
+          '/auth/reset-password',
+          '/',
+          '/documentation',
+          '/pricing',
+          '/contact',
+          '/api/polar/'
+     ];
      const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
 
      // Always allow access to the error page
