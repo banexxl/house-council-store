@@ -79,6 +79,20 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
      const renderDate = (date?: string) =>
           date ? new Date(date).toLocaleDateString() : <i>No subscription plan selected</i>
 
+     const currencyFormatter = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" })
+     console.log('clientSubscriptionObject', clientSubscriptionObject);
+
+     const pricePerApartment = clientSubscriptionObject
+          ? clientSubscriptionObject.renewal_period === "annually"
+               ? clientSubscriptionObject.subscription_plan.total_price_per_apartment_with_discounts
+               : clientSubscriptionObject.subscription_plan.monthly_total_price_per_apartment
+          : null
+     console.log('pricePerApartment', pricePerApartment);
+
+     const totalForAllApartments = pricePerApartment !== null ? pricePerApartment * apartmentsCount : null
+
+     const billingPeriodLabel = clientSubscriptionObject?.renewal_period === "annually" ? "year" : "month"
+
      return (
           <Box>
                <Typography variant="h5" gutterBottom>Subscription Management</Typography>
@@ -131,6 +145,11 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
                                         <ReceiptIcon fontSize="small" sx={{ mr: 1, color: "text.secondary" }} />
                                         <Typography variant="body2">Billing Cycle: {clientSubscriptionObject?.renewal_period == 'annually' ? "ANNUALLY" : "MONTHLY"}</Typography>
                                    </Box>
+                                   {pricePerApartment !== null && (
+                                        <Alert severity="info" sx={{ mt: 1 }}>
+                                             Billing is per apartment. With {apartmentsCount} apartment{apartmentsCount === 1 ? "" : "s"}, your {billingPeriodLabel}ly charge is {currencyFormatter.format(pricePerApartment)} x {apartmentsCount} = {currencyFormatter.format(totalForAllApartments ?? 0)}.
+                                        </Alert>
+                                   )}
                               </Grid>
                          </Grid>
 
