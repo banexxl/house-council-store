@@ -46,7 +46,7 @@ export async function updateSession(request: NextRequest) {
           '/documentation',
           '/pricing',
           '/contact',
-          '/api/polar/'
+          '/api/polar/webhook'
      ];
      const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
 
