@@ -110,9 +110,9 @@ export default function ProfileTabs({
                          }}
                     >
                          <Tab label="Account" icon={<EditIcon />} iconPosition="start" />
-                         <Tab label="Billing" icon={<CreditCardIcon />} iconPosition="start" />
+                         {/* <Tab label="Billing" icon={<CreditCardIcon />} iconPosition="start" /> */}
                          <Tab label="Subscription" icon={<SubscriptionsIcon />} iconPosition="start" />
-                         <Tab label="Payments" icon={<ReceiptIcon />} iconPosition="start" />
+                         {/* <Tab label="Payments" icon={<ReceiptIcon />} iconPosition="start" /> */}
                          <Tab label="Notifications" icon={<NotificationsIcon />} iconPosition="start" />
                          <Tab label="Security" icon={<SecurityIcon />} iconPosition="start" />
                     </Tabs>
