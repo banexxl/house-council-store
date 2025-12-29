@@ -52,15 +52,16 @@ interface ProfileTabsProps {
      editMode: boolean
      setEditMode: (value: boolean) => void
      clientSubscriptionObject: ClientSubscription & { subscription_plan: SubscriptionPlan } | null
-     allClientBillingInformation: ClientBillingInformation[]
+     // allClientBillingInformation: ClientBillingInformation[]
      notificationSettings: any[]
      setNotificationSettings: (value: any) => void
      recentActivity: ActivityItem[]
      subscriptionFeatures?: Feature[],
      binCheckerAPIKey?: string,
-     clientPayments: Payment[]
+     // clientPayments: Payment[]
      subsrciptioFeatures?: SubscriptionPlan & { features: Feature[] } | null,
-     currencies?: Currency[]
+     currencies?: Currency[],
+     apartmentsCount: number
 }
 
 export default function ProfileTabs({
@@ -68,15 +69,16 @@ export default function ProfileTabs({
      editMode,
      setEditMode,
      clientSubscriptionObject,
-     allClientBillingInformation,
+     // allClientBillingInformation,
      notificationSettings,
      setNotificationSettings,
      recentActivity,
      subscriptionFeatures,
      binCheckerAPIKey,
-     clientPayments,
+     // clientPayments,
      subsrciptioFeatures,
-     currencies
+     currencies,
+     apartmentsCount
 }: ProfileTabsProps) {
 
      const [tabValue, setTabValue] = useState(0)
@@ -124,26 +126,25 @@ export default function ProfileTabs({
                          </TabPanel>
 
                          {/* Billing Tab */}
-                         <TabPanel value={tabValue} index={1}>
+                         {/* <TabPanel value={tabValue} index={1}>
                               <BillingTab
                                    userData={userData}
                                    allClientBillingInformation={allClientBillingInformation}
                                    binCheckerAPIKey={binCheckerAPIKey}
                               />
-                         </TabPanel>
+                         </TabPanel> */}
 
                          {/* Subscription Tab */}
                          <TabPanel value={tabValue} index={2}>
                               <SubscriptionTab
                                    clientSubscriptionObject={clientSubscriptionObject || null}
-                                   payment={clientPayments.length > 0 ? clientPayments[clientPayments.length - 1] : null}
                                    subsrciptioFeatures={subsrciptioFeatures}
                                    currencies={currencies || []}
                               />
                          </TabPanel>
 
                          {/* Payments Tab */}
-                         <TabPanel value={tabValue} index={3}>
+                         {/* <TabPanel value={tabValue} index={3}>
                               <PaymentsTab
                                    clientPayments={clientPayments}
                                    userData={userData}
@@ -151,7 +152,7 @@ export default function ProfileTabs({
                                    allClientBillingInformation={allClientBillingInformation}
                                    currencies={currencies || []}
                               />
-                         </TabPanel>
+                         </TabPanel> */}
 
                          {/* Notifications Tab */}
                          <TabPanel value={tabValue} index={4}>

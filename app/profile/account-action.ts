@@ -5,6 +5,7 @@ import { Client } from "../types/client";
 import { revalidatePath } from "next/cache";
 import { logServerAction } from "../lib/server-logging";
 import { ActivityItem } from "./components/profile-sidebar";
+import { useServerSideSupabaseAnonClient } from "../lib/ss-supabase-anon-client";
 
 export const logoutUserAction = async (): Promise<string | null> => {
      const startTime = Date.now();
@@ -93,7 +94,7 @@ export const readAccountByEmailAction = async (email: string): Promise<{ client?
 
      const startTime = Date.now();
 
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
      const userId = (await supabase.auth.getUser()).data.user?.id;
      const { data: client, error } = await supabase
           .from('tblClients')
@@ -132,7 +133,7 @@ export const updateAccountAction = async (id: string, update: Partial<Client>): 
 
      const startTime = Date.now();
 
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      const { data, error } = await supabase
           .from('tblClients')
@@ -213,5 +214,40 @@ export const readClientRecentActivityAction = async (clientEmail: string, client
           type: 'db'
      })
 
+     return { success: true, data }
+}
+
+export const readAllApartmentsByClientId = async (clientId: string): Promise<{ success: boolean, error?: string, data?: any[] }> => {
+
+     const startTime = Date.now();
+     const supabase = await useServerSideSupabaseAnonClient();
+
+     const { data, error } = await supabase
+          .from('tblApartments')
+          .select('*')
+          .eq('client_id', clientId)
+          .order('created_at', { ascending: false });
+
+     if (error) {
+          await logServerAction({
+               user_id: clientId,
+               action: 'Read All Apartments By Client Id - Error for tblApartments table.',
+               payload: {},
+               status: 'fail',
+               error: error.message,
+               duration_ms: Date.now() - startTime,
+               type: 'db'
+          })
+          return { success: false, error: error.message }
+     }
+     await logServerAction({
+          user_id: clientId,
+          action: 'Read All Apartments By Client Id - Success.',
+          payload: {},
+          status: 'success',
+          error: '',
+          duration_ms: Date.now() - startTime,
+          type: 'db'
+     })
      return { success: true, data }
 }

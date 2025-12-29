@@ -3,7 +3,7 @@ import { getSessionUser } from "@/app/lib/get-session";
 import { Footer } from "@/app/components/footer";
 import { Header } from "@/app/components/header";
 import { ProfilePage } from "./profile";
-import { readAccountByEmailAction, readClientRecentActivityAction } from "./account-action";
+import { readAccountByEmailAction, readAllApartmentsByClientId, readClientRecentActivityAction } from "./account-action";
 import { User } from "@supabase/supabase-js";
 import { clientInitialValues } from "../types/client";
 import { readClientSubscriptionPlanFromClientId, readSubscriptionPlanFeatures } from "./subscription-plan-actions";
@@ -46,13 +46,11 @@ export default async function Page() {
      }
 
      // Fetch related data in parallel
-     const [clientSubscriptionObject, billingInformation, recentActivity, clientPayments, currencies] = await Promise.all([
+     const [clientSubscriptionObject, recentActivity, currencies, apartments] = await Promise.all([
           readClientSubscriptionPlanFromClientId(client.id),
-          readAllClientsBillingInformation(client.id),
           readClientRecentActivityAction(user.email, client.id),
-          readAllClientPaymentsAction(client.id),
           readAllCurrenciesAction(),
-          readAllPaymentMethodsAction(),
+          readAllApartmentsByClientId(client.id)
      ])
 
 
@@ -75,12 +73,11 @@ export default async function Page() {
                <ProfilePage
                     sessionAndClientDataCombined={sessionAndClientDataCombined}
                     clientSubscriptionObject={clientSubscriptionObject?.clientSubscriptionPlanData! ?? null}
-                    allClientBillingInformation={billingInformation.readAllClientBillingInformationData ?? []}
-                    clientPayments={clientPayments.data ?? []}
                     recentActivity={recentActivity.data ?? []}
                     binCheckerAPIKey={binCheckerAPIKey ?? ""}
                     subsrciptioFeatures={subsrciptionFeatures?.subscriptionPlanFeatures ?? null}
                     currencies={currencies.currencies ?? []}
+                    apartmentsCount={apartments ? apartments?.data!.length : 0}
                />
                <Footer />
           </>

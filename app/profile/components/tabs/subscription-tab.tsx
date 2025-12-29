@@ -31,12 +31,11 @@ import { Currency } from "@/app/types/currency"
 
 interface SubscriptionTabProps {
      clientSubscriptionObject: ClientSubscription & { subscription_plan: SubscriptionPlan } | null;
-     payment: Payment | null;
      subsrciptioFeatures?: SubscriptionPlan & { features: Feature[] } | null;
      currencies?: Currency[]
 }
 
-export default function SubscriptionTab({ clientSubscriptionObject, payment, subsrciptioFeatures, currencies }: SubscriptionTabProps) {
+export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioFeatures, currencies }: SubscriptionTabProps) {
 
      const theme = useTheme()
      const router = useRouter()
@@ -44,7 +43,6 @@ export default function SubscriptionTab({ clientSubscriptionObject, payment, sub
      const [confirmCancelDialogOpen, setConfirmCancelDialogOpen] = useState(false)
      const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false)
      const [isProcessing, setIsProcessing] = useState(false)
-     const [autoRenew, setAutoRenew] = useState(payment?.is_recurring || false)
 
      const handleDialogToggle = (type: "cancel" | "confirmCancel" | "upgrade", open: boolean) => {
           if (type === "cancel") setCancelDialogOpen(open)
@@ -67,20 +65,6 @@ export default function SubscriptionTab({ clientSubscriptionObject, payment, sub
           }
      }
 
-     const handleAutoRenewToggle = async () => {
-          setIsProcessing(true)
-          try {
-               await new Promise((resolve) => setTimeout(resolve, 1000))
-               // await toggleAutoRenewAction(clientSubscriptionObject.id, !autoRenew)
-               setAutoRenew(!autoRenew)
-               toast.success(`Auto-renewal has been ${!autoRenew ? "enabled" : "disabled"}`)
-          } catch {
-               toast.error("Failed to update auto-renewal settings. Please try again.")
-          } finally {
-               setIsProcessing(false)
-          }
-     }
-
      const handleUpgradeSubscription = async () => {
           setIsProcessing(true)
           try {
@@ -93,13 +77,6 @@ export default function SubscriptionTab({ clientSubscriptionObject, payment, sub
                setIsProcessing(false)
           }
      }
-
-     const currency = currencies?.find((currency: Currency) => currency.id === payment?.currency)
-
-
-     const formattedPrice = payment?.total_paid && payment.total_paid > 0
-          ? new Intl.NumberFormat('en-US', { style: 'currency', currency: currency?.code }).format(payment.total_paid)
-          : ""
 
      const renderDate = (date?: string) =>
           date ? new Date(date).toLocaleDateString() : <i>No subscription plan selected</i>
@@ -127,21 +104,6 @@ export default function SubscriptionTab({ clientSubscriptionObject, payment, sub
                                    <Typography variant="h5" color="primary.main" gutterBottom>
                                         {clientSubscriptionObject?.subscription_plan.name}
                                    </Typography>
-                                   <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                                        {clientSubscriptionObject?.status === 'trialing' ? (
-                                             <>Trial period until: {renderDate(clientSubscriptionObject?.next_payment_date!)}</>
-                                        ) : payment ? (
-                                             <>
-                                                  Last Payment: {renderDate(payment.created_at)}
-                                                  {/* {payment.total_paid > 0 && (
-                                                  <> - {formattedPrice}</>
-                                                  )} */}
-                                             </>
-                                        ) : (
-                                             <i>No subscription information available</i>
-                                        )}
-                                   </Box>
-
                               </Box>
                               <Button variant="outlined" color="primary" onClick={() => handleDialogToggle("upgrade", true)} disabled={isProcessing}>
                                    Upgrade Plan

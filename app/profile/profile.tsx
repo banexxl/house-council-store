@@ -44,14 +44,21 @@ const notificationPreferences = [
 type ProfilePageProps = {
      sessionAndClientDataCombined?: { client: Client, session: User }
      clientSubscriptionObject: ClientSubscription & { subscription_plan: SubscriptionPlan }
-     allClientBillingInformation: ClientBillingInformation[]
      recentActivity: ActivityItem[]
      binCheckerAPIKey?: string,
-     clientPayments: Payment[]
      subsrciptioFeatures: SubscriptionPlan & { features: Feature[] } | null
      currencies?: Currency[],
+     apartmentsCount: number
 }
-export const ProfilePage = ({ sessionAndClientDataCombined, clientSubscriptionObject, allClientBillingInformation, recentActivity, binCheckerAPIKey, clientPayments, subsrciptioFeatures, currencies }: ProfilePageProps) => {
+export const ProfilePage = ({
+     sessionAndClientDataCombined,
+     clientSubscriptionObject,
+     recentActivity,
+     binCheckerAPIKey,
+     subsrciptioFeatures,
+     currencies,
+     apartmentsCount
+}: ProfilePageProps) => {
 
      const [editMode, setEditMode] = useState(false)
      const [notificationSettings, setNotificationSettings] = useState(notificationPreferences)
@@ -79,14 +86,13 @@ export const ProfilePage = ({ sessionAndClientDataCombined, clientSubscriptionOb
                                              editMode={editMode}
                                              setEditMode={setEditMode}
                                              clientSubscriptionObject={clientSubscriptionObject}
-                                             allClientBillingInformation={allClientBillingInformation}
                                              notificationSettings={notificationSettings}
                                              setNotificationSettings={setNotificationSettings}
                                              recentActivity={recentActivity || []}
                                              binCheckerAPIKey={binCheckerAPIKey}
-                                             clientPayments={clientPayments}
                                              subsrciptioFeatures={subsrciptioFeatures}
                                              currencies={currencies}
+                                             apartmentsCount={apartmentsCount}
                                         />
                                    </Grid>
                               </Grid>
