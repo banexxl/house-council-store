@@ -139,7 +139,7 @@ export default function ProfileTabs({
                               <SubscriptionTab
                                    clientSubscriptionObject={clientSubscriptionObject || null}
                                    subsrciptioFeatures={subsrciptioFeatures}
-                                   currencies={currencies || []}
+                                   apartmentsCount={apartmentsCount}
                               />
                          </TabPanel>
 

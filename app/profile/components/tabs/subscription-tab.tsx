@@ -32,10 +32,10 @@ import { Currency } from "@/app/types/currency"
 interface SubscriptionTabProps {
      clientSubscriptionObject: ClientSubscription & { subscription_plan: SubscriptionPlan } | null;
      subsrciptioFeatures?: SubscriptionPlan & { features: Feature[] } | null;
-     currencies?: Currency[]
+     apartmentsCount: number
 }
 
-export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioFeatures, currencies }: SubscriptionTabProps) {
+export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioFeatures, apartmentsCount }: SubscriptionTabProps) {
 
      const theme = useTheme()
      const router = useRouter()
