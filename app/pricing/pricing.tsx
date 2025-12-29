@@ -106,8 +106,10 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
           setLoadingKey(key);
 
           try {
-               const successUrl = `${window.location.origin}/pricing/subscription-plan-purchase/success`;
-               const returnUrl = `${window.location.origin}/pricing`;
+               const successUrl =
+                    `${window.location.origin}/pricing/subscription-plan-purchase/success?client_id=${client.id}&subscription_plan_id=${plan.id}&renewal_period=${billingCycle}`;
+               const returnUrl =
+                    `${window.location.origin}/pricing`;
 
                const res = await fetch("/api/polar/", {
                     method: "POST",

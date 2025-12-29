@@ -53,7 +53,7 @@ export const Footer = () => {
 
                   <ListItem disablePadding>
                     <ListItemButton onClick={() => handleNavClick("/pricing")}>
-                      <ListItemText primary="Subscriptions" sx={{ color: theme.palette.primary.main }} />
+                      <ListItemText primary="Pricing" sx={{ color: theme.palette.primary.main }} />
                     </ListItemButton>
                   </ListItem>
 
