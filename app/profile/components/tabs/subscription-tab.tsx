@@ -24,10 +24,8 @@ import { getStatusColor } from "../profile-sidebar"
 import GradingIcon from '@mui/icons-material/Grading';
 import { ClientSubscription, SubscriptionPlan, SubscriptionStatus } from "@/app/types/subscription-plan"
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import { Payment } from "@/app/types/payment"
 import { Feature } from "@/app/types/feature"
 import Link from "next/link"
-import { Currency } from "@/app/types/currency"
 
 interface SubscriptionTabProps {
      clientSubscriptionObject: ClientSubscription & { subscription_plan: SubscriptionPlan } | null;
