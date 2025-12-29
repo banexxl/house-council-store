@@ -221,12 +221,32 @@ export const readAllApartmentsByClientId = async (clientId: string): Promise<{ s
 
      const startTime = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
+     // First, get all buildings for the client
+     const { data: buildings, error: buildingsError } = await supabase
+          .from('tblBuildings')
+          .select('id')
+          .eq('client_id', clientId)
+          .order('created_at', { ascending: false });
 
+     if (buildingsError) {
+          return { success: false, error: buildingsError.message };
+     }
+
+     const buildingIds = (buildings ?? []).map(b => b.id);
+
+     // If no buildings, return empty array
+     if (buildingIds.length === 0) {
+          return { success: true, data: [] };
+     }
+
+     // Get all apartments with building_id in buildingIds
      const { data, error } = await supabase
           .from('tblApartments')
           .select('*')
-          .eq('client_id', clientId)
+          .in('building_id', buildingIds)
           .order('created_at', { ascending: false });
+
+     // Optionally: console.log('apartments', data, error)
 
      if (error) {
           await logServerAction({
