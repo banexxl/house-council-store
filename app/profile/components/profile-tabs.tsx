@@ -135,7 +135,7 @@ export default function ProfileTabs({
                          </TabPanel> */}
 
                          {/* Subscription Tab */}
-                         <TabPanel value={tabValue} index={2}>
+                         <TabPanel value={tabValue} index={1}>
                               <SubscriptionTab
                                    clientSubscriptionObject={clientSubscriptionObject || null}
                                    subsrciptioFeatures={subsrciptioFeatures}
@@ -155,7 +155,7 @@ export default function ProfileTabs({
                          </TabPanel> */}
 
                          {/* Notifications Tab */}
-                         <TabPanel value={tabValue} index={4}>
+                         <TabPanel value={tabValue} index={2}>
                               <NotificationsTab
                                    notificationSettings={notificationSettings}
                                    handleNotificationToggle={handleNotificationToggle}
@@ -163,7 +163,7 @@ export default function ProfileTabs({
                          </TabPanel>
 
                          {/* Security Tab */}
-                         <TabPanel value={tabValue} index={5}>
+                         <TabPanel value={tabValue} index={3}>
                               <SecurityTab userData={userData} />
                          </TabPanel>
                     </Box>
