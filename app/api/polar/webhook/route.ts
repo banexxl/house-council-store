@@ -130,8 +130,7 @@ function extractIds(eventType: string, data: any) {
           data?.items?.[0]?.product?.id ??
           data?.items?.[0]?.product_id ??
           null;
-
-     // quantity (if Polar sends it in some payloads)
+     // quantity (Polar doesn't always include it → default to 1)
      const qtyRaw =
           data?.quantity ??
           data?.seats ??
@@ -140,12 +139,18 @@ function extractIds(eventType: string, data: any) {
           data?.line_items?.[0]?.quantity ??
           null;
 
-     const quantity =
-          typeof qtyRaw === "number"
-               ? qtyRaw
-               : qtyRaw != null
-                    ? Number(qtyRaw)
-                    : null;
+     let quantityParsed: number | null = null;
+
+     if (typeof qtyRaw === "number") {
+          quantityParsed = Number.isFinite(qtyRaw) ? qtyRaw : null;
+     } else if (qtyRaw != null) {
+          const n = Number(qtyRaw);
+          quantityParsed = Number.isFinite(n) ? n : null;
+     }
+
+     // ✅ never send null to DB
+     const quantity = quantityParsed ?? 1;
+
 
      return {
           polarCustomerId: polarCustomerId ? String(polarCustomerId) : null,
@@ -153,7 +158,8 @@ function extractIds(eventType: string, data: any) {
           polarCheckoutId: polarCheckoutId ? String(polarCheckoutId) : null,
           polarOrderId: polarOrderId ? String(polarOrderId) : null,
           polarProductId: polarProductId ? String(polarProductId) : null,
-          quantity: Number.isFinite(quantity as any) ? (quantity as number) : null,
+          quantity: Math.max(1, Number.isFinite(quantity as any) ? Number(quantity) : 1),
+
      };
 }
 
