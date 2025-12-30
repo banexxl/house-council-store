@@ -14,6 +14,7 @@ async function getApartmentCountForClient(clientId: string): Promise<number> {
           .from("tblApartments")
           .select("id, tblBuildings!inner(client_id)", { count: "exact", head: true })
           .eq("tblBuildings.client_id", clientId);
+     console.log('error', error);
 
      if (error) throw error;
      return count ?? 0;
@@ -56,23 +57,30 @@ export async function POST(req: Request) {
           const apartmentsCount = await getApartmentCountForClient(clientId);
           const seats = Math.max(1, apartmentsCount);
 
-          const checkout = await polar.checkouts.create({
-               products: productIds,
-               successUrl,
-               returnUrl,
-               customerEmail,
+          let checkout;
+          try {
+               checkout = await polar.checkouts.create({
+                    products: productIds,
+                    successUrl,
+                    returnUrl,
+                    customerEmail,
 
-               // ✅ correct field for CheckoutCreate in @polar-sh/nextjs
-               seats,
+                    // ✅ correct field for CheckoutCreate in @polar-sh/nextjs
+                    seats,
 
-               metadata: {
-                    clientId,
-                    subscriptionPlanId,
-                    renewal_period,
-                    apartments_count: apartmentsCount,
-                    seats_charged: seats,
-               },
-          });
+                    metadata: {
+                         clientId,
+                         subscriptionPlanId,
+                         renewal_period,
+                         apartments_count: apartmentsCount,
+                         seats_charged: seats,
+                    },
+               });
+          } catch (error) {
+               console.error("Error creating checkout:", error);
+               throw error;
+          }
+
 
           return NextResponse.json({ url: checkout.url, checkoutId: checkout.id, seats });
      } catch (e: any) {
