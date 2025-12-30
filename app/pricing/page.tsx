@@ -41,8 +41,7 @@ export default async function Page() {
   const { client, error } = await readAccountByEmailAction(user?.email!);
   const { subscriptionPlanData } = await readSubscriptionPlansByStatus('active')
   const { clientSubscriptionPlanData } = await readClientSubscriptionPlanFromClientId(client?.id!)
-  const apartmentCountResult = client?.id ? await getApartmentCountForClient(client.id) : { success: false };
-  const apartmentCount = apartmentCountResult.success ? apartmentCountResult.apartmentCount ?? 0 : undefined;
+  const apartmentCountResult = client?.id ? await getApartmentCountForClient(client.id) : 0;
 
   return (
     <>
@@ -50,7 +49,7 @@ export default async function Page() {
       <PricingPage
         subscriptionPlans={subscriptionPlanData || []}
         clientSubscriptionPlanData={clientSubscriptionPlanData}
-        apartmentCount={apartmentCount}
+        apartmentCount={apartmentCountResult || 0}
         client={client || null}
       />
       <Footer />
