@@ -196,6 +196,16 @@ async function resolveClientAndPlanFromPolarIds(ids: {
      return null;
 }
 
+async function getFreshApartmentCount(clientId: string): Promise<number> {
+     const { count, error } = await supabase
+          .from("tblApartments")
+          .select("id, tblBuildings!inner(client_id)", { count: "exact", head: true })
+          .eq("tblBuildings.client_id", clientId);
+
+     if (error) throw error;
+     return Math.max(1, count ?? 0);
+}
+
 async function upsertClientSubscription(args: {
      clientId: string;
      subscriptionPlanId: string;
@@ -253,6 +263,28 @@ async function upsertClientSubscription(args: {
           });
      }
 
+     // 2) compute fresh apartment count (Option B join)
+     const { count: aptCount, error: countErr } = await supabase
+          .from("tblApartments")
+          .select("id, tblBuildings!inner(client_id)", { count: "exact", head: true })
+          .eq("tblBuildings.client_id", clientId);
+
+     if (countErr) {
+          await logServerAction({
+               user_id: null,
+               action: "Upsert Client Subscription - Count apartments failed",
+               payload: { clientId },
+               status: "fail",
+               error: countErr.message,
+               duration_ms: 0,
+               type: "internal",
+          });
+     }
+
+     // Decide your billing quantity rules:
+     // - If you want to allow 0, change Math.max(1, ...) to Math.max(0, ...)
+     const freshQuantity = Math.max(1, aptCount ?? 0);
+
      const existing: ClientSubscriptionRow | null = existingRow ?? null;
 
      const finalPolarCustomerId = polarCustomerId ?? existing?.polar_customer_id ?? null;
@@ -262,8 +294,8 @@ async function upsertClientSubscription(args: {
      const finalPolarProductId = polarProductId ?? existing?.polar_product_id ?? null;
 
      const finalQuantity =
-          typeof quantity === "number" && Number.isFinite(quantity)
-               ? Math.max(1, Math.floor(quantity))
+          typeof freshQuantity === "number" && Number.isFinite(freshQuantity)
+               ? Math.max(1, Math.floor(freshQuantity))
                : existing?.quantity ?? 1;
 
      // IMPORTANT: Your DB currently required next_payment_date NOT NULL earlier.
