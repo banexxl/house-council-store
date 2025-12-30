@@ -1,5 +1,6 @@
 // app/api/polar/webhook/route.ts
 import { logServerAction } from "@/app/lib/server-logging";
+import { getApartmentCountForClient } from "@/app/profile/subscription-plan-actions";
 import { Webhooks } from "@polar-sh/nextjs";
 import { createClient } from "@supabase/supabase-js";
 
@@ -293,11 +294,24 @@ async function upsertClientSubscription(args: {
      const finalPolarOrderId = polarOrderId ?? existing?.polar_order_id ?? null;
      const finalPolarProductId = polarProductId ?? existing?.polar_product_id ?? null;
 
-     // ✅ Store app: do NOT compute apartments. Keep existing unless Polar provides.
-     const finalQuantity =
+     const apartmentsCount = await getApartmentCountForClient(clientId);
+
+     // Mode switch:
+     // - If you want billing seats to always match apartments, set FORCE_APARTMENT_SEATS=true
+     const forceApartmentSeats = process.env.FORCE_APARTMENT_SEATS === "true";
+
+     // Polar-reported seats (when present)
+     const polarSeats =
           typeof polarQuantity === "number" && Number.isFinite(polarQuantity)
                ? Math.max(1, Math.floor(polarQuantity))
-               : existing?.quantity ?? null;
+               : null;
+
+     // If forcing apartment seats: quantity becomes apartment count (min 1)
+     // Otherwise: keep Polar seats if present, else keep existing, else default 1
+     const finalQuantity = forceApartmentSeats
+          ? Math.max(1, apartmentsCount)
+          : polarSeats ?? existing?.quantity ?? 1;
+
 
      const { error: upsertErr } = await supabase
           .from("tblClient_Subscription")

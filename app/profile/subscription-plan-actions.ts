@@ -366,74 +366,28 @@ export const readClientSubscriptionPlanFromClientId = async (clientId: string): 
 
 }
 
-export const getApartmentCountForClient = async (clientId: string): Promise<{ success: boolean, apartmentCount?: number, error?: string }> => {
-     if (!clientId) {
-          return { success: false, error: "Client ID is required" };
-     }
+export async function getApartmentCountForClient(clientId: string): Promise<number> {
      const supabase = await useServerSideSupabaseAnonClient();
-     const userId = (await supabase.auth.getUser()).data.user?.id;
-
-     // Fetch building ids for the client
-     const { data: buildings, error: buildingError } = await supabase
-          .from("tblBuildings")
-          .select("id")
-          .eq("client_id", clientId);
-
-     if (buildingError) {
-          await logServerAction({
-               user_id: userId ?? '',
-               action: "Get Apartment Count - Buildings",
-               payload: { clientId },
-               status: "fail",
-               error: buildingError.message,
-               duration_ms: 0,
-               type: "db",
-          });
-          return { success: false, error: buildingError.message };
-     }
-
-     const buildingIds = (buildings ?? []).map((b: { id: string }) => b.id);
-
-     if (!buildingIds.length) {
-          await logServerAction({
-               user_id: userId ?? '',
-               action: "Get Apartment Count - Buildings",
-               payload: { clientId },
-               status: "success",
-               error: "",
-               duration_ms: 0,
-               type: "db",
-          });
-          return { success: true, apartmentCount: 0 };
-     }
-
-     const { count, error: apartmentError } = await supabase
+     // Join apartments -> buildings to filter by client_id
+     const { count, error } = await supabase
           .from("tblApartments")
-          .select("id", { count: "exact", head: true })
-          .in("building_id", buildingIds);
+          .select("id, tblBuildings!inner(client_id)", { count: "exact", head: true })
+          .eq("tblBuildings.client_id", clientId);
 
-     if (apartmentError) {
+     if (error) {
           await logServerAction({
-               user_id: userId ?? '',
-               action: "Get Apartment Count - Apartments",
-               payload: { clientId, buildingIds },
+               user_id: null,
+               action: "Store Webhook - Apartment count query failed",
+               payload: { clientId },
                status: "fail",
-               error: apartmentError.message,
+               error: error.message,
                duration_ms: 0,
-               type: "db",
+               type: "internal",
           });
-          return { success: false, error: apartmentError.message };
+          // Fail safe: don't block webhook writes
+          return 0;
      }
 
-     await logServerAction({
-          user_id: userId ?? '',
-          action: "Get Apartment Count - Apartments",
-          payload: { clientId, buildingCount: buildingIds.length },
-          status: "success",
-          error: "",
-          duration_ms: 0,
-          type: "db",
-     });
-
-     return { success: true, apartmentCount: count ?? 0 };
+     return count ?? 0;
 }
+
