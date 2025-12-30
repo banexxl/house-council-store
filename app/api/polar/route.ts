@@ -1,12 +1,36 @@
 import { NextResponse } from "next/server";
 import { polar } from "@/app/lib/polar";
+import { createClient } from "@supabase/supabase-js";
 
 export const runtime = "nodejs";
+
+const supabase = createClient(
+     process.env.NEXT_PUBLIC_SUPABASE_URL!,
+     process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
+async function getApartmentCountForClient(clientId: string): Promise<number> {
+     const { count, error } = await supabase
+          .from("tblApartments")
+          .select("id, tblBuildings!inner(client_id)", { count: "exact", head: true })
+          .eq("tblBuildings.client_id", clientId);
+
+     if (error) throw error;
+     return count ?? 0;
+}
 
 export async function POST(req: Request) {
      try {
           const body = await req.json();
-          const { clientId, customerEmail, subscriptionPlanId, renewal_period, successUrl, returnUrl, productIds, amount } = body as {
+          const {
+               clientId,
+               customerEmail,
+               subscriptionPlanId,
+               renewal_period,
+               successUrl,
+               returnUrl,
+               productIds,
+          } = body as {
                clientId: string;
                customerEmail?: string;
                subscriptionPlanId: string;
@@ -14,34 +38,43 @@ export async function POST(req: Request) {
                successUrl: string;
                returnUrl: string;
                productIds: string[];
-               amount: number;
           };
 
-          if (!clientId || !customerEmail || !subscriptionPlanId || !successUrl || !returnUrl || !productIds?.length || !amount || !renewal_period) {
+          if (
+               !clientId ||
+               !customerEmail ||
+               !subscriptionPlanId ||
+               !successUrl ||
+               !returnUrl ||
+               !productIds?.length ||
+               !renewal_period
+          ) {
                return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
           }
 
-          // Polar Checkout Session API: create session from list of products
-          let checkout;
-          try {
-               checkout = await polar.checkouts.create({
-                    products: productIds,
-                    successUrl: successUrl,
-                    returnUrl: returnUrl,
-                    customerEmail: customerEmail,
-                    metadata: {
-                         clientId,
-                         subscriptionPlanId,
-                         apartments_count: amount
-                    },
-               });
-          } catch (err: any) {
-               console.log(err);
+          // ✅ server-truth seats
+          const apartmentsCount = await getApartmentCountForClient(clientId);
+          const seats = Math.max(1, apartmentsCount);
 
-               return NextResponse.json({ error: err?.message ?? "Failed to create checkout session" }, { status: 500 });
-          }
+          const checkout = await polar.checkouts.create({
+               products: productIds,
+               successUrl,
+               returnUrl,
+               customerEmail,
 
-          return NextResponse.json({ url: checkout.url, checkoutId: checkout.id });
+               // ✅ correct field for CheckoutCreate in @polar-sh/nextjs
+               seats,
+
+               metadata: {
+                    clientId,
+                    subscriptionPlanId,
+                    renewal_period,
+                    apartments_count: apartmentsCount,
+                    seats_charged: seats,
+               },
+          });
+
+          return NextResponse.json({ url: checkout.url, checkoutId: checkout.id, seats });
      } catch (e: any) {
           return NextResponse.json({ error: e?.message ?? "Unknown error" }, { status: 500 });
      }

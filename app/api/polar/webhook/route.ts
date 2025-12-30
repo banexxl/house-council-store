@@ -335,7 +335,7 @@ async function upsertClientSubscription(args: {
                     polar_checkout_id: finalPolarCheckoutId,
                     polar_order_id: finalPolarOrderId,
                     polar_product_id: finalPolarProductId,
-
+                    apartment_count: apartmentsCount,
                     quantity: finalQuantity,
                },
                { onConflict: "client_id" }

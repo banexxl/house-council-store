@@ -118,13 +118,12 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
                          clientId: client.id!,
                          customerEmail: client.email,
                          subscriptionPlanId: plan.id,
-                         renewal_period: billingCycle, // or "renewalPeriod" depending on your API
+                         renewal_period: billingCycle,
                          successUrl,
                          returnUrl,
                          productIds: billingCycle === "annually"
                               ? [plan.polar_product_id_annually]
                               : [plan.polar_product_id_monthly],
-                         amount: apartmentCount
                     }),
                });
 
