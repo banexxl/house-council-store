@@ -71,7 +71,7 @@ export default async function FreeTrialSuccessPage({ searchParams }: { searchPar
                duration_ms: 0,
                type: 'webhook',
           })
-          redirect("/subscription-plan-purchase/error")
+          redirect("/pricing/subscription-plan-purchase/error")
      }
 
      return (
