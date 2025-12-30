@@ -3,10 +3,9 @@ import { logServerAction } from "@/app/lib/server-logging";
 import { Webhooks } from "@polar-sh/nextjs";
 import { createClient } from "@supabase/supabase-js";
 
-// Ensure Node runtime (webhook signature verification + SDK typically expects Node)
 export const runtime = "nodejs";
 
-// Use service role for webhooks (bypasses RLS) — never expose to client
+// ✅ Use SERVICE ROLE for webhooks (bypasses RLS). Never use anon key here.
 const supabase = createClient(
      process.env.NEXT_PUBLIC_SUPABASE_URL!,
      process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -20,12 +19,15 @@ type RenewalPeriod = "monthly" | "annually";
 
 type ClientSubscriptionRow = {
      created_at: string | null;
+
      polar_customer_id: string | null;
      polar_subscription_id: string | null;
      polar_checkout_id: string | null;
      polar_order_id: string | null;
      polar_product_id: string | null;
+
      quantity: number | null;
+
      subscription_plan_id: string | null;
      client_id: string | null;
 };
@@ -78,26 +80,23 @@ function extractMeta(payloadData: any) {
      const meta = payloadData?.metadata ?? payloadData?.data?.metadata ?? {};
      return {
           clientId: meta?.clientId ?? meta?.client_id ?? null,
-          subscriptionPlanId: meta?.subscriptionPlanId ?? meta?.subscription_plan_id ?? null,
+          subscriptionPlanId:
+               meta?.subscriptionPlanId ?? meta?.subscription_plan_id ?? null,
           renewalPeriod: normalizeRenewalPeriod(
                meta?.renewal_period ?? meta?.billingCycle ?? meta?.billing_cycle
           ),
-          apartmentsCount: meta?.apartments_count ?? null,
      };
 }
 
 /**
  * Extract ids from payload. Different event types nest objects differently.
- * We keep this very defensive.
+ * Keep this defensive.
  */
 function extractIds(eventType: string, data: any) {
      const t = eventType.toLowerCase();
 
      const polarCustomerId =
-          data?.customer?.id ??
-          data?.customer_id ??
-          data?.customerId ??
-          null;
+          data?.customer?.id ?? data?.customer_id ?? data?.customerId ?? null;
 
      // subscription.* often has data.id (the subscription itself)
      const polarSubscriptionId =
@@ -121,7 +120,7 @@ function extractIds(eventType: string, data: any) {
           data?.order_id ??
           null;
 
-     // product id can be in a few places depending on event payload shape
+     // product id is usually best found in order line items
      const polarProductId =
           data?.product?.id ??
           data?.product_id ??
@@ -132,8 +131,8 @@ function extractIds(eventType: string, data: any) {
           data?.items?.[0]?.product_id ??
           null;
 
-     // quantity can exist on subscription, or on line item quantity for some systems
-     const quantity =
+     // quantity (if Polar sends it in some payloads)
+     const qtyRaw =
           data?.quantity ??
           data?.seats ??
           data?.seat_quantity ??
@@ -141,21 +140,25 @@ function extractIds(eventType: string, data: any) {
           data?.line_items?.[0]?.quantity ??
           null;
 
+     const quantity =
+          typeof qtyRaw === "number"
+               ? qtyRaw
+               : qtyRaw != null
+                    ? Number(qtyRaw)
+                    : null;
+
      return {
           polarCustomerId: polarCustomerId ? String(polarCustomerId) : null,
           polarSubscriptionId: polarSubscriptionId ? String(polarSubscriptionId) : null,
           polarCheckoutId: polarCheckoutId ? String(polarCheckoutId) : null,
           polarOrderId: polarOrderId ? String(polarOrderId) : null,
           polarProductId: polarProductId ? String(polarProductId) : null,
-          quantity: typeof quantity === "number" ? quantity : quantity ? Number(quantity) : null,
+          quantity: Number.isFinite(quantity as any) ? (quantity as number) : null,
      };
 }
 
-/**
- * Next billing date / period end commonly present on subscription objects.
- * We'll also accept a fallback if your DB requires next_payment_date not null.
- */
-function extractNextPaymentDate(data: any) {
+/** Next billing date / period end commonly present on subscription objects. */
+function extractNextPaymentDate(data: any): string | null {
      return (
           data?.current_period_end ??
           data?.current_period_end_at ??
@@ -166,18 +169,40 @@ function extractNextPaymentDate(data: any) {
 }
 
 /**
- * If an event arrives without metadata, try to locate the client subscription row
- * using polar_subscription_id or polar_customer_id.
+ * If an event arrives without metadata, try to locate client/plan
+ * by looking up saved Polar ids.
  */
 async function resolveClientAndPlanFromPolarIds(ids: {
      polarSubscriptionId?: string | null;
      polarCustomerId?: string | null;
+     polarCheckoutId?: string | null;
+     polarOrderId?: string | null;
 }): Promise<{ client_id: string; subscription_plan_id: string } | null> {
      if (ids.polarSubscriptionId) {
           const { data } = await supabase
                .from("tblClient_Subscription")
                .select("client_id, subscription_plan_id")
                .eq("polar_subscription_id", ids.polarSubscriptionId)
+               .maybeSingle<{ client_id: string; subscription_plan_id: string }>();
+
+          if (data?.client_id && data?.subscription_plan_id) return data;
+     }
+
+     if (ids.polarOrderId) {
+          const { data } = await supabase
+               .from("tblClient_Subscription")
+               .select("client_id, subscription_plan_id")
+               .eq("polar_order_id", ids.polarOrderId)
+               .maybeSingle<{ client_id: string; subscription_plan_id: string }>();
+
+          if (data?.client_id && data?.subscription_plan_id) return data;
+     }
+
+     if (ids.polarCheckoutId) {
+          const { data } = await supabase
+               .from("tblClient_Subscription")
+               .select("client_id, subscription_plan_id")
+               .eq("polar_checkout_id", ids.polarCheckoutId)
                .maybeSingle<{ client_id: string; subscription_plan_id: string }>();
 
           if (data?.client_id && data?.subscription_plan_id) return data;
@@ -208,7 +233,7 @@ async function upsertClientSubscription(args: {
      polarOrderId?: string | null;
      polarProductId?: string | null;
 
-     quantity?: number | null;
+     polarQuantity?: number | null;
 
      nextPaymentDate?: string | null;
      isAutoRenew?: boolean | null;
@@ -226,13 +251,13 @@ async function upsertClientSubscription(args: {
           polarCheckoutId,
           polarOrderId,
           polarProductId,
-          quantity,
+          polarQuantity,
           nextPaymentDate,
           isAutoRenew,
           expired,
      } = args;
 
-     // Read existing row (typed) to avoid overwriting non-null with null
+     // Read existing row to avoid overwriting non-null with null
      const { data: existingRow, error: existingErr } = await supabase
           .from("tblClient_Subscription")
           .select(
@@ -244,7 +269,7 @@ async function upsertClientSubscription(args: {
      if (existingErr) {
           await logServerAction({
                user_id: null,
-               action: "Webhook - Read existing subscription failed",
+               action: "Store Webhook - Read existing subscription failed",
                payload: { clientId },
                status: "fail",
                error: existingErr.message,
@@ -253,48 +278,20 @@ async function upsertClientSubscription(args: {
           });
      }
 
-     // 2) compute fresh apartment count (Option B join)
-     const { count: aptCount, error: countErr } = await supabase
-          .from("tblApartments")
-          .select("id, tblBuildings!inner(client_id)", { count: "exact", head: true })
-          .eq("tblBuildings.client_id", clientId);
-
-     if (countErr) {
-          await logServerAction({
-               user_id: null,
-               action: "Upsert Client Subscription - Count apartments failed",
-               payload: { clientId },
-               status: "fail",
-               error: countErr.message,
-               duration_ms: 0,
-               type: "internal",
-          });
-     }
-
-     // Decide your billing quantity rules:
-     // - If you want to allow 0, change Math.max(1, ...) to Math.max(0, ...)
-     const freshQuantity = Math.max(1, aptCount ?? 0);
-
      const existing: ClientSubscriptionRow | null = existingRow ?? null;
 
      const finalPolarCustomerId = polarCustomerId ?? existing?.polar_customer_id ?? null;
-     const finalPolarSubscriptionId = polarSubscriptionId ?? existing?.polar_subscription_id ?? null;
+     const finalPolarSubscriptionId =
+          polarSubscriptionId ?? existing?.polar_subscription_id ?? null;
      const finalPolarCheckoutId = polarCheckoutId ?? existing?.polar_checkout_id ?? null;
      const finalPolarOrderId = polarOrderId ?? existing?.polar_order_id ?? null;
      const finalPolarProductId = polarProductId ?? existing?.polar_product_id ?? null;
 
+     // ✅ Store app: do NOT compute apartments. Keep existing unless Polar provides.
      const finalQuantity =
-          typeof freshQuantity === "number" && Number.isFinite(freshQuantity)
-               ? Math.max(1, Math.floor(freshQuantity))
-               : existing?.quantity ?? 1;
-
-     // IMPORTANT: Your DB currently required next_payment_date NOT NULL earlier.
-     // If it's still NOT NULL, we must provide a fallback value.
-     // Best is to change DB to allow NULL. But as a safety net:
-     const safeNextPaymentDate =
-          nextPaymentDate ??
-          // fallback: +30 days from now
-          new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString();
+          typeof polarQuantity === "number" && Number.isFinite(polarQuantity)
+               ? Math.max(1, Math.floor(polarQuantity))
+               : existing?.quantity ?? null;
 
      const { error: upsertErr } = await supabase
           .from("tblClient_Subscription")
@@ -310,7 +307,8 @@ async function upsertClientSubscription(args: {
                     is_auto_renew: isAutoRenew ?? true,
                     expired: expired ?? false,
 
-                    next_payment_date: safeNextPaymentDate,
+                    // nullable in your schema ✅
+                    next_payment_date: nextPaymentDate ?? null,
 
                     polar_customer_id: finalPolarCustomerId,
                     polar_subscription_id: finalPolarSubscriptionId,
@@ -320,19 +318,19 @@ async function upsertClientSubscription(args: {
 
                     quantity: finalQuantity,
                },
-               { onConflict: "client_id" } // requires UNIQUE(client_id)
+               { onConflict: "client_id" }
           );
 
      if (upsertErr) {
           await logServerAction({
                user_id: null,
-               action: "Webhook - Upsert Client Subscription Failed",
+               action: "Store Webhook - Upsert Client Subscription Failed",
                payload: {
                     clientId,
                     subscriptionPlanId,
                     renewalPeriod,
                     status,
-                    nextPaymentDate: safeNextPaymentDate,
+                    nextPaymentDate,
                     quantity: finalQuantity,
                },
                status: "fail",
@@ -345,8 +343,15 @@ async function upsertClientSubscription(args: {
 
      await logServerAction({
           user_id: null,
-          action: "Webhook - Upsert Client Subscription Success",
-          payload: { clientId, status, quantity: finalQuantity },
+          action: "Store Webhook - Upsert Client Subscription Success",
+          payload: {
+               clientId,
+               status,
+               quantity: finalQuantity,
+               polar_checkout_id: finalPolarCheckoutId,
+               polar_order_id: finalPolarOrderId,
+               polar_product_id: finalPolarProductId,
+          },
           status: "success",
           error: "",
           duration_ms: Date.now() - t0,
@@ -372,27 +377,29 @@ export const POST = Webhooks({
           const status = mapPolarToLocalStatus(eventType, data);
           const nextPaymentDate = extractNextPaymentDate(data);
 
-          // TEMP: useful while wiring events
           console.log("Polar webhook:", eventType, {
                metaClientId: meta.clientId,
                metaSubscriptionPlanId: meta.subscriptionPlanId,
                ids,
           });
 
-          // If metadata missing, try to resolve client_id / subscription_plan_id from stored polar ids
+          // If metadata missing, try resolve from stored polar ids
           if (!meta.clientId || !meta.subscriptionPlanId) {
                const resolved = await resolveClientAndPlanFromPolarIds({
                     polarSubscriptionId: ids.polarSubscriptionId,
                     polarCustomerId: ids.polarCustomerId,
+                    polarCheckoutId: ids.polarCheckoutId,
+                    polarOrderId: ids.polarOrderId,
                });
 
                if (!resolved) {
+                    // customer.created can arrive before checkout and be metadata-less → ignore safely
                     await logServerAction({
                          user_id: null,
-                         action: "Webhook - Missing metadata and could not resolve client/plan",
+                         action: "Store Webhook - Missing metadata and could not resolve client/plan",
                          payload: { eventType, ids },
                          status: "fail",
-                         error: "No mapping found in tblClient_Subscription",
+                         error: "No mapping found in tblClient_Subscription yet",
                          duration_ms: Date.now() - t0,
                          type: "internal",
                     });
@@ -403,31 +410,8 @@ export const POST = Webhooks({
                meta.subscriptionPlanId = resolved.subscription_plan_id;
           }
 
-          // Handle events you care about (you can broaden later)
-
-          // CHECKOUT CREATED/UPDATED/COMPLETED
+          // ✅ Handle lifecycle events (enable these in Polar webhook settings)
           if (t.startsWith("checkout.")) {
-               await upsertClientSubscription({
-                    clientId: meta.clientId!,
-                    subscriptionPlanId: meta.subscriptionPlanId!,
-                    renewalPeriod: meta.renewalPeriod,
-                    status,
-                    polarCustomerId: ids.polarCustomerId,
-                    polarSubscriptionId: ids.polarSubscriptionId,
-                    polarCheckoutId: ids.polarCheckoutId, // ✅ this will now be set (data.id for checkout.*)
-                    polarOrderId: ids.polarOrderId,
-                    polarProductId: ids.polarProductId,
-                    quantity: ids.quantity,
-                    nextPaymentDate,
-                    isAutoRenew: true,
-                    expired: false,
-               });
-               return;
-          }
-
-          // CUSTOMER CREATED/UPDATED
-          if (t.startsWith("customer.")) {
-               // Often customer events don't have subscription info, but we can still store customer id
                await upsertClientSubscription({
                     clientId: meta.clientId!,
                     subscriptionPlanId: meta.subscriptionPlanId!,
@@ -438,7 +422,7 @@ export const POST = Webhooks({
                     polarCheckoutId: ids.polarCheckoutId,
                     polarOrderId: ids.polarOrderId,
                     polarProductId: ids.polarProductId,
-                    quantity: ids.quantity,
+                    polarQuantity: ids.quantity,
                     nextPaymentDate,
                     isAutoRenew: true,
                     expired: false,
@@ -446,7 +430,6 @@ export const POST = Webhooks({
                return;
           }
 
-          // ORDER CREATED/UPDATED (enable these events in Polar webhook settings)
           if (t.startsWith("order.")) {
                await upsertClientSubscription({
                     clientId: meta.clientId!,
@@ -456,9 +439,9 @@ export const POST = Webhooks({
                     polarCustomerId: ids.polarCustomerId,
                     polarSubscriptionId: ids.polarSubscriptionId,
                     polarCheckoutId: ids.polarCheckoutId,
-                    polarOrderId: ids.polarOrderId, // ✅
-                    polarProductId: ids.polarProductId, // ✅ likely present here (line items)
-                    quantity: ids.quantity,
+                    polarOrderId: ids.polarOrderId,
+                    polarProductId: ids.polarProductId,
+                    polarQuantity: ids.quantity,
                     nextPaymentDate,
                     isAutoRenew: true,
                     expired: false,
@@ -466,7 +449,6 @@ export const POST = Webhooks({
                return;
           }
 
-          // SUBSCRIPTION CREATED/UPDATED/CANCELED (enable these events in Polar webhook settings)
           if (t.startsWith("subscription.")) {
                const isCanceled = t.includes("canceled");
                await upsertClientSubscription({
@@ -475,11 +457,11 @@ export const POST = Webhooks({
                     renewalPeriod: meta.renewalPeriod,
                     status: isCanceled ? "canceled" : status,
                     polarCustomerId: ids.polarCustomerId,
-                    polarSubscriptionId: ids.polarSubscriptionId, // ✅
+                    polarSubscriptionId: ids.polarSubscriptionId,
                     polarCheckoutId: ids.polarCheckoutId,
                     polarOrderId: ids.polarOrderId,
                     polarProductId: ids.polarProductId,
-                    quantity: ids.quantity,
+                    polarQuantity: ids.quantity,
                     nextPaymentDate,
                     isAutoRenew: !isCanceled,
                     expired: false,
@@ -487,7 +469,6 @@ export const POST = Webhooks({
                return;
           }
 
-          // PAYMENT SUCCEEDED / FAILED (enable these events in Polar webhook settings)
           if (t.startsWith("payment.")) {
                await upsertClientSubscription({
                     clientId: meta.clientId!,
@@ -499,7 +480,7 @@ export const POST = Webhooks({
                     polarCheckoutId: ids.polarCheckoutId,
                     polarOrderId: ids.polarOrderId,
                     polarProductId: ids.polarProductId,
-                    quantity: ids.quantity,
+                    polarQuantity: ids.quantity,
                     nextPaymentDate,
                     isAutoRenew: true,
                     expired: false,
@@ -507,11 +488,17 @@ export const POST = Webhooks({
                return;
           }
 
-          // INVOICE CREATED / FINALIZED (optional, if you later store invoices)
-          if (t.startsWith("invoice.")) {
-               return;
-          }
+          // ignore customer.* / invoice.* by default
+          if (t.startsWith("customer.") || t.startsWith("invoice.")) return;
 
-          // Default: ignore other events
+          await logServerAction({
+               user_id: null,
+               action: "Store Webhook - Ignored event",
+               payload: { eventType },
+               status: "success",
+               error: "",
+               duration_ms: Date.now() - t0,
+               type: "internal",
+          });
      },
 });
