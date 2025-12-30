@@ -1,5 +1,6 @@
 "use client"
 
+import { useTransition } from "react"
 import { useRouter } from "next/navigation"
 import {
      Box,
@@ -12,6 +13,7 @@ import {
      ListItemIcon,
      ListItemText,
      Divider,
+     CircularProgress,
 } from "@mui/material"
 import WarningIcon from "@mui/icons-material/Warning"
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline"
@@ -23,6 +25,13 @@ interface FreeTrialErrorProps {
 
 export default function SubscriptionErrorPage({ userEmail }: FreeTrialErrorProps) {
      const router = useRouter()
+     const [isPending, startTransition] = useTransition()
+
+     const handleRetry = () => {
+          startTransition(() => {
+               router.push("/pricing")
+          })
+     }
 
      return (
           <Container maxWidth="md" sx={{ py: 8 }}>
@@ -63,12 +72,13 @@ export default function SubscriptionErrorPage({ userEmail }: FreeTrialErrorProps
                          <Box sx={{ display: "flex", flexDirection: "column", gap: 2, maxWidth: 500, mx: "auto", mb: 4 }}>
                               <Button
                                    variant="contained"
-                                   startIcon={<HelpOutlineIcon />}
-                                   onClick={() => router.push("/pricing")}
+                                   startIcon={isPending ? <CircularProgress size={20} color="inherit" /> : <HelpOutlineIcon />}
+                                   onClick={handleRetry}
+                                   disabled={isPending}
                                    fullWidth
                                    size="large"
                               >
-                                   Try Again
+                                   {isPending ? "Redirecting..." : "Try Again"}
                               </Button>
                          </Box>
 
