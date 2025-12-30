@@ -196,16 +196,6 @@ async function resolveClientAndPlanFromPolarIds(ids: {
      return null;
 }
 
-async function getFreshApartmentCount(clientId: string): Promise<number> {
-     const { count, error } = await supabase
-          .from("tblApartments")
-          .select("id, tblBuildings!inner(client_id)", { count: "exact", head: true })
-          .eq("tblBuildings.client_id", clientId);
-
-     if (error) throw error;
-     return Math.max(1, count ?? 0);
-}
-
 async function upsertClientSubscription(args: {
      clientId: string;
      subscriptionPlanId: string;
