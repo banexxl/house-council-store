@@ -64,10 +64,6 @@ export async function POST(req: Request) {
                     successUrl,
                     returnUrl,
                     customerEmail,
-
-                    // ✅ correct field for CheckoutCreate in @polar-sh/nextjs
-                    seats,
-
                     metadata: {
                          clientId,
                          subscriptionPlanId,
