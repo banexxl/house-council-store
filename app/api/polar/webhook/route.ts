@@ -1,4 +1,5 @@
 // app/api/polar/webhook/route.ts
+import { polar } from "@/app/lib/polar";
 import { logServerAction } from "@/app/lib/server-logging";
 import { getApartmentCountForClient } from "@/app/profile/subscription-plan-actions";
 import { Webhooks } from "@polar-sh/nextjs";
@@ -31,6 +32,9 @@ type ClientSubscriptionRow = {
 
      subscription_plan_id: string | null;
      client_id: string | null;
+
+     seats_last_synced_at?: string | null;
+     quantity_last_sent?: number | null;
 };
 
 // ---------------------------------------------------------------------------
@@ -81,12 +85,60 @@ function extractMeta(payloadData: any) {
      const meta = payloadData?.metadata ?? payloadData?.data?.metadata ?? {};
      return {
           clientId: meta?.clientId ?? meta?.client_id ?? null,
-          subscriptionPlanId:
-               meta?.subscriptionPlanId ?? meta?.subscription_plan_id ?? null,
+          subscriptionPlanId: meta?.subscriptionPlanId ?? meta?.subscription_plan_id ?? null,
           renewalPeriod: normalizeRenewalPeriod(
                meta?.renewal_period ?? meta?.billingCycle ?? meta?.billing_cycle
           ),
      };
+}
+
+/**
+ * For Strategy B we want to ingest once per period. This is best-effort because
+ * not all Polar event types include period start. We'll fall back to "now".
+ */
+function extractCurrentPeriodStart(data: any): string | null {
+     return (
+          data?.current_period_start ??
+          data?.current_period_start_at ??
+          data?.billing_period_start ??
+          data?.period_start ??
+          null
+     );
+}
+
+function isSameOrAfter(
+     aIso: string | null | undefined,
+     bIso: string | null | undefined
+) {
+     if (!aIso || !bIso) return false;
+     return new Date(aIso).getTime() >= new Date(bIso).getTime();
+}
+
+/**
+ * Strategy B meter expects metadata.apartments_count (per your meter config screenshot).
+ * IMPORTANT: The key must match exactly: apartments_count
+ */
+async function ingestApartmentSnapshot(args: {
+     polarCustomerId: string;
+     clientId: string;
+     apartmentsCount: number;
+     timestampIso: string;
+}) {
+     const { polarCustomerId, clientId, apartmentsCount, timestampIso } = args;
+
+     await polar.events.ingest({
+          events: [
+               {
+                    name: "apartments_snapshot",
+                    customerId: polarCustomerId,
+                    timestamp: new Date(timestampIso),
+                    metadata: {
+                         client_id: clientId,
+                         apartments_count: apartmentsCount, // ✅ must match meter property
+                    },
+               },
+          ],
+     });
 }
 
 /**
@@ -131,6 +183,7 @@ function extractIds(eventType: string, data: any) {
           data?.items?.[0]?.product?.id ??
           data?.items?.[0]?.product_id ??
           null;
+
      // quantity (Polar doesn't always include it → default to 1)
      const qtyRaw =
           data?.quantity ??
@@ -149,9 +202,7 @@ function extractIds(eventType: string, data: any) {
           quantityParsed = Number.isFinite(n) ? n : null;
      }
 
-     // ✅ never send null to DB
-     const quantity = quantityParsed ?? 1;
-
+     const quantity = Math.max(1, quantityParsed ?? 1);
 
      return {
           polarCustomerId: polarCustomerId ? String(polarCustomerId) : null,
@@ -159,8 +210,7 @@ function extractIds(eventType: string, data: any) {
           polarCheckoutId: polarCheckoutId ? String(polarCheckoutId) : null,
           polarOrderId: polarOrderId ? String(polarOrderId) : null,
           polarProductId: polarProductId ? String(polarProductId) : null,
-          quantity: Math.max(1, Number.isFinite(quantity as any) ? Number(quantity) : 1),
-
+          quantity,
      };
 }
 
@@ -243,6 +293,8 @@ async function upsertClientSubscription(args: {
      polarQuantity?: number | null;
 
      nextPaymentDate?: string | null;
+     currentPeriodStart?: string | null;
+
      isAutoRenew?: boolean | null;
      expired?: boolean | null;
 }) {
@@ -260,6 +312,7 @@ async function upsertClientSubscription(args: {
           polarProductId,
           polarQuantity,
           nextPaymentDate,
+          currentPeriodStart,
           isAutoRenew,
           expired,
      } = args;
@@ -268,7 +321,7 @@ async function upsertClientSubscription(args: {
      const { data: existingRow, error: existingErr } = await supabase
           .from("tblClient_Subscription")
           .select(
-               "created_at, polar_customer_id, polar_subscription_id, polar_checkout_id, polar_order_id, polar_product_id, quantity"
+               "created_at, polar_customer_id, polar_subscription_id, polar_checkout_id, polar_order_id, polar_product_id, quantity, seats_last_synced_at, quantity_last_sent"
           )
           .eq("client_id", clientId)
           .maybeSingle<ClientSubscriptionRow>();
@@ -294,24 +347,16 @@ async function upsertClientSubscription(args: {
      const finalPolarOrderId = polarOrderId ?? existing?.polar_order_id ?? null;
      const finalPolarProductId = polarProductId ?? existing?.polar_product_id ?? null;
 
-     const apartmentsCount = await getApartmentCountForClient(clientId);
-
-     // Mode switch:
-     // - If you want billing seats to always match apartments, set FORCE_APARTMENT_SEATS=true
-     const forceApartmentSeats = process.env.FORCE_APARTMENT_SEATS === "true";
-
-     // Polar-reported seats (when present)
+     // Always store a safe quantity (NOT NULL column in your schema)
      const polarSeats =
           typeof polarQuantity === "number" && Number.isFinite(polarQuantity)
                ? Math.max(1, Math.floor(polarQuantity))
                : null;
 
-     // If forcing apartment seats: quantity becomes apartment count (min 1)
-     // Otherwise: keep Polar seats if present, else keep existing, else default 1
-     const finalQuantity = forceApartmentSeats
-          ? Math.max(1, apartmentsCount)
-          : polarSeats ?? existing?.quantity ?? 1;
+     const finalQuantity = polarSeats ?? existing?.quantity ?? 1;
 
+     // You already have an action for this (it does join through buildings)
+     const apartmentsCount = Math.max(0, await getApartmentCountForClient(clientId));
 
      const { error: upsertErr } = await supabase
           .from("tblClient_Subscription")
@@ -327,7 +372,6 @@ async function upsertClientSubscription(args: {
                     is_auto_renew: isAutoRenew ?? true,
                     expired: expired ?? false,
 
-                    // nullable in your schema ✅
                     next_payment_date: nextPaymentDate ?? null,
 
                     polar_customer_id: finalPolarCustomerId,
@@ -335,7 +379,10 @@ async function upsertClientSubscription(args: {
                     polar_checkout_id: finalPolarCheckoutId,
                     polar_order_id: finalPolarOrderId,
                     polar_product_id: finalPolarProductId,
+
+                    // optional (you said you added this column)
                     apartment_count: apartmentsCount,
+
                     quantity: finalQuantity,
                },
                { onConflict: "client_id" }
@@ -361,6 +408,48 @@ async function upsertClientSubscription(args: {
           throw upsertErr;
      }
 
+     // -----------------------------------------------------------------------
+     // Strategy B: ingest ONE apartments_snapshot per billing period (best effort)
+     // - Your meter sums metadata.apartments_count
+     // - We'll try to use current period start if provided, otherwise "now"
+     // - We'll store seats_last_synced_at to prevent duplicates
+     // -----------------------------------------------------------------------
+     const timestampIso = currentPeriodStart ?? nowIso();
+
+     const shouldIngest =
+          status === "active" &&
+          !!finalPolarCustomerId &&
+          // if we've already synced after/at this timestamp, skip
+          !isSameOrAfter(existing?.seats_last_synced_at ?? null, timestampIso);
+
+     if (shouldIngest) {
+          try {
+               await ingestApartmentSnapshot({
+                    polarCustomerId: finalPolarCustomerId!,
+                    clientId,
+                    apartmentsCount,
+                    timestampIso,
+               });
+
+               await supabase
+                    .from("tblClient_Subscription")
+                    .update({
+                         quantity_last_sent: apartmentsCount,
+                         seats_last_synced_at: nowIso(),
+                         seats_sync_error: null,
+                    })
+                    .eq("client_id", clientId);
+          } catch (e: any) {
+               await supabase
+                    .from("tblClient_Subscription")
+                    .update({
+                         seats_sync_error: e?.message ?? "usage ingest failed",
+                         seats_last_synced_at: nowIso(),
+                    })
+                    .eq("client_id", clientId);
+          }
+     }
+
      await logServerAction({
           user_id: null,
           action: "Store Webhook - Upsert Client Subscription Success",
@@ -368,9 +457,12 @@ async function upsertClientSubscription(args: {
                clientId,
                status,
                quantity: finalQuantity,
+               apartment_count: apartmentsCount,
                polar_checkout_id: finalPolarCheckoutId,
                polar_order_id: finalPolarOrderId,
                polar_product_id: finalPolarProductId,
+               usage_ingest_attempted: shouldIngest,
+               usage_timestamp: timestampIso,
           },
           status: "success",
           error: "",
@@ -396,6 +488,7 @@ export const POST = Webhooks({
           const ids = extractIds(eventType, data);
           const status = mapPolarToLocalStatus(eventType, data);
           const nextPaymentDate = extractNextPaymentDate(data);
+          const currentPeriodStart = extractCurrentPeriodStart(data);
 
           console.log("Polar webhook:", eventType, {
                metaClientId: meta.clientId,
@@ -431,80 +524,34 @@ export const POST = Webhooks({
           }
 
           // ✅ Handle lifecycle events (enable these in Polar webhook settings)
-          if (t.startsWith("checkout.")) {
-               await upsertClientSubscription({
-                    clientId: meta.clientId!,
-                    subscriptionPlanId: meta.subscriptionPlanId!,
-                    renewalPeriod: meta.renewalPeriod,
-                    status,
-                    polarCustomerId: ids.polarCustomerId,
-                    polarSubscriptionId: ids.polarSubscriptionId,
-                    polarCheckoutId: ids.polarCheckoutId,
-                    polarOrderId: ids.polarOrderId,
-                    polarProductId: ids.polarProductId,
-                    polarQuantity: ids.quantity,
-                    nextPaymentDate,
-                    isAutoRenew: true,
-                    expired: false,
-               });
-               return;
-          }
+          if (
+               t.startsWith("checkout.") ||
+               t.startsWith("order.") ||
+               t.startsWith("subscription.") ||
+               t.startsWith("payment.")
+          ) {
+               const isCanceled = t.startsWith("subscription.") && t.includes("canceled");
 
-          if (t.startsWith("order.")) {
-               await upsertClientSubscription({
-                    clientId: meta.clientId!,
-                    subscriptionPlanId: meta.subscriptionPlanId!,
-                    renewalPeriod: meta.renewalPeriod,
-                    status,
-                    polarCustomerId: ids.polarCustomerId,
-                    polarSubscriptionId: ids.polarSubscriptionId,
-                    polarCheckoutId: ids.polarCheckoutId,
-                    polarOrderId: ids.polarOrderId,
-                    polarProductId: ids.polarProductId,
-                    polarQuantity: ids.quantity,
-                    nextPaymentDate,
-                    isAutoRenew: true,
-                    expired: false,
-               });
-               return;
-          }
-
-          if (t.startsWith("subscription.")) {
-               const isCanceled = t.includes("canceled");
                await upsertClientSubscription({
                     clientId: meta.clientId!,
                     subscriptionPlanId: meta.subscriptionPlanId!,
                     renewalPeriod: meta.renewalPeriod,
                     status: isCanceled ? "canceled" : status,
+
                     polarCustomerId: ids.polarCustomerId,
                     polarSubscriptionId: ids.polarSubscriptionId,
                     polarCheckoutId: ids.polarCheckoutId,
                     polarOrderId: ids.polarOrderId,
                     polarProductId: ids.polarProductId,
+
                     polarQuantity: ids.quantity,
                     nextPaymentDate,
+                    currentPeriodStart,
+
                     isAutoRenew: !isCanceled,
                     expired: false,
                });
-               return;
-          }
 
-          if (t.startsWith("payment.")) {
-               await upsertClientSubscription({
-                    clientId: meta.clientId!,
-                    subscriptionPlanId: meta.subscriptionPlanId!,
-                    renewalPeriod: meta.renewalPeriod,
-                    status,
-                    polarCustomerId: ids.polarCustomerId,
-                    polarSubscriptionId: ids.polarSubscriptionId,
-                    polarCheckoutId: ids.polarCheckoutId,
-                    polarOrderId: ids.polarOrderId,
-                    polarProductId: ids.polarProductId,
-                    polarQuantity: ids.quantity,
-                    nextPaymentDate,
-                    isAutoRenew: true,
-                    expired: false,
-               });
                return;
           }
 
