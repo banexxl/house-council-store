@@ -80,8 +80,6 @@ export async function POST(req: Request) {
                console.error("Error creating checkout:", error);
                throw error;
           }
-
-
           return NextResponse.json({ url: checkout.url, checkoutId: checkout.id, seats });
      } catch (e: any) {
           return NextResponse.json({ error: e?.message ?? "Unknown error" }, { status: 500 });
