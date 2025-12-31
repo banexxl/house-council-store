@@ -14,8 +14,6 @@ async function getApartmentCountForClient(clientId: string): Promise<number> {
           .from("tblApartments")
           .select("id, tblBuildings!inner(client_id)", { count: "exact", head: true })
           .eq("tblBuildings.client_id", clientId);
-     console.log('error', error);
-
      if (error) throw error;
      return count ?? 0;
 }

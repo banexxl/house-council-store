@@ -477,20 +477,20 @@ export const POST = Webhooks({
           const t0 = Date.now();
 
           const eventType = (payload as any)?.type ?? "";
+          console.log('Polar Webhook received:', eventType);
           const data = (payload as any)?.data ?? {};
           const t = eventType.toLowerCase();
 
           const meta = extractMeta(data);
+          console.log('Polar Webhooks - meta data', meta);
           const ids = extractIds(eventType, data);
+          console.log('Polar Webhooks - extracted ids', ids);
           const status = mapPolarToLocalStatus(eventType, data);
+          console.log('Polar Webhooks - mapped status', status);
           const nextPaymentDate = extractNextPaymentDate(data);
+          console.log('Polar Webhooks - next payment date', nextPaymentDate);
           const currentPeriodStart = extractCurrentPeriodStart(data);
-
-          console.log("Polar webhook:", eventType, {
-               metaClientId: meta.clientId,
-               metaSubscriptionPlanId: meta.subscriptionPlanId,
-               ids,
-          });
+          console.log('Polar Webhooks - current period start', currentPeriodStart);
 
           // If metadata missing, try resolve from stored polar ids
           if (!meta.clientId || !meta.subscriptionPlanId) {
@@ -524,7 +524,11 @@ export const POST = Webhooks({
                t.startsWith("checkout.") ||
                t.startsWith("order.") ||
                t.startsWith("subscription.") ||
-               t.startsWith("payment.")
+               t.startsWith("refund.") ||
+               t.startsWith("payment.") ||
+               t.startsWith("customer.") ||
+               t.startsWith("product.") ||
+               t.startsWith("benefit.")
           ) {
                const isCanceled = t.startsWith("subscription.") && t.includes("canceled");
 
