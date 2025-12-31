@@ -55,8 +55,6 @@ export async function POST(req: Request) {
 
           // ✅ server-truth seats
           const apartmentsCount = await getApartmentCountForClient(clientId);
-          const seats = Math.max(1, apartmentsCount);
-
           let checkout;
           try {
                checkout = await polar.checkouts.create({
@@ -69,14 +67,13 @@ export async function POST(req: Request) {
                          subscriptionPlanId,
                          renewal_period,
                          apartments_count: apartmentsCount,
-                         seats_charged: seats,
                     },
                });
           } catch (error) {
                console.error("Error creating checkout:", error);
                throw error;
           }
-          return NextResponse.json({ url: checkout.url, checkoutId: checkout.id, seats });
+          return NextResponse.json({ url: checkout.url, checkoutId: checkout.id });
      } catch (e: any) {
           return NextResponse.json({ error: e?.message ?? "Unknown error" }, { status: 500 });
      }
