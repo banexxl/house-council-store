@@ -184,25 +184,6 @@ function extractIds(eventType: string, data: any) {
           data?.items?.[0]?.product_id ??
           null;
 
-     // apartment_count (Polar doesn't always include it → default to 1)
-     const qtyRaw =
-          data?.apartment_count ??
-          data?.seats ??
-          data?.seat_quantity ??
-          data?.items?.[0]?.apartment_count ??
-          data?.line_items?.[0]?.apartment_count ??
-          null;
-
-     let quantityParsed: number | null = null;
-
-     if (typeof qtyRaw === "number") {
-          quantityParsed = Number.isFinite(qtyRaw) ? qtyRaw : null;
-     } else if (qtyRaw != null) {
-          const n = Number(qtyRaw);
-          quantityParsed = Number.isFinite(n) ? n : null;
-     }
-
-     const apartment_count = Math.max(1, quantityParsed ?? 1);
 
      return {
           polarCustomerId: polarCustomerId ? String(polarCustomerId) : null,
@@ -210,7 +191,7 @@ function extractIds(eventType: string, data: any) {
           polarCheckoutId: polarCheckoutId ? String(polarCheckoutId) : null,
           polarOrderId: polarOrderId ? String(polarOrderId) : null,
           polarProductId: polarProductId ? String(polarProductId) : null,
-          apartment_count,
+          apartments_count: data?.apartments_count,
      };
 }
 
@@ -544,7 +525,7 @@ export const POST = Webhooks({
                     polarOrderId: ids.polarOrderId,
                     polarProductId: ids.polarProductId,
 
-                    polarQuantity: ids.apartment_count,
+                    polarQuantity: ids.apartments_count,
                     nextPaymentDate,
                     currentPeriodStart,
 
