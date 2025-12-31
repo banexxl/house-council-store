@@ -27,14 +27,14 @@ type ClientSubscriptionRow = {
      polar_checkout_id: string | null;
      polar_order_id: string | null;
      polar_product_id: string | null;
-
-     quantity: number | null;
-
-     subscription_plan_id: string | null;
      client_id: string | null;
 
-     seats_last_synced_at?: string | null;
-     quantity_last_sent?: number | null;
+     apartment_count: number | null;
+
+     subscription_plan_id: string | null;
+
+     apartment_count_last_synced_at?: string | null;
+     apartment_count_last_sent?: number | null;
 };
 
 // ---------------------------------------------------------------------------
@@ -353,7 +353,7 @@ async function upsertClientSubscription(args: {
                ? Math.max(1, Math.floor(polarQuantity))
                : null;
 
-     const finalQuantity = polarSeats ?? existing?.quantity ?? 1;
+     const finalQuantity = polarSeats ?? existing?.apartment_count ?? 1;
 
      // You already have an action for this (it does join through buildings)
      const apartmentsCount = Math.max(0, await getApartmentCountForClient(clientId));
@@ -379,7 +379,6 @@ async function upsertClientSubscription(args: {
                     polar_checkout_id: finalPolarCheckoutId,
                     polar_order_id: finalPolarOrderId,
                     polar_product_id: finalPolarProductId,
-
                     // optional (you said you added this column)
                     apartment_count: apartmentsCount,
 
@@ -420,7 +419,7 @@ async function upsertClientSubscription(args: {
           status === "active" &&
           !!finalPolarCustomerId &&
           // if we've already synced after/at this timestamp, skip
-          !isSameOrAfter(existing?.seats_last_synced_at ?? null, timestampIso);
+          !isSameOrAfter(existing?.apartment_count_last_synced_at ?? null, timestampIso);
 
      if (shouldIngest) {
           try {

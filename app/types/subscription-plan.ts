@@ -57,13 +57,37 @@ export type RenewalPeriod = 'monthly' | 'annually'; // extend if needed
 
 export interface ClientSubscription {
      id: string;
-     client_id: string;
-     subscription_plan_id: string;
+
+     client_id: string | null;
+     subscription_plan_id: string | null;
+
      status: SubscriptionStatus;
-     created_at: string; // ISO date string
-     updated_at: string; // ISO date string
+
+     created_at: string; // timestamptz
+     updated_at: string; // timestamptz
+
      is_auto_renew: boolean;
-     next_payment_date: string | null; // nullable
-     renewal_period: RenewalPeriod
+     next_payment_date: string | null; // timestamptz nullable
+     expired: boolean;
+
+     renewal_period: RenewalPeriod;
+
+     // Polar IDs (uuid, nullable)
+     polar_customer_id: string | null;
+     polar_subscription_id: string | null;
+     polar_checkout_id: string | null;
+     polar_order_id: string | null;
+     polar_product_id: string | null;
+
+     // Billing quantity (numeric in DB)
+     quantity: number | string;
+
+     // Apartment count (you added + usage syncing fields; types per screenshot)
+     apartment_count: number | string;            // numeric
+     quantity_last_sent: number | null;           // int8
+     quantity_last_seen: number | null;           // int8
+     seats_last_synced_at: string | null;         // timestamptz
+     seats_sync_error: string | null;             // text
 }
+
 
