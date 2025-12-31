@@ -79,9 +79,6 @@ export interface ClientSubscription {
      polar_order_id: string | null;
      polar_product_id: string | null;
 
-     // Billing quantity (numeric in DB)
-     quantity: number | string;
-
      // Apartment count (you added + usage syncing fields; types per screenshot)
      apartment_count: number | string;            // numeric
      quantity_last_sent: number | null;           // int8

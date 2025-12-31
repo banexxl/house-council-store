@@ -184,13 +184,13 @@ function extractIds(eventType: string, data: any) {
           data?.items?.[0]?.product_id ??
           null;
 
-     // quantity (Polar doesn't always include it → default to 1)
+     // apartment_count (Polar doesn't always include it → default to 1)
      const qtyRaw =
-          data?.quantity ??
+          data?.apartment_count ??
           data?.seats ??
           data?.seat_quantity ??
-          data?.items?.[0]?.quantity ??
-          data?.line_items?.[0]?.quantity ??
+          data?.items?.[0]?.apartment_count ??
+          data?.line_items?.[0]?.apartment_count ??
           null;
 
      let quantityParsed: number | null = null;
@@ -202,7 +202,7 @@ function extractIds(eventType: string, data: any) {
           quantityParsed = Number.isFinite(n) ? n : null;
      }
 
-     const quantity = Math.max(1, quantityParsed ?? 1);
+     const apartment_count = Math.max(1, quantityParsed ?? 1);
 
      return {
           polarCustomerId: polarCustomerId ? String(polarCustomerId) : null,
@@ -210,7 +210,7 @@ function extractIds(eventType: string, data: any) {
           polarCheckoutId: polarCheckoutId ? String(polarCheckoutId) : null,
           polarOrderId: polarOrderId ? String(polarOrderId) : null,
           polarProductId: polarProductId ? String(polarProductId) : null,
-          quantity,
+          apartment_count,
      };
 }
 
@@ -321,7 +321,7 @@ async function upsertClientSubscription(args: {
      const { data: existingRow, error: existingErr } = await supabase
           .from("tblClient_Subscription")
           .select(
-               "created_at, polar_customer_id, polar_subscription_id, polar_checkout_id, polar_order_id, polar_product_id, quantity, seats_last_synced_at, quantity_last_sent"
+               "created_at, polar_customer_id, polar_subscription_id, polar_checkout_id, polar_order_id, polar_product_id, apartment_count, seats_last_synced_at, quantity_last_sent"
           )
           .eq("client_id", clientId)
           .maybeSingle<ClientSubscriptionRow>();
@@ -347,7 +347,7 @@ async function upsertClientSubscription(args: {
      const finalPolarOrderId = polarOrderId ?? existing?.polar_order_id ?? null;
      const finalPolarProductId = polarProductId ?? existing?.polar_product_id ?? null;
 
-     // Always store a safe quantity (NOT NULL column in your schema)
+     // Always store a safe apartment_count (NOT NULL column in your schema)
      const polarSeats =
           typeof polarQuantity === "number" && Number.isFinite(polarQuantity)
                ? Math.max(1, Math.floor(polarQuantity))
@@ -381,8 +381,6 @@ async function upsertClientSubscription(args: {
                     polar_product_id: finalPolarProductId,
                     // optional (you said you added this column)
                     apartment_count: apartmentsCount,
-
-                    quantity: finalQuantity,
                },
                { onConflict: "client_id" }
           );
@@ -397,7 +395,7 @@ async function upsertClientSubscription(args: {
                     renewalPeriod,
                     status,
                     nextPaymentDate,
-                    quantity: finalQuantity,
+                    apartment_count: finalQuantity,
                },
                status: "fail",
                error: upsertErr.message,
@@ -455,8 +453,7 @@ async function upsertClientSubscription(args: {
           payload: {
                clientId,
                status,
-               quantity: finalQuantity,
-               apartment_count: apartmentsCount,
+               apartment_count: finalQuantity,
                polar_checkout_id: finalPolarCheckoutId,
                polar_order_id: finalPolarOrderId,
                polar_product_id: finalPolarProductId,
@@ -543,7 +540,7 @@ export const POST = Webhooks({
                     polarOrderId: ids.polarOrderId,
                     polarProductId: ids.polarProductId,
 
-                    polarQuantity: ids.quantity,
+                    polarQuantity: ids.apartment_count,
                     nextPaymentDate,
                     currentPeriodStart,
 
