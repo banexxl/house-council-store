@@ -312,7 +312,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
                                                                  variant="contained"
                                                                  fullWidth
                                                                  onClick={() => handleStartFreeTrial(plan, billingCycle)}
-                                                                 disabled={isAnyLoading || !isThisLoading || clientSubscriptionPlanData?.status === "trialing" || clientSubscriptionPlanData?.status === "active"}
+                                                                 disabled={isAnyLoading || clientSubscriptionPlanData?.status === "trialing" || clientSubscriptionPlanData?.status === "active"}
                                                                  startIcon={isThisLoading ? <CircularProgress size={20} color="inherit" /> : undefined}
                                                             >
                                                                  {isThisLoading ? "Redirecting..." : buttonLabel}
