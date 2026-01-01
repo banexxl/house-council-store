@@ -465,7 +465,7 @@ async function upsertClientSubscription(args: {
 // ---------------------------------------------------------------------------
 
 export const POST = Webhooks({
-     webhookSecret: process.env.POLAR_WEBHOOK_SECRET!,
+     webhookSecret: process.env.POLAR_WEBHOOK_SECRET_SANDBOX!,
      onPayload: async (payload) => {
           const t0 = Date.now();
 
