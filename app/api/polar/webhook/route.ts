@@ -216,6 +216,17 @@ async function resolveClientAndPlanFromPolarIds(ids: {
      polarCheckoutId?: string | null;
      polarOrderId?: string | null;
 }): Promise<{ client_id: string; subscription_plan_id: string } | null> {
+
+     await logServerAction({
+          user_id: null,
+          action: "Store Webhook - Resolving client and plan from Polar IDs",
+          payload: { ids },
+          status: "success",
+          error: "",
+          duration_ms: 0,
+          type: "internal",
+     });
+
      if (ids.polarSubscriptionId) {
           const { data } = await supabase
                .from("tblClient_Subscription")
@@ -297,6 +308,31 @@ async function upsertClientSubscription(args: {
           isAutoRenew,
           expired,
      } = args;
+
+     await logServerAction({
+          user_id: null,
+          action: "Store Webhook - Upsert Client Subscription Started",
+          payload: {
+               clientId,
+               subscriptionPlanId,
+               renewalPeriod,
+               status,
+               polarCustomerId,
+               polarSubscriptionId,
+               polarCheckoutId,
+               polarOrderId,
+               polarProductId,
+               polarQuantity,
+               nextPaymentDate,
+               currentPeriodStart,
+               isAutoRenew,
+               expired,
+          },
+          status: "success",
+          error: "",
+          duration_ms: Date.now() - t0,
+          type: "internal",
+     });
 
      // Read existing row to avoid overwriting non-null with null
      const { data: existingRow, error: existingErr } = await supabase
@@ -395,7 +431,6 @@ async function upsertClientSubscription(args: {
           });
           return;
      }
-
 
      // -----------------------------------------------------------------------
      // Strategy B: ingest ONE apartments_snapshot per billing period (best effort)
