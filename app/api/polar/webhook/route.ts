@@ -339,7 +339,7 @@ async function upsertClientSubscription(args: {
      // You already have an action for this (it does join through buildings)
      const apartmentsCount = Math.max(0, await getApartmentCountForClient(clientId));
 
-     const { data: upsertClientSubData, error: upsertErr } = await supabase
+     const { error: upsertErr } = await supabase
           .from("tblClient_Subscription")
           .upsert(
                {
