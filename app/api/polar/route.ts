@@ -84,7 +84,7 @@ export async function DELETE(req: Request) {
           if (!subscriptionId) {
                return NextResponse.json({ error: "Missing subscriptionId" }, { status: 400 });
           }
-          await polar.subscriptions.revoke(subscriptionId);
+          (await polar.subscriptions.get(subscriptionId)).cancelAtPeriodEnd;
           return NextResponse.json({ message: "Subscription canceled successfully" });
      } catch (e: any) {
           return NextResponse.json({ error: e?.message ?? "Unknown error" }, { status: 500 });
