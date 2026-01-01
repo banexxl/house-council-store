@@ -284,7 +284,7 @@ async function upsertClientSubscription(args: {
      const { data: existingRow, error: existingErr } = await supabase
           .from("tblClient_Subscription")
           .select(
-               "created_at, polar_customer_id, polar_subscription_id, polar_checkout_id, polar_order_id, polar_product_id, apartment_count, apartment_count_last_synced_at, quantity_last_sent"
+               "created_at, polar_customer_id, polar_subscription_id, polar_checkout_id, polar_order_id, polar_product_id, apartment_count, apartment_count_last_synced_at, apartment_count_last_sent"
           )
           .eq("client_id", clientId)
           .maybeSingle<ClientSubscriptionRow>();
