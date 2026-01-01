@@ -339,7 +339,7 @@ async function upsertClientSubscription(args: {
      // You already have an action for this (it does join through buildings)
      const apartmentsCount = Math.max(0, await getApartmentCountForClient(clientId));
 
-     const { error: upsertErr } = await supabase
+     const { data: upsertClientSubData, error: upsertErr } = await supabase
           .from("tblClient_Subscription")
           .upsert(
                {
@@ -383,8 +383,19 @@ async function upsertClientSubscription(args: {
                duration_ms: Date.now() - t0,
                type: "internal",
           });
-          throw upsertErr;
+          const deletedCustomer = await polar.customers.delete({ id: finalPolarCustomerId! });
+          await logServerAction({
+               user_id: null,
+               action: "Store Webhook - Rolled back Polar Customer due to upsert failure",
+               payload: { clientId, polarCustomerId: finalPolarCustomerId, deletedCustomer },
+               status: "success",
+               error: "",
+               duration_ms: Date.now() - t0,
+               type: "internal",
+          });
+          return;
      }
+
 
      // -----------------------------------------------------------------------
      // Strategy B: ingest ONE apartments_snapshot per billing period (best effort)
