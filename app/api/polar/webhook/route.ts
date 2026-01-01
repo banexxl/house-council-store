@@ -542,97 +542,97 @@ export const POST = Webhooks({
                return;
           }
 
-          // ✅ Handle lifecycle events (enable these in Polar webhook settings)
-          if (t.startsWith("customer.") && t.includes("created")) {
-               await upsertClientSubscription({
-                    clientId: meta.clientId!,
-                    subscriptionPlanId: meta.subscriptionPlanId!,
-                    renewalPeriod: meta.renewalPeriod,
-                    status: status,
+          // // ✅ Handle lifecycle events (enable these in Polar webhook settings)
+          // if (t.startsWith("customer.") && t.includes("created")) {
+          //      await upsertClientSubscription({
+          //           clientId: meta.clientId!,
+          //           subscriptionPlanId: meta.subscriptionPlanId!,
+          //           renewalPeriod: meta.renewalPeriod,
+          //           status: status,
 
-                    polarCustomerId: payload.data?.customer_id,
-                    polarSubscriptionId: payload.data?.subscription_id,
-                    polarCheckoutId: payload.data?.checkout_id,
-                    polarOrderId: payload.data?.order_id,
-                    polarProductId: payload.data?.product_id,
-                    polarQuantity: payload.data?.apartments_count,
-                    nextPaymentDate,
-                    currentPeriodStart,
+          //           polarCustomerId: payload.data?.customer_id,
+          //           polarSubscriptionId: payload.data?.subscription_id,
+          //           polarCheckoutId: payload.data?.checkout_id,
+          //           polarOrderId: payload.data?.order_id,
+          //           polarProductId: payload.data?.product_id,
+          //           polarQuantity: payload.data?.apartments_count,
+          //           nextPaymentDate,
+          //           currentPeriodStart,
 
-                    isAutoRenew: true,
-                    expired: false,
-               });
-               return;
-          }
+          //           isAutoRenew: true,
+          //           expired: false,
+          //      });
+          //      return;
+          // }
 
-          // ✅ Handle lifecycle events (enable these in Polar webhook settings)
-          if (t.startsWith("customer.") && t.includes("updated")) {
-               await upsertClientSubscription({
-                    clientId: meta.clientId!,
-                    subscriptionPlanId: meta.subscriptionPlanId!,
-                    renewalPeriod: meta.renewalPeriod,
-                    status: status,
+          // // ✅ Handle lifecycle events (enable these in Polar webhook settings)
+          // if (t.startsWith("customer.") && t.includes("updated")) {
+          //      await upsertClientSubscription({
+          //           clientId: meta.clientId!,
+          //           subscriptionPlanId: meta.subscriptionPlanId!,
+          //           renewalPeriod: meta.renewalPeriod,
+          //           status: status,
 
-                    polarCustomerId: payload.data?.customer_id,
-                    polarSubscriptionId: payload.data?.subscription_id,
-                    polarCheckoutId: payload.data?.checkout_id,
-                    polarOrderId: payload.data?.order_id,
-                    polarProductId: payload.data?.product_id,
-                    polarQuantity: payload.data?.apartments_count,
-                    nextPaymentDate,
-                    currentPeriodStart,
+          //           polarCustomerId: payload.data?.customer_id,
+          //           polarSubscriptionId: payload.data?.subscription_id,
+          //           polarCheckoutId: payload.data?.checkout_id,
+          //           polarOrderId: payload.data?.order_id,
+          //           polarProductId: payload.data?.product_id,
+          //           polarQuantity: payload.data?.apartments_count,
+          //           nextPaymentDate,
+          //           currentPeriodStart,
 
-                    isAutoRenew: true,
-                    expired: false,
-               });
-               return;
-          }
+          //           isAutoRenew: true,
+          //           expired: false,
+          //      });
+          //      return;
+          // }
 
-          // ✅ Handle lifecycle events (enable these in Polar webhook settings)
-          if (t.startsWith("customer.") && t.includes("deleted")) {
-               await upsertClientSubscription({
-                    clientId: meta.clientId!,
-                    subscriptionPlanId: meta.subscriptionPlanId!,
-                    renewalPeriod: meta.renewalPeriod,
-                    status: 'canceled',
+          // // ✅ Handle lifecycle events (enable these in Polar webhook settings)
+          // if (t.startsWith("customer.") && t.includes("deleted")) {
+          //      await upsertClientSubscription({
+          //           clientId: meta.clientId!,
+          //           subscriptionPlanId: meta.subscriptionPlanId!,
+          //           renewalPeriod: meta.renewalPeriod,
+          //           status: 'canceled',
 
-                    polarCustomerId: payload.data?.customer_id,
-                    polarSubscriptionId: payload.data?.subscription_id,
-                    polarCheckoutId: payload.data?.checkout_id,
-                    polarOrderId: payload.data?.order_id,
-                    polarProductId: payload.data?.product_id,
-                    polarQuantity: payload.data?.apartments_count,
-                    nextPaymentDate,
-                    currentPeriodStart,
+          //           polarCustomerId: payload.data?.customer_id,
+          //           polarSubscriptionId: payload.data?.subscription_id,
+          //           polarCheckoutId: payload.data?.checkout_id,
+          //           polarOrderId: payload.data?.order_id,
+          //           polarProductId: payload.data?.product_id,
+          //           polarQuantity: payload.data?.apartments_count,
+          //           nextPaymentDate,
+          //           currentPeriodStart,
 
-                    isAutoRenew: true,
-                    expired: false,
-               });
-               return;
-          }
+          //           isAutoRenew: true,
+          //           expired: false,
+          //      });
+          //      return;
+          // }
 
-          // ✅ Handle lifecycle events (enable these in Polar webhook settings)
-          if (t.startsWith("order.") && t.includes("updated")) {
-               await upsertClientSubscription({
-                    clientId: meta.clientId!,
-                    subscriptionPlanId: meta.subscriptionPlanId!,
-                    renewalPeriod: meta.renewalPeriod,
-                    status: status,
+          // // ✅ Handle lifecycle events (enable these in Polar webhook settings)
+          // if (t.startsWith("order.") && t.includes("updated")) {
+          //      await upsertClientSubscription({
+          //           clientId: meta.clientId!,
+          //           subscriptionPlanId: meta.subscriptionPlanId!,
+          //           renewalPeriod: meta.renewalPeriod,
+          //           status: status,
 
-                    polarCustomerId: payload.data?.customer_id,
-                    polarSubscriptionId: payload.data?.subscription_id,
-                    polarCheckoutId: payload.data?.checkout_id,
-                    polarOrderId: payload.data?.order_id,
-                    polarProductId: payload.data?.product_id,
-                    polarQuantity: payload.data?.apartments_count,
-                    nextPaymentDate,
-                    currentPeriodStart,
+          //           polarCustomerId: payload.data?.customer_id,
+          //           polarSubscriptionId: payload.data?.subscription_id,
+          //           polarCheckoutId: payload.data?.checkout_id,
+          //           polarOrderId: payload.data?.order_id,
+          //           polarProductId: payload.data?.product_id,
+          //           polarQuantity: payload.data?.apartments_count,
+          //           nextPaymentDate,
+          //           currentPeriodStart,
 
-                    isAutoRenew: true,
-                    expired: false,
-               });
-               return;
-          }
+          //           isAutoRenew: true,
+          //           expired: false,
+          //      });
+          //      return;
+          // }
 
           // ✅ Handle lifecycle events (enable these in Polar webhook settings)
           if (t.startsWith("subscription.") && t.includes("created")) {
@@ -779,29 +779,6 @@ export const POST = Webhooks({
                     subscriptionPlanId: meta.subscriptionPlanId!,
                     renewalPeriod: meta.renewalPeriod,
                     status: 'past_due',
-
-                    polarCustomerId: payload.data?.customer_id,
-                    polarSubscriptionId: payload.data?.subscription_id,
-                    polarCheckoutId: payload.data?.checkout_id,
-                    polarOrderId: payload.data?.order_id,
-                    polarProductId: payload.data?.product_id,
-                    polarQuantity: payload.data?.apartments_count,
-                    nextPaymentDate,
-                    currentPeriodStart,
-
-                    isAutoRenew: true,
-                    expired: false,
-               });
-               return;
-          }
-
-          // ✅ Handle lifecycle events (enable these in Polar webhook settings)
-          if (t.startsWith("subscription.") && t.includes("active")) {
-               await upsertClientSubscription({
-                    clientId: meta.clientId!,
-                    subscriptionPlanId: meta.subscriptionPlanId!,
-                    renewalPeriod: meta.renewalPeriod,
-                    status: status,
 
                     polarCustomerId: payload.data?.customer_id,
                     polarSubscriptionId: payload.data?.subscription_id,
