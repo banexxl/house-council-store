@@ -88,6 +88,7 @@ export async function DELETE(req: Request) {
           const result = await polar.customerSessions.create({
                externalCustomerId: clientId,
           });
+          console.log('customer session', result);
 
           // ✅ Schedule cancellation at period end
           const canceled = await polar.customerPortal.subscriptions.cancel(
@@ -97,6 +98,7 @@ export async function DELETE(req: Request) {
                id: subscriptionId,
           }
           )
+          console.log('subscription canceled', canceled);
 
           revalidatePath("/profile");
           return NextResponse.json({
