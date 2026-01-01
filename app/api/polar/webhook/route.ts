@@ -474,15 +474,27 @@ export const POST = Webhooks({
           const t = eventType.toLowerCase();
 
           const meta = extractMeta(data);
-          console.log('Polar Webhooks - meta data', meta);
           const ids = extractIds(eventType, data);
-          console.log('Polar Webhooks - extracted ids', ids);
           const status = mapPolarToLocalStatus(eventType, data);
-          console.log('Polar Webhooks - mapped status', status);
           const nextPaymentDate = extractNextPaymentDate(data);
-          console.log('Polar Webhooks - next payment date', nextPaymentDate);
           const currentPeriodStart = extractCurrentPeriodStart(data);
-          console.log('Polar Webhooks - current period start', currentPeriodStart);
+
+          await logServerAction({
+               user_id: null,
+               action: "Store Webhook - Extracted meta, ids, status, dates",
+               payload: {
+                    eventType,
+                    meta,
+                    ids,
+                    status,
+                    nextPaymentDate,
+                    currentPeriodStart,
+               },
+               status: "success",
+               error: "",
+               duration_ms: Date.now() - t0,
+               type: "internal",
+          });
 
           // If metadata missing, try resolve from stored polar ids
           if (!meta.clientId || !meta.subscriptionPlanId) {
