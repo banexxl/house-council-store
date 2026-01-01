@@ -1,6 +1,6 @@
 'use server'
 
-import { ClientSubscription, RenewalPeriod, SubscriptionPlan } from "../types/subscription-plan";
+import { ClientSubscription, SubscriptionPlan } from "../types/subscription-plan";
 import { Feature } from "../types/feature";
 import { logServerAction } from "../lib/server-logging";
 import { useServerSideSupabaseAnonClient } from "../lib/ss-supabase-anon-client";
@@ -140,95 +140,6 @@ export const readSubscriptionPlansByStatus = async (
           readAllSubscriptionPlansSuccess: true,
           subscriptionPlanData: plansWithFeatures,
      };
-};
-
-export const subscribeClientAction = async (
-     clientId: string,
-     subscriptionPlanId: string,
-     renewal_period: RenewalPeriod
-): Promise<{ success: boolean; error?: string }> => {
-     const supabase = await useServerSideSupabaseAnonClient();
-     const userId = (await supabase.auth.getUser()).data.user?.id;
-
-     const { data, error } = await supabase
-          .from("tblClient_Subscription")
-          .insert({
-               client_id: clientId,
-               subscription_plan_id: subscriptionPlanId,
-               status: "trialing",
-               created_at: new Date().toISOString(),
-               updated_at: new Date().toISOString(),
-               is_auto_renew: true,
-               next_payment_date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(),
-               renewal_period: renewal_period
-          });
-
-
-     if (error) {
-          await logServerAction({
-               user_id: userId ?? '',
-               action: "Subscribe Action Error",
-               payload: { clientId, subscriptionPlanId },
-               status: "fail",
-               error: error.message,
-               duration_ms: 0,
-               type: "action",
-          });
-          return { success: false, error: error.message };
-     }
-
-     await logServerAction({
-          user_id: userId ?? '',
-          action: "Subscribtion Action Successful",
-          payload: { clientId, subscriptionPlanId },
-          status: "success",
-          error: "",
-          duration_ms: 0,
-          type: "action",
-     });
-
-     return { success: true };
-};
-
-export const unsubscribeClientAction = async (
-     clientId: string
-): Promise<{ success: boolean; error?: string }> => {
-     const supabase = await useServerSideSupabaseAnonClient();
-     const userId = (await supabase.auth.getUser()).data.user?.id;
-
-     const { data, error } = await supabase
-          .from("tblClient_Subscription")
-          .update({
-               status: "canceled",
-               next_payment_date: new Date().toISOString(),
-          })
-          .eq("client_id", clientId)
-          .eq("status", "active"); // only cancel active subs
-
-     if (error) {
-          await logServerAction({
-               user_id: userId ?? '',
-               action: "Unsubscribe Action",
-               payload: { clientId },
-               status: "fail",
-               error: error.message,
-               duration_ms: 0,
-               type: "action",
-          });
-          return { success: false, error: error.message };
-     }
-
-     await logServerAction({
-          user_id: userId ?? '',
-          action: "Unsubscribe Action",
-          payload: { clientId },
-          status: "success",
-          error: "",
-          duration_ms: 0,
-          type: "action",
-     });
-
-     return { success: true };
 };
 
 export const readFeaturesFromSubscriptionPlanId = async (subscriptionPlanId: string | null): Promise<{ success: boolean, features?: Feature[], error?: string }> => {
