@@ -141,60 +141,6 @@ async function ingestApartmentSnapshot(args: {
      });
 }
 
-/**
- * Extract ids from payload. Different event types nest objects differently.
- * Keep this defensive.
- */
-function extractIds(eventType: string, data: any) {
-     const t = eventType.toLowerCase();
-
-     const polarCustomerId =
-          data?.customer?.id ?? data?.customer_id ?? data?.customerId ?? null;
-
-     // subscription.* often has data.id (the subscription itself)
-     const polarSubscriptionId =
-          data?.subscription?.id ??
-          data?.subscription_id ??
-          data?.subscriptionId ??
-          (t.startsWith("subscription.") ? data?.id : null) ??
-          null;
-
-     // checkout.* has data.id (the checkout itself)
-     const polarCheckoutId =
-          (t.startsWith("checkout.") ? data?.id : null) ??
-          data?.checkout?.id ??
-          data?.checkout_id ??
-          null;
-
-     // order.* has data.id (the order itself)
-     const polarOrderId =
-          (t.startsWith("order.") ? data?.id : null) ??
-          data?.order?.id ??
-          data?.order_id ??
-          null;
-
-     // product id is usually best found in order line items
-     const polarProductId =
-          data?.product?.id ??
-          data?.product_id ??
-          data?.products?.[0]?.id ??
-          data?.line_items?.[0]?.product?.id ??
-          data?.line_items?.[0]?.product_id ??
-          data?.items?.[0]?.product?.id ??
-          data?.items?.[0]?.product_id ??
-          null;
-
-
-     return {
-          polarCustomerId: polarCustomerId ? String(polarCustomerId) : null,
-          polarSubscriptionId: polarSubscriptionId ? String(polarSubscriptionId) : null,
-          polarCheckoutId: polarCheckoutId ? String(polarCheckoutId) : null,
-          polarOrderId: polarOrderId ? String(polarOrderId) : null,
-          polarProductId: polarProductId ? String(polarProductId) : null,
-          apartments_count: data?.apartments_count,
-     };
-}
-
 /** Next billing date / period end commonly present on subscription objects. */
 function extractNextPaymentDate(data: any): string | null {
      return (
@@ -500,7 +446,7 @@ async function upsertClientSubscription(args: {
 
 export const POST = Webhooks({
      webhookSecret: process.env.POLAR_WEBHOOK_SECRET_SANDBOX!,
-     onPayload: async (payload) => {
+     onPayload: async (payload: any) => {
           const t0 = Date.now();
 
           const eventType = (payload as any)?.type ?? "";
@@ -509,22 +455,14 @@ export const POST = Webhooks({
           const t = eventType.toLowerCase();
 
           const meta = extractMeta(data);
-          const ids = extractIds(eventType, data);
           const status = mapPolarToLocalStatus(eventType, data);
           const nextPaymentDate = extractNextPaymentDate(data);
           const currentPeriodStart = extractCurrentPeriodStart(data);
 
           await logServerAction({
                user_id: null,
-               action: "Store Webhook - Extracted meta, ids, status, dates",
-               payload: {
-                    eventType,
-                    meta,
-                    ids,
-                    status,
-                    nextPaymentDate,
-                    currentPeriodStart,
-               },
+               action: "Store Webhook - Payload Received",
+               payload: payload,
                status: "success",
                error: "",
                duration_ms: Date.now() - t0,
@@ -534,10 +472,10 @@ export const POST = Webhooks({
           // If metadata missing, try resolve from stored polar ids
           if (!meta.clientId || !meta.subscriptionPlanId) {
                const resolved = await resolveClientAndPlanFromPolarIds({
-                    polarSubscriptionId: ids.polarSubscriptionId,
-                    polarCustomerId: ids.polarCustomerId,
-                    polarCheckoutId: ids.polarCheckoutId,
-                    polarOrderId: ids.polarOrderId,
+                    polarSubscriptionId: payload.data?.subscription_id,
+                    polarCustomerId: payload.data?.customer_id,
+                    polarCheckoutId: payload.data?.checkout_id,
+                    polarOrderId: payload.data?.order_id,
                });
 
                if (!resolved) {
@@ -545,7 +483,7 @@ export const POST = Webhooks({
                     await logServerAction({
                          user_id: null,
                          action: "Store Webhook - Missing metadata and could not resolve client/plan",
-                         payload: { eventType, ids },
+                         payload: { eventType, payload },
                          status: "fail",
                          error: "No mapping found in tblClient_Subscription yet",
                          duration_ms: Date.now() - t0,
@@ -566,13 +504,12 @@ export const POST = Webhooks({
                     renewalPeriod: meta.renewalPeriod,
                     status: "canceled",
 
-                    polarCustomerId: ids.polarCustomerId,
-                    polarSubscriptionId: ids.polarSubscriptionId,
-                    polarCheckoutId: ids.polarCheckoutId,
-                    polarOrderId: ids.polarOrderId,
-                    polarProductId: ids.polarProductId,
-
-                    polarQuantity: ids.apartments_count,
+                    polarCustomerId: payload.data?.customer_id,
+                    polarSubscriptionId: payload.data?.subscription_id,
+                    polarCheckoutId: payload.data?.checkout_id,
+                    polarOrderId: payload.data?.order_id,
+                    polarProductId: payload.data?.product_id,
+                    polarQuantity: payload.data?.apartments_count,
                     nextPaymentDate,
                     currentPeriodStart,
 
@@ -590,13 +527,12 @@ export const POST = Webhooks({
                     renewalPeriod: meta.renewalPeriod,
                     status: "active",
 
-                    polarCustomerId: ids.polarCustomerId,
-                    polarSubscriptionId: ids.polarSubscriptionId,
-                    polarCheckoutId: ids.polarCheckoutId,
-                    polarOrderId: ids.polarOrderId,
-                    polarProductId: ids.polarProductId,
-
-                    polarQuantity: ids.apartments_count,
+                    polarCustomerId: payload.data?.customer_id,
+                    polarSubscriptionId: payload.data?.subscription_id,
+                    polarCheckoutId: payload.data?.checkout_id,
+                    polarOrderId: payload.data?.order_id,
+                    polarProductId: payload.data?.product_id,
+                    polarQuantity: payload.data?.apartments_count,
                     nextPaymentDate,
                     currentPeriodStart,
 
@@ -614,13 +550,12 @@ export const POST = Webhooks({
                     renewalPeriod: meta.renewalPeriod,
                     status: status,
 
-                    polarCustomerId: ids.polarCustomerId,
-                    polarSubscriptionId: ids.polarSubscriptionId,
-                    polarCheckoutId: ids.polarCheckoutId,
-                    polarOrderId: ids.polarOrderId,
-                    polarProductId: ids.polarProductId,
-
-                    polarQuantity: ids.apartments_count,
+                    polarCustomerId: payload.data?.customer_id,
+                    polarSubscriptionId: payload.data?.subscription_id,
+                    polarCheckoutId: payload.data?.checkout_id,
+                    polarOrderId: payload.data?.order_id,
+                    polarProductId: payload.data?.product_id,
+                    polarQuantity: payload.data?.apartments_count,
                     nextPaymentDate,
                     currentPeriodStart,
 
@@ -638,13 +573,12 @@ export const POST = Webhooks({
                     renewalPeriod: meta.renewalPeriod,
                     status: status,
 
-                    polarCustomerId: ids.polarCustomerId,
-                    polarSubscriptionId: ids.polarSubscriptionId,
-                    polarCheckoutId: ids.polarCheckoutId,
-                    polarOrderId: ids.polarOrderId,
-                    polarProductId: ids.polarProductId,
-
-                    polarQuantity: ids.apartments_count,
+                    polarCustomerId: payload.data?.customer_id,
+                    polarSubscriptionId: payload.data?.subscription_id,
+                    polarCheckoutId: payload.data?.checkout_id,
+                    polarOrderId: payload.data?.order_id,
+                    polarProductId: payload.data?.product_id,
+                    polarQuantity: payload.data?.apartments_count,
                     nextPaymentDate,
                     currentPeriodStart,
 
@@ -662,13 +596,12 @@ export const POST = Webhooks({
                     renewalPeriod: meta.renewalPeriod,
                     status: 'canceled',
 
-                    polarCustomerId: ids.polarCustomerId,
-                    polarSubscriptionId: ids.polarSubscriptionId,
-                    polarCheckoutId: ids.polarCheckoutId,
-                    polarOrderId: ids.polarOrderId,
-                    polarProductId: ids.polarProductId,
-
-                    polarQuantity: ids.apartments_count,
+                    polarCustomerId: payload.data?.customer_id,
+                    polarSubscriptionId: payload.data?.subscription_id,
+                    polarCheckoutId: payload.data?.checkout_id,
+                    polarOrderId: payload.data?.order_id,
+                    polarProductId: payload.data?.product_id,
+                    polarQuantity: payload.data?.apartments_count,
                     nextPaymentDate,
                     currentPeriodStart,
 
@@ -686,13 +619,12 @@ export const POST = Webhooks({
                     renewalPeriod: meta.renewalPeriod,
                     status: status,
 
-                    polarCustomerId: ids.polarCustomerId,
-                    polarSubscriptionId: ids.polarSubscriptionId,
-                    polarCheckoutId: ids.polarCheckoutId,
-                    polarOrderId: ids.polarOrderId,
-                    polarProductId: ids.polarProductId,
-
-                    polarQuantity: ids.apartments_count,
+                    polarCustomerId: payload.data?.customer_id,
+                    polarSubscriptionId: payload.data?.subscription_id,
+                    polarCheckoutId: payload.data?.checkout_id,
+                    polarOrderId: payload.data?.order_id,
+                    polarProductId: payload.data?.product_id,
+                    polarQuantity: payload.data?.apartments_count,
                     nextPaymentDate,
                     currentPeriodStart,
 
@@ -710,13 +642,12 @@ export const POST = Webhooks({
                     renewalPeriod: meta.renewalPeriod,
                     status: status,
 
-                    polarCustomerId: ids.polarCustomerId,
-                    polarSubscriptionId: ids.polarSubscriptionId,
-                    polarCheckoutId: ids.polarCheckoutId,
-                    polarOrderId: ids.polarOrderId,
-                    polarProductId: ids.polarProductId,
-
-                    polarQuantity: ids.apartments_count,
+                    polarCustomerId: payload.data?.customer_id,
+                    polarSubscriptionId: payload.data?.subscription_id,
+                    polarCheckoutId: payload.data?.checkout_id,
+                    polarOrderId: payload.data?.order_id,
+                    polarProductId: payload.data?.product_id,
+                    polarQuantity: payload.data?.apartments_count,
                     nextPaymentDate,
                     currentPeriodStart,
 
@@ -734,13 +665,12 @@ export const POST = Webhooks({
                     renewalPeriod: meta.renewalPeriod,
                     status: status,
 
-                    polarCustomerId: ids.polarCustomerId,
-                    polarSubscriptionId: ids.polarSubscriptionId,
-                    polarCheckoutId: ids.polarCheckoutId,
-                    polarOrderId: ids.polarOrderId,
-                    polarProductId: ids.polarProductId,
-
-                    polarQuantity: ids.apartments_count,
+                    polarCustomerId: payload.data?.customer_id,
+                    polarSubscriptionId: payload.data?.subscription_id,
+                    polarCheckoutId: payload.data?.checkout_id,
+                    polarOrderId: payload.data?.order_id,
+                    polarProductId: payload.data?.product_id,
+                    polarQuantity: payload.data?.apartments_count,
                     nextPaymentDate,
                     currentPeriodStart,
 
@@ -758,13 +688,12 @@ export const POST = Webhooks({
                     renewalPeriod: meta.renewalPeriod,
                     status: status,
 
-                    polarCustomerId: ids.polarCustomerId,
-                    polarSubscriptionId: ids.polarSubscriptionId,
-                    polarCheckoutId: ids.polarCheckoutId,
-                    polarOrderId: ids.polarOrderId,
-                    polarProductId: ids.polarProductId,
-
-                    polarQuantity: ids.apartments_count,
+                    polarCustomerId: payload.data?.customer_id,
+                    polarSubscriptionId: payload.data?.subscription_id,
+                    polarCheckoutId: payload.data?.checkout_id,
+                    polarOrderId: payload.data?.order_id,
+                    polarProductId: payload.data?.product_id,
+                    polarQuantity: payload.data?.apartments_count,
                     nextPaymentDate,
                     currentPeriodStart,
 
@@ -782,13 +711,12 @@ export const POST = Webhooks({
                     renewalPeriod: meta.renewalPeriod,
                     status: 'canceled',
 
-                    polarCustomerId: ids.polarCustomerId,
-                    polarSubscriptionId: ids.polarSubscriptionId,
-                    polarCheckoutId: ids.polarCheckoutId,
-                    polarOrderId: ids.polarOrderId,
-                    polarProductId: ids.polarProductId,
-
-                    polarQuantity: ids.apartments_count,
+                    polarCustomerId: payload.data?.customer_id,
+                    polarSubscriptionId: payload.data?.subscription_id,
+                    polarCheckoutId: payload.data?.checkout_id,
+                    polarOrderId: payload.data?.order_id,
+                    polarProductId: payload.data?.product_id,
+                    polarQuantity: payload.data?.apartments_count,
                     nextPaymentDate,
                     currentPeriodStart,
 
@@ -806,13 +734,12 @@ export const POST = Webhooks({
                     renewalPeriod: meta.renewalPeriod,
                     status: 'active',
 
-                    polarCustomerId: ids.polarCustomerId,
-                    polarSubscriptionId: ids.polarSubscriptionId,
-                    polarCheckoutId: ids.polarCheckoutId,
-                    polarOrderId: ids.polarOrderId,
-                    polarProductId: ids.polarProductId,
-
-                    polarQuantity: ids.apartments_count,
+                    polarCustomerId: payload.data?.customer_id,
+                    polarSubscriptionId: payload.data?.subscription_id,
+                    polarCheckoutId: payload.data?.checkout_id,
+                    polarOrderId: payload.data?.order_id,
+                    polarProductId: payload.data?.product_id,
+                    polarQuantity: payload.data?.apartments_count,
                     nextPaymentDate,
                     currentPeriodStart,
 
@@ -830,13 +757,12 @@ export const POST = Webhooks({
                     renewalPeriod: meta.renewalPeriod,
                     status: 'canceled',
 
-                    polarCustomerId: ids.polarCustomerId,
-                    polarSubscriptionId: ids.polarSubscriptionId,
-                    polarCheckoutId: ids.polarCheckoutId,
-                    polarOrderId: ids.polarOrderId,
-                    polarProductId: ids.polarProductId,
-
-                    polarQuantity: ids.apartments_count,
+                    polarCustomerId: payload.data?.customer_id,
+                    polarSubscriptionId: payload.data?.subscription_id,
+                    polarCheckoutId: payload.data?.checkout_id,
+                    polarOrderId: payload.data?.order_id,
+                    polarProductId: payload.data?.product_id,
+                    polarQuantity: payload.data?.apartments_count,
                     nextPaymentDate,
                     currentPeriodStart,
 
@@ -854,13 +780,12 @@ export const POST = Webhooks({
                     renewalPeriod: meta.renewalPeriod,
                     status: 'past_due',
 
-                    polarCustomerId: ids.polarCustomerId,
-                    polarSubscriptionId: ids.polarSubscriptionId,
-                    polarCheckoutId: ids.polarCheckoutId,
-                    polarOrderId: ids.polarOrderId,
-                    polarProductId: ids.polarProductId,
-
-                    polarQuantity: ids.apartments_count,
+                    polarCustomerId: payload.data?.customer_id,
+                    polarSubscriptionId: payload.data?.subscription_id,
+                    polarCheckoutId: payload.data?.checkout_id,
+                    polarOrderId: payload.data?.order_id,
+                    polarProductId: payload.data?.product_id,
+                    polarQuantity: payload.data?.apartments_count,
                     nextPaymentDate,
                     currentPeriodStart,
 
@@ -878,13 +803,12 @@ export const POST = Webhooks({
                     renewalPeriod: meta.renewalPeriod,
                     status: status,
 
-                    polarCustomerId: ids.polarCustomerId,
-                    polarSubscriptionId: ids.polarSubscriptionId,
-                    polarCheckoutId: ids.polarCheckoutId,
-                    polarOrderId: ids.polarOrderId,
-                    polarProductId: ids.polarProductId,
-
-                    polarQuantity: ids.apartments_count,
+                    polarCustomerId: payload.data?.customer_id,
+                    polarSubscriptionId: payload.data?.subscription_id,
+                    polarCheckoutId: payload.data?.checkout_id,
+                    polarOrderId: payload.data?.order_id,
+                    polarProductId: payload.data?.product_id,
+                    polarQuantity: payload.data?.apartments_count,
                     nextPaymentDate,
                     currentPeriodStart,
 
