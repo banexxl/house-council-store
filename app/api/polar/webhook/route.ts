@@ -4,6 +4,7 @@ import { logServerAction } from "@/app/lib/server-logging";
 import { getApartmentCountForClient } from "@/app/profile/subscription-plan-actions";
 import { Webhooks } from "@polar-sh/nextjs";
 import { createClient } from "@supabase/supabase-js";
+import { revalidatePath } from "next/cache";
 
 export const runtime = "nodejs";
 
@@ -419,6 +420,8 @@ async function upsertClientSubscription(args: {
                     .eq("client_id", clientId);
           }
      }
+
+     revalidatePath(`/profile`);
 
      await logServerAction({
           user_id: null,
