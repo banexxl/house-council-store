@@ -42,14 +42,15 @@ export async function updateSession(request: NextRequest) {
           '/auth/error',
           '/auth/register',
           '/auth/reset-password',
-          '/',
           '/documentation',
           '/pricing',
           '/contact',
-          '/api/polar/',
-          '/api/polar/webhook/'
+          '/api/polar',
+          '/api/polar/webhook',
      ];
-     const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
+     const isPublicRoute =
+          pathname === '/' ||
+          publicRoutes.some(route => pathname === route || pathname.startsWith(`${route}/`));
 
      // Always allow access to the error page
      if (pathname.startsWith('/auth/error')) {
