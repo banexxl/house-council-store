@@ -561,7 +561,7 @@ export const POST = Webhooks({
           }
 
           // ignore customer.* / invoice.* by default
-          if (t.startsWith("customer.") || t.startsWith("invoice.")) return;
+          if (t.startsWith("invoice.")) return;
 
           await logServerAction({
                user_id: null,
