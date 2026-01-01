@@ -525,23 +525,12 @@ export const POST = Webhooks({
           }
 
           // ✅ Handle lifecycle events (enable these in Polar webhook settings)
-          if (
-               t.startsWith("checkout.") ||
-               t.startsWith("order.") ||
-               t.startsWith("subscription.") ||
-               t.startsWith("refund.") ||
-               t.startsWith("payment.") ||
-               t.startsWith("customer.") ||
-               t.startsWith("product.") ||
-               t.startsWith("benefit.")
-          ) {
-               const isCanceled = t.startsWith("subscription.") && t.includes("canceled");
-
+          if (t.startsWith("subscription.") && t.includes("canceled")) {
                await upsertClientSubscription({
                     clientId: meta.clientId!,
                     subscriptionPlanId: meta.subscriptionPlanId!,
                     renewalPeriod: meta.renewalPeriod,
-                    status: isCanceled ? "canceled" : status,
+                    status: "canceled",
 
                     polarCustomerId: ids.polarCustomerId,
                     polarSubscriptionId: ids.polarSubscriptionId,
@@ -553,15 +542,301 @@ export const POST = Webhooks({
                     nextPaymentDate,
                     currentPeriodStart,
 
-                    isAutoRenew: !isCanceled,
+                    isAutoRenew: false,
                     expired: false,
                });
-
                return;
           }
 
-          // ignore customer.* / invoice.* by default
-          if (t.startsWith("invoice.")) return;
+          // ✅ Handle lifecycle events (enable these in Polar webhook settings)
+          if (t.startsWith("subscription.") && t.includes("active")) {
+               await upsertClientSubscription({
+                    clientId: meta.clientId!,
+                    subscriptionPlanId: meta.subscriptionPlanId!,
+                    renewalPeriod: meta.renewalPeriod,
+                    status: "active",
+
+                    polarCustomerId: ids.polarCustomerId,
+                    polarSubscriptionId: ids.polarSubscriptionId,
+                    polarCheckoutId: ids.polarCheckoutId,
+                    polarOrderId: ids.polarOrderId,
+                    polarProductId: ids.polarProductId,
+
+                    polarQuantity: ids.apartments_count,
+                    nextPaymentDate,
+                    currentPeriodStart,
+
+                    isAutoRenew: true,
+                    expired: false,
+               });
+               return;
+          }
+
+          // ✅ Handle lifecycle events (enable these in Polar webhook settings)
+          if (t.startsWith("customer.") && t.includes("created")) {
+               await upsertClientSubscription({
+                    clientId: meta.clientId!,
+                    subscriptionPlanId: meta.subscriptionPlanId!,
+                    renewalPeriod: meta.renewalPeriod,
+                    status: status,
+
+                    polarCustomerId: ids.polarCustomerId,
+                    polarSubscriptionId: ids.polarSubscriptionId,
+                    polarCheckoutId: ids.polarCheckoutId,
+                    polarOrderId: ids.polarOrderId,
+                    polarProductId: ids.polarProductId,
+
+                    polarQuantity: ids.apartments_count,
+                    nextPaymentDate,
+                    currentPeriodStart,
+
+                    isAutoRenew: true,
+                    expired: false,
+               });
+               return;
+          }
+
+          // ✅ Handle lifecycle events (enable these in Polar webhook settings)
+          if (t.startsWith("customer.") && t.includes("updated")) {
+               await upsertClientSubscription({
+                    clientId: meta.clientId!,
+                    subscriptionPlanId: meta.subscriptionPlanId!,
+                    renewalPeriod: meta.renewalPeriod,
+                    status: status,
+
+                    polarCustomerId: ids.polarCustomerId,
+                    polarSubscriptionId: ids.polarSubscriptionId,
+                    polarCheckoutId: ids.polarCheckoutId,
+                    polarOrderId: ids.polarOrderId,
+                    polarProductId: ids.polarProductId,
+
+                    polarQuantity: ids.apartments_count,
+                    nextPaymentDate,
+                    currentPeriodStart,
+
+                    isAutoRenew: true,
+                    expired: false,
+               });
+               return;
+          }
+
+          // ✅ Handle lifecycle events (enable these in Polar webhook settings)
+          if (t.startsWith("customer.") && t.includes("deleted")) {
+               await upsertClientSubscription({
+                    clientId: meta.clientId!,
+                    subscriptionPlanId: meta.subscriptionPlanId!,
+                    renewalPeriod: meta.renewalPeriod,
+                    status: 'canceled',
+
+                    polarCustomerId: ids.polarCustomerId,
+                    polarSubscriptionId: ids.polarSubscriptionId,
+                    polarCheckoutId: ids.polarCheckoutId,
+                    polarOrderId: ids.polarOrderId,
+                    polarProductId: ids.polarProductId,
+
+                    polarQuantity: ids.apartments_count,
+                    nextPaymentDate,
+                    currentPeriodStart,
+
+                    isAutoRenew: true,
+                    expired: false,
+               });
+               return;
+          }
+
+          // ✅ Handle lifecycle events (enable these in Polar webhook settings)
+          if (t.startsWith("order.") && t.includes("updated")) {
+               await upsertClientSubscription({
+                    clientId: meta.clientId!,
+                    subscriptionPlanId: meta.subscriptionPlanId!,
+                    renewalPeriod: meta.renewalPeriod,
+                    status: status,
+
+                    polarCustomerId: ids.polarCustomerId,
+                    polarSubscriptionId: ids.polarSubscriptionId,
+                    polarCheckoutId: ids.polarCheckoutId,
+                    polarOrderId: ids.polarOrderId,
+                    polarProductId: ids.polarProductId,
+
+                    polarQuantity: ids.apartments_count,
+                    nextPaymentDate,
+                    currentPeriodStart,
+
+                    isAutoRenew: true,
+                    expired: false,
+               });
+               return;
+          }
+
+          // ✅ Handle lifecycle events (enable these in Polar webhook settings)
+          if (t.startsWith("subscription.") && t.includes("created")) {
+               await upsertClientSubscription({
+                    clientId: meta.clientId!,
+                    subscriptionPlanId: meta.subscriptionPlanId!,
+                    renewalPeriod: meta.renewalPeriod,
+                    status: status,
+
+                    polarCustomerId: ids.polarCustomerId,
+                    polarSubscriptionId: ids.polarSubscriptionId,
+                    polarCheckoutId: ids.polarCheckoutId,
+                    polarOrderId: ids.polarOrderId,
+                    polarProductId: ids.polarProductId,
+
+                    polarQuantity: ids.apartments_count,
+                    nextPaymentDate,
+                    currentPeriodStart,
+
+                    isAutoRenew: true,
+                    expired: false,
+               });
+               return;
+          }
+
+          // ✅ Handle lifecycle events (enable these in Polar webhook settings)
+          if (t.startsWith("subscription.") && t.includes("updated")) {
+               await upsertClientSubscription({
+                    clientId: meta.clientId!,
+                    subscriptionPlanId: meta.subscriptionPlanId!,
+                    renewalPeriod: meta.renewalPeriod,
+                    status: status,
+
+                    polarCustomerId: ids.polarCustomerId,
+                    polarSubscriptionId: ids.polarSubscriptionId,
+                    polarCheckoutId: ids.polarCheckoutId,
+                    polarOrderId: ids.polarOrderId,
+                    polarProductId: ids.polarProductId,
+
+                    polarQuantity: ids.apartments_count,
+                    nextPaymentDate,
+                    currentPeriodStart,
+
+                    isAutoRenew: true,
+                    expired: false,
+               });
+               return;
+          }
+
+          // ✅ Handle lifecycle events (enable these in Polar webhook settings)
+          if (t.startsWith("subscription.") && t.includes("active")) {
+               await upsertClientSubscription({
+                    clientId: meta.clientId!,
+                    subscriptionPlanId: meta.subscriptionPlanId!,
+                    renewalPeriod: meta.renewalPeriod,
+                    status: status,
+
+                    polarCustomerId: ids.polarCustomerId,
+                    polarSubscriptionId: ids.polarSubscriptionId,
+                    polarCheckoutId: ids.polarCheckoutId,
+                    polarOrderId: ids.polarOrderId,
+                    polarProductId: ids.polarProductId,
+
+                    polarQuantity: ids.apartments_count,
+                    nextPaymentDate,
+                    currentPeriodStart,
+
+                    isAutoRenew: true,
+                    expired: false,
+               });
+               return;
+          }
+
+          // ✅ Handle lifecycle events (enable these in Polar webhook settings)
+          if (t.startsWith("subscription.") && t.includes("canceled")) {
+               await upsertClientSubscription({
+                    clientId: meta.clientId!,
+                    subscriptionPlanId: meta.subscriptionPlanId!,
+                    renewalPeriod: meta.renewalPeriod,
+                    status: 'canceled',
+
+                    polarCustomerId: ids.polarCustomerId,
+                    polarSubscriptionId: ids.polarSubscriptionId,
+                    polarCheckoutId: ids.polarCheckoutId,
+                    polarOrderId: ids.polarOrderId,
+                    polarProductId: ids.polarProductId,
+
+                    polarQuantity: ids.apartments_count,
+                    nextPaymentDate,
+                    currentPeriodStart,
+
+                    isAutoRenew: true,
+                    expired: false,
+               });
+               return;
+          }
+
+          // ✅ Handle lifecycle events (enable these in Polar webhook settings)
+          if (t.startsWith("subscription.") && t.includes("uncanceled")) {
+               await upsertClientSubscription({
+                    clientId: meta.clientId!,
+                    subscriptionPlanId: meta.subscriptionPlanId!,
+                    renewalPeriod: meta.renewalPeriod,
+                    status: 'active',
+
+                    polarCustomerId: ids.polarCustomerId,
+                    polarSubscriptionId: ids.polarSubscriptionId,
+                    polarCheckoutId: ids.polarCheckoutId,
+                    polarOrderId: ids.polarOrderId,
+                    polarProductId: ids.polarProductId,
+
+                    polarQuantity: ids.apartments_count,
+                    nextPaymentDate,
+                    currentPeriodStart,
+
+                    isAutoRenew: true,
+                    expired: false,
+               });
+               return;
+          }
+
+          // ✅ Handle lifecycle events (enable these in Polar webhook settings)
+          if (t.startsWith("subscription.") && t.includes("revoked")) {
+               await upsertClientSubscription({
+                    clientId: meta.clientId!,
+                    subscriptionPlanId: meta.subscriptionPlanId!,
+                    renewalPeriod: meta.renewalPeriod,
+                    status: 'canceled',
+
+                    polarCustomerId: ids.polarCustomerId,
+                    polarSubscriptionId: ids.polarSubscriptionId,
+                    polarCheckoutId: ids.polarCheckoutId,
+                    polarOrderId: ids.polarOrderId,
+                    polarProductId: ids.polarProductId,
+
+                    polarQuantity: ids.apartments_count,
+                    nextPaymentDate,
+                    currentPeriodStart,
+
+                    isAutoRenew: true,
+                    expired: false,
+               });
+               return;
+          }
+
+          // ✅ Handle lifecycle events (enable these in Polar webhook settings)
+          if (t.startsWith("subscription.") && t.includes("past_due")) {
+               await upsertClientSubscription({
+                    clientId: meta.clientId!,
+                    subscriptionPlanId: meta.subscriptionPlanId!,
+                    renewalPeriod: meta.renewalPeriod,
+                    status: 'past_due',
+
+                    polarCustomerId: ids.polarCustomerId,
+                    polarSubscriptionId: ids.polarSubscriptionId,
+                    polarCheckoutId: ids.polarCheckoutId,
+                    polarOrderId: ids.polarOrderId,
+                    polarProductId: ids.polarProductId,
+
+                    polarQuantity: ids.apartments_count,
+                    nextPaymentDate,
+                    currentPeriodStart,
+
+                    isAutoRenew: true,
+                    expired: false,
+               });
+               return;
+          }
+
+          // For other events, just log and ignore
 
           await logServerAction({
                user_id: null,
