@@ -365,6 +365,7 @@ async function upsertClientSubscription(args: {
                },
                { onConflict: "client_id" }
           );
+     console.log('aaaaaaaaaa', upsertErr);
 
      if (upsertErr) {
           await logServerAction({
