@@ -46,7 +46,7 @@ export async function updateSession(request: NextRequest) {
           '/pricing',
           '/contact',
           '/api/polar',
-          '/api/polar/webhook',
+          '/api/polar/webhook/',
      ];
      const isPublicRoute =
           pathname === '/' ||

@@ -81,10 +81,10 @@ export interface ClientSubscription {
 
      // Apartment count (you added + usage syncing fields; types per screenshot)
      apartment_count: number | string;            // numeric
-     quantity_last_sent: number | null;           // int8
-     quantity_last_seen: number | null;           // int8
-     seats_last_synced_at: string | null;         // timestamptz
-     seats_sync_error: string | null;             // text
+     appartment_count_last_sent: number | null;           // int8
+     appartment_count_last_seen: number | null;           // int8
+     apartment_count_last_synced_at: string | null;         // timestamptz
+     apartment_count_sync_error: string | null;             // text
 }
 
 

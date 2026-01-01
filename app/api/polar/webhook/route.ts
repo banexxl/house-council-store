@@ -302,7 +302,7 @@ async function upsertClientSubscription(args: {
      const { data: existingRow, error: existingErr } = await supabase
           .from("tblClient_Subscription")
           .select(
-               "created_at, polar_customer_id, polar_subscription_id, polar_checkout_id, polar_order_id, polar_product_id, apartment_count, seats_last_synced_at, quantity_last_sent"
+               "created_at, polar_customer_id, polar_subscription_id, polar_checkout_id, polar_order_id, polar_product_id, apartment_count, apartment_count_last_synced_at, quantity_last_sent"
           )
           .eq("client_id", clientId)
           .maybeSingle<ClientSubscriptionRow>();
@@ -365,7 +365,6 @@ async function upsertClientSubscription(args: {
                },
                { onConflict: "client_id" }
           );
-     console.log('aaaaaaaaaa', upsertErr);
 
      if (upsertErr) {
           await logServerAction({
@@ -402,7 +401,7 @@ async function upsertClientSubscription(args: {
      // Strategy B: ingest ONE apartments_snapshot per billing period (best effort)
      // - Your meter sums metadata.apartments_count
      // - We'll try to use current period start if provided, otherwise "now"
-     // - We'll store seats_last_synced_at to prevent duplicates
+     // - We'll store apartment_count_last_synced_at to prevent duplicates
      // -----------------------------------------------------------------------
      const timestampIso = currentPeriodStart ?? nowIso();
 
@@ -425,16 +424,16 @@ async function upsertClientSubscription(args: {
                     .from("tblClient_Subscription")
                     .update({
                          quantity_last_sent: apartmentsCount,
-                         seats_last_synced_at: nowIso(),
-                         seats_sync_error: null,
+                         apartment_count_last_synced_at: nowIso(),
+                         apartment_count_sync_error: null,
                     })
                     .eq("client_id", clientId);
           } catch (e: any) {
                await supabase
                     .from("tblClient_Subscription")
                     .update({
-                         seats_sync_error: e?.message ?? "usage ingest failed",
-                         seats_last_synced_at: nowIso(),
+                         apartment_count_sync_error: e?.message ?? "usage ingest failed",
+                         apartment_count_last_synced_at: nowIso(),
                     })
                     .eq("client_id", clientId);
           }
