@@ -81,8 +81,8 @@ export async function POST(req: Request) {
 export async function DELETE(req: Request) {
      try {
           const { subscriptionId, clientId } = await req.json();
-          if (!subscriptionId) {
-               return NextResponse.json({ error: "Missing subscriptionId" }, { status: 400 });
+          if (!subscriptionId || !clientId) {
+               return NextResponse.json({ error: "Missing subscriptionId or clientId" }, { status: 400 });
           }
 
           const result = await polar.customerSessions.create({
