@@ -836,6 +836,30 @@ export const POST = Webhooks({
                return;
           }
 
+          // ✅ Handle lifecycle events (enable these in Polar webhook settings)
+          if (t.startsWith("subscription.") && t.includes("active")) {
+               await upsertClientSubscription({
+                    clientId: meta.clientId!,
+                    subscriptionPlanId: meta.subscriptionPlanId!,
+                    renewalPeriod: meta.renewalPeriod,
+                    status: status,
+
+                    polarCustomerId: ids.polarCustomerId,
+                    polarSubscriptionId: ids.polarSubscriptionId,
+                    polarCheckoutId: ids.polarCheckoutId,
+                    polarOrderId: ids.polarOrderId,
+                    polarProductId: ids.polarProductId,
+
+                    polarQuantity: ids.apartments_count,
+                    nextPaymentDate,
+                    currentPeriodStart,
+
+                    isAutoRenew: true,
+                    expired: false,
+               });
+               return;
+          }
+
           // For other events, just log and ignore
 
           await logServerAction({
