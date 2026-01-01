@@ -76,3 +76,17 @@ export async function POST(req: Request) {
           return NextResponse.json({ error: e?.message ?? "Unknown error" }, { status: 500 });
      }
 }
+
+// Cancel subscription
+export async function DELETE(req: Request) {
+     try {
+          const { subscriptionId } = await req.json();
+          if (!subscriptionId) {
+               return NextResponse.json({ error: "Missing subscriptionId" }, { status: 400 });
+          }
+          await polar.subscriptions.revoke(subscriptionId);
+          return NextResponse.json({ message: "Subscription canceled successfully" });
+     } catch (e: any) {
+          return NextResponse.json({ error: e?.message ?? "Unknown error" }, { status: 500 });
+     }
+}

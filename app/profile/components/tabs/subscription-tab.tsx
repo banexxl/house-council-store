@@ -51,11 +51,32 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
      const handleCancelSubscription = async () => {
           setIsProcessing(true)
           try {
-               await new Promise((resolve) => setTimeout(resolve, 1500))
-               // await cancelSubscriptionAction(clientSubscriptionObject.id)
-               toast.success("Your subscription has been canceled successfully")
-               handleDialogToggle("confirmCancel", false)
-               router.refresh()
+               try {
+                    const res = await fetch("/api/polar/", {
+                         method: "DELETE",
+                         headers: { "Content-Type": "application/json" },
+                         body: JSON.stringify({
+                              subscriptionId: clientSubscriptionObject?.id!,
+                         }),
+                    });
+
+                    const data = await res.json();
+                    console.log('res data', data);
+
+                    if (!res.ok) {
+                         throw new Error("Failed to create checkout session.");
+                    }
+
+                    if (!data?.url) {
+                         throw new Error("Checkout URL missing from response.");
+                    }
+
+                    // ✅ Redirect to Polar Checkout
+                    window.location.href = data.url;
+               } catch (err: any) {
+                    console.error(err);
+                    toast.error(err?.message || "Could not start checkout. Please try again.");
+               }
           } catch {
                toast.error("Failed to cancel subscription. Please try again.")
           } finally {
@@ -80,15 +101,11 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
           date ? new Date(date).toLocaleDateString() : <i>No subscription plan selected</i>
 
      const currencyFormatter = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" })
-     console.log('clientSubscriptionObject', clientSubscriptionObject);
-
      const pricePerApartment = clientSubscriptionObject
           ? clientSubscriptionObject.renewal_period === "annually"
                ? clientSubscriptionObject.subscription_plan.total_price_per_apartment_with_discounts
                : clientSubscriptionObject.subscription_plan.monthly_total_price_per_apartment
           : null
-     console.log('pricePerApartment', pricePerApartment);
-
      const totalForAllApartments = pricePerApartment !== null ? pricePerApartment * apartmentsCount : null
 
      const billingPeriodLabel = clientSubscriptionObject?.renewal_period === "annually" ? "year" : "month"
@@ -134,6 +151,13 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
                                              (Subscription Start Date)
                                         </Typography>
                                    </Box>
+                                   {
+                                        clientSubscriptionObject?.status !== "canceled" && (
+                                             <Button variant="outlined" color="error" onClick={() => handleDialogToggle("confirmCancel", true)} disabled={isProcessing || !clientSubscriptionObject}>
+                                                  Cancel Subscription
+                                             </Button>
+
+                                        )}
                               </Grid>
 
                               <Grid size={{ xs: 12, sm: 6 }}>
