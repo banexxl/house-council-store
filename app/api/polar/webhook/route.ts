@@ -470,7 +470,7 @@ export const POST = Webhooks({
           const t0 = Date.now();
 
           const eventType = (payload as any)?.type ?? "";
-          console.log('Polar Webhook received:', eventType);
+          console.log('Polar Webhook received payload:', payload);
           const data = (payload as any)?.data ?? {};
           const t = eventType.toLowerCase();
 
