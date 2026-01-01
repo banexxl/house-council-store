@@ -328,13 +328,13 @@ async function upsertClientSubscription(args: {
      const finalPolarOrderId = polarOrderId ?? existing?.polar_order_id ?? null;
      const finalPolarProductId = polarProductId ?? existing?.polar_product_id ?? null;
 
-     // Always store a safe apartment_count (NOT NULL column in your schema)
-     const polarSeats =
-          typeof polarQuantity === "number" && Number.isFinite(polarQuantity)
-               ? Math.max(1, Math.floor(polarQuantity))
-               : null;
+     // // Always store a safe apartment_count (NOT NULL column in your schema)
+     // const polarSeats =
+     //      typeof polarQuantity === "number" && Number.isFinite(polarQuantity)
+     //           ? Math.max(1, Math.floor(polarQuantity))
+     //           : null;
 
-     const finalQuantity = polarSeats ?? existing?.apartment_count ?? 1;
+     // const finalQuantity = polarSeats ?? existing?.apartment_count ?? 1;
 
      // You already have an action for this (it does join through buildings)
      const apartmentsCount = Math.max(0, await getApartmentCountForClient(clientId));
@@ -377,7 +377,7 @@ async function upsertClientSubscription(args: {
                     renewalPeriod,
                     status,
                     nextPaymentDate,
-                    apartment_count: finalQuantity,
+                    apartment_count: apartmentsCount,
                },
                status: "fail",
                error: upsertErr.message,
@@ -446,7 +446,7 @@ async function upsertClientSubscription(args: {
           payload: {
                clientId,
                status,
-               apartment_count: finalQuantity,
+               apartment_count: apartmentsCount,
                polar_checkout_id: finalPolarCheckoutId,
                polar_order_id: finalPolarOrderId,
                polar_product_id: finalPolarProductId,
