@@ -78,16 +78,31 @@ export async function POST(req: Request) {
      }
 }
 
-// Cancel subscription
 export async function DELETE(req: Request) {
      try {
-          const { subscriptionId } = await req.json();
+          const { subscriptionId, clientId } = await req.json();
           if (!subscriptionId) {
                return NextResponse.json({ error: "Missing subscriptionId" }, { status: 400 });
           }
-          (await polar.subscriptions.get(subscriptionId)).cancelAtPeriodEnd;
-          revalidatePath(`/profile`);
-          return NextResponse.json({ message: "Subscription canceled successfully" });
+
+          const result = await polar.customerSessions.create({
+               externalCustomerId: clientId,
+          });
+
+          // ✅ Schedule cancellation at period end
+          const canceled = await polar.customerPortal.subscriptions.cancel(
+               {
+                    customerSession: result.id
+               }, {
+               id: subscriptionId,
+          }
+          )
+
+          revalidatePath("/profile");
+          return NextResponse.json({
+               message: "Subscription set to cancel at period end",
+               subscription: canceled,
+          });
      } catch (e: any) {
           return NextResponse.json({ error: e?.message ?? "Unknown error" }, { status: 500 });
      }
