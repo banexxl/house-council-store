@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { polar } from "@/app/lib/polar";
 import { createClient } from "@supabase/supabase-js";
+import { revalidatePath } from "next/cache";
 
 export const runtime = "nodejs";
 
@@ -85,6 +86,7 @@ export async function DELETE(req: Request) {
                return NextResponse.json({ error: "Missing subscriptionId" }, { status: 400 });
           }
           (await polar.subscriptions.get(subscriptionId)).cancelAtPeriodEnd;
+          revalidatePath(`/profile`);
           return NextResponse.json({ message: "Subscription canceled successfully" });
      } catch (e: any) {
           return NextResponse.json({ error: e?.message ?? "Unknown error" }, { status: 500 });
