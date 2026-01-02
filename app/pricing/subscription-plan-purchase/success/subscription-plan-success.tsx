@@ -20,7 +20,6 @@ import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline"
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday"
 import CreditCardIcon from "@mui/icons-material/CreditCard"
 import AccountCircleIcon from "@mui/icons-material/AccountCircle"
-import DescriptionIcon from "@mui/icons-material/Description"
 import Animate from "@/app/components/animation-framer-motion"
 import Link from "next/link"
 

@@ -51,13 +51,6 @@ export default async function FreeTrialSuccessPage({ searchParams }: { searchPar
           redirect("/auth/sign-in")
      }
 
-     // Fetch client data
-     const { client, error } = await readAccountByEmailAction(session.email!);
-
-     if (!client?.id) {
-          notFound()
-     }
-
      const dashboardUrl = process.env.NEXT_PUBLIC_DASHBOARD_URL!
 
      return (
