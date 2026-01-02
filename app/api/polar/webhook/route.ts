@@ -312,7 +312,7 @@ export const POST = Webhooks({
 
           await logServerAction({
                user_id: null,
-               action: "Store Webhook - Payload Received",
+               action: `Store Webhook - Payload Received of type ${eventType}`,
                payload,
                status: "success",
                error: "",
@@ -586,7 +586,7 @@ export const POST = Webhooks({
                          expired: false,
                          next_payment_date: nextPaymentDate ?? null,
                          apartment_count: apartmentsCount,
-                         polar_subscription_id: data['id'],
+                         polar_subscription_id: data.id,
                          ...commonIdsPatch,
                     });
 
