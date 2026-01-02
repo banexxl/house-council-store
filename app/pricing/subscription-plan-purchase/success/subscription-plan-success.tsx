@@ -39,7 +39,6 @@ export default function SubscriptionSuccessPage({
      userEmail,
      dashboardUrl
 }: SubscriptionSuccessPageProps) {
-     const router = useRouter()
      const theme = useTheme();
      // Calculate trial end date (30 days from now)
      const trialEndDate = new Date()
