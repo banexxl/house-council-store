@@ -33,6 +33,7 @@ interface SubscriptionTabProps {
 }
 
 export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioFeatures, apartmentsCount }: SubscriptionTabProps) {
+     console.log('clientSubscriptionObject', clientSubscriptionObject);
 
      const theme = useTheme()
      const router = useRouter()
@@ -56,7 +57,7 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
                          headers: { "Content-Type": "application/json" },
                          body: JSON.stringify({
                               subscriptionId: clientSubscriptionObject?.id!,
-                              polar_customer_id: clientSubscriptionObject?.polar_customer_id!,
+                              polarCustomerId: clientSubscriptionObject?.polar_customer_id!,
                          }),
                     });
 
