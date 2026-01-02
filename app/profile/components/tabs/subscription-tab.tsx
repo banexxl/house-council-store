@@ -1,7 +1,6 @@
-// SubscriptionTab.tsx
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import {
      Box, Typography, Button, Card, CardContent, Divider, Chip,
      Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,

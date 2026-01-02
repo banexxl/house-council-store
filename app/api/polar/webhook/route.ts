@@ -569,27 +569,17 @@ export const POST = Webhooks({
           // }
 
           // // ✅ Handle lifecycle events (enable these in Polar webhook settings)
-          // if (t.startsWith("customer.") && t.includes("updated")) {
-          //      await upsertClientSubscription({
-          //           clientId: meta.clientId!,
-          //           subscriptionPlanId: meta.subscriptionPlanId!,
-          //           renewalPeriod: meta.renewalPeriod,
-          //           status: status,
+          if (t.startsWith("customer.") && t.includes("updated")) {
+               await upsertClientSubscription({
+                    clientId: meta.clientId!,
+                    subscriptionPlanId: meta.subscriptionPlanId!,
+                    renewalPeriod: meta.renewalPeriod,
+                    status: status,
 
-          //           polarCustomerId: payload.data?.customer_id,
-          //           polarSubscriptionId: payload.data?.subscription_id,
-          //           polarCheckoutId: payload.data?.checkout_id,
-          //           polarOrderId: payload.data?.order_id,
-          //           polarProductId: payload.data?.product_id,
-          //           polarQuantity: payload.data?.apartments_count,
-          //           nextPaymentDate,
-          //           currentPeriodStart,
-
-          //           isAutoRenew: true,
-          //           expired: false,
-          //      });
-          //      return;
-          // }
+                    polarCustomerId: payload.data?.id,
+               });
+               return;
+          }
 
           // // ✅ Handle lifecycle events (enable these in Polar webhook settings)
           // if (t.startsWith("customer.") && t.includes("deleted")) {
