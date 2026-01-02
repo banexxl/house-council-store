@@ -56,7 +56,7 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
                          method: "DELETE",
                          headers: { "Content-Type": "application/json" },
                          body: JSON.stringify({
-                              subscriptionId: clientSubscriptionObject?.id!,
+                              subscriptionId: clientSubscriptionObject?.polar_subscription_id!,
                               polarCustomerId: clientSubscriptionObject?.polar_customer_id!,
                          }),
                     });
