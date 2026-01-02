@@ -171,6 +171,12 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
      }
 
      const handleOpenCustomerPortal = async () => {
+          const hasSubscription = Boolean(subscriptionData?.subscription_plan_id || subscriptionData?.polar_subscription_id)
+          if (!hasSubscription) {
+               toast.error("No subscription found. Please purchase a plan first.")
+               return
+          }
+
           if (!subscriptionData?.polar_customer_id) {
                toast.error("Missing customer identifier.")
                return
@@ -193,6 +199,9 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
 
                const data = await res.json().catch(() => ({}))
                if (!res.ok) {
+                    if (data?.error === "customer_not_found") {
+                         throw new Error("Please subscribe to a plan before opening the customer portal.")
+                    }
                     throw new Error(data?.error || "Failed to open customer portal.")
                }
 
@@ -257,6 +266,7 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
      const totalForAllApartments = pricePerApartment !== null ? pricePerApartment * apartmentsCount : null
 
      const billingPeriodLabel = subscriptionData?.renewal_period === "annually" ? "year" : "month"
+     const hasSubscription = Boolean(subscriptionData?.subscription_plan_id || subscriptionData?.polar_subscription_id)
 
      return (
           <Box>
@@ -264,6 +274,11 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
                <Typography variant="body1" color="text.secondary">
                     Manage your subscription plan, billing cycle, and payment methods.
                </Typography>
+               {!hasSubscription && (
+                    <Alert severity="error" sx={{ mt: 2 }}>
+                         No subscription found. Purchase a plan to manage billing and access the customer portal.
+                    </Alert>
+               )}
 
                <Card elevation={2} sx={{ my: 4 }}>
                     <CardContent>
