@@ -6,10 +6,8 @@ import { useState } from "react"
 import { Box, Paper, Tab, Tabs, Typography } from "@mui/material"
 import EditIcon from "@mui/icons-material/Edit"
 import SubscriptionsIcon from '@mui/icons-material/Subscriptions';
-import NotificationsIcon from "@mui/icons-material/Notifications"
 import SecurityIcon from "@mui/icons-material/Security"
 import AccountTab from "./tabs/account-tab"
-import NotificationsTab from "./tabs/notifications-tab"
 import SecurityTab from "./tabs/security-tab"
 import { User } from "@supabase/supabase-js"
 import { Client } from "@/app/types/client"
@@ -46,13 +44,9 @@ interface ProfileTabsProps {
      editMode: boolean
      setEditMode: (value: boolean) => void
      clientSubscriptionObject: ClientSubscription & { subscription_plan: SubscriptionPlan } | null
-     // allClientBillingInformation: ClientBillingInformation[]
-     notificationSettings: any[]
-     setNotificationSettings: (value: any) => void
      recentActivity: ActivityItem[]
      subscriptionFeatures?: Feature[],
      binCheckerAPIKey?: string,
-     // clientPayments: Payment[]
      subsrciptioFeatures?: SubscriptionPlan & { features: Feature[] } | null,
      currencies?: Currency[],
      apartmentsCount: number
@@ -63,15 +57,8 @@ export default function ProfileTabs({
      editMode,
      setEditMode,
      clientSubscriptionObject,
-     // allClientBillingInformation,
-     notificationSettings,
-     setNotificationSettings,
      recentActivity,
-     subscriptionFeatures,
-     binCheckerAPIKey,
-     // clientPayments,
      subsrciptioFeatures,
-     currencies,
      apartmentsCount
 }: ProfileTabsProps) {
 
@@ -81,11 +68,11 @@ export default function ProfileTabs({
           setTabValue(newValue)
      }
 
-     const handleNotificationToggle = (id: string) => {
-          setNotificationSettings((prevSettings: any[]) =>
-               prevSettings.map((setting) => (setting.id === id ? { ...setting, enabled: !setting.enabled } : setting)),
-          )
-     }
+     // const handleNotificationToggle = (id: string) => {
+     //      setNotificationSettings((prevSettings: any[]) =>
+     //           prevSettings.map((setting) => (setting.id === id ? { ...setting, enabled: !setting.enabled } : setting)),
+     //      )
+     // }
 
      const lastAction = recentActivity
           .filter(activity => activity.type === 'action')
@@ -109,7 +96,7 @@ export default function ProfileTabs({
                          {/* <Tab label="Billing" icon={<CreditCardIcon />} iconPosition="start" /> */}
                          <Tab label="Subscription" icon={<SubscriptionsIcon />} iconPosition="start" />
                          {/* <Tab label="Payments" icon={<ReceiptIcon />} iconPosition="start" /> */}
-                         <Tab label="Notifications" icon={<NotificationsIcon />} iconPosition="start" />
+                         {/* <Tab label="Notifications" icon={<NotificationsIcon />} iconPosition="start" /> */}
                          <Tab label="Security" icon={<SecurityIcon />} iconPosition="start" />
                     </Tabs>
 
@@ -149,15 +136,15 @@ export default function ProfileTabs({
                          </TabPanel> */}
 
                          {/* Notifications Tab */}
-                         <TabPanel value={tabValue} index={2}>
+                         {/* <TabPanel value={tabValue} index={2}>
                               <NotificationsTab
                                    notificationSettings={notificationSettings}
                                    handleNotificationToggle={handleNotificationToggle}
                               />
-                         </TabPanel>
+                         </TabPanel> */}
 
                          {/* Security Tab */}
-                         <TabPanel value={tabValue} index={3}>
+                         <TabPanel value={tabValue} index={2}>
                               <SecurityTab userData={userData} />
                          </TabPanel>
                     </Box>
