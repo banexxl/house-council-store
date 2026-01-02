@@ -20,24 +20,6 @@ const supabase = createClient(
 
 type RenewalPeriod = "monthly" | "annually";
 
-type ClientSubscriptionRow = {
-     created_at: string | null;
-
-     polar_customer_id: string | null;
-     polar_subscription_id: string | null;
-     polar_checkout_id: string | null;
-     polar_order_id: string | null;
-     polar_product_id: string | null;
-     client_id: string | null;
-
-     apartment_count: number | null;
-
-     subscription_plan_id: string | null;
-
-     apartment_count_last_synced_at?: string | null;
-     apartment_count_last_sent?: number | null;
-};
-
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -105,14 +87,6 @@ function extractCurrentPeriodStart(data: any): string | null {
           data?.period_start ??
           null
      );
-}
-
-function isSameOrAfter(
-     aIso: string | null | undefined,
-     bIso: string | null | undefined
-) {
-     if (!aIso || !bIso) return false;
-     return new Date(aIso).getTime() >= new Date(bIso).getTime();
 }
 
 /**
@@ -236,6 +210,7 @@ type SubscriptionPatch = Partial<{
 
 async function patchClientSubscription(clientId: string, patch: SubscriptionPatch): Promise<{ success: boolean, error?: string }> {
      const update: Record<string, any> = { updated_at: nowIso() };
+     console.log('update', update);
 
      for (const [k, v] of Object.entries(patch)) {
           if (v !== undefined) update[k] = v; // ✅ only defined keys
@@ -329,7 +304,6 @@ export const POST = Webhooks({
 
           const polarCustomerId: string | null =
                data?.customer_id ?? data?.customerId ?? (t.startsWith("customer.") ? data?.id : null) ?? null;
-
           const polarSubscriptionId: string | null = data?.subscription_id ?? data?.subscriptionId ?? null;
           const polarCheckoutId: string | null = data?.checkout_id ?? data?.checkoutId ?? null;
           const polarOrderId: string | null = data?.order_id ?? data?.orderId ?? null;
@@ -449,15 +423,6 @@ export const POST = Webhooks({
           // Subscription lifecycle events (event-specific patches)
           // -------------------------------------------------------------------------
 
-          // Helper: patch common subscription identifiers (safe)
-          const commonIdsPatch: SubscriptionPatch = {
-               polar_customer_id: polarCustomerId,
-               polar_subscription_id: polarSubscriptionId,
-               polar_checkout_id: polarCheckoutId,
-               polar_order_id: polarOrderId,
-               polar_product_id: polarProductId,
-          };
-
           // Some events should ensure the row exists before patching
           const shouldEnsureRow =
                t.includes("subscription.created") ||
@@ -489,7 +454,6 @@ export const POST = Webhooks({
                          expired: false,
                          next_payment_date: nextPaymentDate ?? null,
                          apartment_count: apartmentsCount,
-                         ...commonIdsPatch,
                     });
 
                     revalidatePath("/profile");
@@ -505,7 +469,6 @@ export const POST = Webhooks({
                          expired: false,
                          next_payment_date: nextPaymentDate ?? null,
                          apartment_count: apartmentsCount,
-                         ...commonIdsPatch,
                     });
 
                     revalidatePath("/profile");
@@ -521,7 +484,6 @@ export const POST = Webhooks({
                          expired: false,
                          next_payment_date: nextPaymentDate ?? null,
                          apartment_count: apartmentsCount,
-                         ...commonIdsPatch,
                     });
 
                     revalidatePath("/profile");
@@ -537,7 +499,6 @@ export const POST = Webhooks({
                          expired: true,
                          next_payment_date: nextPaymentDate ?? null,
                          apartment_count: apartmentsCount,
-                         ...commonIdsPatch,
                     });
 
                     revalidatePath("/profile");
@@ -553,7 +514,6 @@ export const POST = Webhooks({
                          expired: false,
                          next_payment_date: nextPaymentDate ?? null,
                          apartment_count: apartmentsCount,
-                         ...commonIdsPatch,
                     });
 
                     revalidatePath("/profile");
@@ -570,7 +530,6 @@ export const POST = Webhooks({
                          next_payment_date: nextPaymentDate ?? null,
                          apartment_count: apartmentsCount,
                          polar_subscription_id: data?.id,
-                         ...commonIdsPatch,
                     });
 
                     revalidatePath("/profile");
@@ -587,7 +546,6 @@ export const POST = Webhooks({
                          next_payment_date: nextPaymentDate ?? null,
                          apartment_count: apartmentsCount,
                          polar_subscription_id: data.id,
-                         ...commonIdsPatch,
                     });
 
                     revalidatePath("/profile");
