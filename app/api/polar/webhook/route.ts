@@ -240,6 +240,7 @@ async function patchClientSubscription(clientId: string, patch: SubscriptionPatc
      for (const [k, v] of Object.entries(patch)) {
           if (v !== undefined) update[k] = v; // ✅ only defined keys
      }
+     console.log('Trying to patch client subscription with update: ', update);
 
      // ✅ For updates: just update existing row
      const { error } = await supabase
@@ -247,7 +248,11 @@ async function patchClientSubscription(clientId: string, patch: SubscriptionPatc
           .update(update)
           .eq("client_id", clientId);
 
-     if (error) return { success: false, error: error.message };
+
+     if (error) {
+          console.log('Error patching client subscription: ', error);
+          return { success: false, error: error.message };
+     }
      return { success: true };
 }
 
