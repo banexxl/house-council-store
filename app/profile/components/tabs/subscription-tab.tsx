@@ -56,7 +56,7 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
                          headers: { "Content-Type": "application/json" },
                          body: JSON.stringify({
                               subscriptionId: clientSubscriptionObject?.id!,
-                              clientId: clientSubscriptionObject?.client_id!,
+                              polar_customer_id: clientSubscriptionObject?.polar_customer_id!,
                          }),
                     });
 
