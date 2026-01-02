@@ -239,8 +239,8 @@ export const readClientSubscriptionPlanFromClientId = async (
 
      const supabase = await useServerSideSupabaseAnonClient();
 
-     const maxAttempts = 8;          // ~ 10s total with backoff below
-     const baseDelayMs = 300;
+     const maxAttempts = 8;          // ~ 15s total with backoff below
+     const baseDelayMs = 350;
 
      let lastErr: any = null;
 

@@ -11,6 +11,14 @@ import { buildCanonicalUrl } from "@/app/lib/seo"
 
 const canonicalUrl = buildCanonicalUrl("/pricing/subscription-plan-purchase/success");
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+// ⬇️ seconds
+export const maxDuration = 30;
+
+
 export const metadata: Metadata = {
      title: "Subscription Confirmed | NestLink",
      description: "Your NestLink subscription is active. Continue to your dashboard to manage your building community.",
