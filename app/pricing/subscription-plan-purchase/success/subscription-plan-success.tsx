@@ -25,16 +25,12 @@ import Animate from "@/app/components/animation-framer-motion"
 import Link from "next/link"
 
 interface SubscriptionSuccessPageProps {
-     planId: string
-     planName: string
      isTrial: boolean
      userEmail: string
      dashboardUrl: string
 }
 
 export default function SubscriptionSuccessPage({
-     planId,
-     planName,
      isTrial,
      userEmail,
      dashboardUrl
@@ -79,8 +75,8 @@ export default function SubscriptionSuccessPage({
                                    </Typography>
                                    <Typography variant="subtitle1">
                                         {isTrial
-                                             ? <>You now have access to all <span style={{ color: theme.palette.primary.main }}>{planName}</span> plan features for the next 30 days.</>
-                                             : <>You now have full access to all <span style={{ color: theme.palette.primary.main }}>{planName}</span> plan features.</>}
+                                             ? <>You now have access to all plan features for the next 30 days.</>
+                                             : <>You now have full access to all plan features.</>}
                                    </Typography>
                               </Box>
 
@@ -92,12 +88,6 @@ export default function SubscriptionSuccessPage({
                                         </Typography>
                                         <Divider sx={{ mb: 3 }} />
                                         <List sx={{ pl: 1 }}>
-                                             <ListItem disableGutters sx={{ pb: 1 }}>
-                                                  <ListItemIcon sx={{ minWidth: 36 }}>
-                                                       <DescriptionIcon color="primary" />
-                                                  </ListItemIcon>
-                                                  <ListItemText primary="Plan" secondary={planName} />
-                                             </ListItem>
                                              <ListItem disableGutters sx={{ pb: 1 }}>
                                                   <ListItemIcon sx={{ minWidth: 36 }}>
                                                        <AccountCircleIcon color="primary" />

@@ -213,101 +213,69 @@ export const readFeaturesFromSubscriptionPlanId = async (subscriptionPlanId: str
      return { success: true, features };
 }
 
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-export const readClientSubscriptionPlanFromClientId = async (
-     clientId: string
-): Promise<{
-     success: boolean;
-     clientSubscriptionPlanData?: (ClientSubscription & { subscription_plan: SubscriptionPlan }) | null;
-     error?: string;
-}> => {
-     const t0 = Date.now();
+export const readClientSubscriptionPlanFromClientId = async (clientId: string): Promise<{ success: boolean, clientSubscriptionPlanData?: ClientSubscription & { subscription_plan: SubscriptionPlan } | null, error?: string }> => {
 
      if (!clientId) {
           await logServerAction({
                user_id: null,
-               action: "Read Client Subscription Plan",
+               action: 'Read Client Subscription Plan',
                payload: { clientId },
-               status: "fail",
+               status: 'fail',
                error: "Client ID is required",
-               duration_ms: Date.now() - t0,
-               type: "db",
-          });
+               duration_ms: 0,
+               type: 'db'
+          })
           return { success: false, error: "Client ID is required" };
      }
+     const supabase = await useServerSideSupabaseAnonClient(); // Use the server-side Supabase client
 
-     const supabase = await useServerSideSupabaseAnonClient();
+     const { data: clientSubscriptionPlanData, error: clientSubscriptionDataError } = await supabase
+          .from("tblClient_Subscription")
+          .select(`
+    *,
+    subscription_plan:subscription_plan_id (*)
+  `)
+          .eq("client_id", clientId)
+          .single();
 
-     const maxAttempts = 8; // about 6.8 seconds total with linear backoff
-     const baseDelayMs = 150;
-
-     let lastErr: any = null;
-
-     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-          const { data, error } = await supabase
-               .from("tblClient_Subscription")
-               .select(
-                    `
-        *,
-        subscription_plan:subscription_plan_id (*)
-      `
-               )
-               .eq("client_id", clientId)
-               .maybeSingle(); // ✅ 0 rows => data=null, error=null
-
-          // Found it ✅
-          if (data) {
-               await logServerAction({
-                    user_id: null,
-                    action: "Read Client Subscription Plan",
-                    payload: { clientId, attempt },
-                    status: "success",
-                    error: "",
-                    duration_ms: Date.now() - t0,
-                    type: "db",
-               });
-               return { success: true, clientSubscriptionPlanData: data };
-          }
-
-          // Hard error (RLS, bad query, etc.)
-          if (error) {
-               lastErr = error;
-
-               // Optional: only retry on transient-ish errors
-               // If you want: retry only on 429/5xx; otherwise break immediately.
-               // PostgREST errors don't always have status; guard carefully.
-               const status = (error as any)?.status;
-               const isTransient = status === 429 || (typeof status === "number" && status >= 500);
-
-               if (!isTransient) break;
-          }
-
-          // Not found yet (or transient) → wait and retry
-          if (attempt < maxAttempts) {
-               const delay = baseDelayMs * attempt; // linear backoff
-               await sleep(delay);
-               continue;
-          }
+     if (clientSubscriptionDataError) {
+          await logServerAction({
+               user_id: null,
+               action: 'Read Client Subscription Plan',
+               payload: { clientId },
+               status: 'fail',
+               error: clientSubscriptionDataError.message,
+               duration_ms: 0,
+               type: 'db'
+          })
+          return { success: false, error: clientSubscriptionDataError.message, clientSubscriptionPlanData: null };
      }
 
-     const msg =
-          lastErr?.message ??
-          "Client subscription data not found (timed out waiting for webhook update)";
-
+     if (!clientSubscriptionPlanData) {
+          await logServerAction({
+               user_id: null,
+               action: 'Read Client Subscription Plan',
+               payload: { clientId },
+               status: 'fail',
+               error: "Client subscription data not found",
+               duration_ms: 0,
+               type: 'db'
+          })
+          return { success: false, error: "Client subscription data not found", clientSubscriptionPlanData: null };
+     }
      await logServerAction({
           user_id: null,
-          action: "Read Client Subscription Plan",
+          action: 'Read Client Subscription Plan',
           payload: { clientId },
-          status: "fail",
-          error: msg,
-          duration_ms: Date.now() - t0,
-          type: "db",
-     });
+          status: 'success',
+          error: '',
+          duration_ms: 0,
+          type: 'db'
+     })
 
-     return { success: false, error: msg, clientSubscriptionPlanData: null };
-};
+     return { success: true, clientSubscriptionPlanData };
 
+}
 
 export async function getApartmentCountForClient(clientId: string): Promise<number> {
      const supabase = await useServerSideSupabaseAnonClient();

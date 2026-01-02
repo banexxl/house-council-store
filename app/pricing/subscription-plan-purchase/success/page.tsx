@@ -11,14 +11,6 @@ import { buildCanonicalUrl } from "@/app/lib/seo"
 
 const canonicalUrl = buildCanonicalUrl("/pricing/subscription-plan-purchase/success");
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-
-// ⬇️ seconds
-export const maxDuration = 9;
-
-
 export const metadata: Metadata = {
      title: "Subscription Confirmed | NestLink",
      description: "Your NestLink subscription is active. Continue to your dashboard to manage your building community.",
@@ -68,24 +60,12 @@ export default async function FreeTrialSuccessPage({ searchParams }: { searchPar
 
      const dashboardUrl = process.env.NEXT_PUBLIC_DASHBOARD_URL!
 
-     const { success, clientSubscriptionPlanData, error: clientSubscriptionPlanError } = await readClientSubscriptionPlanFromClientId(client.id)
-     if (!success || !clientSubscriptionPlanData) {
-          await logServerAction({
-               user_id: session ? session.id : null,
-               action: 'Try Render Subscription Success Page',
-               payload: {},
-               status: 'fail',
-               error: `${clientSubscriptionPlanError}`,
-               duration_ms: 0,
-               type: 'webhook',
-          })
-          redirect("/pricing/subscription-plan-purchase/error")
-     }
-
      return (
           <>
                <Header user={session ? session : null} />
-               <SubscriptionSuccessPage userEmail={session.email!} planId={""} planName={clientSubscriptionPlanData?.subscription_plan.name!} isTrial={false} dashboardUrl={dashboardUrl} />
+               <SubscriptionSuccessPage
+                    userEmail={session.email!}
+                    isTrial={false} dashboardUrl={dashboardUrl} />
                <Footer />
           </>
      )
