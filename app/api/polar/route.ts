@@ -81,7 +81,7 @@ export async function POST(req: Request) {
 export async function DELETE(req: Request) {
      try {
           const { subscriptionId, polarCustomerId } = await req.json();
-          console.log('Unsubscribe with sub id:', subscriptionId + ' and polar_customer_id:  ', + polarCustomerId);
+          console.log('Unsubscribe with sub id:', subscriptionId + ' and polar_customer_id:  ', polarCustomerId);
 
           if (!subscriptionId || !polarCustomerId) {
                return NextResponse.json({ error: "Missing subscriptionId or clientId" }, { status: 400 });
