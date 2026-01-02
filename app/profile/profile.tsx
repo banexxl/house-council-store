@@ -10,7 +10,6 @@ import { ClientSubscription, SubscriptionPlan } from "../types/subscription-plan
 import { Feature } from "../types/feature"
 import Animate from "@/app/components/animation-framer-motion"
 import { Currency } from "../types/currency"
-import ClientSubscriptionWatcher from "../lib/client-subscription-watcher"
 
 // Mock data for notification preferences
 const notificationPreferences = [
@@ -93,7 +92,6 @@ export const ProfilePage = ({
                                         />
                                    </Grid>
                               </Grid>
-                              <ClientSubscriptionWatcher clientId={sessionAndClientDataCombined?.client.id || ""} />
                          </Container>
                     </Box>
                </Animate>

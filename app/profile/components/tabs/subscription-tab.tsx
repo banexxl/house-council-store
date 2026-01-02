@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
      Box, Typography, Button, Card, CardContent, Divider, Chip,
      Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
@@ -14,17 +14,17 @@ import {
 } from "@mui/material"
 import {
      CalendarToday as CalendarTodayIcon,
-     CreditCard as CreditCardIcon,
      Receipt as ReceiptIcon
 } from "@mui/icons-material"
 import { useRouter } from "next/navigation"
 import toast from "react-hot-toast"
 import { getStatusColor } from "../profile-sidebar"
 import GradingIcon from '@mui/icons-material/Grading';
-import { ClientSubscription, SubscriptionPlan, SubscriptionStatus } from "@/app/types/subscription-plan"
+import { ClientSubscription, SubscriptionPlan } from "@/app/types/subscription-plan"
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { Feature } from "@/app/types/feature"
 import Link from "next/link"
+import { initClientSubscriptionRealtime, type InitListenerOptions } from "@/app/lib/sb-realtime"
 
 interface SubscriptionTabProps {
      clientSubscriptionObject: ClientSubscription & { subscription_plan: SubscriptionPlan } | null;
@@ -32,7 +32,62 @@ interface SubscriptionTabProps {
      apartmentsCount: number
 }
 
+type ClientSubscriptionWithOptionalPlan = ClientSubscription & { subscription_plan?: SubscriptionPlan }
+
+const isClientSubscriptionRecord = (record: unknown): record is ClientSubscriptionWithOptionalPlan => {
+     if (!record || typeof record !== "object") return false
+     return "id" in record && "status" in record
+}
+
 export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioFeatures, apartmentsCount }: SubscriptionTabProps) {
+     const [subscriptionData, setSubscriptionData] = useState<ClientSubscriptionWithOptionalPlan | null>(clientSubscriptionObject)
+
+     useEffect(() => {
+          setSubscriptionData(clientSubscriptionObject)
+     }, [clientSubscriptionObject])
+
+     useEffect(() => {
+          const clientId = clientSubscriptionObject?.client_id
+          if (!clientId) return
+
+          let isMounted = true
+          let cleanup: (() => Promise<void>) | null = null
+
+          const handleRealtimeUpdate: InitListenerOptions<ClientSubscriptionWithOptionalPlan>["onEvent"] = (payload) => {
+               const maybeRecord = payload.new
+               if (!isMounted || !isClientSubscriptionRecord(maybeRecord)) return
+
+               setSubscriptionData((prev) => {
+                    if (!prev) return maybeRecord
+
+                    return {
+                         ...prev,
+                         ...maybeRecord,
+                         subscription_plan: maybeRecord.subscription_plan ?? prev.subscription_plan,
+                    }
+               })
+          }
+
+          initClientSubscriptionRealtime<ClientSubscriptionWithOptionalPlan>(clientId, handleRealtimeUpdate)
+               .then((stop) => {
+                    if (!isMounted) {
+                         void stop()
+                         return
+                    }
+                    cleanup = stop
+               })
+               .catch((error) => {
+                    console.error('[SubscriptionTab] Failed to start realtime listener', error)
+               })
+
+          return () => {
+               isMounted = false
+               if (cleanup) {
+                    void cleanup()
+               }
+          }
+     }, [clientSubscriptionObject?.client_id])
+
      const theme = useTheme()
      const router = useRouter()
      const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
@@ -48,14 +103,19 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
 
      const handleCancelSubscription = async () => {
           setIsProcessing(true)
+          if (!subscriptionData?.polar_subscription_id || !subscriptionData?.polar_customer_id) {
+               toast.error("Missing subscription identifiers.")
+               setIsProcessing(false)
+               return
+          }
           try {
                try {
                     const res = await fetch("/api/polar/", {
                          method: "DELETE",
                          headers: { "Content-Type": "application/json" },
                          body: JSON.stringify({
-                              subscriptionId: clientSubscriptionObject?.polar_subscription_id!,
-                              polarCustomerId: clientSubscriptionObject?.polar_customer_id!,
+                              subscriptionId: subscriptionData.polar_subscription_id,
+                              polarCustomerId: subscriptionData.polar_customer_id,
                          }),
                     });
                     if (!res.ok) {
@@ -92,14 +152,14 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
           date ? new Date(date).toLocaleDateString() : <i>No subscription plan selected</i>
 
      const currencyFormatter = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" })
-     const pricePerApartment = clientSubscriptionObject
-          ? clientSubscriptionObject.renewal_period === "annually"
-               ? clientSubscriptionObject.subscription_plan.total_price_per_apartment_with_discounts
-               : clientSubscriptionObject.subscription_plan.monthly_total_price_per_apartment
+     const pricePerApartment = subscriptionData?.subscription_plan
+          ? subscriptionData.renewal_period === "annually"
+               ? subscriptionData.subscription_plan.total_price_per_apartment_with_discounts
+               : subscriptionData.subscription_plan.monthly_total_price_per_apartment
           : null
      const totalForAllApartments = pricePerApartment !== null ? pricePerApartment * apartmentsCount : null
 
-     const billingPeriodLabel = clientSubscriptionObject?.renewal_period === "annually" ? "year" : "month"
+     const billingPeriodLabel = subscriptionData?.renewal_period === "annually" ? "year" : "month"
 
      return (
           <Box>
@@ -112,17 +172,17 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
                     <CardContent>
                          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
                               <Typography variant="h6">Current Plan</Typography>
-                              {!clientSubscriptionObject ? (
+                              {!subscriptionData ? (
                                    <Chip label="No Subscription" color="error" size="small" />
                               ) : (
-                                   <Chip label={clientSubscriptionObject.subscription_plan.name} color={getStatusColor(clientSubscriptionObject.status)} size="small" />
+                                   <Chip label={subscriptionData.subscription_plan?.name ?? "Plan"} color={getStatusColor(subscriptionData.status)} size="small" />
                               )}
                          </Box>
 
                          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
                               <Box>
                                    <Typography variant="h5" color="primary.main" gutterBottom>
-                                        {clientSubscriptionObject?.subscription_plan.name}
+                                        {subscriptionData?.subscription_plan?.name ?? "No plan selected"}
                                    </Typography>
                               </Box>
                               <Button variant="outlined" color="primary" onClick={() => handleDialogToggle("upgrade", true)} disabled={isProcessing}>
@@ -137,14 +197,14 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
                                    <Typography variant="h6" sx={{ mb: 1 }}>Subscription Details:</Typography>
                                    <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
                                         <CalendarTodayIcon fontSize="small" sx={{ mr: 1, color: "text.secondary" }} />
-                                        <Typography variant="body2">{renderDate(clientSubscriptionObject?.created_at)}</Typography>
+                                        <Typography variant="body2">{renderDate(subscriptionData?.created_at)}</Typography>
                                         <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
                                              (Subscription Start Date)
                                         </Typography>
                                    </Box>
                                    {
-                                        clientSubscriptionObject?.status !== "canceled" && (
-                                             <Button variant="outlined" color="error" onClick={() => handleDialogToggle("confirmCancel", true)} disabled={isProcessing || !clientSubscriptionObject}>
+                                        subscriptionData && subscriptionData.status !== "canceled" && (
+                                             <Button variant="outlined" color="error" onClick={() => handleDialogToggle("confirmCancel", true)} disabled={isProcessing || !subscriptionData}>
                                                   Cancel Subscription
                                              </Button>
 
@@ -154,11 +214,11 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
                               <Grid size={{ xs: 12, sm: 6 }}>
                                    <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
                                         <GradingIcon fontSize="small" sx={{ mr: 1, color: "text.secondary" }} />
-                                        <Typography variant="body2">Status: {clientSubscriptionObject?.status.toUpperCase()}</Typography>
+                                        <Typography variant="body2">Status: {subscriptionData?.status?.toUpperCase() ?? "N/A"}</Typography>
                                    </Box>
                                    <Box sx={{ display: "flex", alignItems: "center" }}>
                                         <ReceiptIcon fontSize="small" sx={{ mr: 1, color: "text.secondary" }} />
-                                        <Typography variant="body2">Billing Cycle: {clientSubscriptionObject?.renewal_period == 'annually' ? "ANNUALLY" : "MONTHLY"}</Typography>
+                                        <Typography variant="body2">Billing Cycle: {!subscriptionData ? "N/A" : subscriptionData.renewal_period == 'annually' ? "ANNUALLY" : "MONTHLY"}</Typography>
                                    </Box>
                                    {pricePerApartment !== null && (
                                         <Alert severity="info" sx={{ mt: 1 }}>

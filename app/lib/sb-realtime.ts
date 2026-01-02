@@ -12,7 +12,7 @@ type AnyChannel = RealtimeChannel & {
      ) => AnyChannel;
 };
 
-interface InitListenerOptions<T extends Record<string, any> = Record<string, any>> {
+export interface InitListenerOptions<T extends Record<string, any> = Record<string, any>> {
      schema?: string;                 // default 'public'
      channelName?: string;            // fixed name optional
      filter?: string;                 // e.g. "user_id=eq.<uuid>"
@@ -49,42 +49,52 @@ export async function initTableRealtimeListener<T extends Record<string, any> = 
 
      // 2) Channel
      const name = channelName || `rt-${schema}-${table}-${Math.random().toString(36).slice(2, 9)}`;
-     const channel = supabaseBrowserClient.channel(name) as AnyChannel;
-
-     // 3) Attach listeners (no empty filter!)
      const base = { schema, table } as const;
      const f = (filter && filter.trim()) ? { filter } : {};
-     for (const ev of events) {
-          (channel as AnyChannel).on("postgres_changes", { event: ev, ...base, ...f }, (payload: any) => {
-               onEvent(payload as RealtimePostgresChangesPayload<T>);
-          });
-     }
+     let channel = supabaseBrowserClient.channel(name) as AnyChannel;
 
-     // 4) Subscribe (with status logs)
-     channel.subscribe((status) => {
-          log(`Channel status: ${status}`);
-     });
-
-     // 4b) When tab regains focus/visibility or network returns, try to re-subscribe
-     const tryResubscribe = () => {
-          const state = (channel as any)?.state;
-          if (document.visibilityState !== 'visible') return;
-
-          log(`[Realtime] Focus/online/visible; channel state: ${state}`);
-
-          // If not joined or has errored/closed, attempt subscribe again
-          if (state && (state === 'closed' || state === 'errored' || state === 'leaving' || state === 'closed')) {
-               (channel as AnyChannel).subscribe((status) => {
-
-                    log(`[Realtime] Re-subscribe status: ${status}`);
-
+     const attachListeners = (target: AnyChannel) => {
+          for (const ev of events) {
+               target.on("postgres_changes", { event: ev, ...base, ...f }, (payload: any) => {
+                    onEvent(payload as RealtimePostgresChangesPayload<T>);
                });
           }
      };
 
-     const onFocus = () => tryResubscribe();
-     const onVisible = () => tryResubscribe();
-     const onOnline = () => tryResubscribe();
+     const subscribeChannel = (target: AnyChannel, reason: "initial" | "reconnect" = "initial") => {
+          target.subscribe((status) => {
+               log(`[Realtime] Channel status (${reason}): ${status}`);
+          });
+     };
+
+     // 3) Attach listeners (no empty filter!)
+     attachListeners(channel);
+
+     // 4) Subscribe (with status logs)
+     subscribeChannel(channel, "initial");
+
+     // 4b) When tab regains focus/visibility or network returns, try to re-subscribe
+     const tryResubscribe = async () => {
+          if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
+          const state = (channel as any)?.state;
+
+          log(`[Realtime] Focus/online/visible; channel state: ${state}`);
+
+          // Recreate the channel instance if it was closed/errored (subscribe is one-shot per instance).
+          if (state === "closed" || state === "errored") {
+               const prev = channel;
+               try {
+                    await supabaseBrowserClient.removeChannel(prev);
+               } catch { }
+               channel = supabaseBrowserClient.channel(name) as AnyChannel;
+               attachListeners(channel);
+               subscribeChannel(channel, "reconnect");
+          }
+     };
+
+     const onFocus = () => { void tryResubscribe(); };
+     const onVisible = () => { void tryResubscribe(); };
+     const onOnline = () => { void tryResubscribe(); };
 
      if (typeof window !== 'undefined') {
           window.addEventListener('focus', onFocus);
@@ -107,7 +117,10 @@ export async function initTableRealtimeListener<T extends Record<string, any> = 
      };
 }
 
-export const initClientSubscriptionRealtime = (clientId: string, onEvent: InitListenerOptions["onEvent"]) => {
+export const initClientSubscriptionRealtime = <T extends Record<string, any> = Record<string, any>>(
+     clientId: string,
+     onEvent: InitListenerOptions<T>["onEvent"]
+) => {
      // Enforce a non-empty filter; if missing, no-op with safe cleanup
      if (!clientId) {
           log('[Realtime] initClientSubscriptionRealtime called without clientId; skipping subscribe.', 'warn');
@@ -120,13 +133,13 @@ export const initClientSubscriptionRealtime = (clientId: string, onEvent: InitLi
      log(`[Realtime] Subscribing to tblClient_Subscription ${filter}`, 'info');
 
 
-     return initTableRealtimeListener("tblClient_Subscription", ["INSERT", "UPDATE", "DELETE"], {
+     return initTableRealtimeListener<T>("tblClient_Subscription", ["INSERT", "UPDATE", "DELETE"], {
           schema: "public",
           channelName: `client_${clientId}_subscription`,
           filter,
           onEvent: (payload) => {
                log(`[Realtime] Client subscription event ${JSON.stringify(payload)}`);
-               onEvent(payload);
+               onEvent(payload as RealtimePostgresChangesPayload<T>);
           },
      });
 }
