@@ -156,7 +156,7 @@ export async function PUT(req: Request) {
                {
                     id: subscriptionId,
                     customerSubscriptionUpdate: {
-                         cancelAtPeriodEnd: false,
+                         cancelAtPeriodEnd: true,
                     },
                }
           );
