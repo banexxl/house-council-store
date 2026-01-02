@@ -126,3 +126,62 @@ export async function DELETE(req: Request) {
           return NextResponse.json({ error: e?.message ?? "Unknown error" }, { status: 500 });
      }
 }
+
+export async function PUT(req: Request) {
+     try {
+          const { subscriptionId, polarCustomerId } = await req.json();
+
+          log(
+               `Reactivate request. subscriptionId=${subscriptionId}, polarCustomerId=${polarCustomerId}`,
+               "info"
+          );
+
+          if (!subscriptionId || !polarCustomerId) {
+               return NextResponse.json(
+                    { error: "Missing subscriptionId or polarCustomerId" },
+                    { status: 400 }
+               );
+          }
+
+          // 1) Create a customer session token (acts like "customer auth" for portal endpoints)
+          const session = await polar.customerSessions.create({
+               customerId: polarCustomerId,
+          });
+
+          // 2) Update subscription: undo "cancel at period end" (reactivate auto-renew)
+          // Customer Portal "Update Subscription" is PATCH /v1/customer-portal/subscriptions/{id}
+          // Setting cancel_at_period_end=false is the typical "uncancel" action.
+          const updated = await polar.customerPortal.subscriptions.update(
+               { customerSession: session.token },
+               {
+                    id: subscriptionId,
+                    customerSubscriptionUpdate: {
+                         cancelAtPeriodEnd: false,
+                    },
+               }
+          );
+
+          revalidatePath("/profile");
+
+          await logServerAction({
+               user_id: null,
+               action: "Reactivate subscription - success",
+               payload: { subscriptionId, polarCustomerId },
+               status: "success",
+               error: "",
+               duration_ms: 0,
+               type: "webhook",
+          });
+
+          return NextResponse.json({
+               message: "Subscription reactivated (auto-renew resumed).",
+               subscription: updated,
+          });
+     } catch (e: any) {
+          return NextResponse.json(
+               { error: e?.message ?? "Unknown error" },
+               { status: 500 }
+          );
+     }
+}
+

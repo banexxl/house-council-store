@@ -47,46 +47,66 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
      }, [clientSubscriptionObject])
 
      useEffect(() => {
-          const clientId = clientSubscriptionObject?.client_id
-          if (!clientId) return
+          const clientId = clientSubscriptionObject?.client_id;
+          if (!clientId) return;
 
-          let isMounted = true
-          let cleanup: (() => Promise<void>) | null = null
+          let isMounted = true;
+          let cleanup: (() => Promise<void>) | null = null;
+
+          // Debounce refresh so multiple updates close together don't cause multiple refreshes
+          let refreshTimer: ReturnType<typeof setTimeout> | null = null;
+          const scheduleRefresh = () => {
+               if (refreshTimer) clearTimeout(refreshTimer);
+               refreshTimer = setTimeout(() => {
+                    // This re-runs the server components above this tab and re-passes new props
+                    router.refresh();
+               }, 250);
+          };
 
           const handleRealtimeUpdate: InitListenerOptions<ClientSubscriptionWithOptionalPlan>["onEvent"] = (payload) => {
-               const maybeRecord = payload.new
-               if (!isMounted || !isClientSubscriptionRecord(maybeRecord)) return
+               if (!isMounted) return;
 
-               setSubscriptionData((prev) => {
-                    if (!prev) return maybeRecord
+               // 1) Update local subscription columns immediately (fast)
+               if (payload.eventType === "DELETE") {
+                    // if your DELETE means subscription row removed, clear local state
+                    setSubscriptionData(null);
+                    scheduleRefresh();
+                    return;
+               }
 
-                    return {
-                         ...prev,
-                         ...maybeRecord,
-                         subscription_plan: maybeRecord.subscription_plan ?? prev.subscription_plan,
-                    }
-               })
-          }
+               const maybeRecord = payload.new;
+               if (!isClientSubscriptionRecord(maybeRecord)) return;
+
+               setSubscriptionData((prev) => ({
+                    ...(prev ?? ({} as any)),
+                    ...maybeRecord,
+                    // keep whatever plan we already had until refresh brings the joined plan
+                    subscription_plan: prev?.subscription_plan,
+               }));
+
+               // 2) Refresh to get joined `subscription_plan` and `subsrciptioFeatures` updated
+               scheduleRefresh();
+          };
 
           initClientSubscriptionRealtime<ClientSubscriptionWithOptionalPlan>(clientId, handleRealtimeUpdate)
                .then((stop) => {
                     if (!isMounted) {
-                         void stop()
-                         return
+                         void stop();
+                         return;
                     }
-                    cleanup = stop
+                    cleanup = stop;
                })
                .catch((error) => {
-                    console.error('[SubscriptionTab] Failed to start realtime listener', error)
-               })
+                    console.error("[SubscriptionTab] Failed to start realtime listener", error);
+               });
 
           return () => {
-               isMounted = false
-               if (cleanup) {
-                    void cleanup()
-               }
-          }
-     }, [clientSubscriptionObject?.client_id])
+               isMounted = false;
+               if (refreshTimer) clearTimeout(refreshTimer);
+               if (cleanup) void cleanup();
+          };
+     }, [clientSubscriptionObject?.client_id]);
+
 
      const theme = useTheme()
      const router = useRouter()
@@ -143,6 +163,40 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
                router.push("/pricing/")
           } catch {
                toast.error("Failed to process upgrade request. Please try again.")
+          } finally {
+               setIsProcessing(false)
+          }
+     }
+
+     const handleReactivateSubscription = async () => {
+          setIsProcessing(true)
+          if (!subscriptionData?.polar_subscription_id || !subscriptionData?.polar_customer_id) {
+               toast.error("Missing subscription identifiers.")
+               setIsProcessing(false)
+               return
+          }
+          try {
+               try {
+                    const res = await fetch("/api/polar/", {
+                         method: "PUT",
+                         headers: { "Content-Type": "application/json" },
+                         body: JSON.stringify({
+                              subscriptionId: subscriptionData.polar_subscription_id,
+                              polarCustomerId: subscriptionData.polar_customer_id,
+                         }),
+                    });
+                    if (!res.ok) {
+                         toast.error("Failed to reactivate subscription. Please try again.");
+                         handleDialogToggle("confirmCancel", false);
+                    }
+                    toast.success("Subscription reactivated successfully.");
+                    handleDialogToggle("confirmCancel", false);
+               } catch (err: any) {
+                    console.error(err);
+                    toast.error(err?.message || "Could not start checkout. Please try again.");
+               }
+          } catch {
+               toast.error("Failed to cancel subscription. Please try again.")
           } finally {
                setIsProcessing(false)
           }
@@ -208,7 +262,15 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
                                                   Cancel Subscription
                                              </Button>
 
-                                        )}
+                                        )
+                                   }
+                                   {
+                                        subscriptionData && subscriptionData.status === "canceled" && (
+                                             <Button variant="outlined" color="error" onClick={() => handleReactivateSubscription()} disabled={isProcessing || !subscriptionData}>
+                                                  Reactivate Subscription
+                                             </Button>
+                                        )
+                                   }
                               </Grid>
 
                               <Grid size={{ xs: 12, sm: 6 }}>
