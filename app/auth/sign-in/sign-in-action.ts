@@ -1,7 +1,7 @@
 'use client';
 
 import { logClientAction } from '@/app/lib/client-logging';
-import { createSupabaseBrowserClient } from '@/app/lib/supabase-client';
+import { supabaseBrowserClient } from '@/app/lib/sb-browser-client';
 
 export type SignInFormValues = {
      email: string;
@@ -21,9 +21,8 @@ export const checkClientExistsAndIsPermitted = async (
      const start = Date.now()
      const restrictingStatuses = ['inactive', 'pending_activation', 'suspended', 'archived']
      const allowedStatuses = ['active', 'trial', 'vip']
-     const supabase = await createSupabaseBrowserClient();
 
-     const { data, error } = await supabase
+     const { data, error } = await supabaseBrowserClient
           .from('tblClients')
           .select('*')
           .eq('email', values.email)

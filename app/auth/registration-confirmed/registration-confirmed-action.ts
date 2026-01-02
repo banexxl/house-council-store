@@ -1,13 +1,11 @@
 'use client'
 
 import { logClientAction } from "@/app/lib/client-logging";
-import { createSupabaseBrowserClient } from "@/app/lib/supabase-client";
+import { supabaseBrowserClient } from "@/app/lib/sb-browser-client";
 
 export const activateAccount = async (email: string): Promise<{ success: boolean, error?: string }> => {
 
-     const supabase = await createSupabaseBrowserClient();
-
-     const { data, error } = await supabase
+     const { data, error } = await supabaseBrowserClient
           .from('tblClients')
           .update({ client_status: 'active', is_verified: true })
           .eq('email', email);

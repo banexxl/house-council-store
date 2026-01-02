@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { polar } from "@/app/lib/polar";
 import { createClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
+import log from "@/app/lib/logger";
+import { logServerAction } from "@/app/lib/server-logging";
 
 export const runtime = "nodejs";
 
@@ -81,7 +83,7 @@ export async function POST(req: Request) {
 export async function DELETE(req: Request) {
      try {
           const { subscriptionId, polarCustomerId } = await req.json();
-          console.log('Subscription id: ', subscriptionId, ' polar customer id: ', polarCustomerId);
+          log(`Subscription id: ${subscriptionId}, polar customer id: ${polarCustomerId}`, 'info');
 
           if (!subscriptionId || !polarCustomerId) {
                return NextResponse.json({ error: "Missing subscriptionId or clientId" }, { status: 400 });
@@ -101,9 +103,17 @@ export async function DELETE(req: Request) {
                          id: subscriptionId,
                     },
                );
-               console.log("subscription canceled", canceled);
           } catch (error) {
-               console.error("failed to cancel subscription", error);
+               log("Failed to cancel subscription", 'error');
+               await logServerAction({
+                    user_id: null,
+                    action: 'Cancel subscription - error',
+                    payload: { subscriptionId, polarCustomerId },
+                    status: 'fail',
+                    error: canceled ? JSON.stringify(canceled) : 'Unknown error',
+                    duration_ms: 0,
+                    type: 'webhook'
+               })
                throw error;
           }
 

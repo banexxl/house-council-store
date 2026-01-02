@@ -1,7 +1,7 @@
 'use client'
 
+import { supabaseBrowserClient } from "./sb-browser-client";
 import { LogType } from "./server-logging";
-import { createSupabaseBrowserClient } from "./supabase-client";
 
 export type ClientLog = {
      id?: string;
@@ -24,9 +24,7 @@ export const logClientAction = async ({
      type
 }: ClientLog) => {
 
-     const supabase = await createSupabaseBrowserClient();
-
-     const { error: logInsertError } = await supabase.from('tblClientLogs').insert({
+     const { error: logInsertError } = await supabaseBrowserClient.from('tblClientLogs').insert({
           user_id,
           action,
           payload,

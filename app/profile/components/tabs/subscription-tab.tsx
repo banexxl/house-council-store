@@ -33,8 +33,6 @@ interface SubscriptionTabProps {
 }
 
 export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioFeatures, apartmentsCount }: SubscriptionTabProps) {
-     console.log('clientSubscriptionObject', clientSubscriptionObject);
-
      const theme = useTheme()
      const router = useRouter()
      const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
@@ -60,20 +58,12 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
                               polarCustomerId: clientSubscriptionObject?.polar_customer_id!,
                          }),
                     });
-
-                    const data = await res.json();
-                    console.log('res data', data);
-
                     if (!res.ok) {
-                         throw new Error("Failed to create checkout session.");
+                         toast.error("Failed to cancel subscription. Please try again.");
+                         handleDialogToggle("confirmCancel", false);
                     }
-
-                    if (!data?.url) {
-                         throw new Error("Checkout URL missing from response.");
-                    }
-
-                    // ✅ Redirect to Polar Checkout
-                    window.location.href = data.url;
+                    toast.success("Subscription canceled successfully.");
+                    handleDialogToggle("confirmCancel", false);
                } catch (err: any) {
                     console.error(err);
                     toast.error(err?.message || "Could not start checkout. Please try again.");

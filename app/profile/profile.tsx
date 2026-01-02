@@ -7,13 +7,10 @@ import ProfileTabs from "./components/profile-tabs"
 import { Client } from "../types/client"
 import { User } from "@supabase/supabase-js"
 import { ClientSubscription, SubscriptionPlan } from "../types/subscription-plan"
-import { BaseEntity } from "../types/base-entity"
-import { ClientBillingInformation } from "../types/billing-information"
 import { Feature } from "../types/feature"
 import Animate from "@/app/components/animation-framer-motion"
-import { Payment } from "../types/payment"
 import { Currency } from "../types/currency"
-import { createBrowserClient } from "@supabase/ssr"
+import ClientSubscriptionWatcher from "../lib/client-subscription-watcher"
 
 // Mock data for notification preferences
 const notificationPreferences = [
@@ -96,6 +93,7 @@ export const ProfilePage = ({
                                         />
                                    </Grid>
                               </Grid>
+                              <ClientSubscriptionWatcher clientId={sessionAndClientDataCombined?.client.id || ""} />
                          </Container>
                     </Box>
                </Animate>
