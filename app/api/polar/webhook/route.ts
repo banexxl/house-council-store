@@ -134,7 +134,6 @@ function extractNextPaymentDate(data: any): string | null {
 async function resolveClientAndPlanFromPolarIds(ids: {
      polarSubscriptionId?: string | null;
      polarCustomerId?: string | null;
-     polarCheckoutId?: string | null;
      polarOrderId?: string | null;
 }): Promise<{ client_id: string; subscription_plan_id: string } | null> {
 
@@ -168,16 +167,6 @@ async function resolveClientAndPlanFromPolarIds(ids: {
           if (data?.client_id && data?.subscription_plan_id) return data;
      }
 
-     if (ids.polarCheckoutId) {
-          const { data } = await supabase
-               .from("tblClient_Subscription")
-               .select("client_id, subscription_plan_id")
-               .eq("polar_checkout_id", ids.polarCheckoutId)
-               .maybeSingle<{ client_id: string; subscription_plan_id: string }>();
-
-          if (data?.client_id && data?.subscription_plan_id) return data;
-     }
-
      if (ids.polarCustomerId) {
           const { data } = await supabase
                .from("tblClient_Subscription")
@@ -201,7 +190,6 @@ type SubscriptionPatch = Partial<{
 
      polar_customer_id: string | null;
      polar_subscription_id: string | null;
-     polar_checkout_id: string | null;
      polar_order_id: string | null;
      polar_product_id: string | null;
 
@@ -305,7 +293,6 @@ export const POST = Webhooks({
           const polarCustomerId: string | null =
                data?.customer_id ?? data?.customerId ?? (t.startsWith("customer.") ? data?.id : null) ?? null;
           const polarSubscriptionId: string | null = data?.subscription_id ?? data?.subscriptionId ?? null;
-          const polarCheckoutId: string | null = data?.checkout_id ?? data?.checkoutId ?? null;
           const polarOrderId: string | null = data?.order_id ?? data?.orderId ?? null;
           const polarProductId: string | null = data?.product_id ?? data?.productId ?? null;
 
@@ -318,7 +305,6 @@ export const POST = Webhooks({
                     const resolved = await resolveClientAndPlanFromPolarIds({
                          polarSubscriptionId,
                          polarCustomerId,
-                         polarCheckoutId,
                          polarOrderId,
                     });
 
@@ -326,7 +312,7 @@ export const POST = Webhooks({
                          await logServerAction({
                               user_id: null,
                               action: "Store Webhook - Missing metadata and could not resolve client/plan",
-                              payload: { eventType, polarSubscriptionId, polarCustomerId, polarCheckoutId, polarOrderId },
+                              payload: { eventType, polarSubscriptionId, polarCustomerId, polarOrderId },
                               status: "fail",
                               error: "No mapping found in tblClient_Subscription yet",
                               duration_ms: Date.now() - t0,
@@ -574,7 +560,6 @@ export const POST = Webhooks({
                          subscriptionPlanId,
                          polarCustomerId,
                          polarSubscriptionId,
-                         polarCheckoutId,
                          polarOrderId,
                          polarProductId,
                          nextPaymentDate,

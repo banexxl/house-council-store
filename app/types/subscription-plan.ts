@@ -75,7 +75,6 @@ export interface ClientSubscription {
      // Polar IDs (uuid, nullable)
      polar_customer_id: string | null;
      polar_subscription_id: string | null;
-     polar_checkout_id: string | null;
      polar_order_id: string | null;
      polar_product_id: string | null;
 
