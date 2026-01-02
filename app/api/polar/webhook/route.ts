@@ -581,6 +581,7 @@ export const POST = Webhooks({
                          expired: false,
                          next_payment_date: nextPaymentDate ?? null,
                          apartment_count: apartmentsCount,
+                         polar_subscription_id: data.id,
                          ...commonIdsPatch,
                     });
 
