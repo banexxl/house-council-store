@@ -217,230 +217,74 @@ async function resolveClientAndPlanFromPolarIds(ids: {
      return null;
 }
 
-async function upsertClientSubscription(args: {
-     clientId: string;
-     subscriptionPlanId: string;
-     renewalPeriod: RenewalPeriod | null;
+type SubscriptionPatch = Partial<{
+     subscription_plan_id: string;
      status: string;
+     renewal_period: "monthly" | "annually";
+     is_auto_renew: boolean;
+     expired: boolean;
+     next_payment_date: string | null;
 
-     polarCustomerId?: string | null;
-     polarSubscriptionId?: string | null;
-     polarCheckoutId?: string | null;
-     polarOrderId?: string | null;
-     polarProductId?: string | null;
+     polar_customer_id: string | null;
+     polar_subscription_id: string | null;
+     polar_checkout_id: string | null;
+     polar_order_id: string | null;
+     polar_product_id: string | null;
 
-     polarQuantity?: number | null;
+     apartment_count: number; // keep >= 1
+}>;
 
-     nextPaymentDate?: string | null;
-     currentPeriodStart?: string | null;
+async function patchClientSubscription(clientId: string, patch: SubscriptionPatch): Promise<{ success: boolean, error?: string }> {
+     const update: Record<string, any> = { updated_at: nowIso() };
 
-     isAutoRenew?: boolean | null;
-     expired?: boolean | null;
+     for (const [k, v] of Object.entries(patch)) {
+          if (v !== undefined) update[k] = v; // ✅ only defined keys
+     }
+
+     // ✅ For updates: just update existing row
+     const { error } = await supabase
+          .from("tblClient_Subscription")
+          .update(update)
+          .eq("client_id", clientId);
+
+     if (error) return { success: false, error: error.message };
+     return { success: true };
+}
+
+async function ensureSubscriptionRow(clientId: string, base: {
+     subscription_plan_id: string;
+     renewal_period: "monthly" | "annually";
+     status: string;
 }) {
-     const t0 = Date.now();
-
-     const {
-          clientId,
-          subscriptionPlanId,
-          renewalPeriod,
-          status,
-          polarCustomerId,
-          polarSubscriptionId,
-          polarCheckoutId,
-          polarOrderId,
-          polarProductId,
-          polarQuantity,
-          nextPaymentDate,
-          currentPeriodStart,
-          isAutoRenew,
-          expired,
-     } = args;
-
-     await logServerAction({
-          user_id: null,
-          action: "Store Webhook - Upsert Client Subscription Started",
-          payload: {
-               clientId,
-               subscriptionPlanId,
-               renewalPeriod,
-               status,
-               polarCustomerId,
-               polarSubscriptionId,
-               polarCheckoutId,
-               polarOrderId,
-               polarProductId,
-               polarQuantity,
-               nextPaymentDate,
-               currentPeriodStart,
-               isAutoRenew,
-               expired,
-          },
-          status: "success",
-          error: "",
-          duration_ms: Date.now() - t0,
-          type: "internal",
-     });
-
-     // Read existing row to avoid overwriting non-null with null
-     const { data: existingRow, error: existingErr } = await supabase
+     const { error } = await supabase
           .from("tblClient_Subscription")
-          .select(
-               "created_at, polar_customer_id, polar_subscription_id, polar_checkout_id, polar_order_id, polar_product_id, apartment_count, apartment_count_last_synced_at, apartment_count_last_sent"
-          )
-          .eq("client_id", clientId)
-          .maybeSingle<ClientSubscriptionRow>();
+          .upsert({
+               client_id: clientId,
+               subscription_plan_id: base.subscription_plan_id,
+               renewal_period: base.renewal_period,
+               status: base.status,
+               created_at: nowIso(),
+               updated_at: nowIso(),
+               is_auto_renew: true,
+               expired: false,
+               apartment_count: 1, // satisfy check constraint
+          }, { onConflict: "client_id" });
 
-     if (existingErr) {
-          await logServerAction({
-               user_id: null,
-               action: "Store Webhook - Read existing subscription failed",
-               payload: { clientId },
-               status: "fail",
-               error: existingErr.message,
-               duration_ms: Date.now() - t0,
-               type: "internal",
-          });
-     }
+     if (error) throw error;
+}
 
-     const existing: ClientSubscriptionRow | null = existingRow ?? null;
+// customer.updated payload often has email; use it to resolve your DB client
+async function resolveClientIdByEmail(email?: string | null): Promise<string | null> {
+     if (!email) return null;
 
-     const finalPolarCustomerId = polarCustomerId ?? existing?.polar_customer_id ?? null;
-     const finalPolarSubscriptionId =
-          polarSubscriptionId ?? existing?.polar_subscription_id ?? null;
-     const finalPolarCheckoutId = polarCheckoutId ?? existing?.polar_checkout_id ?? null;
-     const finalPolarOrderId = polarOrderId ?? existing?.polar_order_id ?? null;
-     const finalPolarProductId = polarProductId ?? existing?.polar_product_id ?? null;
+     const { data, error } = await supabase
+          .from("tblClients")
+          .select("id")
+          .eq("email", email)
+          .maybeSingle();
 
-     // // Always store a safe apartment_count (NOT NULL column in your schema)
-     // const polarSeats =
-     //      typeof polarQuantity === "number" && Number.isFinite(polarQuantity)
-     //           ? Math.max(1, Math.floor(polarQuantity))
-     //           : null;
-
-     // const finalQuantity = polarSeats ?? existing?.apartment_count ?? 1;
-
-     // You already have an action for this (it does join through buildings)
-     const apartmentsCount = Math.max(0, await getApartmentCountForClient(clientId));
-
-     const { error: upsertErr } = await supabase
-          .from("tblClient_Subscription")
-          .upsert(
-               {
-                    client_id: clientId,
-                    subscription_plan_id: subscriptionPlanId,
-                    renewal_period: renewalPeriod ?? "monthly",
-                    status,
-                    updated_at: nowIso(),
-                    created_at: existing?.created_at ?? nowIso(),
-
-                    is_auto_renew: isAutoRenew ?? true,
-                    expired: expired ?? false,
-
-                    next_payment_date: nextPaymentDate ?? null,
-
-                    polar_customer_id: finalPolarCustomerId,
-                    polar_subscription_id: finalPolarSubscriptionId,
-                    polar_checkout_id: finalPolarCheckoutId,
-                    polar_order_id: finalPolarOrderId,
-                    polar_product_id: finalPolarProductId,
-                    // optional (you said you added this column)
-                    apartment_count: apartmentsCount,
-               },
-               { onConflict: "client_id" }
-          );
-
-     if (upsertErr) {
-          await logServerAction({
-               user_id: null,
-               action: "Store Webhook - Upsert Client Subscription Failed",
-               payload: {
-                    clientId,
-                    subscriptionPlanId,
-                    renewalPeriod,
-                    status,
-                    nextPaymentDate,
-                    apartment_count: apartmentsCount,
-               },
-               status: "fail",
-               error: upsertErr.message,
-               duration_ms: Date.now() - t0,
-               type: "internal",
-          });
-          const deletedCustomer = await polar.customers.delete({ id: finalPolarCustomerId! });
-          await logServerAction({
-               user_id: null,
-               action: "Store Webhook - Rolled back Polar Customer due to upsert failure",
-               payload: { clientId, polarCustomerId: finalPolarCustomerId, deletedCustomer },
-               status: "success",
-               error: "",
-               duration_ms: Date.now() - t0,
-               type: "internal",
-          });
-          return;
-     }
-
-     // -----------------------------------------------------------------------
-     // Strategy B: ingest ONE apartments_snapshot per billing period (best effort)
-     // - Your meter sums metadata.apartments_count
-     // - We'll try to use current period start if provided, otherwise "now"
-     // - We'll store apartment_count_last_synced_at to prevent duplicates
-     // -----------------------------------------------------------------------
-     const timestampIso = currentPeriodStart ?? nowIso();
-
-     const shouldIngest =
-          status === "active" &&
-          !!finalPolarCustomerId &&
-          // if we've already synced after/at this timestamp, skip
-          !isSameOrAfter(existing?.apartment_count_last_synced_at ?? null, timestampIso);
-
-     if (shouldIngest) {
-          try {
-               await ingestApartmentSnapshot({
-                    polarCustomerId: finalPolarCustomerId!,
-                    clientId,
-                    apartmentsCount,
-                    timestampIso,
-               });
-
-               await supabase
-                    .from("tblClient_Subscription")
-                    .update({
-                         quantity_last_sent: apartmentsCount,
-                         apartment_count_last_synced_at: nowIso(),
-                         apartment_count_sync_error: null,
-                    })
-                    .eq("client_id", clientId);
-          } catch (e: any) {
-               await supabase
-                    .from("tblClient_Subscription")
-                    .update({
-                         apartment_count_sync_error: e?.message ?? "usage ingest failed",
-                         apartment_count_last_synced_at: nowIso(),
-                    })
-                    .eq("client_id", clientId);
-          }
-     }
-
-     revalidatePath(`/profile`);
-
-     await logServerAction({
-          user_id: null,
-          action: "Store Webhook - Upsert Client Subscription Success",
-          payload: {
-               clientId,
-               status,
-               apartment_count: apartmentsCount,
-               polar_checkout_id: finalPolarCheckoutId,
-               polar_order_id: finalPolarOrderId,
-               polar_product_id: finalPolarProductId,
-               usage_ingest_attempted: shouldIngest,
-               usage_timestamp: timestampIso,
-          },
-          status: "success",
-          error: "",
-          duration_ms: Date.now() - t0,
-          type: "internal",
-     });
+     if (error) return null;
+     return data?.id ?? null;
 }
 
 // ---------------------------------------------------------------------------
@@ -453,9 +297,8 @@ export const POST = Webhooks({
           const t0 = Date.now();
 
           const eventType = (payload as any)?.type ?? "";
-          console.log('Polar Webhook received payload:', payload);
+          const t = String(eventType).toLowerCase();
           const data = (payload as any)?.data ?? {};
-          const t = eventType.toLowerCase();
 
           const meta = extractMeta(data);
           const status = mapPolarToLocalStatus(eventType, data);
@@ -465,339 +308,318 @@ export const POST = Webhooks({
           await logServerAction({
                user_id: null,
                action: "Store Webhook - Payload Received",
-               payload: payload,
+               payload,
                status: "success",
                error: "",
                duration_ms: Date.now() - t0,
                type: "internal",
           });
 
-          // If metadata missing, try resolve from stored polar ids
-          if (!meta.clientId || !meta.subscriptionPlanId) {
-               const resolved = await resolveClientAndPlanFromPolarIds({
-                    polarSubscriptionId: payload.data?.subscription_id,
-                    polarCustomerId: payload.data?.customer_id,
-                    polarCheckoutId: payload.data?.checkout_id,
-                    polarOrderId: payload.data?.order_id,
-               });
+          // -------------------------------------------------------------------------
+          // Resolve clientId + subscriptionPlanId for events that need them
+          // -------------------------------------------------------------------------
+          let clientId = meta.clientId;
+          let subscriptionPlanId = meta.subscriptionPlanId;
+          const renewalPeriod: RenewalPeriod = meta.renewalPeriod ?? "monthly";
 
-               if (!resolved) {
-                    // customer.created can arrive before checkout and be metadata-less → ignore safely
+          const polarCustomerId: string | null =
+               data?.customer_id ?? data?.customerId ?? (t.startsWith("customer.") ? data?.id : null) ?? null;
+
+          const polarSubscriptionId: string | null = data?.subscription_id ?? data?.subscriptionId ?? null;
+          const polarCheckoutId: string | null = data?.checkout_id ?? data?.checkoutId ?? null;
+          const polarOrderId: string | null = data?.order_id ?? data?.orderId ?? null;
+          const polarProductId: string | null = data?.product_id ?? data?.productId ?? null;
+
+          // customer.updated often has no metadata; handle separately below
+          const isCustomerUpdated = t === "customer.updated" || (t.startsWith("customer.") && t.includes("updated"));
+
+          if (!isCustomerUpdated) {
+               // For subscription events, try resolve if meta is missing
+               if (!clientId || !subscriptionPlanId) {
+                    const resolved = await resolveClientAndPlanFromPolarIds({
+                         polarSubscriptionId,
+                         polarCustomerId,
+                         polarCheckoutId,
+                         polarOrderId,
+                    });
+
+                    if (!resolved) {
+                         await logServerAction({
+                              user_id: null,
+                              action: "Store Webhook - Missing metadata and could not resolve client/plan",
+                              payload: { eventType, polarSubscriptionId, polarCustomerId, polarCheckoutId, polarOrderId },
+                              status: "fail",
+                              error: "No mapping found in tblClient_Subscription yet",
+                              duration_ms: Date.now() - t0,
+                              type: "internal",
+                         });
+                         return;
+                    }
+
+                    clientId = resolved.client_id;
+                    subscriptionPlanId = resolved.subscription_plan_id;
+               }
+
+               // by here we need these for subscription table
+               if (!clientId || !subscriptionPlanId) {
                     await logServerAction({
                          user_id: null,
-                         action: "Store Webhook - Missing metadata and could not resolve client/plan",
-                         payload: { eventType, payload },
+                         action: "Store Webhook - Cannot process event (still missing clientId/subscriptionPlanId)",
+                         payload: { eventType, meta },
                          status: "fail",
-                         error: "No mapping found in tblClient_Subscription yet",
+                         error: "clientId/subscriptionPlanId missing",
+                         duration_ms: Date.now() - t0,
+                         type: "internal",
+                    });
+                    return;
+               }
+          }
+
+          // -------------------------------------------------------------------------
+          // Event: CUSTOMER UPDATED (patch only polar_customer_id)
+          // -------------------------------------------------------------------------
+          if (isCustomerUpdated) {
+               const email = data?.email as string | undefined;
+               const resolvedClientId = await resolveClientIdByEmail(email);
+
+               if (!resolvedClientId) {
+                    await logServerAction({
+                         user_id: null,
+                         action: "Store Webhook - customer.updated could not resolve client by email",
+                         payload: { eventType, email, polarCustomerId },
+                         status: "fail",
+                         error: "No client found for email",
                          duration_ms: Date.now() - t0,
                          type: "internal",
                     });
                     return;
                }
 
-               meta.clientId = resolved.client_id;
-               meta.subscriptionPlanId = resolved.subscription_plan_id;
-          }
+               try {
+                    // Only patch polar_customer_id. Do NOT touch apartment_count, status, etc.
+                    const updated = await patchClientSubscription(resolvedClientId, {
+                         polar_customer_id: polarCustomerId,
+                    });
 
-          // ✅ Handle lifecycle events (enable these in Polar webhook settings)
-          if (t.startsWith("subscription.") && t.includes("canceled")) {
-               await upsertClientSubscription({
-                    clientId: meta.clientId!,
-                    subscriptionPlanId: meta.subscriptionPlanId!,
-                    renewalPeriod: meta.renewalPeriod,
-                    status: "canceled",
+                    if (!updated.success) {
+                         // subscription row might not exist yet; log and exit safely
+                         await logServerAction({
+                              user_id: null,
+                              action: "Store Webhook - customer.updated: subscription row missing (no update performed)",
+                              payload: { resolvedClientId, polarCustomerId },
+                              status: "fail",
+                              error: "tblClient_Subscription row not found for client_id",
+                              duration_ms: Date.now() - t0,
+                              type: "internal",
+                         });
+                         return;
+                    }
 
-                    polarCustomerId: payload.data?.customer_id,
-                    polarSubscriptionId: payload.data?.subscription_id,
-                    polarCheckoutId: payload.data?.checkout_id,
-                    polarOrderId: payload.data?.order_id,
-                    polarProductId: payload.data?.product_id,
-                    polarQuantity: payload.data?.apartments_count,
-                    nextPaymentDate,
-                    currentPeriodStart,
+                    revalidatePath("/profile");
 
-                    isAutoRenew: false,
-                    expired: false,
-               });
+                    await logServerAction({
+                         user_id: null,
+                         action: "Store Webhook - customer.updated patched polar_customer_id",
+                         payload: { resolvedClientId, polarCustomerId },
+                         status: "success",
+                         error: "",
+                         duration_ms: Date.now() - t0,
+                         type: "internal",
+                    });
+               } catch (e: any) {
+                    await logServerAction({
+                         user_id: null,
+                         action: "Store Webhook - customer.updated patch failed",
+                         payload: { eventType, polarCustomerId },
+                         status: "fail",
+                         error: e?.message ?? "unknown error",
+                         duration_ms: Date.now() - t0,
+                         type: "internal",
+                    });
+               }
                return;
           }
 
-          // ✅ Handle lifecycle events (enable these in Polar webhook settings)
-          if (t.startsWith("subscription.") && t.includes("active")) {
-               await upsertClientSubscription({
-                    clientId: meta.clientId!,
-                    subscriptionPlanId: meta.subscriptionPlanId!,
-                    renewalPeriod: meta.renewalPeriod,
-                    status: "active",
+          // -------------------------------------------------------------------------
+          // Subscription lifecycle events (event-specific patches)
+          // -------------------------------------------------------------------------
 
-                    polarCustomerId: payload.data?.customer_id,
-                    polarSubscriptionId: payload.data?.subscription_id,
-                    polarCheckoutId: payload.data?.checkout_id,
-                    polarOrderId: payload.data?.order_id,
-                    polarProductId: payload.data?.product_id,
-                    polarQuantity: payload.data?.apartments_count,
-                    nextPaymentDate,
-                    currentPeriodStart,
+          // Helper: patch common subscription identifiers (safe)
+          const commonIdsPatch: SubscriptionPatch = {
+               polar_customer_id: polarCustomerId,
+               polar_subscription_id: polarSubscriptionId,
+               polar_checkout_id: polarCheckoutId,
+               polar_order_id: polarOrderId,
+               polar_product_id: polarProductId,
+          };
 
-                    isAutoRenew: true,
-                    expired: false,
+          // Some events should ensure the row exists before patching
+          const shouldEnsureRow =
+               t.includes("subscription.created") ||
+               t.includes("subscription.updated") ||
+               t.includes("subscription.active") ||
+               t.includes("subscription.past_due") ||
+               t.includes("subscription.uncanceled") ||
+               t.includes("subscription.canceled") ||
+               t.includes("subscription.revoked");
+
+          try {
+               if (shouldEnsureRow) {
+                    await ensureSubscriptionRow(clientId!, {
+                         subscription_plan_id: subscriptionPlanId!,
+                         renewal_period: renewalPeriod,
+                         status,
+                    });
+               }
+
+               // Compute apartment_count only on subscription events (and always keep >= 1)
+               const apartmentsCount = await getApartmentCountForClient(clientId!);
+
+               // subscription.active
+               if (t.includes("subscription.active")) {
+                    await patchClientSubscription(clientId!, {
+                         status: "active",
+                         renewal_period: renewalPeriod,
+                         is_auto_renew: true,
+                         expired: false,
+                         next_payment_date: nextPaymentDate ?? null,
+                         apartment_count: apartmentsCount,
+                         ...commonIdsPatch,
+                    });
+
+                    revalidatePath("/profile");
+                    return;
+               }
+
+               // subscription.canceled (cancel at period end / canceled)
+               if (t.includes("subscription.canceled")) {
+                    await patchClientSubscription(clientId!, {
+                         status: "canceled",
+                         renewal_period: renewalPeriod,
+                         is_auto_renew: false,
+                         expired: false,
+                         next_payment_date: nextPaymentDate ?? null,
+                         apartment_count: apartmentsCount,
+                         ...commonIdsPatch,
+                    });
+
+                    revalidatePath("/profile");
+                    return;
+               }
+
+               // subscription.uncanceled
+               if (t.includes("subscription.uncanceled")) {
+                    await patchClientSubscription(clientId!, {
+                         status: "active",
+                         renewal_period: renewalPeriod,
+                         is_auto_renew: true,
+                         expired: false,
+                         next_payment_date: nextPaymentDate ?? null,
+                         apartment_count: apartmentsCount,
+                         ...commonIdsPatch,
+                    });
+
+                    revalidatePath("/profile");
+                    return;
+               }
+
+               // subscription.revoked (immediate)
+               if (t.includes("subscription.revoked")) {
+                    await patchClientSubscription(clientId!, {
+                         status: "canceled",
+                         renewal_period: renewalPeriod,
+                         is_auto_renew: false,
+                         expired: true,
+                         next_payment_date: nextPaymentDate ?? null,
+                         apartment_count: apartmentsCount,
+                         ...commonIdsPatch,
+                    });
+
+                    revalidatePath("/profile");
+                    return;
+               }
+
+               // subscription.past_due
+               if (t.includes("subscription.past_due")) {
+                    await patchClientSubscription(clientId!, {
+                         status: "past_due",
+                         renewal_period: renewalPeriod,
+                         is_auto_renew: true,
+                         expired: false,
+                         next_payment_date: nextPaymentDate ?? null,
+                         apartment_count: apartmentsCount,
+                         ...commonIdsPatch,
+                    });
+
+                    revalidatePath("/profile");
+                    return;
+               }
+
+               // subscription.created
+               if (t.includes("subscription.created")) {
+                    await patchClientSubscription(clientId!, {
+                         status,
+                         renewal_period: renewalPeriod,
+                         is_auto_renew: true,
+                         expired: false,
+                         next_payment_date: nextPaymentDate ?? null,
+                         apartment_count: apartmentsCount,
+                         ...commonIdsPatch,
+                    });
+
+                    revalidatePath("/profile");
+                    return;
+               }
+
+               // subscription.updated
+               if (t.includes("subscription.updated")) {
+                    await patchClientSubscription(clientId!, {
+                         status,
+                         renewal_period: renewalPeriod,
+                         is_auto_renew: true,
+                         expired: false,
+                         next_payment_date: nextPaymentDate ?? null,
+                         apartment_count: apartmentsCount,
+                         ...commonIdsPatch,
+                    });
+
+                    revalidatePath("/profile");
+                    return;
+               }
+
+               // If we reach here, ignore
+               await logServerAction({
+                    user_id: null,
+                    action: "Store Webhook - Ignored event",
+                    payload: { eventType, status, currentPeriodStart },
+                    status: "success",
+                    error: "",
+                    duration_ms: Date.now() - t0,
+                    type: "internal",
                });
-               return;
-          }
-
-          // // ✅ Handle lifecycle events (enable these in Polar webhook settings)
-          // if (t.startsWith("customer.") && t.includes("created")) {
-          //      await upsertClientSubscription({
-          //           clientId: meta.clientId!,
-          //           subscriptionPlanId: meta.subscriptionPlanId!,
-          //           renewalPeriod: meta.renewalPeriod,
-          //           status: status,
-
-          //           polarCustomerId: payload.data?.customer_id,
-          //           polarSubscriptionId: payload.data?.subscription_id,
-          //           polarCheckoutId: payload.data?.checkout_id,
-          //           polarOrderId: payload.data?.order_id,
-          //           polarProductId: payload.data?.product_id,
-          //           polarQuantity: payload.data?.apartments_count,
-          //           nextPaymentDate,
-          //           currentPeriodStart,
-
-          //           isAutoRenew: true,
-          //           expired: false,
-          //      });
-          //      return;
-          // }
-
-          // // ✅ Handle lifecycle events (enable these in Polar webhook settings)
-          if (t.startsWith("customer.") && t.includes("updated")) {
-               await upsertClientSubscription({
-                    clientId: meta.clientId!,
-                    subscriptionPlanId: meta.subscriptionPlanId!,
-                    renewalPeriod: meta.renewalPeriod,
-                    status: status,
-
-                    polarCustomerId: payload.data?.id,
+          } catch (e: any) {
+               // IMPORTANT: don't delete Polar customer here.
+               // Most failures here are DB constraints/mapping issues, not a Polar resource issue.
+               await logServerAction({
+                    user_id: null,
+                    action: "Store Webhook - Handler failed",
+                    payload: {
+                         eventType,
+                         clientId,
+                         subscriptionPlanId,
+                         polarCustomerId,
+                         polarSubscriptionId,
+                         polarCheckoutId,
+                         polarOrderId,
+                         polarProductId,
+                         nextPaymentDate,
+                         currentPeriodStart,
+                    },
+                    status: "fail",
+                    error: e?.message ?? "unknown error",
+                    duration_ms: Date.now() - t0,
+                    type: "internal",
                });
-               return;
           }
-
-          // // ✅ Handle lifecycle events (enable these in Polar webhook settings)
-          // if (t.startsWith("customer.") && t.includes("deleted")) {
-          //      await upsertClientSubscription({
-          //           clientId: meta.clientId!,
-          //           subscriptionPlanId: meta.subscriptionPlanId!,
-          //           renewalPeriod: meta.renewalPeriod,
-          //           status: 'canceled',
-
-          //           polarCustomerId: payload.data?.customer_id,
-          //           polarSubscriptionId: payload.data?.subscription_id,
-          //           polarCheckoutId: payload.data?.checkout_id,
-          //           polarOrderId: payload.data?.order_id,
-          //           polarProductId: payload.data?.product_id,
-          //           polarQuantity: payload.data?.apartments_count,
-          //           nextPaymentDate,
-          //           currentPeriodStart,
-
-          //           isAutoRenew: true,
-          //           expired: false,
-          //      });
-          //      return;
-          // }
-
-          // // ✅ Handle lifecycle events (enable these in Polar webhook settings)
-          // if (t.startsWith("order.") && t.includes("updated")) {
-          //      await upsertClientSubscription({
-          //           clientId: meta.clientId!,
-          //           subscriptionPlanId: meta.subscriptionPlanId!,
-          //           renewalPeriod: meta.renewalPeriod,
-          //           status: status,
-
-          //           polarCustomerId: payload.data?.customer_id,
-          //           polarSubscriptionId: payload.data?.subscription_id,
-          //           polarCheckoutId: payload.data?.checkout_id,
-          //           polarOrderId: payload.data?.order_id,
-          //           polarProductId: payload.data?.product_id,
-          //           polarQuantity: payload.data?.apartments_count,
-          //           nextPaymentDate,
-          //           currentPeriodStart,
-
-          //           isAutoRenew: true,
-          //           expired: false,
-          //      });
-          //      return;
-          // }
-
-          // ✅ Handle lifecycle events (enable these in Polar webhook settings)
-          if (t.startsWith("subscription.") && t.includes("created")) {
-               await upsertClientSubscription({
-                    clientId: meta.clientId!,
-                    subscriptionPlanId: meta.subscriptionPlanId!,
-                    renewalPeriod: meta.renewalPeriod,
-                    status: status,
-
-                    polarCustomerId: payload.data?.customer_id,
-                    polarSubscriptionId: payload.data?.subscription_id,
-                    polarCheckoutId: payload.data?.checkout_id,
-                    polarOrderId: payload.data?.order_id,
-                    polarProductId: payload.data?.product_id,
-                    polarQuantity: payload.data?.apartments_count,
-                    nextPaymentDate,
-                    currentPeriodStart,
-
-                    isAutoRenew: true,
-                    expired: false,
-               });
-               return;
-          }
-
-          // ✅ Handle lifecycle events (enable these in Polar webhook settings)
-          if (t.startsWith("subscription.") && t.includes("updated")) {
-               await upsertClientSubscription({
-                    clientId: meta.clientId!,
-                    subscriptionPlanId: meta.subscriptionPlanId!,
-                    renewalPeriod: meta.renewalPeriod,
-                    status: status,
-
-                    polarCustomerId: payload.data?.customer_id,
-                    polarSubscriptionId: payload.data?.subscription_id,
-                    polarCheckoutId: payload.data?.checkout_id,
-                    polarOrderId: payload.data?.order_id,
-                    polarProductId: payload.data?.product_id,
-                    polarQuantity: payload.data?.apartments_count,
-                    nextPaymentDate,
-                    currentPeriodStart,
-
-                    isAutoRenew: true,
-                    expired: false,
-               });
-               return;
-          }
-
-          // ✅ Handle lifecycle events (enable these in Polar webhook settings)
-          if (t.startsWith("subscription.") && t.includes("active")) {
-               await upsertClientSubscription({
-                    clientId: meta.clientId!,
-                    subscriptionPlanId: meta.subscriptionPlanId!,
-                    renewalPeriod: meta.renewalPeriod,
-                    status: status,
-
-                    polarCustomerId: payload.data?.customer_id,
-                    polarSubscriptionId: payload.data?.subscription_id,
-                    polarCheckoutId: payload.data?.checkout_id,
-                    polarOrderId: payload.data?.order_id,
-                    polarProductId: payload.data?.product_id,
-                    polarQuantity: payload.data?.apartments_count,
-                    nextPaymentDate,
-                    currentPeriodStart,
-
-                    isAutoRenew: true,
-                    expired: false,
-               });
-               return;
-          }
-
-          // ✅ Handle lifecycle events (enable these in Polar webhook settings)
-          if (t.startsWith("subscription.") && t.includes("canceled")) {
-               await upsertClientSubscription({
-                    clientId: meta.clientId!,
-                    subscriptionPlanId: meta.subscriptionPlanId!,
-                    renewalPeriod: meta.renewalPeriod,
-                    status: 'canceled',
-
-                    polarCustomerId: payload.data?.customer_id,
-                    polarSubscriptionId: payload.data?.subscription_id,
-                    polarCheckoutId: payload.data?.checkout_id,
-                    polarOrderId: payload.data?.order_id,
-                    polarProductId: payload.data?.product_id,
-                    polarQuantity: payload.data?.apartments_count,
-                    nextPaymentDate,
-                    currentPeriodStart,
-
-                    isAutoRenew: true,
-                    expired: false,
-               });
-               return;
-          }
-
-          // ✅ Handle lifecycle events (enable these in Polar webhook settings)
-          if (t.startsWith("subscription.") && t.includes("uncanceled")) {
-               await upsertClientSubscription({
-                    clientId: meta.clientId!,
-                    subscriptionPlanId: meta.subscriptionPlanId!,
-                    renewalPeriod: meta.renewalPeriod,
-                    status: 'active',
-
-                    polarCustomerId: payload.data?.customer_id,
-                    polarSubscriptionId: payload.data?.subscription_id,
-                    polarCheckoutId: payload.data?.checkout_id,
-                    polarOrderId: payload.data?.order_id,
-                    polarProductId: payload.data?.product_id,
-                    polarQuantity: payload.data?.apartments_count,
-                    nextPaymentDate,
-                    currentPeriodStart,
-
-                    isAutoRenew: true,
-                    expired: false,
-               });
-               return;
-          }
-
-          // ✅ Handle lifecycle events (enable these in Polar webhook settings)
-          if (t.startsWith("subscription.") && t.includes("revoked")) {
-               await upsertClientSubscription({
-                    clientId: meta.clientId!,
-                    subscriptionPlanId: meta.subscriptionPlanId!,
-                    renewalPeriod: meta.renewalPeriod,
-                    status: 'canceled',
-
-                    polarCustomerId: payload.data?.customer_id,
-                    polarSubscriptionId: payload.data?.subscription_id,
-                    polarCheckoutId: payload.data?.checkout_id,
-                    polarOrderId: payload.data?.order_id,
-                    polarProductId: payload.data?.product_id,
-                    polarQuantity: payload.data?.apartments_count,
-                    nextPaymentDate,
-                    currentPeriodStart,
-
-                    isAutoRenew: true,
-                    expired: false,
-               });
-               return;
-          }
-
-          // ✅ Handle lifecycle events (enable these in Polar webhook settings)
-          if (t.startsWith("subscription.") && t.includes("past_due")) {
-               await upsertClientSubscription({
-                    clientId: meta.clientId!,
-                    subscriptionPlanId: meta.subscriptionPlanId!,
-                    renewalPeriod: meta.renewalPeriod,
-                    status: 'past_due',
-
-                    polarCustomerId: payload.data?.customer_id,
-                    polarSubscriptionId: payload.data?.subscription_id,
-                    polarCheckoutId: payload.data?.checkout_id,
-                    polarOrderId: payload.data?.order_id,
-                    polarProductId: payload.data?.product_id,
-                    polarQuantity: payload.data?.apartments_count,
-                    nextPaymentDate,
-                    currentPeriodStart,
-
-                    isAutoRenew: true,
-                    expired: false,
-               });
-               return;
-          }
-
-          // For other events, just log and ignore
-
-          await logServerAction({
-               user_id: null,
-               action: "Store Webhook - Ignored event",
-               payload: { eventType },
-               status: "success",
-               error: "",
-               duration_ms: Date.now() - t0,
-               type: "internal",
-          });
      },
 });
