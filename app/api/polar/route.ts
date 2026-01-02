@@ -81,7 +81,6 @@ export async function POST(req: Request) {
 export async function DELETE(req: Request) {
      try {
           const { subscriptionId, polarCustomerId } = await req.json();
-          console.log('Unsubscribe with sub id:', subscriptionId + ' and polar_customer_id:  ', polarCustomerId);
 
           if (!subscriptionId || !polarCustomerId) {
                return NextResponse.json({ error: "Missing subscriptionId or clientId" }, { status: 400 });
@@ -90,15 +89,15 @@ export async function DELETE(req: Request) {
           const result = await polar.customerSessions.create({
                customerId: polarCustomerId,
           });
-          console.log('customer session', result);
 
-          // ✅ Schedule cancellation at period end
+          console.log('customer session created', result, 'subscriptionId', subscriptionId);
           const canceled = await polar.customerPortal.subscriptions.cancel(
                {
-                    customerSession: result.id
-               }, {
-               id: subscriptionId,
-          }
+                    customerSession: result.token,
+               },
+               {
+                    id: subscriptionId,
+               }
           )
           console.log('subscription canceled', canceled);
 
