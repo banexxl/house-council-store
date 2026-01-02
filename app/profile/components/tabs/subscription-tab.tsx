@@ -14,7 +14,8 @@ import {
 } from "@mui/material"
 import {
      CalendarToday as CalendarTodayIcon,
-     Receipt as ReceiptIcon
+     Receipt as ReceiptIcon,
+     OpenInNew as OpenInNewIcon
 } from "@mui/icons-material"
 import { useRouter } from "next/navigation"
 import toast from "react-hot-toast"
@@ -114,6 +115,7 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
      const [confirmCancelDialogOpen, setConfirmCancelDialogOpen] = useState(false)
      const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false)
      const [isProcessing, setIsProcessing] = useState(false)
+     const [isPortalLoading, setIsPortalLoading] = useState(false)
 
      const handleDialogToggle = (type: "cancel" | "confirmCancel" | "upgrade", open: boolean) => {
           if (type === "cancel") setCancelDialogOpen(open)
@@ -165,6 +167,47 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
                toast.error("Failed to process upgrade request. Please try again.")
           } finally {
                setIsProcessing(false)
+          }
+     }
+
+     const handleOpenCustomerPortal = async () => {
+          if (!subscriptionData?.polar_customer_id) {
+               toast.error("Missing customer identifier.")
+               return
+          }
+
+          setIsPortalLoading(true)
+          try {
+               const returnUrl = typeof window !== "undefined"
+                    ? `${window.location.origin}/profile`
+                    : null
+
+               const res = await fetch("/api/polar/customer-portal", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                         polarCustomerId: subscriptionData.polar_customer_id,
+                         returnUrl,
+                    }),
+               })
+
+               const data = await res.json().catch(() => ({}))
+               if (!res.ok) {
+                    throw new Error(data?.error || "Failed to open customer portal.")
+               }
+
+               const url = data?.url as string | undefined
+               if (!url) {
+                    throw new Error("Customer portal URL missing.")
+               }
+
+               if (typeof window !== "undefined") {
+                    window.open(url, "_blank", "noopener,noreferrer")
+               }
+          } catch (err: any) {
+               toast.error(err?.message || "Failed to open customer portal.")
+          } finally {
+               setIsPortalLoading(false)
           }
      }
 
@@ -239,9 +282,25 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
                                         {subscriptionData?.subscription_plan?.name ?? "No plan selected"}
                                    </Typography>
                               </Box>
-                              <Button variant="outlined" color="primary" onClick={() => handleDialogToggle("upgrade", true)} disabled={isProcessing}>
-                                   Upgrade Plan
-                              </Button>
+                              <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", justifyContent: "flex-end" }}>
+                                   <Button
+                                        variant="outlined"
+                                        color="primary"
+                                        onClick={handleOpenCustomerPortal}
+                                        disabled={isPortalLoading || isProcessing || !subscriptionData?.polar_customer_id}
+                                        startIcon={isPortalLoading ? <CircularProgress size={18} /> : <OpenInNewIcon />}
+                                   >
+                                        Customer Portal
+                                   </Button>
+                                   <Button
+                                        variant="outlined"
+                                        color="primary"
+                                        onClick={() => handleDialogToggle("upgrade", true)}
+                                        disabled={isProcessing}
+                                   >
+                                        Upgrade Plan
+                                   </Button>
+                              </Box>
                          </Box>
 
                          <Divider sx={{ my: 2 }} />
