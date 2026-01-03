@@ -252,9 +252,10 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
                     if (!res.ok) {
                          toast.error("Failed to reactivate subscription. Please try again.");
                          handleDialogToggle("confirmCancel", false);
+                    } else {
+                         toast.success("Subscription reactivated successfully.");
+                         handleDialogToggle("confirmCancel", false);
                     }
-                    toast.success("Subscription reactivated successfully.");
-                    handleDialogToggle("confirmCancel", false);
                } catch (err: any) {
                     console.error(err);
                     toast.error(err?.message || "Could not start checkout. Please try again.");
