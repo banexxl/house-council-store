@@ -198,7 +198,6 @@ type SubscriptionPatch = Partial<{
 
 async function patchClientSubscription(clientId: string, patch: SubscriptionPatch): Promise<{ success: boolean, error?: string }> {
      const update: Record<string, any> = { ...patch, updated_at: nowIso() };
-     console.log('update', update);
 
      for (const [k, v] of Object.entries(patch)) {
           if (v !== undefined) update[k] = v; // ✅ only defined keys
