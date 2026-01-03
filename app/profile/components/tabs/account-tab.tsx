@@ -370,7 +370,7 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                                    </Typography>
                                    <Chip
                                         label={formatClientStatus(userData.client.client_status)}
-                                        color={getStatusColor(userData.client.client_status)}
+                                        color={userData.client.client_status === 'active' ? 'success' : 'warning'}
                                         size="small"
                                    />
                               </Grid>
