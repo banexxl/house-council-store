@@ -39,7 +39,7 @@ export interface PolarSubscription {
      currency: string;
      recurring_interval: string;
      recurring_interval_count: number;
-     status: string;
+     status: PolarSubscriptionStatus;
      current_period_start: string;
      current_period_end: string;
      trial_start: string | null;
@@ -63,6 +63,15 @@ export interface PolarSubscription {
      seats: number;
      custom_field_data: Record<string, unknown>;
 }
+
+export type PolarSubscriptionStatus =
+     | "incomplete"
+     | "incomplete_expired"
+     | "trialing"
+     | "active"
+     | "past_due"
+     | "canceled"
+     | "unpaid";
 
 export interface PolarSubscriptionCustomer {
      id: string;

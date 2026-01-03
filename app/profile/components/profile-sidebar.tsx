@@ -41,6 +41,7 @@ import { User } from "@supabase/supabase-js"
 import { ClientSubscription, SubscriptionPlan } from "@/app/types/subscription-plan"
 import { logoutUserAction, updateAccountAction } from "../account-action"
 import { deleteClientAvatarAction, uploadClientAvatarAction } from "@/app/lib/sb-storage"
+import { PolarSubscriptionStatus } from "@/app/types/polar-subscription-types"
 
 export interface ActivityItem {
      id: string
@@ -57,16 +58,22 @@ interface ProfileSidebarProps {
      onEditProfile: () => void
 }
 
-export const getStatusColor = (status: string) => {
-     switch (status.toLowerCase()) {
-          case "trialing":
+export const getStatusColor = (status?: PolarSubscriptionStatus) => {
+     switch ((status ?? "").toLowerCase()) {
+          case "incomplete":
                return "warning"
+          case "incomplete_expired":
+               return "error"
+          case "trialing":
+               return "info"
           case "active":
                return "success"
-          case "canceled":
-               return "error"
           case "past_due":
                return "warning"
+          case "canceled":
+               return "error"
+          case "unpaid":
+               return "error"
           default:
                return "default"
      }
@@ -309,13 +316,18 @@ export default function ProfileSidebar({ userData, clientSubscriptionObject, rec
                                    />
                               </Badge>
                          </Box>
-
                          <Typography variant="h5" gutterBottom>
                               {userData.client.name}
                          </Typography>
-
-                         <Chip label={userData.client.client_status} color={getStatusColor(userData.client.client_status)} size="small" sx={{ mb: 1 }} />
-
+                         <Chip
+                              label={userData.client.client_status}
+                              size="small"
+                              sx={{
+                                   mb: 1,
+                                   color: "common.white",
+                                   bgcolor: userData.client.client_status === "active" ? "success.main" : "warning.dark",
+                              }}
+                         />
                          <Typography variant="body2" color="text.secondary" gutterBottom>
                               {userData.client.updated_at
                                    ? `Last updated ${new Intl.DateTimeFormat(undefined, {

@@ -146,15 +146,28 @@ export async function PUT(req: Request) {
           // 2) Update subscription: undo "cancel at period end" (reactivate auto-renew)
           // Customer Portal "Update Subscription" is PATCH /v1/customer-portal/subscriptions/{id}
           // Setting cancel_at_period_end=false is the typical "uncancel" action.
-          const updated = await polar.customerPortal.subscriptions.update(
-               { customerSession: session.token },
-               {
-                    id: subscriptionId,
-                    customerSubscriptionUpdate: {
-                         cancelAtPeriodEnd: true,
-                    },
-               }
-          );
+          let updated;
+          try {
+               updated = await polar.customerPortal.subscriptions.update(
+                    { customerSession: session.token },
+                    {
+                         id: subscriptionId,
+                         customerSubscriptionUpdate: {
+                              cancelAtPeriodEnd: true,
+                         },
+                    }
+               );
+               log(
+                    `Subscription ${subscriptionId} reactivation request processed successfully`,
+                    "info"
+               );
+          } catch (error) {
+               log(
+                    `Failed to reactivate subscription ${subscriptionId}: ${error instanceof Error ? error.message : String(error)}`,
+                    "error"
+               );
+               throw error;
+          }
 
           revalidatePath("/profile");
 

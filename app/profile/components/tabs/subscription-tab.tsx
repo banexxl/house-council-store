@@ -117,6 +117,16 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
      const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false)
      const [isProcessing, setIsProcessing] = useState(false)
      const [isPortalLoading, setIsPortalLoading] = useState(false)
+     const statusTone = getStatusColor(subscriptionData?.status)
+     const statusColorMap: Record<string, string> = {
+          success: theme.palette.success.main,
+          warning: theme.palette.warning.main,
+          error: theme.palette.error.main,
+          info: theme.palette.info.main,
+          default: theme.palette.text.primary,
+     }
+     const statusTextColor = statusColorMap[statusTone] ?? theme.palette.text.primary
+     const statusLabel = subscriptionData?.status?.toUpperCase() ?? "N/A"
 
      const handleDialogToggle = (type: "cancel" | "confirmCancel" | "upgrade", open: boolean) => {
           if (type === "cancel") setCancelDialogOpen(open)
@@ -327,7 +337,44 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
                                    <Typography variant="h6" sx={{ mb: 1 }}>Subscription Details:</Typography>
                                    <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
                                         <CalendarTodayIcon fontSize="small" sx={{ mr: 1, color: "text.secondary" }} />
-                                        <Typography variant="body2">{renderDate(subscriptionData?.created_at)}</Typography>
+                                        <Typography variant="body2">
+                                             {(() => {
+                                                  const startDateNode = renderDate(subscriptionData?.created_at)
+
+                                                  if (!subscriptionData) return startDateNode
+
+                                                  const nextPaymentDate =
+                                                       subscriptionData && "next_payment_date" in subscriptionData
+                                                            ? (subscriptionData as ClientSubscriptionWithOptionalPlan & { next_payment_date?: string }).next_payment_date
+                                                            : undefined
+
+                                                  if (!nextPaymentDate) return startDateNode
+
+                                                  const now = new Date()
+                                                  const target = new Date(nextPaymentDate)
+                                                  const diffInDays = (target.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+
+                                                  if (!Number.isFinite(diffInDays)) return startDateNode
+
+                                                  const daysUntilNext = Math.max(0, Math.ceil(diffInDays))
+
+                                                  const color =
+                                                       daysUntilNext > 20
+                                                            ? "success.main"
+                                                            : daysUntilNext > 10
+                                                                 ? "warning.main"
+                                                                 : "error.main"
+
+                                                  return (
+                                                       <>
+                                                            {startDateNode}
+                                                            <Box component="span" sx={{ display: "block", color, fontWeight: 600 }}>
+                                                                 Next payment in {daysUntilNext} day{daysUntilNext === 1 ? "" : "s"}
+                                                            </Box>
+                                                       </>
+                                                  )
+                                             })()}
+                                        </Typography>
                                         <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
                                              (Subscription Start Date)
                                         </Typography>
@@ -352,11 +399,36 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
                               <Grid size={{ xs: 12, sm: 6 }}>
                                    <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
                                         <GradingIcon fontSize="small" sx={{ mr: 1, color: "text.secondary" }} />
-                                        <Typography variant="body2">Status: {subscriptionData?.status?.toUpperCase() ?? "N/A"}</Typography>
+                                        <Typography variant="body2">
+                                             Status:
+                                             <Typography
+                                                  component="span"
+                                                  variant="body2"
+                                                  sx={{ ml: 0.5, fontWeight: 600, color: statusTextColor }}
+                                             >
+                                                  {statusLabel}
+                                             </Typography>
+                                        </Typography>
                                    </Box>
                                    <Box sx={{ display: "flex", alignItems: "center" }}>
                                         <ReceiptIcon fontSize="small" sx={{ mr: 1, color: "text.secondary" }} />
-                                        <Typography variant="body2">Billing Cycle: {!subscriptionData ? "N/A" : subscriptionData.renewal_period == 'annually' ? "ANNUALLY" : "MONTHLY"}</Typography>
+                                        <Typography variant="body2">Billing Cycle:
+                                             {!subscriptionData ? (
+                                                  <Box component="span" sx={{ color: "text.secondary" }}>N/A</Box>
+                                             ) : (
+                                                  <Box
+                                                       component="span"
+                                                       sx={{
+                                                            color: subscriptionData.renewal_period === "annually"
+                                                                 ? "success.main"
+                                                                 : "warning.main",
+                                                            fontWeight: 600,
+                                                       }}
+                                                  >
+                                                       {subscriptionData.renewal_period === "annually" ? "ANNUALLY" : "MONTHLY"}
+                                                  </Box>
+                                             )}
+                                        </Typography>
                                    </Box>
                                    {pricePerApartment !== null && (
                                         <Alert severity="info" sx={{ mt: 1 }}>
