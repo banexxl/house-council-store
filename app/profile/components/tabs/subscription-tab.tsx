@@ -232,40 +232,40 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
           }
      }
 
-     const handleReactivateSubscription = async () => {
-          setIsProcessing(true)
-          if (!subscriptionData?.polar_subscription_id || !subscriptionData?.polar_customer_id) {
-               toast.error("Missing subscription identifiers.")
-               setIsProcessing(false)
-               return
-          }
-          try {
-               try {
-                    const res = await fetch("/api/polar/", {
-                         method: "PUT",
-                         headers: { "Content-Type": "application/json" },
-                         body: JSON.stringify({
-                              subscriptionId: subscriptionData.polar_subscription_id,
-                              polarCustomerId: subscriptionData.polar_customer_id,
-                         }),
-                    });
-                    if (!res.ok) {
-                         toast.error("Failed to reactivate subscription. Please try again.");
-                         handleDialogToggle("confirmCancel", false);
-                    } else {
-                         toast.success("Subscription reactivated successfully.");
-                         handleDialogToggle("confirmCancel", false);
-                    }
-               } catch (err: any) {
-                    console.error(err);
-                    toast.error(err?.message || "Could not start checkout. Please try again.");
-               }
-          } catch {
-               toast.error("Failed to cancel subscription. Please try again.")
-          } finally {
-               setIsProcessing(false)
-          }
-     }
+     // const handleReactivateSubscription = async () => {
+     //      setIsProcessing(true)
+     //      if (!subscriptionData?.polar_subscription_id || !subscriptionData?.polar_customer_id) {
+     //           toast.error("Missing subscription identifiers.")
+     //           setIsProcessing(false)
+     //           return
+     //      }
+     //      try {
+     //           try {
+     //                const res = await fetch("/api/polar/", {
+     //                     method: "PUT",
+     //                     headers: { "Content-Type": "application/json" },
+     //                     body: JSON.stringify({
+     //                          subscriptionId: subscriptionData.polar_subscription_id,
+     //                          polarCustomerId: subscriptionData.polar_customer_id,
+     //                     }),
+     //                });
+     //                if (!res.ok) {
+     //                     toast.error("Failed to reactivate subscription. Please try again.");
+     //                     handleDialogToggle("confirmCancel", false);
+     //                } else {
+     //                     toast.success("Subscription reactivated successfully.");
+     //                     handleDialogToggle("confirmCancel", false);
+     //                }
+     //           } catch (err: any) {
+     //                console.error(err);
+     //                toast.error(err?.message || "Could not start checkout. Please try again.");
+     //           }
+     //      } catch {
+     //           toast.error("Failed to cancel subscription. Please try again.")
+     //      } finally {
+     //           setIsProcessing(false)
+     //      }
+     // }
 
      const renderDate = (date?: string) =>
           date ? new Date(date).toLocaleDateString() : <i>No subscription plan selected</i>
@@ -388,13 +388,13 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
 
                                         )
                                    }
-                                   {
+                                   {/* {
                                         subscriptionData && subscriptionData.status === "canceled" && (
                                              <Button variant="outlined" color="error" onClick={() => handleReactivateSubscription()} disabled={isProcessing || !subscriptionData}>
                                                   Reactivate Subscription
                                              </Button>
                                         )
-                                   }
+                                   } */}
                               </Grid>
 
                               <Grid size={{ xs: 12, sm: 6 }}>

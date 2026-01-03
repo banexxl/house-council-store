@@ -89,10 +89,6 @@ export async function DELETE(req: Request) {
                return NextResponse.json({ error: "Missing subscriptionId or clientId" }, { status: 400 });
           }
 
-          const result = await polar.customerSessions.create({
-               customerId: polarCustomerId,
-          });
-
           let canceled;
           try {
                canceled = await polar.subscriptions.revoke({
