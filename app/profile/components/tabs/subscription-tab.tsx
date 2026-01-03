@@ -326,7 +326,7 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
                                         onClick={() => handleDialogToggle("upgrade", true)}
                                         disabled={isProcessing}
                                    >
-                                        Upgrade Plan
+                                        Select a Plan
                                    </Button>
                               </Box>
                          </Box>
