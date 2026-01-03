@@ -54,7 +54,7 @@ export default async function Page() {
      ])
 
 
-     const subsrciptionFeatures = await readSubscriptionPlanFeatures(clientSubscriptionObject.clientSubscriptionPlanData?.subscription_plan_id ?? null)
+     const subsrciptionFeatures = await readSubscriptionPlanFeatures(clientSubscriptionObject.clientSubscriptionPlanData?.subscription_id ?? null)
 
      // Merge session and client data
      const sessionAndClientDataCombined = {

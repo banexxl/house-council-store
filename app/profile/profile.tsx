@@ -1,15 +1,16 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { Box, Container, Grid } from "@mui/material"
 import ProfileSidebar, { ActivityItem } from "./components/profile-sidebar"
 import ProfileTabs from "./components/profile-tabs"
 import { Client } from "../types/client"
 import { User } from "@supabase/supabase-js"
-import { ClientSubscription, SubscriptionPlan } from "../types/subscription-plan"
+import { SubscriptionPlan } from "../types/subscription-plan"
 import { Feature } from "../types/feature"
 import Animate from "@/app/components/animation-framer-motion"
 import { Currency } from "../types/currency"
+import { PolarSubscription } from "../types/polar-subscription-types"
 
 // Mock data for notification preferences
 const notificationPreferences = [
@@ -39,7 +40,7 @@ const notificationPreferences = [
 
 type ProfilePageProps = {
      sessionAndClientDataCombined?: { client: Client, session: User }
-     clientSubscriptionObject: ClientSubscription & { subscription_plan: SubscriptionPlan }
+     clientSubscriptionObject: PolarSubscription & { subscription_plan: SubscriptionPlan }
      recentActivity: ActivityItem[]
      binCheckerAPIKey?: string,
      subsrciptioFeatures: SubscriptionPlan & { features: Feature[] } | null
@@ -57,7 +58,6 @@ export const ProfilePage = ({
 }: ProfilePageProps) => {
 
      const [editMode, setEditMode] = useState(false)
-     const [notificationSettings, setNotificationSettings] = useState(notificationPreferences)
 
      return (
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
@@ -69,7 +69,6 @@ export const ProfilePage = ({
                                    <Grid size={{ xs: 12, md: 4 }}>
                                         <ProfileSidebar
                                              userData={sessionAndClientDataCombined!}
-                                             clientSubscriptionObject={clientSubscriptionObject}
                                              recentActivity={recentActivity}
                                              onEditProfile={() => setEditMode(true)}
                                         />

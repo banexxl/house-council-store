@@ -25,13 +25,14 @@ import {
 import CheckIcon from "@mui/icons-material/Check"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import toast, { Toaster } from "react-hot-toast"
-import { ClientSubscription, SubscriptionPlan } from "../types/subscription-plan"
+import { SubscriptionPlan } from "../types/subscription-plan"
 import { Feature } from "../types/feature"
 import { useRouter } from "next/navigation"
 import Animate from "@/app/components/animation-framer-motion"
 import CircularProgress from '@mui/material/CircularProgress';
 import Backdrop from '@mui/material/Backdrop';
 import { Client } from "../types/client"
+import { PolarSubscription } from "../types/polar-subscription-types"
 
 const faqs = [
      {
@@ -54,7 +55,7 @@ const faqs = [
 
 interface PricingPageProps {
      subscriptionPlans: SubscriptionPlan[]
-     clientSubscriptionPlanData?: ClientSubscription & { subscription_plan: SubscriptionPlan } | null
+     clientSubscriptionPlanData?: PolarSubscription & { subscription_plan: SubscriptionPlan } | null
      apartmentCount?: number
      client?: Client | null
 }
@@ -316,7 +317,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
                                                                       isAnyLoading ||
                                                                       !isThisLoading &&
                                                                       (
-                                                                           clientSubscriptionPlanData?.subscription_plan_id == plan.id &&
+                                                                           clientSubscriptionPlanData?.subscription_id == plan.id &&
                                                                            clientSubscriptionPlanData?.status === 'active' ||
                                                                            clientSubscriptionPlanData?.status === 'trialing'
                                                                       )

@@ -32,12 +32,15 @@ export interface PolarSubscriptionPastDueEvent extends PolarSubscriptionEventBas
 
 export interface PolarSubscription {
      id: string;
+     client_id: string | null;
+     subscription_id: string;
+     polar_subscription_id: string;
      created_at: string;
      modified_at: string;
      metadata: Record<string, unknown>;
      amount: number;
      currency: string;
-     recurring_interval: string;
+     recurring_interval: "day" | "week" | "month" | "year";
      recurring_interval_count: number;
      status: PolarSubscriptionStatus;
      current_period_start: string;
@@ -55,11 +58,11 @@ export interface PolarSubscription {
      checkout_id: string | null;
      customer_cancellation_reason: string | null;
      customer_cancellation_comment: string | null;
-     discount: PolarSubscriptionDiscount | null;
-     customer: PolarSubscriptionCustomer;
-     product: PolarSubscriptionProduct;
-     prices: PolarSubscriptionPrice[];
-     meters: PolarSubscriptionMeter[];
+     discount: string | null;
+     customer: string;
+     product: string;
+     prices: string[];
+     meters: string[];
      seats: number;
      custom_field_data: Record<string, unknown>;
 }

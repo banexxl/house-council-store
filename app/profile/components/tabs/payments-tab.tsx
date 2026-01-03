@@ -27,15 +27,16 @@ import { Client } from "@/app/types/client"
 import { User } from "@supabase/supabase-js"
 import toast from "react-hot-toast"
 import { Currency } from "@/app/types/currency"
-import { ClientSubscription, SubscriptionPlan } from "@/app/types/subscription-plan"
+import { SubscriptionPlan } from "@/app/types/subscription-plan"
 import { generateInvoiceString } from "@/app/lib/invoice-num-creator"
 import theme from "@/app/theme"
 import { makePaymentAction } from "../../client-payment-actions"
+import { PolarSubscription } from "@/app/types/polar-subscription-types"
 
 interface PaymentsTabProps {
      clientPayments: Payment[],
      userData: { client: Client; session: User },
-     clientSubscriptionObject: ClientSubscription & { subscription_plan: SubscriptionPlan } | null,
+     clientSubscriptionObject: PolarSubscription & { subscription_plan: SubscriptionPlan } | null,
      allClientBillingInformation: ClientBillingInformation[]
      currencies: Currency[]
 }
@@ -60,8 +61,8 @@ export default function PaymentsTab({ clientPayments, userData, clientSubscripti
 
           // Replace with your mapping logic:
           // e.g. plan.interval === "month" ? process.env.NEXT_PUBLIC_POLAR_PRODUCT_ID_MONTHLY : ...
-          if (clientSubscriptionObject.next_payment_date === "month") return [process.env.NEXT_PUBLIC_POLAR_PRODUCT_ID_MONTHLY!];
-          if (clientSubscriptionObject.next_payment_date === "year") return [process.env.NEXT_PUBLIC_POLAR_PRODUCT_ID_YEARLY!];
+          if (clientSubscriptionObject.recurring_interval === "month") return [process.env.NEXT_PUBLIC_POLAR_PRODUCT_ID_MONTHLY!];
+          if (clientSubscriptionObject.recurring_interval === "year") return [process.env.NEXT_PUBLIC_POLAR_PRODUCT_ID_YEARLY!];
 
           return [];
      }, [clientSubscriptionObject]);
@@ -91,7 +92,7 @@ export default function PaymentsTab({ clientPayments, userData, clientSubscripti
                status: "succeeded",
                updated_at: new Date().toISOString(),
                invoice_number: generateInvoiceString(),
-               subscription_plan: clientSubscriptionObject?.subscription_plan_id!,
+               subscription_plan: clientSubscriptionObject?.subscription_id!,
                client: userData.client.id,
                billing_information: allClientBillingInformation.find(billingInfo => billingInfo.default_payment_method)?.id || "",
                currency: currencies.find(currency => currency.code === "USD")?.id || "",

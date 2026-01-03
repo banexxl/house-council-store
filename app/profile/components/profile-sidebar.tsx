@@ -38,7 +38,6 @@ import toast from "react-hot-toast"
 import { useRouter } from "next/navigation"
 import { Client } from "@/app/types/client"
 import { User } from "@supabase/supabase-js"
-import { ClientSubscription, SubscriptionPlan } from "@/app/types/subscription-plan"
 import { logoutUserAction, updateAccountAction } from "../account-action"
 import { deleteClientAvatarAction, uploadClientAvatarAction } from "@/app/lib/sb-storage"
 import { PolarSubscriptionStatus } from "@/app/types/polar-subscription-types"
@@ -53,7 +52,6 @@ export interface ActivityItem {
 
 interface ProfileSidebarProps {
      userData: { client: Client; session: User }
-     clientSubscriptionObject: ClientSubscription & { subscription_plan: SubscriptionPlan } | null
      recentActivity: ActivityItem[] | undefined
      onEditProfile: () => void
 }
@@ -79,7 +77,7 @@ export const getStatusColor = (status?: PolarSubscriptionStatus) => {
      }
 }
 
-export default function ProfileSidebar({ userData, clientSubscriptionObject, recentActivity, onEditProfile }: ProfileSidebarProps) {
+export default function ProfileSidebar({ userData, recentActivity, onEditProfile }: ProfileSidebarProps) {
 
      const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null)
      const [imageLoading, setImageLoading] = useState<boolean>(false)

@@ -21,20 +21,20 @@ import { useRouter } from "next/navigation"
 import toast from "react-hot-toast"
 import { getStatusColor } from "../profile-sidebar"
 import GradingIcon from '@mui/icons-material/Grading';
-import { ClientSubscription, SubscriptionPlan } from "@/app/types/subscription-plan"
+import { SubscriptionPlan } from "@/app/types/subscription-plan"
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { Feature } from "@/app/types/feature"
 import Link from "next/link"
 import { initClientSubscriptionRealtime, type InitListenerOptions } from "@/app/lib/sb-realtime"
-import log from "@/app/lib/logger"
+import { PolarSubscription } from "@/app/types/polar-subscription-types"
 
 interface SubscriptionTabProps {
-     clientSubscriptionObject: ClientSubscription & { subscription_plan: SubscriptionPlan } | null;
+     clientSubscriptionObject: PolarSubscription & { subscription_plan: SubscriptionPlan } | null;
      subsrciptioFeatures?: SubscriptionPlan & { features: Feature[] } | null;
      apartmentsCount: number
 }
 
-type ClientSubscriptionWithOptionalPlan = ClientSubscription & { subscription_plan?: SubscriptionPlan }
+type ClientSubscriptionWithOptionalPlan = PolarSubscription & { subscription_plan?: SubscriptionPlan }
 
 const isClientSubscriptionRecord = (record: unknown): record is ClientSubscriptionWithOptionalPlan => {
      if (!record || typeof record !== "object") return false
@@ -136,7 +136,7 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
 
      const handleCancelSubscription = async () => {
           setIsProcessing(true)
-          if (!subscriptionData?.polar_subscription_id || !subscriptionData?.polar_customer_id) {
+          if (!subscriptionData?.subscription_id || !subscriptionData?.customer_id) {
                toast.error("Missing subscription identifiers.")
                setIsProcessing(false)
                return
@@ -147,8 +147,8 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
                          method: "DELETE",
                          headers: { "Content-Type": "application/json" },
                          body: JSON.stringify({
-                              subscriptionId: subscriptionData.polar_subscription_id,
-                              polarCustomerId: subscriptionData.polar_customer_id,
+                              subscriptionId: subscriptionData.subscription_id,
+                              polarCustomerId: subscriptionData.customer_id,
                          }),
                     });
                     if (!res.ok) {
@@ -183,13 +183,13 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
      }
 
      const handleOpenCustomerPortal = async () => {
-          const hasSubscription = Boolean(subscriptionData?.subscription_plan_id || subscriptionData?.polar_subscription_id)
+          const hasSubscription = Boolean(subscriptionData?.polar_subscription_id && subscriptionData?.subscription_id)
           if (!hasSubscription) {
                toast.error("No subscription found. Please purchase a plan first.")
                return
           }
 
-          if (!subscriptionData?.polar_customer_id) {
+          if (!subscriptionData?.customer_id) {
                toast.error("Missing customer identifier.")
                return
           }
@@ -204,7 +204,7 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                         polarCustomerId: subscriptionData.polar_customer_id,
+                         polarCustomerId: subscriptionData.customer_id,
                          returnUrl,
                     }),
                })
@@ -234,7 +234,7 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
 
      // const handleReactivateSubscription = async () => {
      //      setIsProcessing(true)
-     //      if (!subscriptionData?.polar_subscription_id || !subscriptionData?.polar_customer_id) {
+     //      if (!subscriptionData?.subscription_id || !subscriptionData?.customer_id) {
      //           toast.error("Missing subscription identifiers.")
      //           setIsProcessing(false)
      //           return
@@ -245,8 +245,8 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
      //                     method: "PUT",
      //                     headers: { "Content-Type": "application/json" },
      //                     body: JSON.stringify({
-     //                          subscriptionId: subscriptionData.polar_subscription_id,
-     //                          polarCustomerId: subscriptionData.polar_customer_id,
+     //                          subscriptionId: subscriptionData.subscription_id,
+     //                          polarCustomerId: subscriptionData.customer_id,
      //                     }),
      //                });
      //                if (!res.ok) {
@@ -272,14 +272,14 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
 
      const currencyFormatter = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" })
      const pricePerApartment = subscriptionData?.subscription_plan
-          ? subscriptionData.renewal_period === "annually"
+          ? subscriptionData.recurring_interval === "year"
                ? subscriptionData.subscription_plan.total_price_per_apartment_with_discounts
                : subscriptionData.subscription_plan.monthly_total_price_per_apartment
           : null
      const totalForAllApartments = pricePerApartment !== null ? pricePerApartment * apartmentsCount : null
 
-     const billingPeriodLabel = subscriptionData?.renewal_period === "annually" ? "year" : "month"
-     const hasSubscription = Boolean(subscriptionData?.subscription_plan_id || subscriptionData?.polar_subscription_id)
+     const billingPeriodLabel = subscriptionData?.recurring_interval === "year" ? "year" : "month"
+     const hasSubscription = Boolean(subscriptionData?.polar_subscription_id || subscriptionData?.subscription_id)
 
      return (
           <Box>
@@ -315,7 +315,7 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
                                         variant="outlined"
                                         color="primary"
                                         onClick={handleOpenCustomerPortal}
-                                        disabled={isPortalLoading || isProcessing || !subscriptionData?.polar_customer_id}
+                                        disabled={isPortalLoading || isProcessing || !subscriptionData?.customer_id}
                                         startIcon={isPortalLoading ? <CircularProgress size={18} /> : <OpenInNewIcon />}
                                    >
                                         Customer Portal
@@ -420,13 +420,13 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
                                                   <Box
                                                        component="span"
                                                        sx={{
-                                                            color: subscriptionData.renewal_period === "annually"
+                                                            color: subscriptionData.recurring_interval === "year"
                                                                  ? "success.main"
                                                                  : "warning.main",
                                                             fontWeight: 600,
                                                        }}
                                                   >
-                                                       {subscriptionData.renewal_period === "annually" ? "ANNUALLY" : "MONTHLY"}
+                                                       {subscriptionData.recurring_interval === "year" ? "ANNUALLY" : "MONTHLY"}
                                                   </Box>
                                              )}
                                         </Typography>

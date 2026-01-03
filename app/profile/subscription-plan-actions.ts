@@ -1,9 +1,10 @@
 'use server'
 
-import { ClientSubscription, SubscriptionPlan } from "../types/subscription-plan";
+import { SubscriptionPlan } from "../types/subscription-plan";
 import { Feature } from "../types/feature";
 import { logServerAction } from "../lib/server-logging";
 import { useServerSideSupabaseAnonClient } from "../lib/ss-supabase-anon-client";
+import { PolarSubscription } from "../types/polar-subscription-types";
 
 
 export const readSubscriptionPlanFeatures = async (
@@ -213,7 +214,7 @@ export const readFeaturesFromSubscriptionPlanId = async (subscriptionPlanId: str
      return { success: true, features };
 }
 
-export const readClientSubscriptionPlanFromClientId = async (clientId: string): Promise<{ success: boolean, clientSubscriptionPlanData?: ClientSubscription & { subscription_plan: SubscriptionPlan } | null, error?: string }> => {
+export const readClientSubscriptionPlanFromClientId = async (clientId: string): Promise<{ success: boolean, clientSubscriptionPlanData?: PolarSubscription & { subscription_plan: SubscriptionPlan } | null, error?: string }> => {
 
      if (!clientId) {
           await logServerAction({

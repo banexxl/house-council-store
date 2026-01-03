@@ -11,11 +11,12 @@ import AccountTab from "./tabs/account-tab"
 import SecurityTab from "./tabs/security-tab"
 import { User } from "@supabase/supabase-js"
 import { Client } from "@/app/types/client"
-import { ClientSubscription, SubscriptionPlan } from "@/app/types/subscription-plan"
+import { SubscriptionPlan } from "@/app/types/subscription-plan"
 import { ActivityItem } from "./profile-sidebar"
 import { Feature } from "@/app/types/feature"
 import SubscriptionTab from "./tabs/subscription-tab"
 import { Currency } from "@/app/types/currency"
+import { PolarSubscription } from "@/app/types/polar-subscription-types"
 
 interface TabPanelProps {
      children?: React.ReactNode
@@ -43,7 +44,7 @@ interface ProfileTabsProps {
      userData: { client: Client, session: User }
      editMode: boolean
      setEditMode: (value: boolean) => void
-     clientSubscriptionObject: ClientSubscription & { subscription_plan: SubscriptionPlan } | null
+     clientSubscriptionObject: PolarSubscription & { subscription_plan: SubscriptionPlan } | null
      recentActivity: ActivityItem[]
      subscriptionFeatures?: Feature[],
      binCheckerAPIKey?: string,
