@@ -169,7 +169,7 @@ export default function ProfileSidebar({ userData, clientSubscriptionObject, rec
                     formData.append('title', userData.client.name);
                     formData.append('extension', extension);
                     formData.append('fileName', file.name);
-                    formData.append('folderName', userData.client.name); // or use a unique ID
+                    formData.append('folderName', userData.client.id); // or use a unique ID
 
                     const uploadResponse = await uploadClientAvatarAction(formData);
 
