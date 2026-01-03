@@ -434,7 +434,7 @@ export const POST = Webhooks({
                // subscription.active
                if (t.includes("subscription.active")) {
                     await patchClientSubscription(clientId!, {
-                         status: "active",
+                         status: payload.data?.status,
                          renewal_period: renewalPeriod,
                          is_auto_renew: true,
                          expired: false,
@@ -449,7 +449,7 @@ export const POST = Webhooks({
                // subscription.canceled (cancel at period end / canceled)
                if (t.includes("subscription.canceled")) {
                     await patchClientSubscription(clientId!, {
-                         status: "canceled",
+                         status: payload.data?.status,
                          renewal_period: renewalPeriod,
                          is_auto_renew: false,
                          expired: false,
@@ -464,7 +464,7 @@ export const POST = Webhooks({
                // subscription.uncanceled
                if (t.includes("subscription.uncanceled")) {
                     await patchClientSubscription(clientId!, {
-                         status: "active",
+                         status: payload.data?.status,
                          renewal_period: renewalPeriod,
                          is_auto_renew: true,
                          expired: false,
@@ -479,7 +479,7 @@ export const POST = Webhooks({
                // subscription.revoked (immediate)
                if (t.includes("subscription.revoked")) {
                     await patchClientSubscription(clientId!, {
-                         status: "canceled",
+                         status: payload.data?.status,
                          renewal_period: renewalPeriod,
                          is_auto_renew: false,
                          expired: true,
@@ -494,7 +494,7 @@ export const POST = Webhooks({
                // subscription.past_due
                if (t.includes("subscription.past_due")) {
                     await patchClientSubscription(clientId!, {
-                         status: "past_due",
+                         status: payload.data?.status,
                          renewal_period: renewalPeriod,
                          is_auto_renew: true,
                          expired: false,
@@ -509,7 +509,7 @@ export const POST = Webhooks({
                // subscription.created
                if (t.includes("subscription.created")) {
                     await patchClientSubscription(clientId!, {
-                         status,
+                         status: payload.data?.status,
                          renewal_period: renewalPeriod,
                          is_auto_renew: true,
                          expired: false,
@@ -525,7 +525,7 @@ export const POST = Webhooks({
                // subscription.updated
                if (t.includes("subscription.updated")) {
                     await patchClientSubscription(clientId!, {
-                         status,
+                         status: payload.data?.status,
                          renewal_period: renewalPeriod,
                          is_auto_renew: true,
                          expired: false,
