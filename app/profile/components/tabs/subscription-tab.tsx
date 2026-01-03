@@ -26,6 +26,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { Feature } from "@/app/types/feature"
 import Link from "next/link"
 import { initClientSubscriptionRealtime, type InitListenerOptions } from "@/app/lib/sb-realtime"
+import log from "@/app/lib/logger"
 
 interface SubscriptionTabProps {
      clientSubscriptionObject: ClientSubscription & { subscription_plan: SubscriptionPlan } | null;
@@ -141,11 +142,12 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
                          }),
                     });
                     if (!res.ok) {
-                         toast.error("Failed to cancel subscription. Please try again.");
+                         toast.error("Failed to cancel subscription. Please try again or contact support.");
+                         handleDialogToggle("confirmCancel", false);
+                    } else {
+                         toast.success("Subscription canceled successfully.");
                          handleDialogToggle("confirmCancel", false);
                     }
-                    toast.success("Subscription canceled successfully.");
-                    handleDialogToggle("confirmCancel", false);
                } catch (err: any) {
                     console.error(err);
                     toast.error(err?.message || "Could not start checkout. Please try again.");

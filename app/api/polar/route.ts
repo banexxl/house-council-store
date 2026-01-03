@@ -95,16 +95,13 @@ export async function DELETE(req: Request) {
 
           let canceled;
           try {
-               canceled = await polar.customerPortal.subscriptions.cancel(
-                    {
-                         customerSession: result.token,
-                    },
-                    {
-                         id: subscriptionId,
-                    },
-               );
+               canceled = await polar.customerPortal.subscriptions.cancel({
+                    customerSession: result.token,
+               }, {
+                    id: subscriptionId,
+               });
           } catch (error) {
-               log("Failed to cancel subscription", 'error');
+               log(`Failed to cancel subscription ${error}`, 'error');
                await logServerAction({
                     user_id: null,
                     action: 'Cancel subscription - error',
