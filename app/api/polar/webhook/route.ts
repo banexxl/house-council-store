@@ -664,7 +664,7 @@ export const POST = Webhooks({
                     let resolvedSubscriptionId = subscriptionPlanId;
                     if (productId) {
                          const { data: subRow, error: subError } = await supabase
-                              .from("tblSubscriptions")
+                              .from("tblSubscriptionPlans")
                               .select("id")
                               .or(`polar_product_id_monthly.eq.${data.product.id},polar_product_id_annually.eq.${data.product.id}`)
                               .maybeSingle<{ id: string }>();
