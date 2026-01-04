@@ -1,6 +1,5 @@
 "use client"
 
-import { useRouter } from "next/navigation"
 import Image from "next/image"
 import {
      Box,
@@ -14,7 +13,6 @@ import {
      ListItemIcon,
      ListItemText,
      Grid,
-     useTheme,
 } from "@mui/material"
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline"
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday"
@@ -34,7 +32,6 @@ export default function SubscriptionSuccessPage({
      userEmail,
      dashboardUrl
 }: SubscriptionSuccessPageProps) {
-     const theme = useTheme();
      // Calculate trial end date (30 days from now)
      const trialEndDate = new Date()
      trialEndDate.setDate(trialEndDate.getDate() + 30)

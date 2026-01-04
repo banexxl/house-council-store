@@ -28,7 +28,6 @@ export async function POST(req: Request) {
                clientId,
                customerEmail,
                subscriptionPlanId,
-               renewal_period,
                successUrl,
                returnUrl,
                productIds,
@@ -36,7 +35,6 @@ export async function POST(req: Request) {
                clientId: string;
                customerEmail?: string;
                subscriptionPlanId: string;
-               renewal_period: "monthly" | "annually";
                successUrl: string;
                returnUrl: string;
                productIds: string[];
@@ -48,8 +46,7 @@ export async function POST(req: Request) {
                !subscriptionPlanId ||
                !successUrl ||
                !returnUrl ||
-               !productIds?.length ||
-               !renewal_period
+               !productIds?.length
           ) {
                return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
           }
@@ -66,7 +63,6 @@ export async function POST(req: Request) {
                     metadata: {
                          clientId,
                          subscriptionPlanId,
-                         renewal_period,
                          apartments_count: apartmentsCount,
                     },
                });

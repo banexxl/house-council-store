@@ -1,5 +1,4 @@
 // app/api/polar/webhook/route.ts
-import { polar } from "@/app/lib/polar";
 import { logServerAction } from "@/app/lib/server-logging";
 import { getApartmentCountForClient } from "@/app/profile/subscription-plan-actions";
 import { PolarSubscription, PolarSubscriptionStatus } from "@/app/types/polar-subscription-types";
@@ -85,6 +84,7 @@ const stringifyOrEmptyObject = (value: unknown): string => {
 
 interface BuildSubscriptionSnapshotArgs {
      clientId: string;
+     subscriptionPlanId: string;
      apartmentsCount: number;
      data: any;
      statusOverride?: PolarSubscriptionStatus;
@@ -92,6 +92,7 @@ interface BuildSubscriptionSnapshotArgs {
 
 function buildSubscriptionSnapshot({
      clientId,
+     subscriptionPlanId,
      apartmentsCount,
      data,
      statusOverride,
@@ -125,7 +126,8 @@ function buildSubscriptionSnapshot({
      return {
           id: subscriptionId,
           client_id: clientId,
-          subscription_id: subscriptionId,
+          subscription_id: subscriptionPlanId,
+          polar_subscription_id: subscriptionId,
           created_at: ensureDateString(pick("created_at", "createdAt")),
           updated_at: ensureDateString(pick("updated_at", "updatedAt", "modified_at", "modifiedAt", "created_at", "createdAt")),
           apartment_count: typeof apartmentsCount === "number" ? Math.max(1, apartmentsCount) : 1,
@@ -165,40 +167,17 @@ function nowIso() {
      return new Date().toISOString();
 }
 
-function mapPolarToLocalStatus(eventType: string, data: any): string {
-     const t = eventType.toLowerCase();
-
-     if (t.includes("trial") && t.includes("started")) return "trialing";
-     if (t.includes("trial") && t.includes("ended")) return "active";
-
-     if (t.includes("subscription") && t.includes("canceled")) return "canceled";
-
-     if (t.includes("subscription") && t.includes("created")) {
-          const status = (data?.status ?? "").toString().toLowerCase();
-          if (status.includes("trial")) return "trialing";
-          if (status.includes("active")) return "active";
-          return "active";
-     }
-
-     if (t.includes("subscription") && t.includes("updated")) {
-          const status = (data?.status ?? "").toString().toLowerCase();
-          if (status.includes("trial")) return "trialing";
-          if (status.includes("active")) return "active";
-          if (status.includes("canceled")) return "canceled";
-          if (status.includes("paused")) return "paused";
-          return "active";
-     }
-
-     if (t.includes("payment") && t.includes("failed")) return "past_due";
-     if (t.includes("payment") && t.includes("succeeded")) return "active";
-
-     return "active";
-}
-
 function extractMeta(payloadData: any) {
      const meta = payloadData?.metadata ?? payloadData?.data?.metadata ?? {};
+     const subscriptionPlanId =
+          meta?.subscriptionPlanId ??
+          meta?.subscription_plan_id ??
+          meta?.subscriptionId ??
+          meta?.subscription_id ??
+          null;
      return {
           clientId: meta?.clientId ?? meta?.client_id ?? null,
+          subscriptionPlanId,
      };
 }
 
@@ -224,7 +203,7 @@ async function resolveClientFromPolarIds(ids: {
      polarSubscriptionId?: string | null;
      polarCustomerId?: string | null;
      polarOrderId?: string | null;
-}): Promise<{ client_id: string } | null> {
+}): Promise<{ client_id: string; subscription_id: string | null } | null> {
 
      await logServerAction({
           user_id: null,
@@ -239,9 +218,9 @@ async function resolveClientFromPolarIds(ids: {
      if (ids.polarSubscriptionId) {
           const { data } = await supabase
                .from("tblClient_Subscription")
-               .select("client_id")
-               .eq("subscription_id", ids.polarSubscriptionId)
-               .maybeSingle<{ client_id: string }>();
+               .select("client_id, subscription_id")
+               .eq("polar_subscription_id", ids.polarSubscriptionId)
+               .maybeSingle<{ client_id: string; subscription_id: string | null }>();
 
           if (data?.client_id) return data;
      }
@@ -249,9 +228,9 @@ async function resolveClientFromPolarIds(ids: {
      if (ids.polarOrderId) {
           const { data } = await supabase
                .from("tblClient_Subscription")
-               .select("client_id")
+               .select("client_id, subscription_id")
                .eq("order_id", ids.polarOrderId)
-               .maybeSingle<{ client_id: string }>();
+               .maybeSingle<{ client_id: string; subscription_id: string | null }>();
 
           if (data?.client_id) return data;
      }
@@ -259,14 +238,24 @@ async function resolveClientFromPolarIds(ids: {
      if (ids.polarCustomerId) {
           const { data } = await supabase
                .from("tblClient_Subscription")
-               .select("client_id")
+               .select("client_id, subscription_id")
                .eq("customer_id", ids.polarCustomerId)
-               .maybeSingle<{ client_id: string }>();
+               .maybeSingle<{ client_id: string; subscription_id: string | null }>();
 
           if (data?.client_id) return data;
      }
 
      return null;
+}
+
+async function getSubscriptionPlanIdForClient(clientId: string): Promise<string | null> {
+     const { data } = await supabase
+          .from("tblClient_Subscription")
+          .select("subscription_id")
+          .eq("client_id", clientId)
+          .maybeSingle<{ subscription_id: string | null }>();
+
+     return data?.subscription_id ?? null;
 }
 
 type ClientSubscriptionPatch = Partial<PolarSubscription>;
@@ -295,6 +284,7 @@ async function patchClientSubscription(clientId: string, patch: ClientSubscripti
 
 async function ensureSubscriptionRow(clientId: string, base: {
      subscription_id: string;
+     polar_subscription_id: string;
      status: string;
 }) {
      const { error } = await supabase
@@ -302,6 +292,7 @@ async function ensureSubscriptionRow(clientId: string, base: {
           .upsert({
                client_id: clientId,
                subscription_id: base.subscription_id,
+               polar_subscription_id: base.polar_subscription_id,
                status: base.status,
                created_at: nowIso(),
                updated_at: nowIso(),
@@ -338,8 +329,7 @@ export const POST = Webhooks({
           const t = String(eventType).toLowerCase();
           const data = (payload as any)?.data ?? {};
           const meta = extractMeta(data);
-          const status = mapPolarToLocalStatus(eventType, data);
-          const normalizedStatus = normalizeSubscriptionStatus(data?.status ?? status);
+          const normalizedStatus = normalizeSubscriptionStatus(data?.status);
           const currentPeriodStart = extractCurrentPeriodStart(data);
 
           await logServerAction({
@@ -356,6 +346,7 @@ export const POST = Webhooks({
           // Resolve clientId for events that need it
           // -------------------------------------------------------------------------
           let clientId = meta.clientId;
+          let subscriptionPlanId = meta.subscriptionPlanId;
 
           const polarCustomerId: string | null =
                data?.customer_id ?? data?.customerId ?? (t.startsWith("customer.") ? data?.id : null) ?? null;
@@ -390,6 +381,9 @@ export const POST = Webhooks({
                     }
 
                     clientId = resolved.client_id;
+                    if (!subscriptionPlanId && resolved.subscription_id) {
+                         subscriptionPlanId = resolved.subscription_id;
+                    }
                }
 
                // by here we need these for subscription table
@@ -404,6 +398,10 @@ export const POST = Webhooks({
                          type: "internal",
                     });
                     return;
+               }
+
+               if (!subscriptionPlanId && clientId) {
+                    subscriptionPlanId = await getSubscriptionPlanIdForClient(clientId);
                }
           }
 
@@ -501,13 +499,28 @@ export const POST = Webhooks({
                          return;
                     }
 
+                    if (!subscriptionPlanId) {
+                         await logServerAction({
+                              user_id: null,
+                              action: "Store Webhook - Missing subscription plan id",
+                              payload: { eventType, clientId, polarSubscriptionId },
+                              status: "fail",
+                              error: "subscriptionPlanId missing",
+                              duration_ms: Date.now() - t0,
+                              type: "internal",
+                         });
+                         return;
+                    }
+
                     await ensureSubscriptionRow(clientId!, {
-                         subscription_id: polarSubscriptionId,
+                         subscription_id: subscriptionPlanId,
+                         polar_subscription_id: polarSubscriptionId,
                          status: normalizedStatus,
                     });
                     const apartmentsCount = await getApartmentCountForClient(clientId!);
                     const subscriptionSnapshot = buildSubscriptionSnapshot({
                          clientId: clientId!,
+                         subscriptionPlanId,
                          apartmentsCount,
                          data,
                          statusOverride: normalizedStatus,
@@ -538,6 +551,7 @@ export const POST = Webhooks({
                     payload: {
                          eventType,
                          clientId,
+                         subscriptionPlanId,
                          polarCustomerId,
                          polarSubscriptionId,
                          polarOrderId,

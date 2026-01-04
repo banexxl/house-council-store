@@ -73,8 +73,8 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
           });
      };
 
-     const handleStartFreeTrial = (plan: SubscriptionPlan, billingCycle: "monthly" | "annually") => {
-          void startPolarCheckout(plan, billingCycle);
+     const handleStartFreeTrial = (plan: SubscriptionPlan) => {
+          void startPolarCheckout(plan);
      };
 
      const handlePlanBillingCycleChange = (planKey: string, newValue: "monthly" | "annually" | null) => {
@@ -90,7 +90,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
           [subscriptionPlans]
      );
 
-     const startPolarCheckout = async (plan: SubscriptionPlan, billingCycle: "monthly" | "annually") => {
+     const startPolarCheckout = async (plan: SubscriptionPlan) => {
 
           if (!client?.id) {
                toast.error("Please sign in to start a trial.");
@@ -103,12 +103,11 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
                return;
           }
 
-          const key = `${plan.id}-${billingCycle}`;
-          setLoadingKey(key);
+          setLoadingKey(plan.id!);
 
           try {
                const successUrl =
-                    `https://nest-link.app/pricing/subscription-plan-purchase/success?client_id=${client.id}&subscription_id=${plan.id}&renewal_period=${billingCycle}`;
+                    `https://nest-link.app/pricing/subscription-plan-purchase/success?client_id=${client.id}&subscription_id=${plan.id}`;
                const returnUrl =
                     `https://nest-link.app/pricing`;
 
@@ -117,12 +116,11 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                          clientId: client.id!,
-                         customerEmail: client.email,
                          subscriptionPlanId: plan.id,
-                         renewal_period: billingCycle,
+                         customerEmail: client.email,
                          successUrl,
                          returnUrl,
-                         productIds: billingCycle === "annually"
+                         productIds: plan.is_billed_annually
                               ? [plan.polar_product_id_annually]
                               : [plan.polar_product_id_monthly],
                     }),
@@ -312,7 +310,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
                                                             <Button
                                                                  variant="contained"
                                                                  fullWidth
-                                                                 onClick={() => handleStartFreeTrial(plan, billingCycle)}
+                                                                 onClick={() => handleStartFreeTrial(plan)}
                                                                  disabled={
                                                                       isAnyLoading ||
                                                                       !isThisLoading &&
