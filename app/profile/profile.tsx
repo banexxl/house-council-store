@@ -44,7 +44,6 @@ type ProfilePageProps = {
      recentActivity: ActivityItem[]
      binCheckerAPIKey?: string,
      subsrciptioFeatures: SubscriptionPlan & { features: Feature[] } | null
-     currencies?: Currency[],
      apartmentsCount: number
 }
 export const ProfilePage = ({
@@ -53,7 +52,6 @@ export const ProfilePage = ({
      recentActivity,
      binCheckerAPIKey,
      subsrciptioFeatures,
-     currencies,
      apartmentsCount
 }: ProfilePageProps) => {
 
@@ -86,7 +84,6 @@ export const ProfilePage = ({
                                              recentActivity={recentActivity || []}
                                              binCheckerAPIKey={binCheckerAPIKey}
                                              subsrciptioFeatures={subsrciptioFeatures}
-                                             currencies={currencies}
                                              apartmentsCount={apartmentsCount}
                                         />
                                    </Grid>

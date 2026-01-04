@@ -49,7 +49,6 @@ interface ProfileTabsProps {
      subscriptionFeatures?: Feature[],
      binCheckerAPIKey?: string,
      subsrciptioFeatures?: SubscriptionPlan & { features: Feature[] } | null,
-     currencies?: Currency[],
      apartmentsCount: number
 }
 
@@ -125,26 +124,6 @@ export default function ProfileTabs({
                               />
                          </TabPanel>
 
-                         {/* Payments Tab */}
-                         {/* <TabPanel value={tabValue} index={3}>
-                              <PaymentsTab
-                                   clientPayments={clientPayments}
-                                   userData={userData}
-                                   clientSubscriptionObject={clientSubscriptionObject || null}
-                                   allClientBillingInformation={allClientBillingInformation}
-                                   currencies={currencies || []}
-                              />
-                         </TabPanel> */}
-
-                         {/* Notifications Tab */}
-                         {/* <TabPanel value={tabValue} index={2}>
-                              <NotificationsTab
-                                   notificationSettings={notificationSettings}
-                                   handleNotificationToggle={handleNotificationToggle}
-                              />
-                         </TabPanel> */}
-
-                         {/* Security Tab */}
                          <TabPanel value={tabValue} index={2}>
                               <SecurityTab userData={userData} />
                          </TabPanel>

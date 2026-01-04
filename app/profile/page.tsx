@@ -8,7 +8,6 @@ import { User } from "@supabase/supabase-js";
 import { clientInitialValues } from "../types/client";
 import { readClientSubscriptionPlanFromClientId, readSubscriptionPlanFeatures } from "./subscription-plan-actions";
 import { redirect } from "next/navigation";
-import { readAllCurrenciesAction } from "./client-payment-actions";
 import { useServerSideSupabaseServiceRoleClient } from "../lib/ss-supabase-service-role-client";
 import { buildCanonicalUrl } from "../lib/seo";
 
@@ -45,10 +44,9 @@ export default async function Page() {
      }
 
      // Fetch related data in parallel
-     const [clientSubscriptionObject, recentActivity, currencies, apartments] = await Promise.all([
+     const [clientSubscriptionObject, recentActivity, apartments] = await Promise.all([
           readClientSubscriptionPlanFromClientId(client.id),
           readClientRecentActivityAction(user.email, client.id),
-          readAllCurrenciesAction(),
           readAllApartmentsByClientId(client.id)
      ])
 
@@ -75,7 +73,6 @@ export default async function Page() {
                     recentActivity={recentActivity.data ?? []}
                     binCheckerAPIKey={binCheckerAPIKey ?? ""}
                     subsrciptioFeatures={subsrciptionFeatures?.subscriptionPlanFeatures ?? null}
-                    currencies={currencies.currencies ?? []}
                     apartmentsCount={apartments ? apartments?.data!.length : 0}
                />
                <Footer />
