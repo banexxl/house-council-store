@@ -668,10 +668,6 @@ export const POST = Webhooks({
                               .select("id")
                               .or(`polar_product_id_monthly.eq.${productId},polar_product_id_annually.eq.${productId}`)
                               .maybeSingle<{ id: string }>();
-                         console.log('eeeeeee', subError);
-                         console.log('data', subRow);
-
-
                          if (!subError && subRow && subRow.id) {
                               resolvedSubscriptionId = subRow.id;
                               // Update tblClient_Subscription with the new subscription_id
