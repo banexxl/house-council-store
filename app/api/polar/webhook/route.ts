@@ -372,11 +372,11 @@ export const POST = Webhooks({
      webhookSecret: process.env.POLAR_WEBHOOK_SECRET_SANDBOX!,
      onPayload: async (payload: any) => {
           const t0 = Date.now();
+          console.log('Webhook payload erceived: ', payload);
 
           const eventType = (payload as any)?.type ?? "";
           const t = String(eventType).toLowerCase();
           const data = (payload as any)?.data ?? {};
-
           const meta = extractMeta(data);
           const status = mapPolarToLocalStatus(eventType, data);
           const normalizedStatus = normalizeSubscriptionStatus(data?.status ?? status);
