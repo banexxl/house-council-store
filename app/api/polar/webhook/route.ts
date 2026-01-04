@@ -232,30 +232,38 @@ async function upsertInvoiceFromOrder({ eventType, order, clientId, subscription
           return obj;
      }
 
-     // List of timestamp fields in snake_case and camelCase
-     const TIMESTAMP_FIELDS = [
-          'created_at', 'modified_at', 'refunded_at', 'updated_at',
-          'createdAt', 'modifiedAt', 'refundedAt', 'updatedAt',
-          'current_period_start', 'current_period_end', 'trial_start', 'trial_end',
-          'canceled_at', 'started_at', 'ends_at', 'ended_at',
-          'currentPeriodStart', 'currentPeriodEnd', 'trialStart', 'trialEnd',
-          'canceledAt', 'startedAt', 'endsAt', 'endedAt'
-     ];
+     // Recursively sanitize all datetime fields at any depth
+     function isDateTimeKey(key: string) {
+          // Matches snake_case or camelCase datetime fields
+          return /(_at|At|_date|Date|_time|Time)$/.test(key);
+     }
 
-     const cleanedOrder = deepOmitPlatformFeeCurrency(order);
+     function sanitizeDateTimes(obj: any): any {
+          if (Array.isArray(obj)) {
+               return obj.map(sanitizeDateTimes);
+          } else if (obj && typeof obj === 'object') {
+               const result: Record<string, unknown> = {};
+               for (const [k, v] of Object.entries(obj)) {
+                    if (k === 'platform_fee_currency') continue;
+                    if (isDateTimeKey(k)) {
+                         if (typeof v === 'string' && v.length > 0) {
+                              result[k] = v;
+                         } else {
+                              result[k] = null;
+                         }
+                    } else {
+                         result[k] = sanitizeDateTimes(v);
+                    }
+               }
+               return result;
+          }
+          return obj;
+     }
+
+     const cleanedOrder = sanitizeDateTimes(order);
      const record: Record<string, unknown> = {};
      for (const [key, value] of Object.entries(cleanedOrder)) {
-          const snakeKey = toSnakeCase(key);
-          if (TIMESTAMP_FIELDS.includes(key) || TIMESTAMP_FIELDS.includes(snakeKey)) {
-               // Only allow valid ISO string or null for timestamps
-               if (typeof value === 'string' && value.length > 0) {
-                    record[snakeKey] = value;
-               } else {
-                    record[snakeKey] = null;
-               }
-          } else {
-               record[snakeKey] = value;
-          }
+          record[toSnakeCase(key)] = value;
      }
      record["client_id"] = clientId;
      if (subscriptionPlanId) {
