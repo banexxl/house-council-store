@@ -96,10 +96,29 @@ function buildSubscriptionSnapshot({
      data,
      statusOverride,
 }: BuildSubscriptionSnapshotArgs): SubscriptionRecordPatch {
-     const metadata = isRecord(data?.metadata) ? data.metadata : {};
-     const customFieldData = isRecord(data?.custom_field_data) ? data.custom_field_data : {};
-     const status = normalizeSubscriptionStatus(statusOverride ?? data?.status);
-     const subscriptionId = ensureString(data?.id ?? data?.subscription_id ?? data?.subscriptionId ?? "");
+     const pick = (...keys: string[]) => {
+          for (const key of keys) {
+               const value = data?.[key as keyof typeof data];
+               if (value !== undefined) {
+                    return value;
+               }
+          }
+          return undefined;
+     };
+
+     const metadataValue = pick("metadata");
+     const customFieldDataValue = pick("custom_field_data", "customFieldData");
+     const pricesValue = pick("prices");
+     const metersValue = pick("meters");
+     const recurringIntervalCountValue = pick("recurring_interval_count", "recurringIntervalCount");
+     const seatsValue = pick("seats");
+     const amountValue = pick("amount", "Amount");
+     const currencyValue = pick("currency", "Currency");
+
+     const metadata = isRecord(metadataValue) ? metadataValue : {};
+     const customFieldData = isRecord(customFieldDataValue) ? customFieldDataValue : {};
+     const status = normalizeSubscriptionStatus(statusOverride ?? pick("status"));
+     const subscriptionId = ensureString(pick("id", "subscription_id", "subscriptionId") ?? "");
      const serializeArray = (items: unknown[]): string[] =>
           items.map((item) => (typeof item === "string" ? item : stringifyOrEmptyObject(item)));
 
@@ -107,33 +126,33 @@ function buildSubscriptionSnapshot({
           id: subscriptionId,
           client_id: clientId,
           subscription_id: subscriptionId,
-          created_at: ensureDateString(data?.created_at),
-          updated_at: ensureDateString(data?.updated_at ?? data?.modified_at ?? data?.created_at),
+          created_at: ensureDateString(pick("created_at", "createdAt")),
+          updated_at: ensureDateString(pick("updated_at", "updatedAt", "modified_at", "modifiedAt", "created_at", "createdAt")),
           apartment_count: typeof apartmentsCount === "number" ? Math.max(1, apartmentsCount) : 1,
           metadata,
-          amount: typeof data?.amount === "number" ? data.amount : 0,
-          currency: ensureString(data?.currency ?? "usd"),
-          recurring_interval: normalizeInterval(data?.recurring_interval),
-          recurring_interval_count: typeof data?.recurring_interval_count === "number" ? data.recurring_interval_count : 1,
+          amount: typeof amountValue === "number" ? amountValue : 0,
+          currency: ensureString((currencyValue as string | undefined) ?? "usd"),
+          recurring_interval: normalizeInterval(pick("recurring_interval", "recurringInterval")),
+          recurring_interval_count: typeof recurringIntervalCountValue === "number" ? recurringIntervalCountValue : 1,
           status,
-          current_period_start: ensureDateString(data?.current_period_start),
-          current_period_end: ensureDateString(data?.current_period_end),
-          trial_start: ensureNullableString(data?.trial_start),
-          trial_end: ensureNullableString(data?.trial_end),
-          cancel_at_period_end: Boolean(data?.cancel_at_period_end),
-          canceled_at: ensureNullableString(data?.canceled_at),
-          started_at: ensureDateString(data?.started_at),
-          ends_at: ensureNullableString(data?.ends_at),
-          ended_at: ensureNullableString(data?.ended_at),
-          customer_id: ensureString(data?.customer_id ?? ""),
-          product_id: ensureString(data?.product_id ?? ""),
-          discount_id: ensureNullableString(data?.discount_id),
-          checkout_id: ensureNullableString(data?.checkout_id),
-          customer_cancellation_reason: ensureNullableString(data?.customer_cancellation_reason),
-          customer_cancellation_comment: ensureNullableString(data?.customer_cancellation_comment),
-          prices: Array.isArray(data?.prices) ? serializeArray(data.prices) : [],
-          meters: Array.isArray(data?.meters) ? serializeArray(data.meters) : [],
-          seats: typeof data?.seats === "number" ? data.seats : 0,
+          current_period_start: ensureDateString(pick("current_period_start", "currentPeriodStart", "current_period_start_at")),
+          current_period_end: ensureDateString(pick("current_period_end", "currentPeriodEnd", "current_period_end_at")),
+          trial_start: ensureNullableString(pick("trial_start", "trialStart")),
+          trial_end: ensureNullableString(pick("trial_end", "trialEnd")),
+          cancel_at_period_end: Boolean(pick("cancel_at_period_end", "cancelAtPeriodEnd")),
+          canceled_at: ensureNullableString(pick("canceled_at", "canceledAt")),
+          started_at: ensureDateString(pick("started_at", "startedAt")),
+          ends_at: ensureNullableString(pick("ends_at", "endsAt")),
+          ended_at: ensureNullableString(pick("ended_at", "endedAt")),
+          customer_id: ensureString((pick("customer_id", "customerId") as string | undefined) ?? ""),
+          product_id: ensureString((pick("product_id", "productId") as string | undefined) ?? ""),
+          discount_id: ensureNullableString(pick("discount_id", "discountId")),
+          checkout_id: ensureNullableString(pick("checkout_id", "checkoutId")),
+          customer_cancellation_reason: ensureNullableString(pick("customer_cancellation_reason", "customerCancellationReason")),
+          customer_cancellation_comment: ensureNullableString(pick("customer_cancellation_comment", "customerCancellationComment")),
+          prices: Array.isArray(pricesValue) ? serializeArray(pricesValue) : [],
+          meters: Array.isArray(metersValue) ? serializeArray(metersValue) : [],
+          seats: typeof seatsValue === "number" ? seatsValue : 0,
           custom_field_data: customFieldData,
      };
 }
@@ -313,7 +332,7 @@ export const POST = Webhooks({
      webhookSecret: process.env.POLAR_WEBHOOK_SECRET_SANDBOX!,
      onPayload: async (payload: any) => {
           const t0 = Date.now();
-          console.log('Webhook payload erceived: ', payload);
+          console.log('Webhook payload received: ', payload);
 
           const eventType = (payload as any)?.type ?? "";
           const t = String(eventType).toLowerCase();
