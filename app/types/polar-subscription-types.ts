@@ -34,6 +34,7 @@ export interface PolarSubscription {
      client_id: string | null;
      subscription_id: string;
      polar_subscription_id: string;
+     order_id?: string | null;
      created_at: string;
      updated_at: string;
      apartment_count: number;

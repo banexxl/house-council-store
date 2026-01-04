@@ -2,6 +2,7 @@
 import { logServerAction } from "@/app/lib/server-logging";
 import { getApartmentCountForClient } from "@/app/profile/subscription-plan-actions";
 import { PolarSubscription, PolarSubscriptionStatus } from "@/app/types/polar-subscription-types";
+import type { PolarOrder, PolarOrderStatus } from "@/app/types/polar-order-types";
 import { Webhooks } from "@polar-sh/nextjs";
 import { createClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
@@ -19,6 +20,15 @@ const supabase = createClient(
 // ---------------------------------------------------------------------------
 
 type SubscriptionRecordPatch = PolarSubscription;
+
+const ORDER_EVENT_STATUS_OVERRIDE: Record<string, PolarOrderStatus> = {
+     "order.created": "pending",
+     "order.updated": "pending",
+     "order.paid": "paid",
+     "order.refunded": "refunded",
+};
+
+const currencyIdCache = new Map<string, string>();
 
 const SUBSCRIPTION_STATUS_VALUES: PolarSubscriptionStatus[] = [
      "incomplete",
@@ -195,6 +205,31 @@ function extractCurrentPeriodStart(data: any): string | null {
      );
 }
 
+interface InvoiceUpsertArgs {
+     eventType: string;
+     order: PolarOrder;
+     clientId: string;
+     subscriptionPlanId: string | null;
+}
+
+async function upsertInvoiceFromOrder({ eventType, order, clientId, subscriptionPlanId }: InvoiceUpsertArgs): Promise<void> {
+     // Store exactly what is received from the Polar API, plus client and subscriptionPlanId linkage
+     const record: Record<string, unknown> = {
+          ...order,
+          client: clientId,
+     };
+     if (subscriptionPlanId) {
+          record.subscription_plan = subscriptionPlanId;
+     }
+     const { error, status, count } = await supabase
+          .from("tblInvoices")
+          .upsert(record, { onConflict: "id" });
+     // If error or no rows affected, throw
+     if (error || (typeof count === "number" && count === 0)) {
+          throw new Error(`Failed to upsert invoice for order ${order.id}: ${error ? error.message : "No rows updated"}`);
+     }
+}
+
 /**
  * If an event arrives without metadata, try to locate client/plan
  * by looking up saved Polar ids.
@@ -279,11 +314,15 @@ async function patchClientSubscription(clientId: string, patch: ClientSubscripti
      }
 }
 
-async function ensureSubscriptionRow(clientId: string, base: {
-     subscription_id: string;
-     polar_subscription_id: string;
-     status: string;
-}) {
+
+async function ensureSubscriptionRow(
+     clientId: string,
+     base: {
+          subscription_id: string;
+          polar_subscription_id: string;
+          status: string;
+     }
+): Promise<void> {
      const { error } = await supabase
           .from("tblClient_Subscription")
           .upsert({
@@ -297,6 +336,8 @@ async function ensureSubscriptionRow(clientId: string, base: {
 
      if (error) throw error;
 }
+
+// Removed getDefaultBillingInformationId: tblBillingInformation is deprecated, billing info is now in PolarOrder
 
 // customer.updated payload often has email; use it to resolve your DB client
 async function resolveClientIdByEmail(email?: string | null): Promise<string | null> {
@@ -347,6 +388,7 @@ export const POST = Webhooks({
 
           const isCustomerEvent = t.startsWith("customer.");
           const isSubscriptionEvent = t.startsWith("subscription.");
+          const isOrderEvent = t.startsWith("order.");
 
           const polarCustomerId: string | null =
                data?.customer_id ?? data?.customerId ?? (isCustomerEvent ? data?.id : null) ?? null;
@@ -458,6 +500,89 @@ export const POST = Webhooks({
           }
 
           // -------------------------------------------------------------------------
+          // Order events -> translate Polar orders into tblInvoices rows
+          // -------------------------------------------------------------------------
+          if (isOrderEvent) {
+               const orderPayload = data as PolarOrder | undefined;
+
+               if (!orderPayload?.id) {
+                    await logServerAction({
+                         user_id: clientId,
+                         action: "Store Webhook - order.* missing order id",
+                         payload: { eventType, data },
+                         status: "fail",
+                         error: "Order payload did not include id",
+                         duration_ms: Date.now() - t0,
+                         type: "internal",
+                    });
+                    return;
+               }
+
+               if (!clientId) {
+                    await logServerAction({
+                         user_id: null,
+                         action: "Store Webhook - order.* missing clientId",
+                         payload: { eventType, orderId: orderPayload.id, meta },
+                         status: "fail",
+                         error: "Unable to resolve client for order",
+                         duration_ms: Date.now() - t0,
+                         type: "internal",
+                    });
+                    return;
+               }
+
+               try {
+                    await upsertInvoiceFromOrder({
+                         eventType: t,
+                         order: orderPayload,
+                         clientId,
+                         subscriptionPlanId: subscriptionPlanId ?? null,
+                    });
+
+                    try {
+                         await patchClientSubscription(clientId, { order_id: orderPayload.id });
+                    } catch (orderPatchError: any) {
+                         const patchErr = orderPatchError instanceof Error ? orderPatchError : new Error(orderPatchError?.message ?? "unknown error");
+                         await logServerAction({
+                              user_id: clientId,
+                              action: "Store Webhook - order.* order_id patch failed",
+                              payload: { orderId: orderPayload.id },
+                              status: "fail",
+                              error: patchErr.message,
+                              duration_ms: Date.now() - t0,
+                              type: "internal",
+                         });
+                    }
+
+                    revalidatePath("/profile");
+
+                    await logServerAction({
+                         user_id: clientId,
+                         action: `Store Webhook - Processed ${eventType}`,
+                         payload: { eventType, orderId: orderPayload.id, subscriptionPlanId },
+                         status: "success",
+                         error: "",
+                         duration_ms: Date.now() - t0,
+                         type: "internal",
+                    });
+               } catch (e: any) {
+                    const err = e instanceof Error ? e : new Error(e?.message ?? "unknown error");
+                    await logServerAction({
+                         user_id: clientId,
+                         action: `Store Webhook - ${eventType} invoice sync failed`,
+                         payload: { orderId: orderPayload.id, subscriptionPlanId },
+                         status: "fail",
+                         error: err.message,
+                         duration_ms: Date.now() - t0,
+                         type: "internal",
+                    });
+                    throw err;
+               }
+
+               return;
+          }
+
+          // -------------------------------------------------------------------------
           // Subscription lifecycle events (event-specific patches)
           // -------------------------------------------------------------------------
 
@@ -500,8 +625,8 @@ export const POST = Webhooks({
                     }
 
                     await ensureSubscriptionRow(clientId!, {
-                         subscription_id: subscriptionPlanId,
-                         polar_subscription_id: polarSubscriptionId,
+                         subscription_id: subscriptionPlanId!,
+                         polar_subscription_id: polarSubscriptionId!,
                          status: normalizedStatus,
                     });
                     const apartmentsCount = await getApartmentCountForClient(clientId!);

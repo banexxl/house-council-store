@@ -15,11 +15,13 @@ export interface OrderUpdatedEvent extends OrderEventBase<"order.updated"> { }
 export interface OrderPaidEvent extends OrderEventBase<"order.paid"> { }
 export interface OrderRefundedEvent extends OrderEventBase<"order.refunded"> { }
 
+export type PolarOrderStatus = "pending" | "paid" | "refunded" | "partially_refunded";
+
 export interface PolarOrder {
      id: string;
      created_at: string;
      modified_at: string;
-     status: string;
+     status: PolarOrderStatus;
      paid: boolean;
      subtotal_amount: number;
      discount_amount: number;
