@@ -674,7 +674,7 @@ export const POST = Webhooks({
                               await supabase
                                    .from("tblClient_Subscription")
                                    .update({ subscription_id: resolvedSubscriptionId })
-                                   .eq("polar_subscription_id", polarSubscriptionId);
+                                   .eq("polar_subscription_id", data?.productId);
                          }
                     }
 
