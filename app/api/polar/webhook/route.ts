@@ -369,7 +369,7 @@ async function resolveClientIdByEmail(email?: string | null): Promise<string | n
 // ---------------------------------------------------------------------------
 
 export const POST = Webhooks({
-     webhookSecret: process.env.WEBHOOK_SECRET_SANDBOX!,
+     webhookSecret: process.env.POLAR_WEBHOOK_SECRET_SANDBOX!,
      onPayload: async (payload: any) => {
           const t0 = Date.now();
 
