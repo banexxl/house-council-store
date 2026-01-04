@@ -222,9 +222,9 @@ async function upsertInvoiceFromOrder({ eventType, order, clientId, subscription
      for (const [key, value] of Object.entries(order)) {
           record[toSnakeCase(key)] = value;
      }
-     record["client"] = clientId;
+     record["client_id"] = clientId;
      if (subscriptionPlanId) {
-          record["subscription_plan"] = subscriptionPlanId;
+          record["subscription_plan_id"] = subscriptionPlanId;
      }
      const { error, status, count } = await supabase
           .from("tblInvoices")
