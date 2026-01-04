@@ -232,10 +232,30 @@ async function upsertInvoiceFromOrder({ eventType, order, clientId, subscription
           return obj;
      }
 
+     // List of timestamp fields in snake_case and camelCase
+     const TIMESTAMP_FIELDS = [
+          'created_at', 'modified_at', 'refunded_at', 'updated_at',
+          'createdAt', 'modifiedAt', 'refundedAt', 'updatedAt',
+          'current_period_start', 'current_period_end', 'trial_start', 'trial_end',
+          'canceled_at', 'started_at', 'ends_at', 'ended_at',
+          'currentPeriodStart', 'currentPeriodEnd', 'trialStart', 'trialEnd',
+          'canceledAt', 'startedAt', 'endsAt', 'endedAt'
+     ];
+
      const cleanedOrder = deepOmitPlatformFeeCurrency(order);
      const record: Record<string, unknown> = {};
      for (const [key, value] of Object.entries(cleanedOrder)) {
-          record[toSnakeCase(key)] = value;
+          const snakeKey = toSnakeCase(key);
+          if (TIMESTAMP_FIELDS.includes(key) || TIMESTAMP_FIELDS.includes(snakeKey)) {
+               // Only allow valid ISO string or null for timestamps
+               if (typeof value === 'string' && value.length > 0) {
+                    record[snakeKey] = value;
+               } else {
+                    record[snakeKey] = null;
+               }
+          } else {
+               record[snakeKey] = value;
+          }
      }
      record["client_id"] = clientId;
      if (subscriptionPlanId) {
