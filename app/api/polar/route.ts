@@ -79,7 +79,7 @@ export async function POST(req: Request) {
 export async function DELETE(req: Request) {
      try {
           const { subscriptionId, polarCustomerId } = await req.json();
-          log(`Subscription id: ${subscriptionId}, polar customer id: ${polarCustomerId}`, 'info');
+          console.log(`Subscription id: ${subscriptionId}, polar customer id: ${polarCustomerId}`, 'info');
 
           if (!subscriptionId || !polarCustomerId) {
                return NextResponse.json({ error: "Missing subscriptionId or clientId" }, { status: 400 });
@@ -91,7 +91,7 @@ export async function DELETE(req: Request) {
                     id: subscriptionId,
                });
           } catch (error) {
-               log(`Failed to cancel subscription ${error}`, 'error');
+               console.log(`Failed to cancel subscription ${error}`, 'error');
                await logServerAction({
                     user_id: null,
                     action: 'Cancel subscription - error',
