@@ -19,9 +19,7 @@ const supabase = createClient(
 // Types
 // ---------------------------------------------------------------------------
 
-type RenewalPeriod = "monthly" | "annually";
-
-type SubscriptionRecordPatch = PolarSubscription & { subscription_id: string };
+type SubscriptionRecordPatch = PolarSubscription;
 
 const SUBSCRIPTION_STATUS_VALUES: PolarSubscriptionStatus[] = [
      "incomplete",
@@ -87,7 +85,6 @@ const stringifyOrEmptyObject = (value: unknown): string => {
 
 interface BuildSubscriptionSnapshotArgs {
      clientId: string;
-     subscriptionPlanId: string;
      apartmentsCount: number;
      data: any;
      statusOverride?: PolarSubscriptionStatus;
@@ -95,7 +92,6 @@ interface BuildSubscriptionSnapshotArgs {
 
 function buildSubscriptionSnapshot({
      clientId,
-     subscriptionPlanId,
      apartmentsCount,
      data,
      statusOverride,
@@ -103,14 +99,17 @@ function buildSubscriptionSnapshot({
      const metadata = isRecord(data?.metadata) ? data.metadata : {};
      const customFieldData = isRecord(data?.custom_field_data) ? data.custom_field_data : {};
      const status = normalizeSubscriptionStatus(statusOverride ?? data?.status);
+     const subscriptionId = ensureString(data?.id ?? data?.subscription_id ?? data?.subscriptionId ?? "");
+     const serializeArray = (items: unknown[]): string[] =>
+          items.map((item) => (typeof item === "string" ? item : stringifyOrEmptyObject(item)));
 
      return {
-          id: ensureString(data?.id ?? data?.polar_subscription_id ?? ""),
+          id: subscriptionId,
           client_id: clientId,
-          subscription_id: ensureString(data?.id ?? ""),
-          polar_subscription_id: ensureString(data?.id ?? ""),
+          subscription_id: subscriptionId,
+          polar_subscription_id: subscriptionId,
           created_at: ensureDateString(data?.created_at),
-          modified_at: ensureDateString(data?.modified_at ?? data?.updated_at),
+          updated_at: ensureDateString(data?.updated_at ?? data?.modified_at ?? data?.created_at),
           apartment_count: typeof apartmentsCount === "number" ? Math.max(1, apartmentsCount) : 1,
           metadata,
           amount: typeof data?.amount === "number" ? data.amount : 0,
@@ -133,12 +132,8 @@ function buildSubscriptionSnapshot({
           checkout_id: ensureNullableString(data?.checkout_id),
           customer_cancellation_reason: ensureNullableString(data?.customer_cancellation_reason),
           customer_cancellation_comment: ensureNullableString(data?.customer_cancellation_comment),
-          prices: Array.isArray(data?.prices)
-               ? data.prices.map((price: unknown) => stringifyOrEmptyObject(price))
-               : [],
-          meters: Array.isArray(data?.meters)
-               ? data.meters.map((meter: unknown) => stringifyOrEmptyObject(meter))
-               : [],
+          prices: Array.isArray(data?.prices) ? serializeArray(data.prices) : [],
+          meters: Array.isArray(data?.meters) ? serializeArray(data.meters) : [],
           seats: typeof data?.seats === "number" ? data.seats : 0,
           custom_field_data: customFieldData,
      };
@@ -150,12 +145,6 @@ function buildSubscriptionSnapshot({
 
 function nowIso() {
      return new Date().toISOString();
-}
-
-function normalizeRenewalPeriod(value: any): RenewalPeriod | null {
-     if (value === "monthly" || value === "annually") return value;
-     if (value === "annual" || value === "yearly") return "annually";
-     return null;
 }
 
 function mapPolarToLocalStatus(eventType: string, data: any): string {
@@ -192,10 +181,6 @@ function extractMeta(payloadData: any) {
      const meta = payloadData?.metadata ?? payloadData?.data?.metadata ?? {};
      return {
           clientId: meta?.clientId ?? meta?.client_id ?? null,
-          subscriptionPlanId: meta?.subscriptionPlanId ?? meta?.subscription_id ?? null,
-          renewalPeriod: normalizeRenewalPeriod(
-               meta?.renewal_period ?? meta?.billingCycle ?? meta?.billing_cycle
-          ),
      };
 }
 
@@ -214,56 +199,18 @@ function extractCurrentPeriodStart(data: any): string | null {
 }
 
 /**
- * Strategy B meter expects metadata.apartments_count (per your meter config screenshot).
- * IMPORTANT: The key must match exactly: apartments_count
- */
-async function ingestApartmentSnapshot(args: {
-     polarCustomerId: string;
-     clientId: string;
-     apartmentsCount: number;
-     timestampIso: string;
-}) {
-     const { polarCustomerId, clientId, apartmentsCount, timestampIso } = args;
-
-     await polar.events.ingest({
-          events: [
-               {
-                    name: "apartments_snapshot",
-                    customerId: polarCustomerId,
-                    timestamp: new Date(timestampIso),
-                    metadata: {
-                         client_id: clientId,
-                         apartments_count: apartmentsCount, // ✅ must match meter property
-                    },
-               },
-          ],
-     });
-}
-
-/** Next billing date / period end commonly present on subscription objects. */
-function extractNextPaymentDate(data: any): string | null {
-     return (
-          data?.current_period_end ??
-          data?.current_period_end_at ??
-          data?.next_billing_at ??
-          data?.next_payment_date ??
-          null
-     );
-}
-
-/**
  * If an event arrives without metadata, try to locate client/plan
  * by looking up saved Polar ids.
  */
-async function resolveClientAndPlanFromPolarIds(ids: {
+async function resolveClientFromPolarIds(ids: {
      polarSubscriptionId?: string | null;
      polarCustomerId?: string | null;
      polarOrderId?: string | null;
-}): Promise<{ client_id: string; subscription_id: string } | null> {
+}): Promise<{ client_id: string } | null> {
 
      await logServerAction({
           user_id: null,
-          action: "Store Webhook - Resolving client and plan from Polar IDs",
+          action: "Store Webhook - Resolving client from Polar IDs",
           payload: { ids },
           status: "success",
           error: "",
@@ -274,31 +221,31 @@ async function resolveClientAndPlanFromPolarIds(ids: {
      if (ids.polarSubscriptionId) {
           const { data } = await supabase
                .from("tblClient_Subscription")
-               .select("client_id, subscription_id")
+               .select("client_id")
                .eq("subscription_id", ids.polarSubscriptionId)
-               .maybeSingle<{ client_id: string; subscription_id: string }>();
+               .maybeSingle<{ client_id: string }>();
 
-          if (data?.client_id && data?.subscription_id) return data;
+          if (data?.client_id) return data;
      }
 
      if (ids.polarOrderId) {
           const { data } = await supabase
                .from("tblClient_Subscription")
-               .select("client_id, subscription_id")
+               .select("client_id")
                .eq("order_id", ids.polarOrderId)
-               .maybeSingle<{ client_id: string; subscription_id: string }>();
+               .maybeSingle<{ client_id: string }>();
 
-          if (data?.client_id && data?.subscription_id) return data;
+          if (data?.client_id) return data;
      }
 
      if (ids.polarCustomerId) {
           const { data } = await supabase
                .from("tblClient_Subscription")
-               .select("client_id, subscription_id")
+               .select("client_id")
                .eq("customer_id", ids.polarCustomerId)
-               .maybeSingle<{ client_id: string; subscription_id: string }>();
+               .maybeSingle<{ client_id: string }>();
 
-          if (data?.client_id && data?.subscription_id) return data;
+          if (data?.client_id) return data;
      }
 
      return null;
@@ -330,7 +277,6 @@ async function patchClientSubscription(clientId: string, patch: ClientSubscripti
 
 async function ensureSubscriptionRow(clientId: string, base: {
      subscription_id: string;
-     renewal_period: "monthly" | "annually";
      status: string;
 }) {
      const { error } = await supabase
@@ -338,13 +284,9 @@ async function ensureSubscriptionRow(clientId: string, base: {
           .upsert({
                client_id: clientId,
                subscription_id: base.subscription_id,
-               renewal_period: base.renewal_period,
                status: base.status,
                created_at: nowIso(),
                updated_at: nowIso(),
-               is_auto_renew: true,
-               expired: false,
-               apartment_count: 1, // satisfy check constraint
           }, { onConflict: "client_id" });
 
      if (error) throw error;
@@ -380,7 +322,6 @@ export const POST = Webhooks({
           const meta = extractMeta(data);
           const status = mapPolarToLocalStatus(eventType, data);
           const normalizedStatus = normalizeSubscriptionStatus(data?.status ?? status);
-          const nextPaymentDate = extractNextPaymentDate(data);
           const currentPeriodStart = extractCurrentPeriodStart(data);
 
           await logServerAction({
@@ -394,15 +335,14 @@ export const POST = Webhooks({
           });
 
           // -------------------------------------------------------------------------
-          // Resolve clientId + subscriptionPlanId for events that need them
+          // Resolve clientId for events that need it
           // -------------------------------------------------------------------------
           let clientId = meta.clientId;
-          let subscriptionPlanId = meta.subscriptionPlanId;
-          const renewalPeriod: RenewalPeriod = meta.renewalPeriod ?? "monthly";
 
           const polarCustomerId: string | null =
                data?.customer_id ?? data?.customerId ?? (t.startsWith("customer.") ? data?.id : null) ?? null;
-          const polarSubscriptionId: string | null = data?.subscription_id ?? data?.subscriptionId ?? null;
+          const polarSubscriptionId: string | null =
+               data?.subscription_id ?? data?.subscriptionId ?? data?.id ?? null;
           const polarOrderId: string | null = data?.order_id ?? data?.orderId ?? null;
           const polarProductId: string | null = data?.product_id ?? data?.productId ?? null;
 
@@ -411,8 +351,8 @@ export const POST = Webhooks({
 
           if (!isCustomerUpdated) {
                // For subscription events, try resolve if meta is missing
-               if (!clientId || !subscriptionPlanId) {
-                    const resolved = await resolveClientAndPlanFromPolarIds({
+               if (!clientId) {
+                    const resolved = await resolveClientFromPolarIds({
                          polarSubscriptionId,
                          polarCustomerId,
                          polarOrderId,
@@ -432,17 +372,16 @@ export const POST = Webhooks({
                     }
 
                     clientId = resolved.client_id;
-                    subscriptionPlanId = resolved.subscription_id;
                }
 
                // by here we need these for subscription table
-               if (!clientId || !subscriptionPlanId) {
+               if (!clientId) {
                     await logServerAction({
                          user_id: null,
-                         action: "Store Webhook - Cannot process event (still missing clientId/subscriptionPlanId)",
+                         action: "Store Webhook - Cannot process event (still missing clientId)",
                          payload: { eventType, meta },
                          status: "fail",
-                         error: "clientId/subscriptionPlanId missing",
+                         error: "clientId missing",
                          duration_ms: Date.now() - t0,
                          type: "internal",
                     });
@@ -532,15 +471,26 @@ export const POST = Webhooks({
 
           try {
                if (shouldEnsureRow) {
+                    if (!polarSubscriptionId) {
+                         await logServerAction({
+                              user_id: null,
+                              action: "Store Webhook - Missing polar subscription id",
+                              payload: { eventType },
+                              status: "fail",
+                              error: "No subscription id in payload",
+                              duration_ms: Date.now() - t0,
+                              type: "internal",
+                         });
+                         return;
+                    }
+
                     await ensureSubscriptionRow(clientId!, {
-                         subscription_id: subscriptionPlanId!,
-                         renewal_period: renewalPeriod,
+                         subscription_id: polarSubscriptionId,
                          status: normalizedStatus,
                     });
                     const apartmentsCount = await getApartmentCountForClient(clientId!);
                     const subscriptionSnapshot = buildSubscriptionSnapshot({
                          clientId: clientId!,
-                         subscriptionPlanId: subscriptionPlanId!,
                          apartmentsCount,
                          data,
                          statusOverride: normalizedStatus,
@@ -548,8 +498,6 @@ export const POST = Webhooks({
 
                     const buildPatch = (overrides: Record<string, unknown> = {}) => ({
                          ...subscriptionSnapshot,
-                         renewal_period: renewalPeriod,
-                         next_payment_date: nextPaymentDate ?? null,
                          ...overrides,
                     });
 
@@ -650,12 +598,10 @@ export const POST = Webhooks({
                     payload: {
                          eventType,
                          clientId,
-                         subscriptionPlanId,
                          polarCustomerId,
                          polarSubscriptionId,
                          polarOrderId,
                          polarProductId,
-                         nextPaymentDate,
                          currentPeriodStart,
                     },
                     status: "fail",
