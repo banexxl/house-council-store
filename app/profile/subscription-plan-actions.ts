@@ -238,9 +238,6 @@ export const readClientSubscriptionPlanFromClientId = async (clientId: string): 
   `)
           .eq("client_id", clientId)
           .single();
-     console.log('data', clientSubscriptionPlanData);
-     console.log('error', clientSubscriptionDataError);
-
 
      if (clientSubscriptionDataError) {
           await logServerAction({
