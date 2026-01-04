@@ -35,11 +35,11 @@ const getSubscription = async (supabase: any, clientId: string, planId: string) 
                next_payment_date, 
                expired, 
                renewal_period,
-               subscription_plan_id,
+               subscription_id,
                tblSubscriptionPlans!inner(total_price_per_apartment_with_discounts)
           `)
           .eq('client_id', clientId)
-          .eq('subscription_plan_id', planId)
+          .eq('subscription_id', planId)
           .maybeSingle();
 
      if (error) throw new Error(error.message);
@@ -52,7 +52,7 @@ const getSubscription = async (supabase: any, clientId: string, planId: string) 
           next_payment_date: string | null;
           expired: boolean;
           renewal_period: RenewalPeriod | null;
-          subscription_plan_id: string;
+          subscription_id: string;
           tblSubscriptionPlans: {
                total_price_per_apartment_with_discounts: number;
           };
@@ -179,7 +179,7 @@ export const makePaymentAction = async (
                     status: 'active',
                     expired: false,
                })
-               .eq('id', sub.id); // or .eq('subscription_plan_id', payment.subscription_plan)
+               .eq('id', sub.id); // or .eq('subscription_id', payment.subscription_plan)
 
           if (updateErr) throw new Error(updateErr.message);
 

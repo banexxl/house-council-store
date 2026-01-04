@@ -37,6 +37,7 @@ export interface PolarSubscription {
      polar_subscription_id: string;
      created_at: string;
      modified_at: string;
+     apartment_count: number;
      metadata: Record<string, unknown>;
      amount: number;
      currency: string;
@@ -58,9 +59,6 @@ export interface PolarSubscription {
      checkout_id: string | null;
      customer_cancellation_reason: string | null;
      customer_cancellation_comment: string | null;
-     discount: string | null;
-     customer: string;
-     product: string;
      prices: string[];
      meters: string[];
      seats: number;

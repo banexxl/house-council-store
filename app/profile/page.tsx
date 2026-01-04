@@ -7,9 +7,8 @@ import { readAccountByEmailAction, readAllApartmentsByClientId, readClientRecent
 import { User } from "@supabase/supabase-js";
 import { clientInitialValues } from "../types/client";
 import { readClientSubscriptionPlanFromClientId, readSubscriptionPlanFeatures } from "./subscription-plan-actions";
-import { readAllClientsBillingInformation } from "./client-billing-information-actions";
 import { redirect } from "next/navigation";
-import { readAllClientPaymentsAction, readAllCurrenciesAction, readAllPaymentMethodsAction } from "./client-payment-actions";
+import { readAllCurrenciesAction } from "./client-payment-actions";
 import { useServerSideSupabaseServiceRoleClient } from "../lib/ss-supabase-service-role-client";
 import { buildCanonicalUrl } from "../lib/seo";
 

@@ -2,6 +2,7 @@
 import { polar } from "@/app/lib/polar";
 import { logServerAction } from "@/app/lib/server-logging";
 import { getApartmentCountForClient } from "@/app/profile/subscription-plan-actions";
+import { PolarSubscription, PolarSubscriptionStatus } from "@/app/types/polar-subscription-types";
 import { Webhooks } from "@polar-sh/nextjs";
 import { createClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
@@ -19,6 +20,129 @@ const supabase = createClient(
 // ---------------------------------------------------------------------------
 
 type RenewalPeriod = "monthly" | "annually";
+
+type SubscriptionRecordPatch = PolarSubscription & { subscription_id: string };
+
+const SUBSCRIPTION_STATUS_VALUES: PolarSubscriptionStatus[] = [
+     "incomplete",
+     "incomplete_expired",
+     "trialing",
+     "active",
+     "past_due",
+     "canceled",
+     "unpaid",
+];
+
+const SUBSCRIPTION_STATUS_SET = new Set(SUBSCRIPTION_STATUS_VALUES);
+const SUBSCRIPTION_INTERVAL_VALUES: PolarSubscription["recurring_interval"][] = ["day", "week", "month", "year"];
+const SUBSCRIPTION_INTERVAL_SET = new Set(SUBSCRIPTION_INTERVAL_VALUES);
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+     typeof value === "object" && value !== null && !Array.isArray(value);
+
+const ensureString = (value: unknown, fallback = ""): string =>
+     typeof value === "string" && value.length > 0 ? value : fallback;
+
+const ensureNullableString = (value: unknown): string | null =>
+     typeof value === "string" && value.length > 0 ? value : null;
+
+const ensureDateString = (value: unknown): string =>
+     typeof value === "string" && value.length > 0 ? value : nowIso();
+
+const normalizeSubscriptionStatus = (value: unknown): PolarSubscriptionStatus => {
+     if (typeof value === "string") {
+          const lowered = value.toLowerCase() as PolarSubscriptionStatus;
+          if (SUBSCRIPTION_STATUS_SET.has(lowered)) {
+               return lowered;
+          }
+     }
+     return "incomplete";
+};
+
+const normalizeInterval = (value: unknown): PolarSubscription["recurring_interval"] => {
+     if (typeof value === "string") {
+          const lowered = value.toLowerCase() as PolarSubscription["recurring_interval"];
+          if (SUBSCRIPTION_INTERVAL_SET.has(lowered)) {
+               return lowered;
+          }
+     }
+     return "month";
+};
+
+const stringifyOrNull = (value: unknown): string | null => {
+     try {
+          return value === undefined || value === null ? null : JSON.stringify(value);
+     } catch {
+          return null;
+     }
+};
+
+const stringifyOrEmptyObject = (value: unknown): string => {
+     try {
+          return JSON.stringify(value ?? {});
+     } catch {
+          return "{}";
+     }
+};
+
+interface BuildSubscriptionSnapshotArgs {
+     clientId: string;
+     subscriptionPlanId: string;
+     apartmentsCount: number;
+     data: any;
+     statusOverride?: PolarSubscriptionStatus;
+}
+
+function buildSubscriptionSnapshot({
+     clientId,
+     subscriptionPlanId,
+     apartmentsCount,
+     data,
+     statusOverride,
+}: BuildSubscriptionSnapshotArgs): SubscriptionRecordPatch {
+     const metadata = isRecord(data?.metadata) ? data.metadata : {};
+     const customFieldData = isRecord(data?.custom_field_data) ? data.custom_field_data : {};
+     const status = normalizeSubscriptionStatus(statusOverride ?? data?.status);
+
+     return {
+          id: ensureString(data?.id ?? data?.polar_subscription_id ?? ""),
+          client_id: clientId,
+          subscription_id: ensureString(data?.id ?? ""),
+          polar_subscription_id: ensureString(data?.id ?? ""),
+          created_at: ensureDateString(data?.created_at),
+          modified_at: ensureDateString(data?.modified_at ?? data?.updated_at),
+          apartment_count: typeof apartmentsCount === "number" ? Math.max(1, apartmentsCount) : 1,
+          metadata,
+          amount: typeof data?.amount === "number" ? data.amount : 0,
+          currency: ensureString(data?.currency ?? "usd"),
+          recurring_interval: normalizeInterval(data?.recurring_interval),
+          recurring_interval_count: typeof data?.recurring_interval_count === "number" ? data.recurring_interval_count : 1,
+          status,
+          current_period_start: ensureDateString(data?.current_period_start),
+          current_period_end: ensureDateString(data?.current_period_end),
+          trial_start: ensureNullableString(data?.trial_start),
+          trial_end: ensureNullableString(data?.trial_end),
+          cancel_at_period_end: Boolean(data?.cancel_at_period_end),
+          canceled_at: ensureNullableString(data?.canceled_at),
+          started_at: ensureDateString(data?.started_at),
+          ends_at: ensureNullableString(data?.ends_at),
+          ended_at: ensureNullableString(data?.ended_at),
+          customer_id: ensureString(data?.customer_id ?? ""),
+          product_id: ensureString(data?.product_id ?? ""),
+          discount_id: ensureNullableString(data?.discount_id),
+          checkout_id: ensureNullableString(data?.checkout_id),
+          customer_cancellation_reason: ensureNullableString(data?.customer_cancellation_reason),
+          customer_cancellation_comment: ensureNullableString(data?.customer_cancellation_comment),
+          prices: Array.isArray(data?.prices)
+               ? data.prices.map((price: unknown) => stringifyOrEmptyObject(price))
+               : [],
+          meters: Array.isArray(data?.meters)
+               ? data.meters.map((meter: unknown) => stringifyOrEmptyObject(meter))
+               : [],
+          seats: typeof data?.seats === "number" ? data.seats : 0,
+          custom_field_data: customFieldData,
+     };
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -68,7 +192,7 @@ function extractMeta(payloadData: any) {
      const meta = payloadData?.metadata ?? payloadData?.data?.metadata ?? {};
      return {
           clientId: meta?.clientId ?? meta?.client_id ?? null,
-          subscriptionPlanId: meta?.subscriptionPlanId ?? meta?.subscription_plan_id ?? null,
+          subscriptionPlanId: meta?.subscriptionPlanId ?? meta?.subscription_id ?? null,
           renewalPeriod: normalizeRenewalPeriod(
                meta?.renewal_period ?? meta?.billingCycle ?? meta?.billing_cycle
           ),
@@ -135,7 +259,7 @@ async function resolveClientAndPlanFromPolarIds(ids: {
      polarSubscriptionId?: string | null;
      polarCustomerId?: string | null;
      polarOrderId?: string | null;
-}): Promise<{ client_id: string; subscription_plan_id: string } | null> {
+}): Promise<{ client_id: string; subscription_id: string } | null> {
 
      await logServerAction({
           user_id: null,
@@ -150,59 +274,45 @@ async function resolveClientAndPlanFromPolarIds(ids: {
      if (ids.polarSubscriptionId) {
           const { data } = await supabase
                .from("tblClient_Subscription")
-               .select("client_id, subscription_plan_id")
-               .eq("polar_subscription_id", ids.polarSubscriptionId)
-               .maybeSingle<{ client_id: string; subscription_plan_id: string }>();
+               .select("client_id, subscription_id")
+               .eq("subscription_id", ids.polarSubscriptionId)
+               .maybeSingle<{ client_id: string; subscription_id: string }>();
 
-          if (data?.client_id && data?.subscription_plan_id) return data;
+          if (data?.client_id && data?.subscription_id) return data;
      }
 
      if (ids.polarOrderId) {
           const { data } = await supabase
                .from("tblClient_Subscription")
-               .select("client_id, subscription_plan_id")
-               .eq("polar_order_id", ids.polarOrderId)
-               .maybeSingle<{ client_id: string; subscription_plan_id: string }>();
+               .select("client_id, subscription_id")
+               .eq("order_id", ids.polarOrderId)
+               .maybeSingle<{ client_id: string; subscription_id: string }>();
 
-          if (data?.client_id && data?.subscription_plan_id) return data;
+          if (data?.client_id && data?.subscription_id) return data;
      }
 
      if (ids.polarCustomerId) {
           const { data } = await supabase
                .from("tblClient_Subscription")
-               .select("client_id, subscription_plan_id")
-               .eq("polar_customer_id", ids.polarCustomerId)
-               .maybeSingle<{ client_id: string; subscription_plan_id: string }>();
+               .select("client_id, subscription_id")
+               .eq("customer_id", ids.polarCustomerId)
+               .maybeSingle<{ client_id: string; subscription_id: string }>();
 
-          if (data?.client_id && data?.subscription_plan_id) return data;
+          if (data?.client_id && data?.subscription_id) return data;
      }
 
      return null;
 }
 
-type SubscriptionPatch = Partial<{
-     subscription_plan_id: string;
-     status: string;
-     renewal_period: "monthly" | "annually";
-     is_auto_renew: boolean;
-     expired: boolean;
-     next_payment_date: string | null;
+type ClientSubscriptionPatch = Partial<PolarSubscription> & Record<string, unknown>;
 
-     polar_customer_id: string | null;
-     polar_subscription_id: string | null;
-     polar_order_id: string | null;
-     polar_product_id: string | null;
-
-     apartment_count: number; // keep >= 1
-}>;
-
-async function patchClientSubscription(clientId: string, patch: SubscriptionPatch): Promise<{ success: boolean, error?: string }> {
-     const update: Record<string, any> = { ...patch, updated_at: nowIso() };
+async function patchClientSubscription(clientId: string, patch: ClientSubscriptionPatch): Promise<{ success: boolean, error?: string }> {
+     const update: Record<string, unknown> = { updated_at: nowIso() };
 
      for (const [k, v] of Object.entries(patch)) {
-          if (v !== undefined) update[k] = v; // ✅ only defined keys
+          if (v !== undefined) update[k] = v;
      }
-     console.log('Trying to patch client subscription with update: ', update);
+     console.log('Trying to patch client subscription', { clientId, update });
 
      // ✅ For updates: just update existing row
      const { error } = await supabase
@@ -219,7 +329,7 @@ async function patchClientSubscription(clientId: string, patch: SubscriptionPatc
 }
 
 async function ensureSubscriptionRow(clientId: string, base: {
-     subscription_plan_id: string;
+     subscription_id: string;
      renewal_period: "monthly" | "annually";
      status: string;
 }) {
@@ -227,7 +337,7 @@ async function ensureSubscriptionRow(clientId: string, base: {
           .from("tblClient_Subscription")
           .upsert({
                client_id: clientId,
-               subscription_plan_id: base.subscription_plan_id,
+               subscription_id: base.subscription_id,
                renewal_period: base.renewal_period,
                status: base.status,
                created_at: nowIso(),
@@ -259,7 +369,7 @@ async function resolveClientIdByEmail(email?: string | null): Promise<string | n
 // ---------------------------------------------------------------------------
 
 export const POST = Webhooks({
-     webhookSecret: process.env.POLAR_WEBHOOK_SECRET_SANDBOX!,
+     webhookSecret: process.env.WEBHOOK_SECRET_SANDBOX!,
      onPayload: async (payload: any) => {
           const t0 = Date.now();
 
@@ -269,6 +379,7 @@ export const POST = Webhooks({
 
           const meta = extractMeta(data);
           const status = mapPolarToLocalStatus(eventType, data);
+          const normalizedStatus = normalizeSubscriptionStatus(data?.status ?? status);
           const nextPaymentDate = extractNextPaymentDate(data);
           const currentPeriodStart = extractCurrentPeriodStart(data);
 
@@ -321,7 +432,7 @@ export const POST = Webhooks({
                     }
 
                     clientId = resolved.client_id;
-                    subscriptionPlanId = resolved.subscription_plan_id;
+                    subscriptionPlanId = resolved.subscription_id;
                }
 
                // by here we need these for subscription table
@@ -340,7 +451,7 @@ export const POST = Webhooks({
           }
 
           // -------------------------------------------------------------------------
-          // Event: CUSTOMER UPDATED (patch only polar_customer_id)
+          // Event: CUSTOMER UPDATED (patch only customer_id)
           // -------------------------------------------------------------------------
           if (isCustomerUpdated) {
                const email = data?.email as string | undefined;
@@ -360,9 +471,10 @@ export const POST = Webhooks({
                }
 
                try {
-                    // Only patch polar_customer_id. Do NOT touch apartment_count, status, etc.
+                    // Only patch customer_id. Do NOT touch apartment_count, status, etc.
                     const updated = await patchClientSubscription(resolvedClientId, {
-                         polar_customer_id: polarCustomerId,
+                         customer_id: polarCustomerId!,
+                         customer: stringifyOrEmptyObject(data),
                     });
 
                     if (!updated.success) {
@@ -383,7 +495,7 @@ export const POST = Webhooks({
 
                     await logServerAction({
                          user_id: null,
-                         action: "Store Webhook - customer.updated patched polar_customer_id",
+                         action: "Store Webhook - customer.updated patched customer_id",
                          payload: { resolvedClientId, polarCustomerId },
                          status: "success",
                          error: "",
@@ -421,127 +533,109 @@ export const POST = Webhooks({
           try {
                if (shouldEnsureRow) {
                     await ensureSubscriptionRow(clientId!, {
-                         subscription_plan_id: subscriptionPlanId!,
+                         subscription_id: subscriptionPlanId!,
                          renewal_period: renewalPeriod,
-                         status,
+                         status: normalizedStatus,
                     });
-               }
+                    const apartmentsCount = await getApartmentCountForClient(clientId!);
+                    const subscriptionSnapshot = buildSubscriptionSnapshot({
+                         clientId: clientId!,
+                         subscriptionPlanId: subscriptionPlanId!,
+                         apartmentsCount,
+                         data,
+                         statusOverride: normalizedStatus,
+                    });
 
-               // Compute apartment_count only on subscription events (and always keep >= 1)
-               const apartmentsCount = await getApartmentCountForClient(clientId!);
-
-               // subscription.active
-               if (t.includes("subscription.active")) {
-                    await patchClientSubscription(clientId!, {
-                         status: payload.data?.status,
+                    const buildPatch = (overrides: Record<string, unknown> = {}) => ({
+                         ...subscriptionSnapshot,
                          renewal_period: renewalPeriod,
-                         is_auto_renew: true,
-                         expired: false,
                          next_payment_date: nextPaymentDate ?? null,
-                         apartment_count: apartmentsCount,
+                         ...overrides,
                     });
 
-                    revalidatePath("/profile");
-                    return;
-               }
+                    // subscription.active
+                    if (t.includes("subscription.active")) {
+                         await patchClientSubscription(clientId!, buildPatch({
+                              is_auto_renew: true,
+                              expired: false,
+                         }));
 
-               // subscription.canceled (cancel at period end / canceled)
-               if (t.includes("subscription.canceled")) {
-                    await patchClientSubscription(clientId!, {
-                         status: payload.data?.status,
-                         renewal_period: renewalPeriod,
-                         is_auto_renew: false,
-                         expired: false,
-                         next_payment_date: nextPaymentDate ?? null,
-                         apartment_count: apartmentsCount,
-                    });
+                         revalidatePath("/profile");
+                         return;
+                    }
 
-                    revalidatePath("/profile");
-                    return;
-               }
+                    // subscription.canceled (cancel at period end / canceled)
+                    if (t.includes("subscription.canceled")) {
+                         await patchClientSubscription(clientId!, buildPatch({
+                              is_auto_renew: false,
+                              expired: false,
+                         }));
 
-               // subscription.uncanceled
-               if (t.includes("subscription.uncanceled")) {
-                    await patchClientSubscription(clientId!, {
-                         status: payload.data?.status,
-                         renewal_period: renewalPeriod,
-                         is_auto_renew: true,
-                         expired: false,
-                         next_payment_date: nextPaymentDate ?? null,
-                         apartment_count: apartmentsCount,
-                    });
+                         revalidatePath("/profile");
+                         return;
+                    }
 
-                    revalidatePath("/profile");
-                    return;
-               }
+                    // subscription.uncanceled
+                    if (t.includes("subscription.uncanceled")) {
+                         await patchClientSubscription(clientId!, buildPatch({
+                              is_auto_renew: true,
+                              expired: false,
+                         }));
 
-               // subscription.revoked (immediate)
-               if (t.includes("subscription.revoked")) {
-                    await patchClientSubscription(clientId!, {
-                         status: payload.data?.status,
-                         renewal_period: renewalPeriod,
-                         is_auto_renew: false,
-                         expired: true,
-                         next_payment_date: nextPaymentDate ?? null,
-                         apartment_count: apartmentsCount,
-                    });
+                         revalidatePath("/profile");
+                         return;
+                    }
 
-                    revalidatePath("/profile");
-                    return;
-               }
+                    // subscription.revoked (immediate)
+                    if (t.includes("subscription.revoked")) {
+                         await patchClientSubscription(clientId!, buildPatch({
+                              is_auto_renew: false,
+                              expired: true,
+                         }));
 
-               // subscription.past_due
-               if (t.includes("subscription.past_due")) {
-                    await patchClientSubscription(clientId!, {
-                         status: payload.data?.status,
-                         renewal_period: renewalPeriod,
-                         is_auto_renew: true,
-                         expired: false,
-                         next_payment_date: nextPaymentDate ?? null,
-                         apartment_count: apartmentsCount,
-                    });
+                         revalidatePath("/profile");
+                         return;
+                    }
 
-                    revalidatePath("/profile");
-                    return;
-               }
+                    // subscription.past_due
+                    if (t.includes("subscription.past_due")) {
+                         await patchClientSubscription(clientId!, buildPatch({
+                              is_auto_renew: true,
+                              expired: false,
+                         }));
 
-               // subscription.created
-               if (t.includes("subscription.created")) {
-                    await patchClientSubscription(clientId!, {
-                         status: payload.data?.status,
-                         renewal_period: renewalPeriod,
-                         is_auto_renew: true,
-                         expired: false,
-                         next_payment_date: nextPaymentDate ?? null,
-                         apartment_count: apartmentsCount,
-                         polar_subscription_id: data?.id,
-                    });
+                         revalidatePath("/profile");
+                         return;
+                    }
 
-                    revalidatePath("/profile");
-                    return;
-               }
+                    // subscription.created
+                    if (t.includes("subscription.created")) {
+                         await patchClientSubscription(clientId!, buildPatch({
+                              is_auto_renew: true,
+                              expired: false,
+                         }));
 
-               // subscription.updated
-               if (t.includes("subscription.updated")) {
-                    await patchClientSubscription(clientId!, {
-                         status: payload.data?.status,
-                         renewal_period: renewalPeriod,
-                         is_auto_renew: true,
-                         expired: false,
-                         next_payment_date: nextPaymentDate ?? null,
-                         apartment_count: apartmentsCount,
-                         polar_subscription_id: data.id,
-                    });
+                         revalidatePath("/profile");
+                         return;
+                    }
 
-                    revalidatePath("/profile");
-                    return;
+                    // subscription.updated
+                    if (t.includes("subscription.updated")) {
+                         await patchClientSubscription(clientId!, buildPatch({
+                              is_auto_renew: true,
+                              expired: false,
+                         }));
+
+                         revalidatePath("/profile");
+                         return;
+                    }
                }
 
                // If we reach here, ignore
                await logServerAction({
                     user_id: null,
                     action: "Store Webhook - Ignored event",
-                    payload: { eventType, status, currentPeriodStart },
+                    payload: { eventType, status: normalizedStatus, currentPeriodStart },
                     status: "success",
                     error: "",
                     duration_ms: Date.now() - t0,

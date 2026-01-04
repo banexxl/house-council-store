@@ -234,10 +234,13 @@ export const readClientSubscriptionPlanFromClientId = async (clientId: string): 
           .from("tblClient_Subscription")
           .select(`
     *,
-    subscription_plan:subscription_plan_id (*)
+    subscription_plan:subscription_id (*)
   `)
           .eq("client_id", clientId)
           .single();
+     console.log('data', clientSubscriptionPlanData);
+     console.log('error', clientSubscriptionDataError);
+
 
      if (clientSubscriptionDataError) {
           await logServerAction({

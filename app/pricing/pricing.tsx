@@ -108,7 +108,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
 
           try {
                const successUrl =
-                    `https://nest-link.app/pricing/subscription-plan-purchase/success?client_id=${client.id}&subscription_plan_id=${plan.id}&renewal_period=${billingCycle}`;
+                    `https://nest-link.app/pricing/subscription-plan-purchase/success?client_id=${client.id}&subscription_id=${plan.id}&renewal_period=${billingCycle}`;
                const returnUrl =
                     `https://nest-link.app/pricing`;
 
