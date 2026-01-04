@@ -260,7 +260,7 @@ async function getSubscriptionPlanIdForClient(clientId: string): Promise<string 
 
 type ClientSubscriptionPatch = Partial<PolarSubscription>;
 
-async function patchClientSubscription(clientId: string, patch: ClientSubscriptionPatch): Promise<{ success: boolean, error?: string }> {
+async function patchClientSubscription(clientId: string, patch: ClientSubscriptionPatch): Promise<void> {
      const update: Record<string, unknown> = { updated_at: nowIso() };
 
      for (const [k, v] of Object.entries(patch)) {
@@ -268,18 +268,15 @@ async function patchClientSubscription(clientId: string, patch: ClientSubscripti
      }
      console.log('Trying to patch client subscription', { clientId, update });
 
-     // ✅ For updates: just update existing row
      const { error } = await supabase
           .from("tblClient_Subscription")
           .update(update)
           .eq("client_id", clientId);
 
-
      if (error) {
           console.log('Error patching client subscription: ', error);
-          return { success: false, error: error.message };
+          throw new Error(`Failed to patch subscription for client ${clientId}: ${error.message}`);
      }
-     return { success: true };
 }
 
 async function ensureSubscriptionRow(clientId: string, base: {
@@ -348,17 +345,19 @@ export const POST = Webhooks({
           let clientId = meta.clientId;
           let subscriptionPlanId = meta.subscriptionPlanId;
 
+          const isCustomerEvent = t.startsWith("customer.");
+          const isSubscriptionEvent = t.startsWith("subscription.");
+
           const polarCustomerId: string | null =
-               data?.customer_id ?? data?.customerId ?? (t.startsWith("customer.") ? data?.id : null) ?? null;
+               data?.customer_id ?? data?.customerId ?? (isCustomerEvent ? data?.id : null) ?? null;
           const polarSubscriptionId: string | null =
-               data?.subscription_id ?? data?.subscriptionId ?? data?.id ?? null;
+               data?.subscription_id ?? data?.subscriptionId ?? (isSubscriptionEvent ? data?.id ?? null : null);
           const polarOrderId: string | null = data?.order_id ?? data?.orderId ?? null;
           const polarProductId: string | null = data?.product_id ?? data?.productId ?? null;
 
-          // customer.updated often has no metadata; handle separately below
-          const isCustomerUpdated = t === "customer.updated" || (t.startsWith("customer.") && t.includes("updated"));
+          // customer.* events often have no metadata; handle separately below
 
-          if (!isCustomerUpdated) {
+          if (!isCustomerEvent) {
                // For subscription events, try resolve if meta is missing
                if (!clientId) {
                     const resolved = await resolveClientFromPolarIds({
@@ -406,9 +405,9 @@ export const POST = Webhooks({
           }
 
           // -------------------------------------------------------------------------
-          // Event: CUSTOMER UPDATED (patch only customer_id)
+          // Event: CUSTOMER.* (patch only customer_id)
           // -------------------------------------------------------------------------
-          if (isCustomerUpdated) {
+          if (isCustomerEvent) {
                const email = data?.email as string | undefined;
                const resolvedClientId = await resolveClientIdByEmail(email);
 
@@ -427,23 +426,9 @@ export const POST = Webhooks({
 
                try {
                     // Only patch customer_id. Do NOT touch apartment_count, status, etc.
-                    const updated = await patchClientSubscription(resolvedClientId, {
+                    await patchClientSubscription(resolvedClientId, {
                          customer_id: polarCustomerId!,
                     });
-
-                    if (!updated.success) {
-                         // subscription row might not exist yet; log and exit safely
-                         await logServerAction({
-                              user_id: null,
-                              action: "Store Webhook - customer.updated: subscription row missing (no update performed)",
-                              payload: { resolvedClientId, polarCustomerId },
-                              status: "fail",
-                              error: "tblClient_Subscription row not found for client_id",
-                              duration_ms: Date.now() - t0,
-                              type: "internal",
-                         });
-                         return;
-                    }
 
                     revalidatePath("/profile");
 
@@ -457,15 +442,17 @@ export const POST = Webhooks({
                          type: "internal",
                     });
                } catch (e: any) {
+                    const err = e instanceof Error ? e : new Error(e?.message ?? "unknown error");
                     await logServerAction({
                          user_id: null,
                          action: "Store Webhook - customer.updated patch failed",
                          payload: { eventType, polarCustomerId },
                          status: "fail",
-                         error: e?.message ?? "unknown error",
+                         error: err.message,
                          duration_ms: Date.now() - t0,
                          type: "internal",
                     });
+                    throw err;
                }
                return;
           }
@@ -543,8 +530,7 @@ export const POST = Webhooks({
                     type: "internal",
                });
           } catch (e: any) {
-               // IMPORTANT: don't delete Polar customer here.
-               // Most failures here are DB constraints/mapping issues, not a Polar resource issue.
+               const err = e instanceof Error ? e : new Error(e?.message ?? "unknown error");
                await logServerAction({
                     user_id: null,
                     action: "Store Webhook - Handler failed",
@@ -559,10 +545,11 @@ export const POST = Webhooks({
                          currentPeriodStart,
                     },
                     status: "fail",
-                    error: e?.message ?? "unknown error",
+                    error: err.message,
                     duration_ms: Date.now() - t0,
                     type: "internal",
                });
+               throw err;
           }
      },
 });
