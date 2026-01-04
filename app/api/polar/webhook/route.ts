@@ -220,6 +220,7 @@ async function upsertInvoiceFromOrder({ eventType, order, clientId, subscription
 
      const record: Record<string, unknown> = {};
      for (const [key, value] of Object.entries(order)) {
+          if (key === "platform_fee_currency") continue;
           record[toSnakeCase(key)] = value;
      }
      record["client_id"] = clientId;
