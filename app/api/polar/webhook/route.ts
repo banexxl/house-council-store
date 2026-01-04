@@ -213,13 +213,18 @@ interface InvoiceUpsertArgs {
 }
 
 async function upsertInvoiceFromOrder({ eventType, order, clientId, subscriptionPlanId }: InvoiceUpsertArgs): Promise<void> {
-     // Store exactly what is received from the Polar API, plus client and subscriptionPlanId linkage
-     const record: Record<string, unknown> = {
-          ...order,
-          client: clientId,
-     };
+     // Map camelCase keys to snake_case for DB compatibility
+     function toSnakeCase(str: string) {
+          return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+     }
+
+     const record: Record<string, unknown> = {};
+     for (const [key, value] of Object.entries(order)) {
+          record[toSnakeCase(key)] = value;
+     }
+     record["client"] = clientId;
      if (subscriptionPlanId) {
-          record.subscription_plan = subscriptionPlanId;
+          record["subscription_plan"] = subscriptionPlanId;
      }
      const { error, status, count } = await supabase
           .from("tblInvoices")
