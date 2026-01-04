@@ -659,13 +659,32 @@ export const POST = Webhooks({
                          return;
                     }
 
-                    if (!subscriptionPlanId) {
+                    // Resolve the new subscription_id from tblSubscriptions using product_id
+                    const productId = data?.product_id || data?.productId || null;
+                    let resolvedSubscriptionId = subscriptionPlanId;
+                    if (productId) {
+                         const { data: subRow, error: subError } = await supabase
+                              .from("tblSubscriptions")
+                              .select("id")
+                              .or(`polar_product_id_monthly.eq.${productId},polar_product_id_annually.eq.${productId}`)
+                              .maybeSingle<{ id: string }>();
+                         if (!subError && subRow && subRow.id) {
+                              resolvedSubscriptionId = subRow.id;
+                              // Update tblClient_Subscription with the new subscription_id
+                              await supabase
+                                   .from("tblClient_Subscription")
+                                   .update({ subscription_id: resolvedSubscriptionId })
+                                   .eq("polar_subscription_id", polarSubscriptionId);
+                         }
+                    }
+
+                    if (!resolvedSubscriptionId) {
                          await logServerAction({
                               user_id: null,
-                              action: "Store Webhook - Missing subscription plan id",
+                              action: "Store Webhook - Missing subscription plan id after resolving",
                               payload: { eventType, clientId, polarSubscriptionId },
                               status: "fail",
-                              error: "subscriptionPlanId missing",
+                              error: "subscriptionPlanId missing after resolving",
                               duration_ms: Date.now() - t0,
                               type: "internal",
                          });
@@ -673,14 +692,14 @@ export const POST = Webhooks({
                     }
 
                     await ensureSubscriptionRow(clientId!, {
-                         subscription_id: subscriptionPlanId!,
+                         subscription_id: resolvedSubscriptionId!,
                          polar_subscription_id: polarSubscriptionId!,
                          status: normalizedStatus,
                     });
                     const apartmentsCount = await getApartmentCountForClient(clientId!);
                     const subscriptionSnapshot = buildSubscriptionSnapshot({
                          clientId: clientId!,
-                         subscriptionPlanId,
+                         subscriptionPlanId: resolvedSubscriptionId!,
                          apartmentsCount,
                          data,
                          statusOverride: normalizedStatus,
