@@ -19,9 +19,8 @@ export type PolarSubscriptionEvent =
 export interface PolarSubscriptionEventBase<TType extends PolarSubscriptionEventType> {
      type: TType;
      timestamp: string;
-     data: PolarSubscription;
+     subscription_id: string;
 }
-
 export interface PolarSubscriptionCreatedEvent extends PolarSubscriptionEventBase<"subscription.created"> { }
 export interface PolarSubscriptionUpdatedEvent extends PolarSubscriptionEventBase<"subscription.updated"> { }
 export interface PolarSubscriptionActiveEvent extends PolarSubscriptionEventBase<"subscription.active"> { }
@@ -34,7 +33,6 @@ export interface PolarSubscription {
      id: string;
      client_id: string | null;
      subscription_id: string;
-     polar_subscription_id: string;
      created_at: string;
      updated_at: string;
      apartment_count: number;

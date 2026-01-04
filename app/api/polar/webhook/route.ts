@@ -107,7 +107,6 @@ function buildSubscriptionSnapshot({
           id: subscriptionId,
           client_id: clientId,
           subscription_id: subscriptionId,
-          polar_subscription_id: subscriptionId,
           created_at: ensureDateString(data?.created_at),
           updated_at: ensureDateString(data?.updated_at ?? data?.modified_at ?? data?.created_at),
           apartment_count: typeof apartmentsCount === "number" ? Math.max(1, apartmentsCount) : 1,
@@ -251,7 +250,7 @@ async function resolveClientFromPolarIds(ids: {
      return null;
 }
 
-type ClientSubscriptionPatch = Partial<PolarSubscription> & Record<string, unknown>;
+type ClientSubscriptionPatch = Partial<PolarSubscription>;
 
 async function patchClientSubscription(clientId: string, patch: ClientSubscriptionPatch): Promise<{ success: boolean, error?: string }> {
      const update: Record<string, unknown> = { updated_at: nowIso() };
@@ -413,7 +412,6 @@ export const POST = Webhooks({
                     // Only patch customer_id. Do NOT touch apartment_count, status, etc.
                     const updated = await patchClientSubscription(resolvedClientId, {
                          customer_id: polarCustomerId!,
-                         customer: stringifyOrEmptyObject(data),
                     });
 
                     if (!updated.success) {
@@ -496,87 +494,10 @@ export const POST = Webhooks({
                          statusOverride: normalizedStatus,
                     });
 
-                    const buildPatch = (overrides: Record<string, unknown> = {}) => ({
-                         ...subscriptionSnapshot,
-                         ...overrides,
-                    });
+                    await patchClientSubscription(clientId!, subscriptionSnapshot);
 
-                    // subscription.active
-                    if (t.includes("subscription.active")) {
-                         await patchClientSubscription(clientId!, buildPatch({
-                              is_auto_renew: true,
-                              expired: false,
-                         }));
-
-                         revalidatePath("/profile");
-                         return;
-                    }
-
-                    // subscription.canceled (cancel at period end / canceled)
-                    if (t.includes("subscription.canceled")) {
-                         await patchClientSubscription(clientId!, buildPatch({
-                              is_auto_renew: false,
-                              expired: false,
-                         }));
-
-                         revalidatePath("/profile");
-                         return;
-                    }
-
-                    // subscription.uncanceled
-                    if (t.includes("subscription.uncanceled")) {
-                         await patchClientSubscription(clientId!, buildPatch({
-                              is_auto_renew: true,
-                              expired: false,
-                         }));
-
-                         revalidatePath("/profile");
-                         return;
-                    }
-
-                    // subscription.revoked (immediate)
-                    if (t.includes("subscription.revoked")) {
-                         await patchClientSubscription(clientId!, buildPatch({
-                              is_auto_renew: false,
-                              expired: true,
-                         }));
-
-                         revalidatePath("/profile");
-                         return;
-                    }
-
-                    // subscription.past_due
-                    if (t.includes("subscription.past_due")) {
-                         await patchClientSubscription(clientId!, buildPatch({
-                              is_auto_renew: true,
-                              expired: false,
-                         }));
-
-                         revalidatePath("/profile");
-                         return;
-                    }
-
-                    // subscription.created
-                    if (t.includes("subscription.created")) {
-                         await patchClientSubscription(clientId!, buildPatch({
-                              is_auto_renew: true,
-                              expired: false,
-                         }));
-
-                         revalidatePath("/profile");
-                         return;
-                    }
-
-                    // subscription.updated
-                    if (t.includes("subscription.updated")) {
-                         await patchClientSubscription(clientId!, buildPatch({
-                              is_auto_renew: true,
-                              expired: false,
-                         }));
-
-                         revalidatePath("/profile");
-                         return;
-                    }
+                    revalidatePath("/profile");
+                    return;
                }
 
                // If we reach here, ignore

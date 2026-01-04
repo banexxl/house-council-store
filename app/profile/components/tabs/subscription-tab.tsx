@@ -183,7 +183,7 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
      }
 
      const handleOpenCustomerPortal = async () => {
-          const hasSubscription = Boolean(subscriptionData?.polar_subscription_id && subscriptionData?.subscription_id)
+          const hasSubscription = Boolean(subscriptionData?.id && subscriptionData?.subscription_id)
           if (!hasSubscription) {
                toast.error("No subscription found. Please purchase a plan first.")
                return
@@ -279,7 +279,7 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
      const totalForAllApartments = pricePerApartment !== null ? pricePerApartment * apartmentsCount : null
 
      const billingPeriodLabel = subscriptionData?.recurring_interval === "year" ? "year" : "month"
-     const hasSubscription = Boolean(subscriptionData?.polar_subscription_id || subscriptionData?.subscription_id)
+     const hasSubscription = Boolean(subscriptionData?.id || subscriptionData?.subscription_id)
 
      return (
           <Box>
