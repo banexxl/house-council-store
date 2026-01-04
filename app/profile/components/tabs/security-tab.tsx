@@ -234,8 +234,23 @@ export default function SecurityTab({ userData }: SecurityTabProps) {
 
                          <Box>
 
-                              <Stack direction="row" spacing={2} justifyContent="space-between">
-                                   <Box sx={{ display: "flex", justifyContent: "flex-start", gap: 2 }}>
+                              <Stack
+                                   direction={{ xs: "column", sm: "row" }}
+                                   spacing={2}
+                                   justifyContent={{ xs: "flex-start", sm: "space-between" }}
+                                   alignItems={{ xs: "stretch", sm: "center" }}
+                              >
+                                   <Box
+                                        sx={{
+                                             display: "flex",
+                                             justifyContent: "flex-start",
+                                             gap: 2,
+                                             width: { xs: "100%", sm: "auto" },
+                                             "& .MuiButton-root": {
+                                                  width: { xs: "100%", sm: "auto" }
+                                             }
+                                        }}
+                                   >
                                         <Button variant="outlined" onClick={() => {
                                              setShowPasswordChange(!showPasswordChange)
                                              setShowDeleteConfirm(false)
@@ -243,7 +258,19 @@ export default function SecurityTab({ userData }: SecurityTabProps) {
                                              Change Password
                                         </Button>
                                    </Box>
-                                   <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}>
+                                   <Box
+                                        sx={{
+                                             display: "flex",
+                                             flexDirection: { xs: "column", sm: "row" },
+                                             alignItems: { xs: "stretch", sm: "center" },
+                                             justifyContent: { xs: "flex-start", sm: "flex-end" },
+                                             gap: 2,
+                                             width: { xs: "100%", sm: "auto" },
+                                             "& .MuiButton-root": {
+                                                  width: { xs: "100%", sm: "auto" }
+                                             }
+                                        }}
+                                   >
                                         <Button
                                              variant="outlined"
                                              color="error"

@@ -338,9 +338,30 @@ export default function AccountTab({ userData, editMode, setEditMode }: AccountT
                     </Box >
                ) : (
                     <Box>
-                         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+                         <Box
+                              sx={{
+                                   display: "flex",
+                                   flexDirection: { xs: "column", sm: "row" },
+                                   justifyContent: { xs: "flex-start", sm: "space-between" },
+                                   alignItems: { xs: "flex-start", sm: "center" },
+                                   gap: { xs: 2, sm: 0 },
+                                   mb: 3
+                              }}
+                         >
                               <Typography variant="h5">Account Information</Typography>
-                              <Box sx={{ display: "flex", gap: 2 }}>
+                              <Box
+                                   sx={{
+                                        display: "flex",
+                                        flexDirection: { xs: "column", sm: "row" },
+                                        alignItems: { xs: "stretch", sm: "center" },
+                                        gap: 2,
+                                        width: { xs: "100%", sm: "auto" },
+                                        justifyContent: { xs: "flex-start", sm: "flex-end" },
+                                        "& .MuiButton-root": {
+                                             width: { xs: "100%", sm: "auto" }
+                                        }
+                                   }}
+                              >
                                    <Button variant="outlined" startIcon={<EditIcon />} onClick={() => setEditMode(true)}>
                                         Edit Profile
                                    </Button>
