@@ -244,11 +244,19 @@ async function upsertInvoiceFromOrder({ eventType, order, clientId, subscription
           } else if (obj && typeof obj === 'object') {
                const result: Record<string, unknown> = {};
                for (const [k, v] of Object.entries(obj)) {
-                    if (k === 'platform_fee_currency') continue;
+                    // Drop platform fee currency so we don't try to upsert a non-existent column
+                    if (k === 'platform_fee_currency' || k === 'platformFeeCurrency') continue;
+
                     if (isDateTimeKey(k)) {
-                         if (typeof v === 'string' && v.length > 0) {
+                         // Preserve real Date objects as ISO strings; keep non-empty strings as-is
+                         if (v instanceof Date) {
+                              result[k] = v.toISOString();
+                         } else if (typeof v === 'string' && v.length > 0) {
                               result[k] = v;
+                         } else if (v === null) {
+                              result[k] = null;
                          } else {
+                              // Unknown/empty datetime-like value -> store as null
                               result[k] = null;
                          }
                     } else {
