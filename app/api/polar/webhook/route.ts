@@ -122,8 +122,8 @@ function buildSubscriptionSnapshot({
           client_id,
           subscription_id,
           polar_subscription_id: subscriptionId,
-          created_at: ensureDateString("createdAt"),
-          updated_at: ensureDateString("updatedAt"),
+          created_at: ensureDateString(pick("createdAt", "created_at", "created")),
+          updated_at: ensureDateString(pick("updatedAt", "updated_at", "updated")),
           apartment_count: typeof apartments_count === "number" ? Math.max(1, apartments_count) : 1,
           metadata,
           amount: typeof amountValue === "number" ? amountValue : 0,
@@ -131,13 +131,13 @@ function buildSubscriptionSnapshot({
           recurring_interval: normalizeInterval(pick("recurring_interval", "recurringInterval")),
           recurring_interval_count: typeof recurringIntervalCountValue === "number" ? recurringIntervalCountValue : 1,
           status,
-          current_period_start: ensureDateString("currentPeriodStart"),
-          current_period_end: ensureDateString("currentPeriodEnd"),
+          current_period_start: ensureDateString(pick("currentPeriodStart", "current_period_start")),
+          current_period_end: ensureDateString(pick("currentPeriodEnd", "current_period_end", "currentPeriodEnd")),
           trial_start: ensureNullableString(pick("trial_start", "trialStart")),
           trial_end: ensureNullableString(pick("trial_end", "trialEnd")),
           cancel_at_period_end: Boolean(pick("cancel_at_period_end", "cancelAtPeriodEnd")),
           canceled_at: ensureNullableString(pick("canceled_at", "canceledAt")),
-          started_at: ensureDateString("startedAt"),
+          started_at: ensureDateString(pick("startedAt", "started_at", "started")),
           ends_at: ensureNullableString(pick("ends_at", "endsAt")),
           ended_at: ensureNullableString(pick("ended_at", "endedAt")),
           customer_id: ensureString((pick("customer_id", "customerId") as string | undefined) ?? ""),
@@ -619,21 +619,10 @@ export const POST = Webhooks({
           }
 
           // -------------------------------------------------------------------------
-          // Subscription lifecycle events (event-specific patches)
+          // Subscription events -> upsert tblClient_Subscription rows
           // -------------------------------------------------------------------------
-
-          // Some events should ensure the row exists before patching
-          const shouldEnsureRow =
-               t.includes("subscription.created") ||
-               t.includes("subscription.updated") ||
-               t.includes("subscription.active") ||
-               t.includes("subscription.past_due") ||
-               t.includes("subscription.uncanceled") ||
-               t.includes("subscription.canceled") ||
-               t.includes("subscription.revoked");
-
-          try {
-               if (shouldEnsureRow) {
+          if (isSubscriptionEvent) {
+               try {
                     if (!polarSubscriptionId) {
                          await logServerAction({
                               user_id: null,
@@ -646,7 +635,6 @@ export const POST = Webhooks({
                          });
                          return;
                     }
-
                     // Resolve the new subscription_id from tblSubscriptions using product_id
                     const productId = data?.product_id || data?.productId || null;
                     let resolvedSubscriptionId = subscription_id;
@@ -691,40 +679,39 @@ export const POST = Webhooks({
                     await ensureSubscriptionRow(subscriptionSnapshot);
 
                     revalidatePath("/profile");
-                    return;
-               }
 
-               // If we reach here, ignore
-               await logServerAction({
-                    user_id: null,
-                    action: "Store Webhook - Ignored event",
-                    payload: { eventType, status: normalizedStatus, currentPeriodStart },
-                    status: "success",
-                    error: "",
-                    duration_ms: Date.now() - t0,
-                    type: "internal",
-               });
-          } catch (e: any) {
-               const err = e instanceof Error ? e : new Error(e?.message ?? "unknown error");
-               await logServerAction({
-                    user_id: null,
-                    action: "Store Webhook - Handler failed",
-                    payload: {
-                         eventType,
-                         client_id,
-                         subscription_id,
-                         polarCustomerId,
-                         polarSubscriptionId,
-                         polarOrderId,
-                         polarProductId,
-                         currentPeriodStart,
-                    },
-                    status: "fail",
-                    error: err.message,
-                    duration_ms: Date.now() - t0,
-                    type: "internal",
-               });
-               throw err;
+                    // If we reach here, ignore
+                    await logServerAction({
+                         user_id: null,
+                         action: "Store Webhook - Ignored event",
+                         payload: { eventType, status: normalizedStatus, currentPeriodStart },
+                         status: "success",
+                         error: "",
+                         duration_ms: Date.now() - t0,
+                         type: "internal",
+                    });
+               } catch (e: any) {
+                    const err = e instanceof Error ? e : new Error(e?.message ?? "unknown error");
+                    await logServerAction({
+                         user_id: null,
+                         action: "Store Webhook - Handler failed",
+                         payload: {
+                              eventType,
+                              client_id,
+                              subscription_id,
+                              polarCustomerId,
+                              polarSubscriptionId,
+                              polarOrderId,
+                              polarProductId,
+                              currentPeriodStart,
+                         },
+                         status: "fail",
+                         error: err.message,
+                         duration_ms: Date.now() - t0,
+                         type: "internal",
+                    });
+                    throw err;
+               }
           }
      },
 });
