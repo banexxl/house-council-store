@@ -173,7 +173,7 @@ export function buildSubscriptionSnapshot({
           subscription_id,
           polar_subscription_id: subscriptionId,
           created_at: ensureDateString(pick("createdAt", "created_at", "created")),
-          updated_at: ensureDateString(pick("updatedAt", "updated_at", "updated")),
+          modified_at: ensureDateString(pick("modifiedAt", "modified_at", "modified")),
           apartment_count: typeof apartments_count === "number" ? Math.max(1, apartments_count) : 1,
           metadata,
           amount: typeof amountValue === "number" ? amountValue : 0,
@@ -379,7 +379,7 @@ export async function ensureSubscriptionRow(
           seats: subscriptionData.seats,
           custom_field_data: subscriptionData.custom_field_data,
           created_at: subscriptionData.created_at,
-          updated_at: subscriptionData.updated_at,
+          modified_at: subscriptionData.modified_at,
      };
 
      if (subscriptionData.order_id) {

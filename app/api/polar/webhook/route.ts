@@ -127,7 +127,7 @@ function buildSubscriptionSnapshot({
           subscription_id,
           polar_subscription_id: subscriptionId,
           created_at: ensureDateString(pick("createdAt", "created_at", "created")),
-          updated_at: ensureDateString(pick("updatedAt", "updated_at", "updated")),
+          modified_at: ensureDateString(pick("modifiedAt", "modified_at", "modified")),
           apartment_count: typeof apartments_count === "number" ? Math.max(1, apartments_count) : 1,
           metadata,
           amount: typeof amountValue === "number" ? amountValue : 0,
@@ -316,7 +316,7 @@ async function getSubscriptionPlanIdForClient(clientId: string): Promise<string 
 type ClientSubscriptionPatch = Partial<PolarSubscription>;
 
 async function patchClientSubscription(clientId: string, patch: ClientSubscriptionPatch, updateType: string): Promise<void> {
-     const update: Record<string, unknown> = { updated_at: nowIso() };
+     const update: Record<string, unknown> = { modified_at: nowIso() };
 
      for (const [k, v] of Object.entries(patch)) {
           if (v !== undefined) update[k] = v;
@@ -368,7 +368,7 @@ async function ensureSubscriptionRow(
           seats: subscriptionData.seats,
           custom_field_data: subscriptionData.custom_field_data,
           created_at: subscriptionData.created_at,
-          updated_at: subscriptionData.updated_at,
+          modified_at: subscriptionData.modified_at,
      };
 
      if (subscriptionData.order_id) {

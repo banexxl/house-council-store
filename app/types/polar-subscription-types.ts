@@ -38,7 +38,7 @@ export interface PolarSubscription {
      polar_subscription_id: string;
      order_id?: string | null;
      created_at: string;
-     updated_at: string;
+     modified_at: string;
      apartment_count: number;
      metadata: Record<string, unknown>;
      amount: number;
