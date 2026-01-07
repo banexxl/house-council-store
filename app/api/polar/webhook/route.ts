@@ -317,7 +317,7 @@ async function patchClientSubscription(clientId: string, patch: ClientSubscripti
      for (const [k, v] of Object.entries(patch)) {
           if (v !== undefined) update[k] = v;
      }
-     console.log(`Trying to patch client subscription (${updateType})`, { clientId, update });
+     console.log(`Trying to patch (${updateType})`, { clientId, update });
 
      const { error } = await supabase
           .from("tblClient_Subscription")
