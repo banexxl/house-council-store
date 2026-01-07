@@ -219,19 +219,19 @@ async function upsertInvoiceFromOrder({ eventType, order, clientId, subscription
           return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
      }
 
-     function deepOmitPlatformFeeCurrency(obj: any): any {
-          if (Array.isArray(obj)) {
-               return obj.map(deepOmitPlatformFeeCurrency);
-          } else if (obj && typeof obj === 'object') {
-               const result: Record<string, unknown> = {};
-               for (const [k, v] of Object.entries(obj)) {
-                    if (k === 'platform_fee_currency') continue;
-                    result[k] = deepOmitPlatformFeeCurrency(v);
-               }
-               return result;
-          }
-          return obj;
-     }
+     // function deepOmitPlatformFeeCurrency(obj: any): any {
+     //      if (Array.isArray(obj)) {
+     //           return obj.map(deepOmitPlatformFeeCurrency);
+     //      } else if (obj && typeof obj === 'object') {
+     //           const result: Record<string, unknown> = {};
+     //           for (const [k, v] of Object.entries(obj)) {
+     //                if (k === 'platform_fee_currency') continue;
+     //                result[k] = deepOmitPlatformFeeCurrency(v);
+     //           }
+     //           return result;
+     //      }
+     //      return obj;
+     // }
 
      // Recursively sanitize all datetime fields at any depth
      function isDateTimeKey(key: string) {
@@ -278,6 +278,8 @@ async function upsertInvoiceFromOrder({ eventType, order, clientId, subscription
      if (subscriptionPlanId) {
           record["subscription_plan_id"] = subscriptionPlanId;
      }
+     console.log('Record for tblInvoice update', record);
+
      const { error, status, count } = await supabase
           .from("tblInvoices")
           .upsert(record, { onConflict: "id" });
