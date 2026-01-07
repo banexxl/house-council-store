@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 // ---------------------------------------------------------------------------
 
 export const POST = Webhooks({
-     webhookSecret: process.env.POLAR_WEBHOOK_SECRET_SANDBOX!,
+     webhookSecret: process.env.POLAR_WEBHOOK_SECRET_SANDBOX_REFUND!,
 
      // TODO: Implement refund webhook handlers
      // onRefundCreated: async (payload) => { ... },
