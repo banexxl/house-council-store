@@ -374,23 +374,49 @@ async function patchClientSubscription(clientId: string, patch: ClientSubscripti
 }
 
 async function ensureSubscriptionRow(
-     clientId: string,
-     base: {
-          subscription_id: string;
-          polar_subscription_id: string;
-          status: string;
-     }
+     subscriptionData: PolarSubscription
 ): Promise<void> {
+     const upsertData: Record<string, unknown> = {
+          client_id: subscriptionData.client_id,
+          subscription_id: subscriptionData.subscription_id,
+          polar_subscription_id: subscriptionData.polar_subscription_id,
+          status: subscriptionData.status,
+          apartment_count: subscriptionData.apartment_count,
+          metadata: subscriptionData.metadata,
+          amount: subscriptionData.amount,
+          currency: subscriptionData.currency,
+          recurring_interval: subscriptionData.recurring_interval,
+          recurring_interval_count: subscriptionData.recurring_interval_count,
+          current_period_start: subscriptionData.current_period_start,
+          current_period_end: subscriptionData.current_period_end,
+          trial_start: subscriptionData.trial_start,
+          trial_end: subscriptionData.trial_end,
+          cancel_at_period_end: subscriptionData.cancel_at_period_end,
+          canceled_at: subscriptionData.canceled_at,
+          started_at: subscriptionData.started_at,
+          ends_at: subscriptionData.ends_at,
+          ended_at: subscriptionData.ended_at,
+          customer_id: subscriptionData.customer_id,
+          product_id: subscriptionData.product_id,
+          discount_id: subscriptionData.discount_id,
+          checkout_id: subscriptionData.checkout_id,
+          customer_cancellation_reason: subscriptionData.customer_cancellation_reason,
+          customer_cancellation_comment: subscriptionData.customer_cancellation_comment,
+          prices: subscriptionData.prices,
+          meters: subscriptionData.meters,
+          seats: subscriptionData.seats,
+          custom_field_data: subscriptionData.custom_field_data,
+          created_at: subscriptionData.created_at,
+          updated_at: subscriptionData.updated_at,
+     };
+
+     if (subscriptionData.order_id) {
+          upsertData.order_id = subscriptionData.order_id;
+     }
+
      const { error } = await supabase
           .from("tblClient_Subscription")
-          .upsert({
-               client_id: clientId,
-               subscription_id: base.subscription_id,
-               polar_subscription_id: base.polar_subscription_id,
-               status: base.status,
-               created_at: nowIso(),
-               updated_at: nowIso(),
-          }, { onConflict: "client_id" });
+          .upsert(upsertData, { onConflict: "client_id" });
 
      if (error) throw error;
 }
@@ -699,11 +725,6 @@ export const POST = Webhooks({
                          return;
                     }
 
-                    await ensureSubscriptionRow(clientId!, {
-                         subscription_id: resolvedSubscriptionId!,
-                         polar_subscription_id: polarSubscriptionId!,
-                         status: normalizedStatus,
-                    });
                     const apartmentsCount = await getApartmentCountForClient(clientId!);
                     const subscriptionSnapshot = buildSubscriptionSnapshot({
                          clientId: clientId!,
@@ -713,7 +734,7 @@ export const POST = Webhooks({
                          statusOverride: normalizedStatus,
                     });
 
-                    await patchClientSubscription(clientId!, subscriptionSnapshot);
+                    await ensureSubscriptionRow(subscriptionSnapshot);
 
                     revalidatePath("/profile");
                     return;
