@@ -230,8 +230,6 @@ async function upsertInvoiceFromOrder({ order, client_id, subscription_id }: Inv
                     if (k === 'platform_fee_currency' || k === 'platformFeeCurrency') continue;
 
                     if (isDateTimeKey(k)) {
-                         console.log('datetime', k);
-
                          // Preserve real Date objects as ISO strings; keep non-empty strings as-is
                          if (v instanceof Date) {
                               result[k] = v.toISOString();
