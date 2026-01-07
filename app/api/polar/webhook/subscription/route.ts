@@ -109,15 +109,23 @@ export const POST = Webhooks({
                }
 
                const apartments_count = await getApartmentCountForClient(client_id);
-               const subscriptionSnapshot = buildSubscriptionSnapshot({
+
+               // Merge converted payload with custom fields
+               const upsertData = {
+                    ...subscriptionData,
                     client_id,
                     subscription_id: resolvedSubscriptionId,
-                    apartments_count,
-                    data: subscriptionData,
-                    statusOverride: payload.data.status,
-               });
+                    polar_subscription_id: polarSubscriptionId,
+                    apartment_count: apartments_count,
+                    status: subscriptionData.status || payload.data.status,
+               };
 
-               await ensureSubscriptionRow(subscriptionSnapshot);
+               const { error: upsertError } = await supabase
+                    .from("tblClient_Subscription")
+                    .upsert(upsertData, { onConflict: "client_id" });
+
+               if (upsertError) throw upsertError;
+
                revalidateProfile();
 
                await logServerAction({
@@ -149,16 +157,15 @@ export const POST = Webhooks({
           const eventType = "subscription.updated";
           console.log(`${eventType} webhook received:`, payload);
 
-          const subscriptionData = payload.data;
+          const subscriptionData = convertToSnakeCase(payload.data);
           const meta = extractMeta(payload);
-          const normalizedStatus = normalizeSubscriptionStatus(subscriptionData.status);
 
           let client_id = meta.client_id;
           let subscription_id = meta.subscription_id;
 
           const polarSubscriptionId = subscriptionData.id;
-          const polarCustomerId = subscriptionData.customerId;
-          const polarProductId = subscriptionData.productId;
+          const polarCustomerId = subscriptionData.customer_id;
+          const polarProductId = subscriptionData.product_id;
 
           if (!client_id && polarCustomerId) {
                const resolved = await resolveClientFromPolarCustomerId(polarCustomerId);
@@ -229,21 +236,29 @@ export const POST = Webhooks({
                }
 
                const apartments_count = await getApartmentCountForClient(client_id);
-               const subscriptionSnapshot = buildSubscriptionSnapshot({
+
+               // Merge converted payload with custom fields
+               const upsertData = {
+                    ...subscriptionData,
                     client_id,
                     subscription_id: resolvedSubscriptionId,
-                    apartments_count,
-                    data: subscriptionData,
-                    statusOverride: normalizedStatus,
-               });
+                    polar_subscription_id: polarSubscriptionId,
+                    apartment_count: apartments_count,
+                    status: subscriptionData.status || payload.data.status,
+               };
 
-               await ensureSubscriptionRow(subscriptionSnapshot);
+               const { error: upsertError } = await supabase
+                    .from("tblClient_Subscription")
+                    .upsert(upsertData, { onConflict: "client_id" });
+
+               if (upsertError) throw upsertError;
+
                revalidateProfile();
 
                await logServerAction({
                     user_id: client_id,
                     action: `Store Webhook - Processed ${eventType}`,
-                    payload: { eventType, status: normalizedStatus, polarSubscriptionId },
+                    payload: { eventType, status: subscriptionData.status, polarSubscriptionId },
                     status: "success",
                     error: "",
                     duration_ms: Date.now() - t0,
@@ -269,16 +284,15 @@ export const POST = Webhooks({
           const eventType = "subscription.active";
           console.log(`${eventType} webhook received:`, payload);
 
-          const subscriptionData = payload.data;
+          const subscriptionData = convertToSnakeCase(payload.data);
           const meta = extractMeta(payload);
-          const normalizedStatus = normalizeSubscriptionStatus(subscriptionData.status);
 
           let client_id = meta.client_id;
           let subscription_id = meta.subscription_id;
 
           const polarSubscriptionId = subscriptionData.id;
-          const polarCustomerId = subscriptionData.customerId;
-          const polarProductId = subscriptionData.productId;
+          const polarCustomerId = subscriptionData.customer_id;
+          const polarProductId = subscriptionData.product_id;
 
           if (!client_id && polarCustomerId) {
                const resolved = await resolveClientFromPolarCustomerId(polarCustomerId);
@@ -349,21 +363,29 @@ export const POST = Webhooks({
                }
 
                const apartments_count = await getApartmentCountForClient(client_id);
-               const subscriptionSnapshot = buildSubscriptionSnapshot({
+
+               // Merge converted payload with custom fields
+               const upsertData = {
+                    ...subscriptionData,
                     client_id,
                     subscription_id: resolvedSubscriptionId,
-                    apartments_count,
-                    data: subscriptionData,
-                    statusOverride: normalizedStatus,
-               });
+                    polar_subscription_id: polarSubscriptionId,
+                    apartment_count: apartments_count,
+                    status: subscriptionData.status || payload.data.status,
+               };
 
-               await ensureSubscriptionRow(subscriptionSnapshot);
+               const { error: upsertError } = await supabase
+                    .from("tblClient_Subscription")
+                    .upsert(upsertData, { onConflict: "client_id" });
+
+               if (upsertError) throw upsertError;
+
                revalidateProfile();
 
                await logServerAction({
                     user_id: client_id,
                     action: `Store Webhook - Processed ${eventType}`,
-                    payload: { eventType, status: normalizedStatus, polarSubscriptionId },
+                    payload: { eventType, status: payload.data.status, polarSubscriptionId },
                     status: "success",
                     error: "",
                     duration_ms: Date.now() - t0,
@@ -389,16 +411,15 @@ export const POST = Webhooks({
           const eventType = "subscription.canceled";
           console.log(`${eventType} webhook received:`, payload);
 
-          const subscriptionData = payload.data;
+          const subscriptionData = convertToSnakeCase(payload.data);
           const meta = extractMeta(payload);
-          const normalizedStatus = normalizeSubscriptionStatus(subscriptionData.status);
 
           let client_id = meta.client_id;
           let subscription_id = meta.subscription_id;
 
           const polarSubscriptionId = subscriptionData.id;
-          const polarCustomerId = subscriptionData.customerId;
-          const polarProductId = subscriptionData.productId;
+          const polarCustomerId = subscriptionData.customer_id;
+          const polarProductId = subscriptionData.product_id;
 
           if (!client_id && polarCustomerId) {
                const resolved = await resolveClientFromPolarCustomerId(polarCustomerId);
@@ -474,7 +495,7 @@ export const POST = Webhooks({
                     subscription_id: resolvedSubscriptionId,
                     apartments_count,
                     data: subscriptionData,
-                    statusOverride: normalizedStatus,
+                    statusOverride: payload.data.status,
                });
 
                await ensureSubscriptionRow(subscriptionSnapshot);
@@ -483,7 +504,7 @@ export const POST = Webhooks({
                await logServerAction({
                     user_id: client_id,
                     action: `Store Webhook - Processed ${eventType}`,
-                    payload: { eventType, status: normalizedStatus, polarSubscriptionId },
+                    payload: { eventType, status: payload.data.status, polarSubscriptionId },
                     status: "success",
                     error: "",
                     duration_ms: Date.now() - t0,
@@ -509,16 +530,15 @@ export const POST = Webhooks({
           const eventType = "subscription.revoked";
           console.log(`${eventType} webhook received:`, payload);
 
-          const subscriptionData = payload.data;
+          const subscriptionData = convertToSnakeCase(payload.data);
           const meta = extractMeta(payload);
-          const normalizedStatus = normalizeSubscriptionStatus(subscriptionData.status);
 
           let client_id = meta.client_id;
           let subscription_id = meta.subscription_id;
 
           const polarSubscriptionId = subscriptionData.id;
-          const polarCustomerId = subscriptionData.customerId;
-          const polarProductId = subscriptionData.productId;
+          const polarCustomerId = subscriptionData.customer_id;
+          const polarProductId = subscriptionData.product_id;
 
           if (!client_id && polarCustomerId) {
                const resolved = await resolveClientFromPolarCustomerId(polarCustomerId);
@@ -594,7 +614,7 @@ export const POST = Webhooks({
                     subscription_id: resolvedSubscriptionId,
                     apartments_count,
                     data: subscriptionData,
-                    statusOverride: normalizedStatus,
+                    statusOverride: payload.data.status,
                });
 
                await ensureSubscriptionRow(subscriptionSnapshot);
@@ -603,7 +623,7 @@ export const POST = Webhooks({
                await logServerAction({
                     user_id: client_id,
                     action: `Store Webhook - Processed ${eventType}`,
-                    payload: { eventType, status: normalizedStatus, polarSubscriptionId },
+                    payload: { eventType, status: payload.data.status, polarSubscriptionId },
                     status: "success",
                     error: "",
                     duration_ms: Date.now() - t0,
