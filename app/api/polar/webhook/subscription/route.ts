@@ -98,12 +98,15 @@ export const POST = Webhooks({
 
                const apartments_count = await getApartmentCountForClient(client_id);
 
+               // Extract id and map to polar_subscription_id
+               const { id, ...restSubscriptionData } = subscriptionData;
+
                // Merge converted payload with custom fields
                const upsertData = {
-                    ...subscriptionData,
+                    ...restSubscriptionData,
                     client_id,
                     subscription_id: resolvedSubscriptionId,
-                    polar_subscription_id: polarSubscriptionId,
+                    polar_subscription_id: id,
                     apartment_count: apartments_count,
                     status: subscriptionData.status || payload.data.status,
                };
@@ -217,12 +220,15 @@ export const POST = Webhooks({
 
                const apartments_count = await getApartmentCountForClient(client_id);
 
+               // Extract id and map to polar_subscription_id
+               const { id, ...restSubscriptionData } = subscriptionData;
+
                // Merge converted payload with custom fields
                const upsertData = {
-                    ...subscriptionData,
+                    ...restSubscriptionData,
                     client_id,
                     subscription_id: resolvedSubscriptionId,
-                    polar_subscription_id: polarSubscriptionId,
+                    polar_subscription_id: id,
                     apartment_count: apartments_count,
                     status: subscriptionData.status || payload.data.status,
                };
@@ -455,12 +461,15 @@ export const POST = Webhooks({
 
                const apartments_count = await getApartmentCountForClient(client_id);
 
+               // Extract id and map to polar_subscription_id
+               const { id, ...restSubscriptionData } = subscriptionData;
+
                // Merge converted payload with custom fields
                const upsertData = {
-                    ...subscriptionData,
+                    ...restSubscriptionData,
                     client_id,
                     subscription_id: resolvedSubscriptionId,
-                    polar_subscription_id: polarSubscriptionId,
+                    polar_subscription_id: id,
                     apartment_count: apartments_count,
                     status: subscriptionData.status || payload.data.status,
                };
@@ -575,12 +584,15 @@ export const POST = Webhooks({
 
                const apartments_count = await getApartmentCountForClient(client_id);
 
+               // Extract id and map to polar_subscription_id
+               const { id, ...restSubscriptionData } = subscriptionData;
+
                // Merge converted payload with custom fields
                const upsertData = {
-                    ...subscriptionData,
+                    ...restSubscriptionData,
                     client_id,
                     subscription_id: resolvedSubscriptionId,
-                    polar_subscription_id: polarSubscriptionId,
+                    polar_subscription_id: id,
                     apartment_count: apartments_count,
                     status: subscriptionData.status || payload.data.status,
                };
