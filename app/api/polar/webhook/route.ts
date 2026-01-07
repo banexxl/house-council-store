@@ -199,21 +199,22 @@ async function upsertInvoiceFromOrder({ order, client_id, subscription_id }: Inv
           return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
      }
 
-     function deepOmitPlatformFeeCurrency(obj: any): any {
-          if (Array.isArray(obj)) {
-               return obj.map(deepOmitPlatformFeeCurrency);
-          } else if (obj && typeof obj === 'object') {
-               const result: Record<string, unknown> = {};
-               for (const [k, v] of Object.entries(obj)) {
-                    if (k === 'platform_fee_currency') continue;
-                    result[k] = deepOmitPlatformFeeCurrency(v);
-               }
-               return result;
-          }
-          return obj;
-     }
+     // function deepOmitPlatformFeeCurrency(obj: any): any {
+     //      if (Array.isArray(obj)) {
+     //           return obj.map(deepOmitPlatformFeeCurrency);
+     //      } else if (obj && typeof obj === 'object') {
+     //           const result: Record<string, unknown> = {};
+     //           for (const [k, v] of Object.entries(obj)) {
+     //                if (k === 'platform_fee_currency') continue;
+     //                result[k] = deepOmitPlatformFeeCurrency(v);
+     //           }
+     //           return result;
+     //      }
+     //      return obj;
+     // }
 
      // Recursively sanitize all datetime fields at any depth
+
      function isDateTimeKey(key: string) {
           // Matches snake_case or camelCase datetime fields
           return /(_at|At|_date|Date|_time|Time)$/.test(key);
@@ -229,6 +230,8 @@ async function upsertInvoiceFromOrder({ order, client_id, subscription_id }: Inv
                     if (k === 'platform_fee_currency' || k === 'platformFeeCurrency') continue;
 
                     if (isDateTimeKey(k)) {
+                         console.log('datetime', k);
+
                          // Preserve real Date objects as ISO strings; keep non-empty strings as-is
                          if (v instanceof Date) {
                               result[k] = v.toISOString();
