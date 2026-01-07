@@ -311,13 +311,13 @@ async function getSubscriptionPlanIdForClient(clientId: string): Promise<string 
 
 type ClientSubscriptionPatch = Partial<PolarSubscription>;
 
-async function patchClientSubscription(clientId: string, patch: ClientSubscriptionPatch): Promise<void> {
+async function patchClientSubscription(clientId: string, patch: ClientSubscriptionPatch, updateType: string): Promise<void> {
      const update: Record<string, unknown> = { updated_at: nowIso() };
 
      for (const [k, v] of Object.entries(patch)) {
           if (v !== undefined) update[k] = v;
      }
-     console.log('Trying to patch client subscription', { clientId, update });
+     console.log(`Trying to patch client subscription (${updateType})`, { clientId, update });
 
      const { error } = await supabase
           .from("tblClient_Subscription")
@@ -505,7 +505,7 @@ export const POST = Webhooks({
                     // Only patch customer_id. Do NOT touch apartment_count, status, etc.
                     await patchClientSubscription(resolvedClientId, {
                          customer_id: polarCustomerId!,
-                    });
+                    }, eventType);
 
                     revalidatePath("/profile");
 
@@ -574,7 +574,7 @@ export const POST = Webhooks({
                     });
 
                     try {
-                         await patchClientSubscription(client_id, { order_id: orderPayload.id });
+                         await patchClientSubscription(client_id, { order_id: orderPayload.id }, eventType);
                     } catch (orderPatchError: any) {
                          const patchErr = orderPatchError instanceof Error ? orderPatchError : new Error(orderPatchError?.message ?? "unknown error");
                          await logServerAction({
