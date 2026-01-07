@@ -6,11 +6,8 @@ import {
      supabase,
      convertToSnakeCase,
      extractMeta,
-     normalizeSubscriptionStatus,
      resolveClientFromPolarCustomerId,
      getSubscriptionPlanIdForClient,
-     buildSubscriptionSnapshot,
-     ensureSubscriptionRow,
      revalidateProfile,
 } from "../webhook-utils";
 
@@ -85,27 +82,18 @@ export const POST = Webhooks({
                          .select("id")
                          .or(`polar_product_id_monthly.eq.${polarProductId},polar_product_id_annually.eq.${polarProductId}`)
                          .maybeSingle<{ id: string }>();
-                    if (!subError && subRow?.id) {
-                         resolvedSubscriptionId = subRow.id;
-                         // Update with the new subscription_id
-                         await supabase
-                              .from("tblClient_Subscription")
-                              .update({ subscription_id: resolvedSubscriptionId })
-                              .eq("polar_subscription_id", subscriptionData.product.id);
+                    if (subError && !subRow) {
+                         await logServerAction({
+                              user_id: null,
+                              action: `Store Webhook - ${payload.type} could not resolve subscription plan from product id`,
+                              payload: { type: payload.type, polarProductId },
+                              status: "fail",
+                              error: "No subscription plan found for product id",
+                              duration_ms: Date.now() - t0,
+                              type: "internal",
+                         })
+                         return
                     }
-               }
-
-               if (!resolvedSubscriptionId) {
-                    await logServerAction({
-                         user_id: null,
-                         action: `Store Webhook - ${payload.type} missing subscription plan id`,
-                         payload: { type: payload.type, client_id, polarSubscriptionId },
-                         status: "fail",
-                         error: "subscriptionPlanId missing after resolving",
-                         duration_ms: Date.now() - t0,
-                         type: "internal",
-                    });
-                    return;
                }
 
                const apartments_count = await getApartmentCountForClient(client_id);
@@ -213,26 +201,18 @@ export const POST = Webhooks({
                          .select("id")
                          .or(`polar_product_id_monthly.eq.${polarProductId},polar_product_id_annually.eq.${polarProductId}`)
                          .maybeSingle<{ id: string }>();
-                    if (!subError && subRow?.id) {
-                         resolvedSubscriptionId = subRow.id;
-                         await supabase
-                              .from("tblClient_Subscription")
-                              .update({ subscription_id: resolvedSubscriptionId })
-                              .eq("polar_subscription_id", subscriptionData.product.id);
+                    if (subError && !subRow) {
+                         await logServerAction({
+                              user_id: null,
+                              action: `Store Webhook - ${eventType} could not resolve subscription plan from product id`,
+                              payload: { eventType, polarProductId },
+                              status: "fail",
+                              error: "No subscription plan found for product id",
+                              duration_ms: Date.now() - t0,
+                              type: "webhook",
+                         })
+                         return
                     }
-               }
-
-               if (!resolvedSubscriptionId) {
-                    await logServerAction({
-                         user_id: null,
-                         action: `Store Webhook - ${eventType} missing subscription plan id`,
-                         payload: { eventType, client_id, polarSubscriptionId },
-                         status: "fail",
-                         error: "subscriptionPlanId missing after resolving",
-                         duration_ms: Date.now() - t0,
-                         type: "internal",
-                    });
-                    return;
                }
 
                const apartments_count = await getApartmentCountForClient(client_id);
@@ -340,26 +320,17 @@ export const POST = Webhooks({
                          .select("id")
                          .or(`polar_product_id_monthly.eq.${polarProductId},polar_product_id_annually.eq.${polarProductId}`)
                          .maybeSingle<{ id: string }>();
-                    if (!subError && subRow?.id) {
-                         resolvedSubscriptionId = subRow.id;
-                         await supabase
-                              .from("tblClient_Subscription")
-                              .update({ subscription_id: resolvedSubscriptionId })
-                              .eq("polar_subscription_id", subscriptionData.product.id);
+                    if (subError && !subRow) {
+                         await logServerAction({
+                              user_id: null,
+                              action: `Store Webhook - ${eventType} could not resolve subscription plan from product id`,
+                              payload: { eventType, polarProductId },
+                              status: "fail",
+                              error: "No subscription plan found for product id",
+                              duration_ms: Date.now() - t0,
+                              type: "webhook",
+                         })
                     }
-               }
-
-               if (!resolvedSubscriptionId) {
-                    await logServerAction({
-                         user_id: null,
-                         action: `Store Webhook - ${eventType} missing subscription plan id`,
-                         payload: { eventType, client_id, polarSubscriptionId },
-                         status: "fail",
-                         error: "subscriptionPlanId missing after resolving",
-                         duration_ms: Date.now() - t0,
-                         type: "internal",
-                    });
-                    return;
                }
 
                const apartments_count = await getApartmentCountForClient(client_id);
@@ -467,38 +438,39 @@ export const POST = Webhooks({
                          .select("id")
                          .or(`polar_product_id_monthly.eq.${polarProductId},polar_product_id_annually.eq.${polarProductId}`)
                          .maybeSingle<{ id: string }>();
-                    if (!subError && subRow?.id) {
-                         resolvedSubscriptionId = subRow.id;
-                         await supabase
-                              .from("tblClient_Subscription")
-                              .update({ subscription_id: resolvedSubscriptionId })
-                              .eq("polar_subscription_id", subscriptionData.product.id);
+                    if (subError && !subRow) {
+                         await logServerAction({
+                              user_id: null,
+                              action: `Store Webhook - ${eventType} could not resolve subscription plan from product id`,
+                              payload: { eventType, polarProductId },
+                              status: "fail",
+                              error: "No subscription plan found for product id",
+                              duration_ms: Date.now() - t0,
+                              type: "webhook",
+                         })
                     }
                }
 
-               if (!resolvedSubscriptionId) {
-                    await logServerAction({
-                         user_id: null,
-                         action: `Store Webhook - ${eventType} missing subscription plan id`,
-                         payload: { eventType, client_id, polarSubscriptionId },
-                         status: "fail",
-                         error: "subscriptionPlanId missing after resolving",
-                         duration_ms: Date.now() - t0,
-                         type: "internal",
-                    });
-                    return;
-               }
+
 
                const apartments_count = await getApartmentCountForClient(client_id);
-               const subscriptionSnapshot = buildSubscriptionSnapshot({
+
+               // Merge converted payload with custom fields
+               const upsertData = {
+                    ...subscriptionData,
                     client_id,
                     subscription_id: resolvedSubscriptionId,
-                    apartments_count,
-                    data: subscriptionData,
-                    statusOverride: payload.data.status,
-               });
+                    polar_subscription_id: polarSubscriptionId,
+                    apartment_count: apartments_count,
+                    status: subscriptionData.status || payload.data.status,
+               };
 
-               await ensureSubscriptionRow(subscriptionSnapshot);
+               const { error: upsertError } = await supabase
+                    .from("tblClient_Subscription")
+                    .upsert(upsertData, { onConflict: "client_id" });
+
+               if (upsertError) throw upsertError;
+
                revalidateProfile();
 
                await logServerAction({
@@ -586,38 +558,39 @@ export const POST = Webhooks({
                          .select("id")
                          .or(`polar_product_id_monthly.eq.${polarProductId},polar_product_id_annually.eq.${polarProductId}`)
                          .maybeSingle<{ id: string }>();
-                    if (!subError && subRow?.id) {
-                         resolvedSubscriptionId = subRow.id;
-                         await supabase
-                              .from("tblClient_Subscription")
-                              .update({ subscription_id: resolvedSubscriptionId })
-                              .eq("polar_subscription_id", subscriptionData.product.id);
+                    if (subError && !subRow) {
+                         await logServerAction({
+                              user_id: null,
+                              action: `Store Webhook - ${eventType} could not resolve subscription plan from product id`,
+                              payload: { eventType, polarProductId },
+                              status: "fail",
+                              error: "No subscription plan found for product id",
+                              duration_ms: Date.now() - t0,
+                              type: "webhook",
+                         })
                     }
                }
 
-               if (!resolvedSubscriptionId) {
-                    await logServerAction({
-                         user_id: null,
-                         action: `Store Webhook - ${eventType} missing subscription plan id`,
-                         payload: { eventType, client_id, polarSubscriptionId },
-                         status: "fail",
-                         error: "subscriptionPlanId missing after resolving",
-                         duration_ms: Date.now() - t0,
-                         type: "internal",
-                    });
-                    return;
-               }
+
 
                const apartments_count = await getApartmentCountForClient(client_id);
-               const subscriptionSnapshot = buildSubscriptionSnapshot({
+
+               // Merge converted payload with custom fields
+               const upsertData = {
+                    ...subscriptionData,
                     client_id,
                     subscription_id: resolvedSubscriptionId,
-                    apartments_count,
-                    data: subscriptionData,
-                    statusOverride: payload.data.status,
-               });
+                    polar_subscription_id: polarSubscriptionId,
+                    apartment_count: apartments_count,
+                    status: subscriptionData.status || payload.data.status,
+               };
 
-               await ensureSubscriptionRow(subscriptionSnapshot);
+               const { error: upsertError } = await supabase
+                    .from("tblClient_Subscription")
+                    .upsert(upsertData, { onConflict: "client_id" });
+
+               if (upsertError) throw upsertError;
+
                revalidateProfile();
 
                await logServerAction({
