@@ -61,8 +61,8 @@ export async function POST(req: Request) {
                     returnUrl,
                     customerEmail,
                     metadata: {
-                         clientId,
-                         subscriptionPlanId,
+                         client_id: clientId,
+                         subscription_id: subscriptionPlanId,
                          apartments_count: apartmentsCount,
                     },
                     requireBillingAddress: true,
