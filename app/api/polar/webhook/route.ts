@@ -293,47 +293,23 @@ async function upsertInvoiceFromOrder({ eventType, order, clientId, subscription
  * If an event arrives without metadata, try to locate client/plan
  * by looking up saved Polar ids.
  */
-async function resolveClientFromPolarIds(ids: {
-     polarSubscriptionId?: string | null;
-     polarCustomerId?: string | null;
-     polarOrderId?: string | null;
-}): Promise<{ client_id: string; subscription_id: string | null } | null> {
+async function resolveClientFromPolarCustomerId(polar_customer_id: string): Promise<{ client_id: string; subscription_id: string | null } | null> {
 
      await logServerAction({
           user_id: null,
           action: "Store Webhook - Resolving client from Polar IDs",
-          payload: { ids },
+          payload: { polar_customer_id },
           status: "success",
           error: "",
           duration_ms: 0,
           type: "internal",
      });
 
-     if (ids.polarSubscriptionId) {
+     if (polar_customer_id) {
           const { data } = await supabase
                .from("tblClient_Subscription")
                .select("client_id, subscription_id")
-               .eq("polar_subscription_id", ids.polarSubscriptionId)
-               .maybeSingle<{ client_id: string; subscription_id: string | null }>();
-
-          if (data?.client_id) return data;
-     }
-
-     if (ids.polarOrderId) {
-          const { data } = await supabase
-               .from("tblClient_Subscription")
-               .select("client_id, subscription_id")
-               .eq("order_id", ids.polarOrderId)
-               .maybeSingle<{ client_id: string; subscription_id: string | null }>();
-
-          if (data?.client_id) return data;
-     }
-
-     if (ids.polarCustomerId) {
-          const { data } = await supabase
-               .from("tblClient_Subscription")
-               .select("client_id, subscription_id")
-               .eq("customer_id", ids.polarCustomerId)
+               .eq("customer_id", polar_customer_id)
                .maybeSingle<{ client_id: string; subscription_id: string | null }>();
 
           if (data?.client_id) return data;
@@ -485,12 +461,7 @@ export const POST = Webhooks({
           if (!isCustomerEvent) {
                // For subscription events, try resolve if meta is missing
                if (!clientId) {
-                    const resolved = await resolveClientFromPolarIds({
-                         polarSubscriptionId,
-                         polarCustomerId,
-                         polarOrderId,
-                    });
-
+                    const resolved = await resolveClientFromPolarCustomerId(polarCustomerId!)
                     if (!resolved) {
                          await logServerAction({
                               user_id: null,
