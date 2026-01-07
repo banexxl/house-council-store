@@ -107,6 +107,7 @@ function buildSubscriptionSnapshot({
      data,
      statusOverride,
 }: BuildSubscriptionSnapshotArgs): SubscriptionRecordPatch {
+
      const pick = (...keys: string[]) => {
           for (const key of keys) {
                const value = data?.[key as keyof typeof data];
@@ -370,7 +371,6 @@ async function patchClientSubscription(clientId: string, patch: ClientSubscripti
      }
 }
 
-
 async function ensureSubscriptionRow(
      clientId: string,
      base: {
@@ -392,8 +392,6 @@ async function ensureSubscriptionRow(
 
      if (error) throw error;
 }
-
-// Removed getDefaultBillingInformationId: tblBillingInformation is deprecated, billing info is now in PolarOrder
 
 // customer.updated payload often has email; use it to resolve your DB client
 async function resolveClientIdByEmail(email?: string | null): Promise<string | null> {

@@ -65,6 +65,7 @@ export async function POST(req: Request) {
                          subscriptionPlanId,
                          apartments_count: apartmentsCount,
                     },
+                    requireBillingAddress: true,
                });
           } catch (error) {
                console.error("Error creating checkout:", error);
