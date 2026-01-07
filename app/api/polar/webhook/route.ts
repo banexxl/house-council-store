@@ -122,8 +122,8 @@ function buildSubscriptionSnapshot({
           client_id: clientId,
           subscription_id: subscriptionPlanId,
           polar_subscription_id: subscriptionId,
-          created_at: ensureDateString(pick("created_at", "createdAt")),
-          updated_at: ensureDateString(pick("updated_at", "updatedAt", "modified_at", "modifiedAt", "created_at", "createdAt")),
+          created_at: ensureDateString("createdAt"),
+          updated_at: ensureDateString("updatedAt"),
           apartment_count: typeof apartmentsCount === "number" ? Math.max(1, apartmentsCount) : 1,
           metadata,
           amount: typeof amountValue === "number" ? amountValue : 0,
@@ -131,13 +131,13 @@ function buildSubscriptionSnapshot({
           recurring_interval: normalizeInterval(pick("recurring_interval", "recurringInterval")),
           recurring_interval_count: typeof recurringIntervalCountValue === "number" ? recurringIntervalCountValue : 1,
           status,
-          current_period_start: ensureDateString(pick("current_period_start", "currentPeriodStart", "current_period_start_at")),
-          current_period_end: ensureDateString(pick("current_period_end", "currentPeriodEnd", "current_period_end_at")),
+          current_period_start: ensureDateString("currentPeriodStart"),
+          current_period_end: ensureDateString("currentPeriodEnd"),
           trial_start: ensureNullableString(pick("trial_start", "trialStart")),
           trial_end: ensureNullableString(pick("trial_end", "trialEnd")),
           cancel_at_period_end: Boolean(pick("cancel_at_period_end", "cancelAtPeriodEnd")),
           canceled_at: ensureNullableString(pick("canceled_at", "canceledAt")),
-          started_at: ensureDateString(pick("started_at", "startedAt")),
+          started_at: ensureDateString("startedAt"),
           ends_at: ensureNullableString(pick("ends_at", "endsAt")),
           ended_at: ensureNullableString(pick("ended_at", "endedAt")),
           customer_id: ensureString((pick("customer_id", "customerId") as string | undefined) ?? ""),
@@ -190,13 +190,12 @@ function extractCurrentPeriodStart(data: any): string | null {
 }
 
 interface InvoiceUpsertArgs {
-     eventType: string;
      order: PolarOrder;
      clientId: string;
      subscriptionPlanId: string | null;
 }
 
-async function upsertInvoiceFromOrder({ eventType, order, clientId, subscriptionPlanId }: InvoiceUpsertArgs): Promise<void> {
+async function upsertInvoiceFromOrder({ order, clientId, subscriptionPlanId }: InvoiceUpsertArgs): Promise<void> {
      // Map camelCase keys to snake_case for DB compatibility
      function toSnakeCase(str: string) {
           return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
@@ -570,7 +569,6 @@ export const POST = Webhooks({
 
                try {
                     await upsertInvoiceFromOrder({
-                         eventType: t,
                          order: orderPayload,
                          clientId,
                          subscriptionPlanId: subscriptionPlanId ?? null,
