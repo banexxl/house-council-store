@@ -130,7 +130,7 @@ function buildSubscriptionSnapshot({
      const metadata = isRecord(metadataValue) ? metadataValue : {};
      const customFieldData = isRecord(customFieldDataValue) ? customFieldDataValue : {};
      const status = normalizeSubscriptionStatus(statusOverride ?? pick("status"));
-     const subscriptionId = ensureString(pick("polar_subscription_id"));
+     const subscriptionId = ensureString(pick("id"));
      const serializeArray = (items: unknown[]): string[] =>
           items.map((item) => (typeof item === "string" ? item : stringifyOrEmptyObject(item)));
 
