@@ -29,6 +29,8 @@ export interface PolarSubscriptionUncanceledEvent extends PolarSubscriptionEvent
 export interface PolarSubscriptionRevokedEvent extends PolarSubscriptionEventBase<"subscription.revoked"> { }
 export interface PolarSubscriptionPastDueEvent extends PolarSubscriptionEventBase<"subscription.past_due"> { }
 
+export type PolarRecurringInterval = "day" | "week" | "month" | "year";
+
 export interface PolarSubscription {
      id: string;
      client_id: string | null;
@@ -41,7 +43,7 @@ export interface PolarSubscription {
      metadata: Record<string, unknown>;
      amount: number;
      currency: string;
-     recurring_interval: "day" | "week" | "month" | "year";
+     recurring_interval: PolarRecurringInterval;
      recurring_interval_count: number;
      status: PolarSubscriptionStatus;
      current_period_start: string;
