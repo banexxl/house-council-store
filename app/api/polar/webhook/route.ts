@@ -413,6 +413,7 @@ async function ensureSubscriptionRow(
      if (subscriptionData.order_id) {
           upsertData.order_id = subscriptionData.order_id;
      }
+     console.log('Upsert Client Subscripton Data', upsertData);
 
      const { error } = await supabase
           .from("tblClient_Subscription")
