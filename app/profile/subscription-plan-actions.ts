@@ -219,7 +219,7 @@ export const readClientSubscriptionPlanFromClientId = async (clientId: string): 
      if (!clientId) {
           await logServerAction({
                user_id: null,
-               action: 'Read Client Subscription Plan',
+               action: 'Read Client Subscription Plan - Client ID not provided',
                payload: { clientId },
                status: 'fail',
                error: "Client ID is required",
@@ -242,7 +242,7 @@ export const readClientSubscriptionPlanFromClientId = async (clientId: string): 
      if (clientSubscriptionDataError) {
           await logServerAction({
                user_id: null,
-               action: 'Read Client Subscription Plan',
+               action: 'Read Client Subscription Plan - Client Subscription Not Created',
                payload: { clientId },
                status: 'fail',
                error: clientSubscriptionDataError.message,
@@ -255,7 +255,7 @@ export const readClientSubscriptionPlanFromClientId = async (clientId: string): 
      if (!clientSubscriptionPlanData) {
           await logServerAction({
                user_id: null,
-               action: 'Read Client Subscription Plan',
+               action: 'Read Client Subscription Plan - Not Found',
                payload: { clientId },
                status: 'fail',
                error: "Client subscription data not found",
@@ -266,7 +266,7 @@ export const readClientSubscriptionPlanFromClientId = async (clientId: string): 
      }
      await logServerAction({
           user_id: null,
-          action: 'Read Client Subscription Plan',
+          action: 'Read Client Subscription Plan - Success',
           payload: { clientId },
           status: 'success',
           error: '',
