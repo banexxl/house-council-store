@@ -76,17 +76,17 @@ const stringifyOrEmptyObject = (value: unknown): string => {
 };
 
 interface BuildSubscriptionSnapshotArgs {
-     clientId: string;
-     subscriptionPlanId: string;
-     apartmentsCount: number;
+     client_id: string;
+     subscription_id: string;
+     apartments_count: number;
      data: any;
      statusOverride?: PolarSubscriptionStatus;
 }
 
 function buildSubscriptionSnapshot({
-     clientId,
-     subscriptionPlanId,
-     apartmentsCount,
+     client_id,
+     subscription_id,
+     apartments_count,
      data,
      statusOverride,
 }: BuildSubscriptionSnapshotArgs): SubscriptionRecordPatch {
@@ -119,12 +119,12 @@ function buildSubscriptionSnapshot({
 
      return {
           id: subscriptionId,
-          client_id: clientId,
-          subscription_id: subscriptionPlanId,
+          client_id,
+          subscription_id,
           polar_subscription_id: subscriptionId,
           created_at: ensureDateString("createdAt"),
           updated_at: ensureDateString("updatedAt"),
-          apartment_count: typeof apartmentsCount === "number" ? Math.max(1, apartmentsCount) : 1,
+          apartment_count: typeof apartments_count === "number" ? Math.max(1, apartments_count) : 1,
           metadata,
           amount: typeof amountValue === "number" ? amountValue : 0,
           currency: ensureString((currencyValue as string | undefined) ?? "usd"),
@@ -162,16 +162,14 @@ function nowIso() {
 }
 
 function extractMeta(payloadData: any) {
-     const meta = payloadData?.metadata ?? payloadData?.data?.metadata ?? {};
-     const subscriptionPlanId =
-          meta?.subscriptionPlanId ??
-          meta?.subscription_id ??
-          meta?.subscriptionId ??
-          meta?.subscription_id ??
-          null;
+     const meta = payloadData?.data?.metadata
+     const subscription_id = meta?.subscription_id
+     const client_id = meta?.client_id
+     const apartment_count = meta?.apartment_count
      return {
-          clientId: meta?.clientId ?? meta?.client_id ?? null,
-          subscriptionPlanId,
+          client_id,
+          subscription_id,
+          apartment_count: typeof apartment_count === "number" ? apartment_count : undefined,
      };
 }
 
@@ -191,11 +189,11 @@ function extractCurrentPeriodStart(data: any): string | null {
 
 interface InvoiceUpsertArgs {
      order: PolarOrder;
-     clientId: string;
-     subscriptionPlanId: string | null;
+     client_id: string;
+     subscription_id: string | null;
 }
 
-async function upsertInvoiceFromOrder({ order, clientId, subscriptionPlanId }: InvoiceUpsertArgs): Promise<void> {
+async function upsertInvoiceFromOrder({ order, client_id, subscription_id }: InvoiceUpsertArgs): Promise<void> {
      // Map camelCase keys to snake_case for DB compatibility
      function toSnakeCase(str: string) {
           return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
@@ -256,9 +254,9 @@ async function upsertInvoiceFromOrder({ order, clientId, subscriptionPlanId }: I
      for (const [key, value] of Object.entries(cleanedOrder)) {
           record[toSnakeCase(key)] = value;
      }
-     record["client_id"] = clientId;
-     if (subscriptionPlanId) {
-          record["subscription_id"] = subscriptionPlanId;
+     record["client_id"] = client_id;
+     if (subscription_id) {
+          record["subscription_id"] = subscription_id;
      }
      console.log('Record for tblInvoice update', record);
 
@@ -424,8 +422,8 @@ export const POST = Webhooks({
           // -------------------------------------------------------------------------
           // Resolve clientId for events that need it
           // -------------------------------------------------------------------------
-          let clientId = meta.clientId;
-          let subscriptionPlanId = meta.subscriptionPlanId;
+          let client_id = meta.client_id;
+          let subscription_id = meta.subscription_id;
 
           const isCustomerEvent = t.startsWith("customer.");
           const isSubscriptionEvent = t.startsWith("subscription.");
@@ -442,7 +440,7 @@ export const POST = Webhooks({
 
           if (!isCustomerEvent) {
                // For subscription events, try resolve if meta is missing
-               if (!clientId) {
+               if (!client_id) {
                     const resolved = await resolveClientFromPolarCustomerId(polarCustomerId!)
                     if (!resolved) {
                          await logServerAction({
@@ -457,14 +455,14 @@ export const POST = Webhooks({
                          return;
                     }
 
-                    clientId = resolved.client_id;
-                    if (!subscriptionPlanId && resolved.subscription_id) {
-                         subscriptionPlanId = resolved.subscription_id;
+                    client_id = resolved.client_id;
+                    if (!subscription_id && resolved.subscription_id) {
+                         subscription_id = resolved.subscription_id;
                     }
                }
 
                // by here we need these for subscription table
-               if (!clientId) {
+               if (!client_id) {
                     await logServerAction({
                          user_id: null,
                          action: "Store Webhook - Cannot process event (still missing clientId)",
@@ -477,8 +475,8 @@ export const POST = Webhooks({
                     return;
                }
 
-               if (!subscriptionPlanId && clientId) {
-                    subscriptionPlanId = await getSubscriptionPlanIdForClient(clientId);
+               if (!subscription_id && client_id) {
+                    subscription_id = await getSubscriptionPlanIdForClient(client_id);
                }
           }
 
@@ -543,7 +541,7 @@ export const POST = Webhooks({
 
                if (!orderPayload?.id) {
                     await logServerAction({
-                         user_id: clientId,
+                         user_id: client_id,
                          action: "Store Webhook - order.* missing order id",
                          payload: { eventType, data },
                          status: "fail",
@@ -554,7 +552,7 @@ export const POST = Webhooks({
                     return;
                }
 
-               if (!clientId) {
+               if (!client_id) {
                     await logServerAction({
                          user_id: null,
                          action: "Store Webhook - order.* missing clientId",
@@ -570,16 +568,16 @@ export const POST = Webhooks({
                try {
                     await upsertInvoiceFromOrder({
                          order: orderPayload,
-                         clientId,
-                         subscriptionPlanId: subscriptionPlanId ?? null,
+                         client_id,
+                         subscription_id,
                     });
 
                     try {
-                         await patchClientSubscription(clientId, { order_id: orderPayload.id });
+                         await patchClientSubscription(client_id, { order_id: orderPayload.id });
                     } catch (orderPatchError: any) {
                          const patchErr = orderPatchError instanceof Error ? orderPatchError : new Error(orderPatchError?.message ?? "unknown error");
                          await logServerAction({
-                              user_id: clientId,
+                              user_id: client_id,
                               action: "Store Webhook - order.* order_id patch failed",
                               payload: { orderId: orderPayload.id },
                               status: "fail",
@@ -592,9 +590,9 @@ export const POST = Webhooks({
                     revalidatePath("/profile");
 
                     await logServerAction({
-                         user_id: clientId,
+                         user_id: client_id,
                          action: `Store Webhook - Processed ${eventType}`,
-                         payload: { eventType, orderId: orderPayload.id, subscriptionPlanId },
+                         payload: { eventType, orderId: orderPayload.id, subscription_id },
                          status: "success",
                          error: "",
                          duration_ms: Date.now() - t0,
@@ -603,9 +601,9 @@ export const POST = Webhooks({
                } catch (e: any) {
                     const err = e instanceof Error ? e : new Error(e?.message ?? "unknown error");
                     await logServerAction({
-                         user_id: clientId,
+                         user_id: client_id,
                          action: `Store Webhook - ${eventType} invoice sync failed`,
-                         payload: { orderId: orderPayload.id, subscriptionPlanId },
+                         payload: { orderId: orderPayload.id, subscription_id },
                          status: "fail",
                          error: err.message,
                          duration_ms: Date.now() - t0,
@@ -648,7 +646,7 @@ export const POST = Webhooks({
 
                     // Resolve the new subscription_id from tblSubscriptions using product_id
                     const productId = data?.product_id || data?.productId || null;
-                    let resolvedSubscriptionId = subscriptionPlanId;
+                    let resolvedSubscriptionId = subscription_id;
                     if (productId) {
                          const { data: subRow, error: subError } = await supabase
                               .from("tblSubscriptionPlans")
@@ -669,7 +667,7 @@ export const POST = Webhooks({
                          await logServerAction({
                               user_id: null,
                               action: "Store Webhook - Missing subscription plan id after resolving",
-                              payload: { eventType, clientId, polarSubscriptionId },
+                              payload: { eventType, client_id, polarSubscriptionId },
                               status: "fail",
                               error: "subscriptionPlanId missing after resolving",
                               duration_ms: Date.now() - t0,
@@ -678,11 +676,11 @@ export const POST = Webhooks({
                          return;
                     }
 
-                    const apartmentsCount = await getApartmentCountForClient(clientId!);
+                    const apartments_count = await getApartmentCountForClient(client_id!);
                     const subscriptionSnapshot = buildSubscriptionSnapshot({
-                         clientId: clientId!,
-                         subscriptionPlanId: resolvedSubscriptionId!,
-                         apartmentsCount,
+                         client_id: client_id!,
+                         subscription_id: resolvedSubscriptionId!,
+                         apartments_count,
                          data,
                          statusOverride: normalizedStatus,
                     });
@@ -710,8 +708,8 @@ export const POST = Webhooks({
                     action: "Store Webhook - Handler failed",
                     payload: {
                          eventType,
-                         clientId,
-                         subscriptionPlanId,
+                         client_id,
+                         subscription_id,
                          polarCustomerId,
                          polarSubscriptionId,
                          polarOrderId,
