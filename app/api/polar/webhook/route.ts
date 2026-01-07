@@ -182,7 +182,7 @@ function extractMeta(payloadData: any) {
      const meta = payloadData?.metadata ?? payloadData?.data?.metadata ?? {};
      const subscriptionPlanId =
           meta?.subscriptionPlanId ??
-          meta?.subscription_plan_id ??
+          meta?.subscription_id ??
           meta?.subscriptionId ??
           meta?.subscription_id ??
           null;
@@ -276,7 +276,7 @@ async function upsertInvoiceFromOrder({ eventType, order, clientId, subscription
      }
      record["client_id"] = clientId;
      if (subscriptionPlanId) {
-          record["subscription_plan_id"] = subscriptionPlanId;
+          record["subscription_id"] = subscriptionPlanId;
      }
      console.log('Record for tblInvoice update', record);
 
