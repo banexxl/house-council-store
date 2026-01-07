@@ -21,15 +21,6 @@ const supabase = createClient(
 
 type SubscriptionRecordPatch = PolarSubscription;
 
-const ORDER_EVENT_STATUS_OVERRIDE: Record<string, PolarOrderStatus> = {
-     "order.created": "pending",
-     "order.updated": "pending",
-     "order.paid": "paid",
-     "order.refunded": "refunded",
-};
-
-const currencyIdCache = new Map<string, string>();
-
 const SUBSCRIPTION_STATUS_VALUES: PolarSubscriptionStatus[] = [
      "incomplete",
      "incomplete_expired",
@@ -74,14 +65,6 @@ const normalizeInterval = (value: unknown): PolarSubscription["recurring_interva
           }
      }
      return "month";
-};
-
-const stringifyOrNull = (value: unknown): string | null => {
-     try {
-          return value === undefined || value === null ? null : JSON.stringify(value);
-     } catch {
-          return null;
-     }
 };
 
 const stringifyOrEmptyObject = (value: unknown): string => {
