@@ -4,6 +4,7 @@ import { getApartmentCountForClient } from "@/app/profile/subscription-plan-acti
 import { Webhooks } from "@polar-sh/nextjs";
 import {
      supabase,
+     convertToSnakeCase,
      extractMeta,
      normalizeSubscriptionStatus,
      resolveClientFromPolarCustomerId,
@@ -26,15 +27,15 @@ export const POST = Webhooks({
           const t0 = Date.now();
           console.log(`${payload.type} webhook received:`, payload);
 
-          const subscriptionData = payload.data;
+          const subscriptionData = convertToSnakeCase(payload.data);
           const meta = extractMeta(payload);
 
           let client_id = meta.client_id;
           let subscription_id = meta.subscription_id;
 
           const polarSubscriptionId = subscriptionData.id;
-          const polarCustomerId = subscriptionData.customerId;
-          const polarProductId = subscriptionData.productId;
+          const polarCustomerId = subscriptionData.customer_id;
+          const polarProductId = subscriptionData.product_id;
 
           // Try to resolve client if not in metadata
           if (!client_id && polarCustomerId) {

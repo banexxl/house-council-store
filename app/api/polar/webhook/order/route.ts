@@ -2,6 +2,7 @@
 import { logServerAction } from "@/app/lib/server-logging";
 import { Webhooks } from "@polar-sh/nextjs";
 import {
+     convertToSnakeCase,
      extractMeta,
      resolveClientFromPolarCustomerId,
      upsertInvoiceFromOrder,
@@ -23,15 +24,15 @@ export const POST = Webhooks({
           const eventType = "order.created";
           console.log(`${eventType} webhook received:`, payload);
 
-          const orderData = payload.data;
+          const orderData = convertToSnakeCase(payload.data);
           const meta = extractMeta(payload);
 
           let client_id = meta.client_id;
           let subscription_id = meta.subscription_id;
 
           // Try to resolve client from customer_id if not in metadata
-          if (!client_id && orderData.customerId) {
-               const resolved = await resolveClientFromPolarCustomerId(orderData.customerId);
+          if (!client_id && orderData.customer_id) {
+               const resolved = await resolveClientFromPolarCustomerId(orderData.customer_id);
                if (resolved) {
                     client_id = resolved.client_id;
                     subscription_id = resolved.subscription_id ?? subscription_id;

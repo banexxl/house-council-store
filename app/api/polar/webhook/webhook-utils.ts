@@ -13,6 +13,59 @@ export const supabase = createClient(
 );
 
 // ---------------------------------------------------------------------------
+// Utility Functions
+// ---------------------------------------------------------------------------
+
+/**
+ * Converts a camelCase string to snake_case
+ */
+function toSnakeCase(str: string): string {
+     return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+}
+
+/**
+ * Recursively converts all keys in an object from camelCase to snake_case.
+ * Handles nested objects and arrays. Preserves null values and special types.
+ * 
+ * @param obj - The object to convert (can be any payload from Polar SDK)
+ * @returns The same object structure with all keys converted to snake_case
+ * 
+ * @example
+ * const camelCase = { userId: "123", createdAt: "2024-01-01", orderData: { customerId: "456" } };
+ * const snakeCase = convertToSnakeCase(camelCase);
+ * // Result: { user_id: "123", created_at: "2024-01-01", order_data: { customer_id: "456" } }
+ */
+export function convertToSnakeCase<T = any>(obj: T): any {
+     if (obj === null || obj === undefined) {
+          return obj;
+     }
+
+     // Handle arrays
+     if (Array.isArray(obj)) {
+          return obj.map(item => convertToSnakeCase(item));
+     }
+
+     // Handle Date objects - preserve as-is
+     if (obj instanceof Date) {
+          return obj.toISOString();
+     }
+
+     // Handle primitive types
+     if (typeof obj !== 'object') {
+          return obj;
+     }
+
+     // Handle objects
+     const result: Record<string, any> = {};
+     for (const [key, value] of Object.entries(obj)) {
+          const snakeKey = toSnakeCase(key);
+          result[snakeKey] = convertToSnakeCase(value);
+     }
+
+     return result;
+}
+
+// ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
@@ -177,11 +230,6 @@ interface InvoiceUpsertArgs {
 }
 
 export async function upsertInvoiceFromOrder({ order, client_id, subscription_id }: InvoiceUpsertArgs): Promise<void> {
-     // Map camelCase keys to snake_case for DB compatibility
-     function toSnakeCase(str: string) {
-          return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
-     }
-
      function isDateTimeKey(key: string) {
           // Matches snake_case or camelCase datetime fields
           return /(_at|At|_date|Date|_time|Time)$/.test(key);

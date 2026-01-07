@@ -1,7 +1,7 @@
 // app/api/polar/webhook/customer/route.ts
 import { logServerAction } from "@/app/lib/server-logging";
 import { Webhooks } from "@polar-sh/nextjs";
-import { resolveClientIdByEmail, patchClientSubscription, revalidateProfile } from "../webhook-utils";
+import { convertToSnakeCase, resolveClientIdByEmail, patchClientSubscription, revalidateProfile } from "../webhook-utils";
 
 export const runtime = "nodejs";
 
@@ -31,7 +31,7 @@ export const POST = Webhooks({
           const t0 = Date.now();
           console.log('Customer updated webhook received:', payload);
 
-          const customerData = payload.data;
+          const customerData = convertToSnakeCase(payload.data);
           const polarCustomerId = customerData.id;
 
           // Type narrowing: check if data has email property
