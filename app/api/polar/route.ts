@@ -21,6 +21,16 @@ async function getApartmentCountForClient(clientId: string): Promise<number> {
      return count ?? 0;
 }
 
+async function isSubscriptionPlanInStatus(status: 'active' | 'canceled' | 'past_due' | 'trialing' | 'unpaid', clientSubscriptionPlanPolarId: string): Promise<boolean> {
+     const { data, error } = await supabase
+          .from("tblClientSubscriptions")
+          .select("status", { head: true, count: "exact" })
+          .eq("polar_subscription_id", clientSubscriptionPlanPolarId)
+          .single();
+     if (error || !data) return false;
+     return data.status === status;
+}
+
 export async function POST(req: Request) {
      try {
           const body = await req.json();
@@ -81,6 +91,12 @@ export async function DELETE(req: Request) {
      try {
           const { polarSubscriptionId, polarCustomerId } = await req.json();
           console.log(`Subscription id: ${polarSubscriptionId}, polar customer id: ${polarCustomerId}`, 'info');
+
+          const isCanceled = await isSubscriptionPlanInStatus('canceled', polarSubscriptionId);
+
+          if (isCanceled) {
+               return NextResponse.json({ message: "Subscription is already canceled." });
+          }
 
           if (!polarSubscriptionId || !polarCustomerId) {
                return NextResponse.json({ error: "Missing subscriptionId or clientId" }, { status: 400 });

@@ -152,7 +152,14 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
                          }),
                     });
                     if (!res.ok) {
-                         toast.error("Failed to cancel subscription. Please try again or contact support.");
+                         const errorData = await res.json().catch(() => ({}));
+                         if (errorData?.error === "Missing subscriptionId or clientId") {
+                              toast.error("Missing subscription identifiers. Please contact support.");
+                         } else if (errorData?.error === "Subscription is already canceled.") {
+                              toast.error("This subscription is already canceled or will be canceled at the end of the current billing period.");
+                         } else {
+                              toast.error("Failed to cancel subscription. Please try again or contact support.");
+                         }
                          handleDialogToggle("confirmCancel", false);
                     } else {
                          toast.success("Subscription canceled successfully.");
