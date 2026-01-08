@@ -327,7 +327,7 @@ export async function getSubscriptionPlanIdForClient(clientId: string): Promise<
 type ClientSubscriptionPatch = Partial<PolarSubscription>;
 
 export async function patchClientSubscription(clientId: string, patch: ClientSubscriptionPatch, updateType: string): Promise<void> {
-     const update: Record<string, unknown> = { updated_at: nowIso() };
+     const update: Record<string, unknown> = { modified_at: nowIso() };
 
      for (const [k, v] of Object.entries(patch)) {
           if (v !== undefined) update[k] = v;
