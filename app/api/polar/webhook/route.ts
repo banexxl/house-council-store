@@ -551,16 +551,16 @@ async function handleSubscriptionEvent(payload: any, eventType: string): Promise
                return;
           }
 
-          // Resolve subscription plan from product_id
-          let resolvedSubscriptionId = subscription_id;
+          // Resolve polar product - polarProductId is the product id from tblPolarProducts
+          let resolvedSubscriptionId = polarProductId || subscription_id;
           if (polarProductId) {
-               const { data: subRow, error: subError } = await supabase
-                    .from("tblSubscriptionPlans")
+               const { data: productRow, error: productError } = await supabase
+                    .from("tblPolarProducts")
                     .select("id")
-                    .or(`polar_product_id_monthly.eq.${polarProductId},polar_product_id_annually.eq.${polarProductId}`)
+                    .eq("id", polarProductId)
                     .maybeSingle<{ id: string }>();
-               if (!subError && subRow?.id) {
-                    resolvedSubscriptionId = subRow.id;
+               if (!productError && productRow?.id) {
+                    resolvedSubscriptionId = productRow.id;
                     // Update with the new subscription_id
                     if ('product' in subscriptionData && subscriptionData.product && typeof subscriptionData.product === 'object' && 'id' in subscriptionData.product) {
                          await supabase

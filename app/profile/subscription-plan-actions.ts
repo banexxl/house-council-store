@@ -26,12 +26,10 @@ export const readSubscriptionPlanFeatures = async (
      const userId = (await supabase.auth.getUser()).data.user?.id;
 
      const { data: subscriptionPlan, error } = await supabase
-          .from("tblSubscriptionPlans")
+          .from("tblPolarProducts")
           .select(`
       *,
-      tblSubscriptionPlans_Features (
-        tblFeatures (*)
-      )
+      tblPolarProductBenefits (*)
     `)
           .eq("id", id)
           .single();
@@ -53,12 +51,16 @@ export const readSubscriptionPlanFeatures = async (
           };
      }
 
-     // Normalize: rename tblSubscriptionPlans_Features → features
-     const features: Feature[] = subscriptionPlan.tblSubscriptionPlans_Features?.map(
-          (relation: { tblFeatures: Feature }) => relation.tblFeatures
+     // Convert Polar benefits to features structure
+     const features: Feature[] = subscriptionPlan.tblPolarProductBenefits?.map(
+          (benefit: any) => ({
+               id: benefit.id,
+               name: benefit.description || '',
+               description: benefit.description || ''
+          })
      ) || [];
 
-     const { tblSubscriptionPlans_Features, ...planData } = subscriptionPlan;
+     const { tblPolarProductBenefits, ...planData } = subscriptionPlan;
 
      await logServerAction({
           user_id: null,
@@ -87,12 +89,12 @@ export const readActivePolarProducts = async (): Promise<{
      const supabase = await useServerSideSupabaseAnonClient();
      const userId = (await supabase.auth.getUser()).data.user?.id;
 
-     // Fetch active products
+     // Fetch active products (camelCase columns)
      const { data: products, error: productError } = await supabase
           .from("tblPolarProducts")
           .select(`*`)
-          .eq('is_archived', false)
-          .order("created_at", { ascending: true });
+          .eq('isArchived', false)
+          .order("createdAt", { ascending: true });
 
      if (productError) {
           await logServerAction({
@@ -117,13 +119,13 @@ export const readActivePolarProducts = async (): Promise<{
           };
      }
 
-     // Fetch prices for all products
+     // Fetch prices for all products (camelCase columns)
      const productIds = products.map((p: any) => p.id);
      const { data: prices, error: pricesError } = await supabase
           .from("tblPolarProductPrices")
           .select(`*`)
-          .in('product_id', productIds)
-          .eq('is_archived', false);
+          .in('productId', productIds)
+          .eq('isArchived', false);
 
      if (pricesError) {
           await logServerAction({
@@ -141,24 +143,24 @@ export const readActivePolarProducts = async (): Promise<{
           };
      }
 
-     // Fetch benefits for all products
+     // Fetch benefits for all products (camelCase columns)
      const { data: benefits } = await supabase
           .from("tblPolarProductBenefits")
           .select(`*`)
-          .in('organization_id', products.map((p: any) => p.organization_id));
+          .in('organizationId', products.map((p: any) => p.organizationId));
 
-     // Fetch medias for all products
+     // Fetch medias for all products (camelCase columns)
      const { data: medias } = await supabase
           .from("tblPolarProductMedias")
           .select(`*`)
-          .in('organization_id', products.map((p: any) => p.organization_id));
+          .in('organizationId', products.map((p: any) => p.organizationId));
 
      // Combine products with their prices, benefits, and medias
      const productsWithDetails = products.map((product: any) => ({
           ...product,
-          prices: (prices || []).filter((p: any) => p.product_id === product.id),
-          benefits: (benefits || []).filter((b: any) => b.organization_id === product.organization_id),
-          medias: (medias || []).filter((m: any) => m.organization_id === product.organization_id),
+          prices: (prices || []).filter((p: any) => p.productId === product.id),
+          benefits: (benefits || []).filter((b: any) => b.organizationId === product.organizationId),
+          medias: (medias || []).filter((m: any) => m.organizationId === product.organizationId),
      }));
 
      await logServerAction({
@@ -195,13 +197,10 @@ export const readFeaturesFromSubscriptionPlanId = async (subscriptionPlanId: str
      const supabase = await useServerSideSupabaseAnonClient();
      const userId = (await supabase.auth.getUser()).data.user?.id;
      const { data: subscriptionPlan, error: planError } = await supabase
-          .from("tblSubscriptionPlans")
+          .from("tblPolarProducts")
           .select(`
       *,
-          tblSubscriptionPlans_Features (
-          feature_id,
-          tblFeatures (*)
-          )
+          tblPolarProductBenefits (*)
     `)
           .eq("id", subscriptionPlanId)
           .single();
@@ -230,10 +229,14 @@ export const readFeaturesFromSubscriptionPlanId = async (subscriptionPlanId: str
           })
           return { success: false, error: "Subscription plan not found" };
      }
-     // Extract features from the subscription plan and exclude tblSubscriptionPlans_Features
-     const features = subscriptionPlan.tblSubscriptionPlans_Features.map((relation: any) => relation.tblFeatures);
-     // Return the subscription plan without tblSubscriptionPlans_Features
-     const { tblSubscriptionPlans_Features, ...restOfSubscriptionPlan } = subscriptionPlan;
+     // Convert Polar benefits to features structure
+     const features = subscriptionPlan.tblPolarProductBenefits?.map((benefit: any) => ({
+          id: benefit.id,
+          name: benefit.description || '',
+          description: benefit.description || ''
+     })) || [];
+     // Return the subscription plan without tblPolarProductBenefits
+     const { tblPolarProductBenefits, ...restOfSubscriptionPlan } = subscriptionPlan;
 
      await logServerAction({
           user_id: null,
@@ -257,14 +260,13 @@ export const readAllSubscriptionPlans = async (): Promise<{
      const userId = (await supabase.auth.getUser()).data.user?.id;
 
      const { data: subscriptionPlans, error: planError } = await supabase
-          .from("tblSubscriptionPlans")
+          .from("tblPolarProducts")
           .select(`
                *,
-               tblSubscriptionPlans_Features (
-                    tblFeatures (*)
-               )
+               tblPolarProductBenefits (*)
           `)
-          .order("created_at", { ascending: true });
+          .eq('isArchived', false)
+          .order("createdAt", { ascending: true });
 
      if (planError) {
           await logServerAction({
@@ -282,11 +284,15 @@ export const readAllSubscriptionPlans = async (): Promise<{
           };
      }
 
-     // Flatten features into a simple array
+     // Convert Polar benefits to features structure
      const plansWithFeatures = (subscriptionPlans || []).map((plan: any) => ({
           ...plan,
-          features: plan.tblSubscriptionPlans_Features?.map(
-               (pf: any) => pf.tblFeatures
+          features: plan.tblPolarProductBenefits?.map(
+               (benefit: any) => ({
+                    id: benefit.id,
+                    name: benefit.description || '',
+                    description: benefit.description || ''
+               })
           ) || [],
      }));
 

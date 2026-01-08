@@ -74,25 +74,28 @@ export const POST = Webhooks({
                     return;
                }
 
-               // Resolve subscription plan from product_id
-               let resolvedSubscriptionId = subscription_id;
+               // Resolve polar product - polarProductId is already the product id from tblPolarProducts
+               let resolvedSubscriptionId = polarProductId || subscription_id;
                if (polarProductId) {
-                    const { data: subRow, error: subError } = await supabase
-                         .from("tblSubscriptionPlans")
+                    const { data: productRow, error: productError } = await supabase
+                         .from("tblPolarProducts")
                          .select("id")
-                         .or(`polar_product_id_monthly.eq.${polarProductId},polar_product_id_annually.eq.${polarProductId}`)
+                         .eq("id", polarProductId)
                          .maybeSingle<{ id: string }>();
-                    if (subError && !subRow) {
+                    if (productError && !productRow) {
                          await logServerAction({
                               user_id: null,
-                              action: `Store Webhook - ${payload.type} could not resolve subscription plan from product id`,
+                              action: `Store Webhook - ${payload.type} could not find polar product`,
                               payload: { type: payload.type, polarProductId },
                               status: "fail",
-                              error: "No subscription plan found for product id",
+                              error: "No polar product found for product id",
                               duration_ms: Date.now() - t0,
                               type: "internal",
                          })
                          return
+                    }
+                    if (productRow) {
+                         resolvedSubscriptionId = productRow.id;
                     }
                }
 
@@ -212,24 +215,27 @@ export const POST = Webhooks({
                     return;
                }
 
-               let resolvedSubscriptionId = subscription_id;
+               let resolvedSubscriptionId = polarProductId || subscription_id;
                if (polarProductId) {
-                    const { data: subRow, error: subError } = await supabase
-                         .from("tblSubscriptionPlans")
+                    const { data: productRow, error: productError } = await supabase
+                         .from("tblPolarProducts")
                          .select("id")
-                         .or(`polar_product_id_monthly.eq.${polarProductId},polar_product_id_annually.eq.${polarProductId}`)
+                         .eq("id", polarProductId)
                          .maybeSingle<{ id: string }>();
-                    if (subError && !subRow) {
+                    if (productError && !productRow) {
                          await logServerAction({
                               user_id: null,
-                              action: `Store Webhook - ${eventType} could not resolve subscription plan from product id`,
+                              action: `Store Webhook - ${eventType} could not find polar product`,
                               payload: { eventType, polarProductId },
                               status: "fail",
-                              error: "No subscription plan found for product id",
+                              error: "No polar product found for product id",
                               duration_ms: Date.now() - t0,
                               type: "webhook",
                          })
                          return
+                    }
+                    if (productRow) {
+                         resolvedSubscriptionId = productRow.id;
                     }
                }
 

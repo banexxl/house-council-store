@@ -19,17 +19,17 @@ export type PolarProductInterval = "day" | "week" | "month" | "year";
 
 export interface PolarProduct {
      id: string;
-     created_at: string;
-     modified_at: string;
-     trial_interval: PolarProductInterval;
-     trial_interval_count: number;
+     createdAt: string;
+     modifiedAt: string;
+     trialInterval: PolarProductInterval;
+     trialIntervalCount: number;
      name: string;
      description: string;
-     recurring_interval: PolarProductInterval;
-     recurring_interval_count: number;
-     is_recurring: boolean;
-     is_archived: boolean;
-     organization_id: string;
+     recurringInterval: PolarProductInterval;
+     recurringIntervalCount: number;
+     isRecurring: boolean;
+     isArchived: boolean;
+     organizationId: string;
      metadata: Record<string, unknown>;
      prices: PolarProductPrice[];
      benefits: PolarProductBenefit[];
@@ -38,77 +38,77 @@ export interface PolarProduct {
 }
 
 export interface PolarProductPrice {
-     created_at: string;
-     modified_at: string;
+     createdAt: string;
+     modifiedAt: string;
      id: string;
      source: string;
-     amount_type: string;
-     is_archived: boolean;
-     product_id: string;
+     amountType: string;
+     isArchived: boolean;
+     productId: string;
      type: string;
-     recurring_interval: PolarProductInterval;
-     price_currency: string;
-     price_amount: number;
+     recurringInterval: PolarProductInterval;
+     priceCurrency: string;
+     priceAmount: number;
      legacy: boolean;
 }
 
 export interface PolarProductBenefit {
      id: string;
-     created_at: string;
-     modified_at: string;
+     createdAt: string;
+     modifiedAt: string;
      type: string;
      description: string;
      selectable: boolean;
      deletable: boolean;
-     organization_id: string;
+     organizationId: string;
      metadata: Record<string, unknown>;
      properties: Record<string, string>;
 }
 
 export interface PolarProductMedia {
      id: string;
-     organization_id: string;
+     organizationId: string;
      name: string;
      path: string;
-     mime_type: string;
+     mimeType: string;
      size: number;
-     storage_version: string;
-     checksum_etag: string;
-     checksum_sha256_base64: string;
-     checksum_sha256_hex: string;
-     last_modified_at: string;
+     storageVersion: string;
+     checksumEtag: string;
+     checksumSha256Base64: string;
+     checksumSha256Hex: string;
+     lastModifiedAt: string;
      version: string;
      service: string;
-     is_uploaded: boolean;
-     created_at: string;
-     size_readable: string;
-     public_url: string;
+     isUploaded: boolean;
+     createdAt: string;
+     sizeReadable: string;
+     publicUrl: string;
 }
 
 export interface PolarProductAttachedCustomField {
-     custom_field_id: string;
-     custom_field: PolarProductCustomField;
+     customFieldId: string;
+     customField: PolarProductCustomField;
      order: number;
      required: boolean;
 }
 
 export interface PolarProductCustomField {
-     created_at: string;
-     modified_at: string;
+     createdAt: string;
+     modifiedAt: string;
      id: string;
      metadata: Record<string, unknown>;
      type: string;
      slug: string;
      name: string;
-     organization_id: string;
+     organizationId: string;
      properties: PolarProductCustomFieldProperties;
 }
 
 export interface PolarProductCustomFieldProperties {
-     form_label: string;
-     form_help_text: string;
-     form_placeholder: string;
+     formLabel: string;
+     formHelpText: string;
+     formPlaceholder: string;
      textarea: boolean;
-     min_length: number;
-     max_length: number;
+     minLength: number;
+     maxLength: number;
 }

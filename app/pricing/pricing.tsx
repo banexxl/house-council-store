@@ -176,11 +176,11 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, pol
                                         const isThisLoading = loadingKey === key;
                                         const isAnyLoading = loadingKey !== null;
 
-                                        // Find matching Polar product and get price ID
+                                        // Find matching Polar product and get price ID (camelCase columns)
                                         const polarProductId = isAnnual ? plan.polar_product_id_annually : plan.polar_product_id_monthly;
                                         const matchingProduct = polarProducts?.find(p => p.id === polarProductId);
                                         const matchingPrice = matchingProduct?.prices?.find(p =>
-                                             p.recurring_interval === (isAnnual ? 'year' : 'month') && !p.is_archived
+                                             p.recurringInterval === (isAnnual ? 'year' : 'month') && !p.isArchived
                                         );
                                         const priceId = matchingPrice?.id || polarProductId; // Fallback to product ID if price not found
 
