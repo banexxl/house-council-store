@@ -9,8 +9,6 @@ import {
      CardContent,
      Container,
      Paper,
-     ToggleButton,
-     ToggleButtonGroup,
      Typography,
      List,
      ListItem,
@@ -25,7 +23,6 @@ import {
 import CheckIcon from "@mui/icons-material/Check"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import toast, { Toaster } from "react-hot-toast"
-import { SubscriptionPlan } from "../types/subscription-plan"
 import { Feature } from "../types/feature"
 import { useRouter } from "next/navigation"
 import Animate from "@/app/components/animation-framer-motion"
@@ -55,19 +52,23 @@ const faqs = [
 ]
 
 interface PricingPageProps {
-     subscriptionPlans: SubscriptionPlan[]
      polarProducts?: (PolarProduct & { prices: PolarProductPrice[], benefits: any[], medias: any[] })[]
-     clientSubscriptionPlanData?: PolarSubscription & { subscription_plan: SubscriptionPlan } | null
+     clientSubscriptionPlanData?: PolarSubscription & { subscription_plan: any } | null
      apartmentCount?: number
      client?: Client | null
 }
 
-export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, polarProducts, clientSubscriptionPlanData, apartmentCount, client }) => {
+export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, clientSubscriptionPlanData, apartmentCount, client }) => {
      const router = useRouter()
      const [loadingKey, setLoadingKey] = useState<string | null>(null);
-     const [planBillingCycles, setPlanBillingCycles] = useState<Record<string, "monthly" | "annually">>({});
      const theme = useTheme()
      const [isPending, startTransition] = useTransition()
+
+     // Debug logging
+     console.log('polarProducts:', polarProducts);
+     console.log('mainProduct:', polarProducts?.[0]);
+     console.log('prices:', polarProducts?.[0]?.prices);
+     console.log('benefits:', polarProducts?.[0]?.benefits);
 
      const handleNavClick = (path: string) => {
           startTransition(() => {
@@ -75,24 +76,37 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, pol
           });
      };
 
-     const handleStartFreeTrial = (plan: SubscriptionPlan, priceId: string) => {
-          void startPolarCheckout(plan, priceId);
+     const handleStartFreeTrial = (priceId: string, productId: string) => {
+          void startPolarCheckout(priceId, productId);
      };
 
-     const handlePlanBillingCycleChange = (planKey: string, newValue: "monthly" | "annually" | null) => {
-          if (!newValue) return;
-          setPlanBillingCycles((prev) => ({ ...prev, [planKey]: newValue }));
-     }
+     // Get the main product (assuming single product with multiple prices)
+     const mainProduct = polarProducts?.[0];
 
-     const sortedPlans = useMemo(
-          () =>
-               [...subscriptionPlans].sort(
-                    (a, b) => (a.features?.length ?? 0) - (b.features?.length ?? 0)
-               ),
-          [subscriptionPlans]
-     );
+     // Group prices by recurring interval
+     const pricesByInterval = useMemo(() => {
+          if (!mainProduct?.prices) return {};
 
-     const startPolarCheckout = async (plan: SubscriptionPlan, priceId: string) => {
+          const grouped: Record<string, PolarProductPrice> = {};
+          mainProduct.prices.forEach(price => {
+               if (!price.isArchived) {
+                    // Group by interval type only (month, year, etc)
+                    grouped[price.recurringInterval] = price;
+               }
+          });
+          return grouped;
+     }, [mainProduct]);
+
+     // Convert benefits to features
+     const features = useMemo(() => {
+          return mainProduct?.benefits?.map((benefit: any) => ({
+               id: benefit.id,
+               name: benefit.description || '',
+               description: benefit.description || ''
+          })) || [];
+     }, [mainProduct]);
+
+     const startPolarCheckout = async (priceId: string, productId: string) => {
 
           if (!client?.id) {
                toast.error("Please sign in to start a trial.");
@@ -105,11 +119,11 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, pol
                return;
           }
 
-          setLoadingKey(plan.id!);
+          setLoadingKey(priceId);
 
           try {
                const successUrl =
-                    `https://nest-link.app/pricing/subscription-plan-purchase/success?client_id=${client.id}&subscription_id=${plan.id}`;
+                    `https://nest-link.app/pricing/subscription-plan-purchase/success?client_id=${client.id}&subscription_id=${productId}`;
                const returnUrl =
                     `https://nest-link.app/pricing`;
 
@@ -118,11 +132,11 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, pol
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                          clientId: client.id!,
-                         subscriptionPlanId: plan.id,
+                         subscriptionPlanId: productId,
                          customerEmail: client.email,
                          successUrl,
                          returnUrl,
-                         productIds: [priceId], // Use the price ID directly
+                         productIds: [priceId],
                     }),
                });
 
@@ -164,181 +178,131 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, pol
                               </Box>
 
                               <Grid container spacing={4} justifyContent="center">
-                                   {sortedPlans.map((plan, index) => {
-                                        const planKey = plan.id ?? `plan-${index}`;
-                                        const supportsAnnualBilling = plan.is_billed_annually;
-                                        const hasAnnualDiscount = supportsAnnualBilling && plan.annual_discount_percentage > 0;
-                                        const hasGeneralDiscount = plan.discount_percentage > 0;
-                                        const selectedCycle = planBillingCycles[planKey] ?? "monthly";
-                                        const billingCycle = supportsAnnualBilling ? selectedCycle : "monthly";
-                                        const isAnnual = billingCycle === "annually";
-                                        const key = `${plan.id}-${billingCycle}`;
-                                        const isThisLoading = loadingKey === key;
-                                        const isAnyLoading = loadingKey !== null;
+                                   {/* Monthly Plan */}
+                                   {pricesByInterval['month'] && (
+                                        <Grid key="monthly" size={{ xs: 12, sm: 6, md: 6 }}>
+                                             <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
+                                                  <CardContent sx={{ flexGrow: 1 }}>
+                                                       <Typography variant="h5" gutterBottom>
+                                                            Monthly
+                                                       </Typography>
+                                                       <Typography
+                                                            variant="body2"
+                                                            color="text.secondary"
+                                                            gutterBottom
+                                                            sx={{ minHeight: 60, maxHeight: 80, overflowY: "auto" }}
+                                                       >
+                                                            {mainProduct?.description}
+                                                       </Typography>
 
-                                        // Find matching Polar product and get price ID (camelCase columns)
-                                        const polarProductId = isAnnual ? plan.polar_product_id_annually : plan.polar_product_id_monthly;
-                                        const matchingProduct = polarProducts?.find(p => p.id === polarProductId);
-                                        const matchingPrice = matchingProduct?.prices?.find(p =>
-                                             p.recurringInterval === (isAnnual ? 'year' : 'month') && !p.isArchived
-                                        );
-                                        const priceId = matchingPrice?.id || polarProductId; // Fallback to product ID if price not found
-
-                                        const monthlyBasePrice = plan.monthly_total_price_per_apartment;
-                                        const monthlyPrice = hasGeneralDiscount
-                                             ? (monthlyBasePrice * (1 - plan.discount_percentage / 100))
-                                             : monthlyBasePrice;
-
-                                        const annualPrice = supportsAnnualBilling
-                                             ? plan.total_price_per_apartment_with_discounts
-                                             : null;
-
-                                        const originalAnnualPrice = isAnnual && hasAnnualDiscount && annualPrice
-                                             ? ((annualPrice * 100) / (100 - plan.annual_discount_percentage))
-                                             : null;
-
-                                        const displayedPrice = isAnnual && supportsAnnualBilling ? (annualPrice ?? 0) : monthlyPrice;
-                                        const priceSuffix = isAnnual && supportsAnnualBilling ? "per apartment/year" : "per apartment/month";
-                                        const buttonLabel = isAnnual && supportsAnnualBilling
-                                             ? `Start ${hasAnnualDiscount ? ` (Save ${plan.annual_discount_percentage}%)` : ""} Trial`
-                                             : "Start Trial";
-                                        const previousPlan = index > 0 ? sortedPlans[index - 1] : null;
-                                        const previousFeatures = previousPlan?.features ?? [];
-                                        const featuresToDisplay =
-                                             index === 0
-                                                  ? (plan.features ?? [])
-                                                  : (plan.features ?? []).filter((feature) => {
-                                                       const matchesById = previousFeatures.some((prev) => prev.id && prev.id === feature.id);
-                                                       const matchesByName = previousFeatures.some(
-                                                            (prev) => !prev.id && prev.name === feature.name
-                                                       );
-                                                       return !(matchesById || matchesByName);
-                                                  });
-
-                                        return (
-                                             <Grid key={plan.id ?? planKey} size={{ xs: 12, sm: 6, md: 4 }}>
-                                                  <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
-                                                       <CardContent sx={{ flexGrow: 1 }}>
-                                                            <Typography variant="h5" gutterBottom>
-                                                                 {plan.name}
+                                                       <Paper variant="outlined" sx={{ p: 2, my: 3 }}>
+                                                            <Typography variant="subtitle2" color="text.secondary">
+                                                                 Billed monthly
                                                             </Typography>
-                                                            <Typography
-                                                                 variant="body2"
-                                                                 color="text.secondary"
-                                                                 gutterBottom
-                                                                 sx={{
-                                                                      minHeight: 140,
-                                                                      maxHeight: 160,
-                                                                      overflowY: "auto",
-                                                                 }}
-                                                            >
-                                                                 {plan.description}
-                                                            </Typography>
-
-                                                            <Box sx={{ my: 3, display: "flex", flexDirection: "column", gap: 2 }}>
-                                                                 {supportsAnnualBilling && (
-                                                                      <ToggleButtonGroup
-                                                                           size="small"
-                                                                           exclusive
-                                                                           value={billingCycle}
-                                                                           onChange={(_, value) => handlePlanBillingCycleChange(planKey, value)}
-                                                                      >
-                                                                           <ToggleButton value="monthly">Monthly</ToggleButton>
-                                                                           <ToggleButton value="annually">Annually</ToggleButton>
-                                                                      </ToggleButtonGroup>
-                                                                 )}
-
-                                                                 <Paper variant="outlined" sx={{ p: 2 }}>
-                                                                      <Typography variant="subtitle2" color="text.secondary">
-                                                                           {isAnnual && supportsAnnualBilling ? "Annual billing" : "Monthly billing"}
-                                                                      </Typography>
-                                                                      <Typography variant="h4" display="block">
-                                                                           ${displayedPrice}
-                                                                           <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
-                                                                                {priceSuffix}
-                                                                           </Typography>
-                                                                      </Typography>
-                                                                      {originalAnnualPrice && (
-                                                                           <Typography
-                                                                                variant="body2"
-                                                                                color="text.secondary"
-                                                                                display="block"
-                                                                                sx={{ textDecoration: "line-through", mt: 0.5 }}
-                                                                           >
-                                                                                ${originalAnnualPrice.toFixed(2)} /year before discount
-                                                                           </Typography>
-                                                                      )}
-                                                                      {isAnnual && supportsAnnualBilling && (
-                                                                           <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
-                                                                                Equivalent to ${((displayedPrice ?? 0) / 12).toFixed(2)} / month
-                                                                           </Typography>
-                                                                      )}
-                                                                      {isAnnual && supportsAnnualBilling && hasAnnualDiscount && (
-                                                                           <Typography variant="caption" color={theme.palette.primary.main} display="block" sx={{ mt: 0.5 }}>
-                                                                                Annual discount: {plan.annual_discount_percentage}% off
-                                                                           </Typography>
-                                                                      )}
-                                                                      {!isAnnual && hasGeneralDiscount && (
-                                                                           <Typography variant="caption" color={theme.palette.primary.main} display="block" sx={{ mt: 0.5 }}>
-                                                                                Includes {plan.discount_percentage}% discount
-                                                                           </Typography>
-                                                                      )}
-                                                                      {!supportsAnnualBilling && (
-                                                                           <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
-                                                                                Billed monthly
-                                                                           </Typography>
-                                                                      )}
-                                                                 </Paper>
-                                                            </Box>
-
-                                                            {index > 0 && (
-                                                                 <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: "block" }}>
-                                                                      All of the {previousPlan?.name ?? "previous"} features plus:
+                                                            <Typography variant="h4" display="block">
+                                                                 ${(pricesByInterval['month'].priceAmount / 100).toFixed(2)}
+                                                                 <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                                                                      per apartment/month
                                                                  </Typography>
-                                                            )}
+                                                            </Typography>
+                                                       </Paper>
 
-                                                            <List dense>
-                                                                 {featuresToDisplay.map((feature: Feature) => (
-                                                                      <ListItem key={feature.id ?? feature.name} disablePadding sx={{ py: 0.5 }}>
-                                                                           <ListItemIcon sx={{ minWidth: 32 }}>
-                                                                                <CheckIcon color="primary" fontSize="small" />
-                                                                           </ListItemIcon>
-                                                                           <ListItemText primary={feature.name} />
-                                                                      </ListItem>
-                                                                 ))}
-                                                                 {featuresToDisplay.length === 0 && (
-                                                                      <ListItem disablePadding sx={{ py: 0.5 }}>
-                                                                           <ListItemText primary="No additional features" />
-                                                                      </ListItem>
-                                                                 )}
-                                                            </List>
-                                                       </CardContent>
+                                                       <List dense>
+                                                            {features.map((feature) => (
+                                                                 <ListItem key={feature.id ?? feature.name} disablePadding sx={{ py: 0.5 }}>
+                                                                      <ListItemIcon sx={{ minWidth: 32 }}>
+                                                                           <CheckIcon color="primary" fontSize="small" />
+                                                                      </ListItemIcon>
+                                                                      <ListItemText primary={feature.name} />
+                                                                 </ListItem>
+                                                            ))}
+                                                       </List>
+                                                  </CardContent>
 
-                                                       <CardActions sx={{ p: 2, pt: 0, display: "flex", flexDirection: "column", gap: 1 }}>
-                                                            <Button
-                                                                 variant="contained"
-                                                                 fullWidth
-                                                                 onClick={() => handleStartFreeTrial(plan, priceId)}
-                                                                 disabled={
-                                                                      isAnyLoading ||
-                                                                      !isThisLoading &&
-                                                                      (
-                                                                           clientSubscriptionPlanData?.subscription_id == plan.id &&
-                                                                           clientSubscriptionPlanData?.status === 'active' ||
-                                                                           clientSubscriptionPlanData?.status === 'trialing'
-                                                                      )
-                                                                 }
-                                                                 startIcon={isThisLoading ? <CircularProgress size={20} color="inherit" /> : undefined}
-                                                            >
-                                                                 {isThisLoading ? "Redirecting..." : buttonLabel}
-                                                            </Button>
-                                                       </CardActions>
-                                                  </Card>
-                                             </Grid>
-                                        );
-                                   })}
+                                                  <CardActions sx={{ p: 2, pt: 0 }}>
+                                                       <Button
+                                                            variant="contained"
+                                                            fullWidth
+                                                            onClick={() => handleStartFreeTrial(pricesByInterval['month'].id, mainProduct?.id || '')}
+                                                            disabled={
+                                                                 loadingKey !== null ||
+                                                                 (clientSubscriptionPlanData?.product_id === mainProduct?.id &&
+                                                                      (clientSubscriptionPlanData?.status === 'active' || clientSubscriptionPlanData?.status === 'trialing'))
+                                                            }
+                                                            startIcon={loadingKey === pricesByInterval['month'].id ? <CircularProgress size={20} color="inherit" /> : undefined}
+                                                       >
+                                                            {loadingKey === pricesByInterval['month'].id ? "Redirecting..." : "Start Free Trial"}
+                                                       </Button>
+                                                  </CardActions>
+                                             </Card>
+                                        </Grid>
+                                   )}
 
+                                   {/* Annual Plan */}
+                                   {pricesByInterval['year'] && (
+                                        <Grid key="annual" size={{ xs: 12, sm: 6, md: 6 }}>
+                                             <Card sx={{ height: "100%", display: "flex", flexDirection: "column", border: `2px solid ${theme.palette.primary.main}` }}>
+                                                  <CardContent sx={{ flexGrow: 1 }}>
+                                                       <Typography variant="h5" gutterBottom>
+                                                            Annual
+                                                            <Typography component="span" variant="caption" color="primary" sx={{ ml: 1 }}>
+                                                                 Best Value
+                                                            </Typography>
+                                                       </Typography>
+                                                       <Typography
+                                                            variant="body2"
+                                                            color="text.secondary"
+                                                            gutterBottom
+                                                            sx={{ minHeight: 60, maxHeight: 80, overflowY: "auto" }}
+                                                       >
+                                                            {mainProduct?.description}
+                                                       </Typography>
 
+                                                       <Paper variant="outlined" sx={{ p: 2, my: 3 }}>
+                                                            <Typography variant="subtitle2" color="text.secondary">
+                                                                 Billed annually
+                                                            </Typography>
+                                                            <Typography variant="h4" display="block">
+                                                                 ${(pricesByInterval['year'].priceAmount / 100).toFixed(2)}
+                                                                 <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                                                                      per apartment/year
+                                                                 </Typography>
+                                                            </Typography>
+                                                            <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
+                                                                 Equivalent to ${((pricesByInterval['year'].priceAmount / 100) / 12).toFixed(2)} / month
+                                                            </Typography>
+                                                       </Paper>
+
+                                                       <List dense>
+                                                            {features.map((feature) => (
+                                                                 <ListItem key={feature.id ?? feature.name} disablePadding sx={{ py: 0.5 }}>
+                                                                      <ListItemIcon sx={{ minWidth: 32 }}>
+                                                                           <CheckIcon color="primary" fontSize="small" />
+                                                                      </ListItemIcon>
+                                                                      <ListItemText primary={feature.name} />
+                                                                 </ListItem>
+                                                            ))}
+                                                       </List>
+                                                  </CardContent>
+
+                                                  <CardActions sx={{ p: 2, pt: 0 }}>
+                                                       <Button
+                                                            variant="contained"
+                                                            fullWidth
+                                                            onClick={() => handleStartFreeTrial(pricesByInterval['year'].id, mainProduct?.id || '')}
+                                                            disabled={
+                                                                 loadingKey !== null ||
+                                                                 (clientSubscriptionPlanData?.product_id === mainProduct?.id &&
+                                                                      (clientSubscriptionPlanData?.status === 'active' || clientSubscriptionPlanData?.status === 'trialing'))
+                                                            }
+                                                            startIcon={loadingKey === pricesByInterval['year'].id ? <CircularProgress size={20} color="inherit" /> : undefined}
+                                                       >
+                                                            {loadingKey === pricesByInterval['year'].id ? "Redirecting..." : "Start Free Trial"}
+                                                       </Button>
+                                                  </CardActions>
+                                             </Card>
+                                        </Grid>
+                                   )}
                               </Grid>
 
 
