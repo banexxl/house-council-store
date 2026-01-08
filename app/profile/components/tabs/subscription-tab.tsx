@@ -136,7 +136,7 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
 
      const handleCancelSubscription = async () => {
           setIsProcessing(true)
-          if (!subscriptionData?.subscription_id || !subscriptionData?.customer_id) {
+          if (!subscriptionData?.polar_subscription_id || !subscriptionData?.customer_id) {
                toast.error("Missing subscription identifiers.")
                setIsProcessing(false)
                return
@@ -147,7 +147,7 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
                          method: "DELETE",
                          headers: { "Content-Type": "application/json" },
                          body: JSON.stringify({
-                              subscriptionId: subscriptionData.polar_subscription_id,
+                              polarSubscriptionId: subscriptionData.polar_subscription_id,
                               polarCustomerId: subscriptionData.customer_id,
                          }),
                     });
