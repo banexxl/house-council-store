@@ -24,7 +24,11 @@ export const POST = Webhooks({
                     .from("tblPolarOrganization")
                     .upsert(organizationData, { onConflict: "id" });
 
-               if (upsertError) throw upsertError;
+               if (upsertError) {
+                    console.log('Upsert Organization', upsertError);
+
+                    throw upsertError;
+               }
 
                await logServerAction({
                     user_id: null,
