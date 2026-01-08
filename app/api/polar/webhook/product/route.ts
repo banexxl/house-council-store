@@ -5,100 +5,66 @@ import { logServerAction } from "@/app/lib/server-logging";
 
 export const runtime = "nodejs";
 
+// ✅ service role (bypasses RLS)
 const supabase = createClient(
      process.env.NEXT_PUBLIC_SUPABASE_URL!,
      process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-type PolarInterval = "day" | "week" | "month" | "year";
-
-type PolarPricePayload = {
-     id: string;
-     created_at: string;
-     modified_at: string | null;
-     source: string;
-     amount_type: string;
-     is_archived: boolean;
-     product_id: string;
-     type: string;
-     recurring_interval: PolarInterval | null;
-     price_currency: string;
-
-     // ✅ metered pricing fields (from your payload)
-     unit_amount: string; // "100.000000000000"
-     cap_amount: string | null;
-     meter_id: string | null;
-     meter?: { id: string; name: string } | null;
-};
-
-type PolarProductPayload = {
-     id: string;
-     created_at: string;
-     modified_at: string;
-
-     trial_interval: PolarInterval | null;
-     trial_interval_count: number | null;
-
-     name: string;
-     description: string | null;
-
-     recurring_interval: PolarInterval | null;
-     recurring_interval_count: number | null;
-
-     is_recurring: boolean;
-     is_archived: boolean;
-
-     organization_id: string; // ✅ present
-
-     metadata: Record<string, unknown> | null;
-
-     prices: PolarPricePayload[];
-     benefits: any[];
-     medias: any[];
-     attached_custom_fields: any[];
-};
-
-function nowIso() {
-     return new Date().toISOString();
+// ------------------------------------------------------------
+// Helpers
+// ------------------------------------------------------------
+function toIso(v: unknown): string {
+     if (!v) return new Date().toISOString();
+     if (v instanceof Date) return v.toISOString();
+     if (typeof v === "string") return v;
+     // Polar sometimes gives Date-like objects; fallback:
+     try {
+          return new Date(v as any).toISOString();
+     } catch {
+          return new Date().toISOString();
+     }
 }
 
-/**
- * Convert Polar's unit_amount string ("100.000000000000") into numeric.
- * Supabase numeric(12,2) would round, but we keep more precision in code then let DB cast.
- */
 function toNumericString(v: unknown): string {
+     // Polar metered pricing uses strings like "100.000000000000"
      if (typeof v === "number") return String(v);
      if (typeof v === "string") return v;
      return "0";
 }
 
-async function syncProductToDb(product: PolarProductPayload, eventLabel: string) {
+// ------------------------------------------------------------
+// Core sync
+// ------------------------------------------------------------
+async function syncProductToDb(product: any, eventLabel: string) {
      const t0 = Date.now();
-     const productId = product.id;
 
-     // 1) Upsert Product
+     const productId: string | undefined = product?.id;
+     const organizationId: string | undefined = product?.organizationId;
+
+     if (!productId) throw new Error("Missing data.id");
+     if (!organizationId) throw new Error("Missing data.organizationId");
+
+     // 1) Upsert product
      const productRow = {
-          id: product.id,
+          id: productId,
+          createdAt: toIso(product?.createdAt),
+          modifiedAt: toIso(product?.modifiedAt),
 
-          createdAt: product.created_at ?? nowIso(),
-          modifiedAt: product.modified_at ?? nowIso(),
+          trialInterval: product?.trialInterval ?? null,
+          trialIntervalCount: product?.trialIntervalCount ?? null,
 
-          trialInterval: product.trial_interval ?? null,
-          trialIntervalCount: product.trial_interval_count ?? null,
+          name: product?.name ?? "",
+          description: product?.description ?? null,
 
-          name: product.name,
-          description: product.description ?? null,
+          recurringInterval: product?.recurringInterval ?? null,
+          recurringIntervalCount: product?.recurringIntervalCount ?? null,
 
-          recurringInterval: product.recurring_interval ?? null,
-          recurringIntervalCount: product.recurring_interval_count ?? null,
+          isRecurring: Boolean(product?.isRecurring),
+          isArchived: Boolean(product?.isArchived),
 
-          isRecurring: Boolean(product.is_recurring),
-          isArchived: Boolean(product.is_archived),
-
-          // ✅ FIX: map organization_id -> organizationId (NOT NULL)
-          organizationId: product.organization_id,
-
-          metadata: product.metadata ?? {},
+          organizationId, // ✅ NOT NULL column
+          metadata: product?.metadata ?? {},
      };
 
      const { error: prodErr } = await supabase
@@ -109,7 +75,12 @@ async function syncProductToDb(product: PolarProductPayload, eventLabel: string)
           await logServerAction({
                user_id: null,
                action: `Polar Product Webhook - product upsert failed (${eventLabel})`,
-               payload: { productId, error: prodErr.message },
+               payload: {
+                    productId,
+                    organizationId,
+                    dbError: prodErr.message,
+                    productRow,
+               },
                status: "fail",
                error: prodErr.message,
                duration_ms: Date.now() - t0,
@@ -118,57 +89,43 @@ async function syncProductToDb(product: PolarProductPayload, eventLabel: string)
           throw prodErr;
      }
 
-     // 2) Sync Prices (upsert + delete removed)
-     const prices = product.prices ?? [];
+     // 2) Prices (upsert + delete removed for this product)
+     const prices: any[] = Array.isArray(product?.prices) ? product.prices : [];
 
      if (prices.length > 0) {
           const priceRows = prices.map((p) => ({
                id: p.id,
 
-               createdAt: p.created_at ?? nowIso(),
-               modifiedAt: p.modified_at ?? nowIso(),
+               createdAt: toIso(p.createdAt),
+               modifiedAt: toIso(p.modifiedAt),
 
                source: p.source,
-               amountType: p.amount_type,
-               isArchived: Boolean(p.is_archived),
+               amountType: p.amountType, // e.g. "metered_unit"
+               isArchived: Boolean(p.isArchived),
 
-               productId: p.product_id, // should equal product.id
-               type: p.type,
-               recurringInterval: p.recurring_interval ?? null,
+               productId: p.productId ?? productId,
+               type: p.type, // e.g. "recurring"
+               recurringInterval: p.recurringInterval ?? null,
 
-               priceCurrency: p.price_currency,
+               priceCurrency: p.priceCurrency,
+               // ✅ Store unitAmount into priceAmount since your table has only priceAmount
+               priceAmount: toNumericString(p.priceAmount ?? p.unitAmount ?? 0),
 
-               /**
-                * ✅ IMPORTANT:
-                * Your table currently has "priceAmount" numeric(12,2).
-                * For metered_unit, Polar sends unit_amount as a STRING with high precision.
-                * We'll store unit_amount into priceAmount (rounded by DB to 2 decimals).
-                */
-               priceAmount: toNumericString(p.unit_amount),
-
-               legacy: false,
-
-               /**
-                * OPTIONAL: store metered-specific fields inside a JSON blob.
-                * If you want this persisted, you need to ADD a column in tblPolarProductPrices,
-                * e.g. "metadata" jsonb.
-                *
-                * For now we encode it into product metadata (see below), OR ignore.
-                */
+               legacy: Boolean(p.legacy),
           }));
 
-          const { error: priceUpsertErr } = await supabase
+          const { error: priceErr } = await supabase
                .from("tblPolarProductPrices")
                .upsert(priceRows, { onConflict: "id" });
 
-          if (priceUpsertErr) throw priceUpsertErr;
+          if (priceErr) throw priceErr;
      }
 
-     // Delete prices not present anymore (per product)
+     // delete removed prices
      {
-          const incomingPriceIds = prices.map((p) => p.id);
+          const incomingIds = prices.map((p) => p?.id).filter(Boolean) as string[];
 
-          if (incomingPriceIds.length === 0) {
+          if (incomingIds.length === 0) {
                const { error } = await supabase
                     .from("tblPolarProductPrices")
                     .delete()
@@ -180,52 +137,150 @@ async function syncProductToDb(product: PolarProductPayload, eventLabel: string)
                     .from("tblPolarProductPrices")
                     .delete()
                     .eq("productId", productId)
-                    .not("id", "in", `(${incomingPriceIds.map((x) => `"${x}"`).join(",")})`);
+                    .not("id", "in", `(${incomingIds.map((x) => `"${x}"`).join(",")})`);
 
                if (error) throw error;
           }
      }
 
-     // 3) Store metered price details somewhere
-     // Since tblPolarProductPrices lacks columns for meter_id/cap_amount/meter,
-     // we store a snapshot into tblPolarProducts.metadata under "polarPricesExtra".
-     {
-          const polarPricesExtra = prices.map((p) => ({
-               id: p.id,
-               unit_amount: p.unit_amount,
-               cap_amount: p.cap_amount,
-               meter_id: p.meter_id,
-               meter: p.meter ?? null,
-               amount_type: p.amount_type,
+     // 3) Attached custom fields (sync mapping)
+     // NOTE: In your schema, tblPolarProductAttachedCustomFields has:
+     // productId, customFieldId, order, required (and a UNIQUE(productId, customFieldId))
+     const attachedCustomFields: any[] = Array.isArray(product?.attachedCustomFields)
+          ? product.attachedCustomFields
+          : [];
+
+     // Upsert custom fields themselves (if included)
+     const customFields = attachedCustomFields
+          .map((x) => x?.customField)
+          .filter(Boolean);
+
+     if (customFields.length > 0) {
+          const customFieldRows = customFields.map((cf) => ({
+               id: cf.id,
+               createdAt: toIso(cf.createdAt),
+               modifiedAt: toIso(cf.modifiedAt),
+               metadata: cf.metadata ?? {},
+               type: cf.type,
+               slug: cf.slug,
+               name: cf.name,
+               organizationId: cf.organizationId ?? organizationId,
+               properties: cf.properties ?? {},
           }));
 
-          const { error: metaErr } = await supabase
-               .from("tblPolarProducts")
-               .update({
-                    metadata: {
-                         ...(product.metadata ?? {}),
-                         polarPricesExtra,
-                    },
-                    modifiedAt: product.modified_at ?? nowIso(),
-               })
-               .eq("id", productId);
+          const { error: cfErr } = await supabase
+               .from("tblPolarProductCustomFields")
+               .upsert(customFieldRows, { onConflict: "id" });
 
-          if (metaErr) throw metaErr;
+          if (cfErr) throw cfErr;
      }
 
-     // 4) Benefits / Medias / Attached custom fields
-     // Your payload currently sends these empty arrays; leaving logic out for brevity.
-     // If you want them synced too, tell me if you want:
-     // - benefits linked to product via a junction table, OR stored as standalone only
-     // - medias linked to product via a junction table, OR stored as standalone only
+     // Upsert mapping rows
+     if (attachedCustomFields.length > 0) {
+          const mappingRows = attachedCustomFields.map((x) => ({
+               productId,
+               customFieldId: x.customFieldId,
+               order: x.order ?? 0,
+               required: Boolean(x.required),
+          }));
+
+          const { error: mapErr } = await supabase
+               .from("tblPolarProductAttachedCustomFields")
+               .upsert(mappingRows, { onConflict: "productId,customFieldId" });
+
+          if (mapErr) throw mapErr;
+     }
+
+     // Delete removed mappings
+     {
+          const incomingCustomFieldIds = attachedCustomFields
+               .map((x) => x?.customFieldId)
+               .filter(Boolean) as string[];
+
+          if (incomingCustomFieldIds.length === 0) {
+               const { error } = await supabase
+                    .from("tblPolarProductAttachedCustomFields")
+                    .delete()
+                    .eq("productId", productId);
+
+               if (error) throw error;
+          } else {
+               const { error } = await supabase
+                    .from("tblPolarProductAttachedCustomFields")
+                    .delete()
+                    .eq("productId", productId)
+                    .not(
+                         "customFieldId",
+                         "in",
+                         `(${incomingCustomFieldIds.map((x) => `"${x}"`).join(",")})`
+                    );
+
+               if (error) throw error;
+          }
+     }
+
+     // 4) Benefits + medias (standalone upsert)
+     const benefits: any[] = Array.isArray(product?.benefits) ? product.benefits : [];
+     if (benefits.length > 0) {
+          const benefitRows = benefits.map((b) => ({
+               id: b.id,
+               createdAt: toIso(b.createdAt),
+               modifiedAt: toIso(b.modifiedAt),
+               type: b.type,
+               description: b.description ?? null,
+               selectable: Boolean(b.selectable),
+               deletable: Boolean(b.deletable),
+               organizationId: b.organizationId ?? organizationId,
+               metadata: b.metadata ?? {},
+               properties: b.properties ?? {},
+          }));
+
+          const { error: benErr } = await supabase
+               .from("tblPolarProductBenefits")
+               .upsert(benefitRows, { onConflict: "id" });
+
+          if (benErr) throw benErr;
+     }
+
+     const medias: any[] = Array.isArray(product?.medias) ? product.medias : [];
+     if (medias.length > 0) {
+          const mediaRows = medias.map((m) => ({
+               id: m.id,
+               organizationId: m.organizationId ?? organizationId,
+               name: m.name,
+               path: m.path,
+               mimeType: m.mimeType,
+               size: m.size,
+               storageVersion: m.storageVersion ?? null,
+               checksumEtag: m.checksumEtag ?? null,
+               checksumSha256Base64: m.checksumSha256Base64 ?? null,
+               checksumSha256Hex: m.checksumSha256Hex ?? null,
+               lastModifiedAt: m.lastModifiedAt ? toIso(m.lastModifiedAt) : null,
+               version: m.version ?? null,
+               service: m.service ?? null,
+               isUploaded: Boolean(m.isUploaded),
+               createdAt: toIso(m.createdAt),
+               sizeReadable: m.sizeReadable ?? null,
+               publicUrl: m.publicUrl ?? null,
+          }));
+
+          const { error: medErr } = await supabase
+               .from("tblPolarProductMedias")
+               .upsert(mediaRows, { onConflict: "id" });
+
+          if (medErr) throw medErr;
+     }
 
      await logServerAction({
           user_id: null,
           action: `Polar Product Webhook - synced (${eventLabel})`,
           payload: {
                productId,
-               organizationId: product.organization_id,
+               organizationId,
                prices: prices.length,
+               benefits: benefits.length,
+               medias: medias.length,
+               attachedCustomFields: attachedCustomFields.length,
           },
           status: "success",
           error: "",
@@ -234,18 +289,19 @@ async function syncProductToDb(product: PolarProductPayload, eventLabel: string)
      });
 }
 
+// ------------------------------------------------------------
+// Webhook handler
+// ------------------------------------------------------------
 export const POST = Webhooks({
      webhookSecret: process.env.POLAR_WEBHOOK_SECRET_SANDBOX_PRODUCT!,
 
      onProductCreated: async (payload) => {
-          console.log(`Product created payload: `, payload);
-          const product = payload.data as unknown as PolarProductPayload;
-          await syncProductToDb(product, "product.created");
+          console.log("Product created payload:", payload);
+          await syncProductToDb(payload.data, "product.created");
      },
 
      onProductUpdated: async (payload) => {
-          console.log(`Product updated payload: `, payload);
-          const product = payload.data as unknown as PolarProductPayload;
-          await syncProductToDb(product, "product.updated");
+          console.log("Product updated payload:", payload);
+          await syncProductToDb(payload.data, "product.updated");
      },
 });
