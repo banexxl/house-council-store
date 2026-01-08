@@ -162,7 +162,6 @@ export const POST = Webhooks({
                const resolved = await resolveClientFromPolarCustomerId(polarCustomerId);
                if (resolved) {
                     client_id = resolved.client_id;
-                    subscription_id = resolved.subscription_id ?? subscription_id;
                }
           }
 
@@ -177,10 +176,6 @@ export const POST = Webhooks({
                     type: "internal",
                });
                return;
-          }
-
-          if (!subscription_id) {
-               subscription_id = await getSubscriptionPlanIdForClient(client_id);
           }
 
           try {
