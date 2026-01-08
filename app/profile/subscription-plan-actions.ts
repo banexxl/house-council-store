@@ -83,7 +83,7 @@ export const readSubscriptionPlanFeatures = async (
 
 export const readActivePolarProducts = async (): Promise<{
      readAllSubscriptionPlansSuccess: boolean;
-     polarProducts?: (PolarProduct & { prices: PolarProductPrice[], benefits: any[], medias: any[] })[];
+     polarProducts?: (PolarProduct & { prices: PolarProductPrice[] })[];
      readAllSubscriptionPlansError?: string;
 }> => {
      const supabase = await useServerSideSupabaseAnonClient();
@@ -119,7 +119,7 @@ export const readActivePolarProducts = async (): Promise<{
           };
      }
 
-     // Fetch prices for all products (camelCase columns)
+     // Fetch prices for all products
      const productIds = products.map((p: any) => p.id);
      const { data: prices, error: pricesError } = await supabase
           .from("tblPolarProductPrices")
@@ -127,46 +127,16 @@ export const readActivePolarProducts = async (): Promise<{
           .in('productId', productIds)
           .eq('isArchived', false);
 
-     if (pricesError) {
-          await logServerAction({
-               user_id: userId ?? "",
-               action: "Read Polar Product Prices",
-               payload: { productIds },
-               status: "fail",
-               error: pricesError.message,
-               duration_ms: 0,
-               type: "db",
-          });
-          return {
-               readAllSubscriptionPlansSuccess: false,
-               readAllSubscriptionPlansError: pricesError.message,
-          };
-     }
-
-     // Fetch benefits for all products (camelCase columns)
-     const { data: benefits } = await supabase
-          .from("tblPolarProductBenefits")
-          .select(`*`)
-          .in('organizationId', products.map((p: any) => p.organizationId));
-
-     // Fetch medias for all products (camelCase columns)
-     const { data: medias } = await supabase
-          .from("tblPolarProductMedias")
-          .select(`*`)
-          .in('organizationId', products.map((p: any) => p.organizationId));
-
-     // Combine products with their prices, benefits, and medias
-     const productsWithDetails = products.map((product: any) => ({
+     // Combine products with their prices
+     const productsWithPrices = products.map((product: any) => ({
           ...product,
           prices: (prices || []).filter((p: any) => p.productId === product.id),
-          benefits: (benefits || []).filter((b: any) => b.organizationId === product.organizationId),
-          medias: (medias || []).filter((m: any) => m.organizationId === product.organizationId),
      }));
 
      await logServerAction({
           user_id: null,
           action: "Read Active Polar Products",
-          payload: { count: productsWithDetails.length },
+          payload: { count: productsWithPrices.length },
           status: "success",
           error: "",
           duration_ms: 0,
@@ -175,7 +145,7 @@ export const readActivePolarProducts = async (): Promise<{
 
      return {
           readAllSubscriptionPlansSuccess: true,
-          polarProducts: productsWithDetails,
+          polarProducts: productsWithPrices,
      };
 };
 

@@ -52,7 +52,7 @@ const faqs = [
 ]
 
 interface PricingPageProps {
-     polarProducts?: (PolarProduct & { prices: PolarProductPrice[], benefits: any[], medias: any[] })[]
+     polarProducts?: (PolarProduct & { prices: PolarProductPrice[] })[]
      clientSubscriptionPlanData?: PolarSubscription & { subscription_plan: any } | null
      apartmentCount?: number
      client?: Client | null
@@ -63,12 +63,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, clientS
      const [loadingKey, setLoadingKey] = useState<string | null>(null);
      const theme = useTheme()
      const [isPending, startTransition] = useTransition()
-
-     // Debug logging
-     console.log('polarProducts:', polarProducts);
-     console.log('mainProduct:', polarProducts?.[0]);
-     console.log('prices:', polarProducts?.[0]?.prices);
-     console.log('benefits:', polarProducts?.[0]?.benefits);
+     const [selectedInterval, setSelectedInterval] = useState<'month' | 'year'>('month');
 
      const handleNavClick = (path: string) => {
           startTransition(() => {
@@ -80,31 +75,55 @@ export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, clientS
           void startPolarCheckout(priceId, productId);
      };
 
-     // Get the main product (assuming single product with multiple prices)
-     const mainProduct = polarProducts?.[0];
+     // Group products by name (products with same name but different billing intervals)
+     const productGroups = useMemo(() => {
+          if (!polarProducts) return [];
 
-     // Group prices by recurring interval
-     const pricesByInterval = useMemo(() => {
-          if (!mainProduct?.prices) return {};
+          const groups = new Map<string, (PolarProduct & { prices: PolarProductPrice[] })[]>();
 
-          const grouped: Record<string, PolarProductPrice> = {};
-          mainProduct.prices.forEach(price => {
-               if (!price.isArchived) {
-                    // Group by interval type only (month, year, etc)
-                    grouped[price.recurringInterval] = price;
-               }
+          polarProducts.forEach(product => {
+               const existing = groups.get(product.name) || [];
+               groups.set(product.name, [...existing, product]);
           });
-          return grouped;
+
+          return Array.from(groups.values());
+     }, [polarProducts]);
+
+     // Get the first product group
+     const mainProductGroup = productGroups[0] || [];
+     const mainProduct = mainProductGroup[0];
+
+     console.log('mainProductGroup:', mainProductGroup);
+     console.log('mainProduct:', mainProduct);
+     console.log('currentProduct logic - selectedInterval:', selectedInterval);
+
+     // Extract features from metadata
+     const features = useMemo(() => {
+          if (!mainProduct?.metadata) return [];
+
+          return Object.entries(mainProduct.metadata).map(([key, value]) => ({
+               id: key,
+               name: String(value),
+               description: String(value)
+          }));
      }, [mainProduct]);
 
-     // Convert benefits to features
-     const features = useMemo(() => {
-          return mainProduct?.benefits?.map((benefit: any) => ({
-               id: benefit.id,
-               name: benefit.description || '',
-               description: benefit.description || ''
-          })) || [];
-     }, [mainProduct]);
+     // Get prices for the selected interval
+     const currentProduct = mainProductGroup.find(p => p.recurringInterval === selectedInterval) || mainProduct;
+     const currentPrice = currentProduct?.prices?.[0];
+     // Calculate discount percentage compared to monthly
+     const monthlyProduct = mainProductGroup.find(p => p.recurringInterval === 'month');
+     const monthlyPrice = monthlyProduct?.prices?.[0];
+
+     const discountPercentage = useMemo(() => {
+          if (!currentPrice || !monthlyPrice || selectedInterval === 'month') return 0;
+
+          const monthlyTotal = (monthlyPrice.priceAmount / 100) * (currentProduct?.recurringIntervalCount || 1);
+          const currentTotal = currentPrice.priceAmount / 100;
+          const savings = monthlyTotal - currentTotal;
+
+          return Math.round((savings / monthlyTotal) * 100);
+     }, [currentPrice, monthlyPrice, selectedInterval, currentProduct]);
 
      const startPolarCheckout = async (priceId: string, productId: string) => {
 
@@ -177,77 +196,44 @@ export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, clientS
                                    </Typography>
                               </Box>
 
+                              {/* Billing Interval Selector */}
+                              {mainProductGroup.length > 1 && (
+                                   <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
+                                        <Paper sx={{ p: 0.5, display: 'inline-flex', gap: 0.5 }}>
+                                             {mainProductGroup.map(product => (
+                                                  <Button
+                                                       key={product.id}
+                                                       variant={selectedInterval === product.recurringInterval ? 'contained' : 'outlined'}
+                                                       onClick={() => setSelectedInterval(product.recurringInterval as 'month' | 'year')}
+                                                       sx={{ minWidth: 120 }}
+                                                  >
+                                                       {product.recurringInterval === 'month' ? 'Monthly' : 'Annually'}
+                                                       {product.recurringInterval === 'year' && discountPercentage > 0 && (
+                                                            <Typography component="span" variant="caption" sx={{ ml: 0.5, color: 'success.main' }}>
+                                                                 (-{discountPercentage}%)
+                                                            </Typography>
+                                                       )}
+                                                  </Button>
+                                             ))}
+                                        </Paper>
+                                   </Box>
+                              )}
+
                               <Grid container spacing={4} justifyContent="center">
-                                   {/* Monthly Plan */}
-                                   {pricesByInterval['month'] && (
-                                        <Grid key="monthly" size={{ xs: 12, sm: 6, md: 6 }}>
-                                             <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
-                                                  <CardContent sx={{ flexGrow: 1 }}>
-                                                       <Typography variant="h5" gutterBottom>
-                                                            Monthly
-                                                       </Typography>
-                                                       <Typography
-                                                            variant="body2"
-                                                            color="text.secondary"
-                                                            gutterBottom
-                                                            sx={{ minHeight: 60, maxHeight: 80, overflowY: "auto" }}
-                                                       >
-                                                            {mainProduct?.description}
-                                                       </Typography>
-
-                                                       <Paper variant="outlined" sx={{ p: 2, my: 3 }}>
-                                                            <Typography variant="subtitle2" color="text.secondary">
-                                                                 Billed monthly
-                                                            </Typography>
-                                                            <Typography variant="h4" display="block">
-                                                                 ${(pricesByInterval['month'].priceAmount / 100).toFixed(2)}
-                                                                 <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
-                                                                      per apartment/month
-                                                                 </Typography>
-                                                            </Typography>
-                                                       </Paper>
-
-                                                       <List dense>
-                                                            {features.map((feature) => (
-                                                                 <ListItem key={feature.id ?? feature.name} disablePadding sx={{ py: 0.5 }}>
-                                                                      <ListItemIcon sx={{ minWidth: 32 }}>
-                                                                           <CheckIcon color="primary" fontSize="small" />
-                                                                      </ListItemIcon>
-                                                                      <ListItemText primary={feature.name} />
-                                                                 </ListItem>
-                                                            ))}
-                                                       </List>
-                                                  </CardContent>
-
-                                                  <CardActions sx={{ p: 2, pt: 0 }}>
-                                                       <Button
-                                                            variant="contained"
-                                                            fullWidth
-                                                            onClick={() => handleStartFreeTrial(pricesByInterval['month'].id, mainProduct?.id || '')}
-                                                            disabled={
-                                                                 loadingKey !== null ||
-                                                                 (clientSubscriptionPlanData?.product_id === mainProduct?.id &&
-                                                                      (clientSubscriptionPlanData?.status === 'active' || clientSubscriptionPlanData?.status === 'trialing'))
-                                                            }
-                                                            startIcon={loadingKey === pricesByInterval['month'].id ? <CircularProgress size={20} color="inherit" /> : undefined}
-                                                       >
-                                                            {loadingKey === pricesByInterval['month'].id ? "Redirecting..." : "Start Free Trial"}
-                                                       </Button>
-                                                  </CardActions>
-                                             </Card>
-                                        </Grid>
-                                   )}
-
-                                   {/* Annual Plan */}
-                                   {pricesByInterval['year'] && (
-                                        <Grid key="annual" size={{ xs: 12, sm: 6, md: 6 }}>
+                                   {mainProduct && currentProduct && (
+                                        <Grid key={currentProduct.id} size={{ xs: 12, md: 8 }}>
                                              <Card sx={{ height: "100%", display: "flex", flexDirection: "column", border: `2px solid ${theme.palette.primary.main}` }}>
                                                   <CardContent sx={{ flexGrow: 1 }}>
                                                        <Typography variant="h5" gutterBottom>
-                                                            Annual
+                                                            {mainProduct.name}
                                                             <Typography component="span" variant="caption" color="primary" sx={{ ml: 1 }}>
-                                                                 Best Value
+                                                                 {mainProduct.trialIntervalCount} {mainProduct.trialInterval} free trial
                                                             </Typography>
+                                                            {discountPercentage > 0 && (
+                                                                 <Typography component="span" variant="caption" sx={{ ml: 1, px: 1, py: 0.5, bgcolor: 'success.main', color: 'white', borderRadius: 1 }}>
+                                                                      Save {discountPercentage}%
+                                                                 </Typography>
+                                                            )}
                                                        </Typography>
                                                        <Typography
                                                             variant="body2"
@@ -255,27 +241,40 @@ export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, clientS
                                                             gutterBottom
                                                             sx={{ minHeight: 60, maxHeight: 80, overflowY: "auto" }}
                                                        >
-                                                            {mainProduct?.description}
+                                                            {mainProduct.description}
                                                        </Typography>
 
-                                                       <Paper variant="outlined" sx={{ p: 2, my: 3 }}>
-                                                            <Typography variant="subtitle2" color="text.secondary">
-                                                                 Billed annually
-                                                            </Typography>
-                                                            <Typography variant="h4" display="block">
-                                                                 ${(pricesByInterval['year'].priceAmount / 100).toFixed(2)}
-                                                                 <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
-                                                                      per apartment/year
+                                                       {currentPrice ? (
+                                                            <Paper variant="outlined" sx={{ p: 2, my: 3 }}>
+                                                                 <Typography variant="subtitle2" color="text.secondary">
+                                                                      Billed {currentProduct.recurringInterval === 'month' ? 'monthly' : 'annually'}
                                                                  </Typography>
-                                                            </Typography>
-                                                            <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
-                                                                 Equivalent to ${((pricesByInterval['year'].priceAmount / 100) / 12).toFixed(2)} / month
-                                                            </Typography>
-                                                       </Paper>
+                                                                 <Typography variant="h4" display="block" sx={{ mt: 1 }}>
+                                                                      ${(currentPrice.priceAmount / 100).toFixed(2)}
+                                                                      <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                                                                           per apartment/{currentProduct.recurringInterval}
+                                                                      </Typography>
+                                                                 </Typography>
+                                                                 {selectedInterval === 'year' && monthlyPrice && (
+                                                                      <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
+                                                                           Equivalent to ${((currentPrice.priceAmount / 100) / 12).toFixed(2)}/month
+                                                                      </Typography>
+                                                                 )}
+                                                            </Paper>
+                                                       ) : (
+                                                            <Paper variant="outlined" sx={{ p: 2, my: 3, textAlign: 'center' }}>
+                                                                 <Typography variant="h6" color="text.secondary">
+                                                                      Contact us for pricing
+                                                                 </Typography>
+                                                                 <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                                                                      Custom pricing available for your needs
+                                                                 </Typography>
+                                                            </Paper>
+                                                       )}
 
                                                        <List dense>
                                                             {features.map((feature) => (
-                                                                 <ListItem key={feature.id ?? feature.name} disablePadding sx={{ py: 0.5 }}>
+                                                                 <ListItem key={feature.id} disablePadding sx={{ py: 0.5 }}>
                                                                       <ListItemIcon sx={{ minWidth: 32 }}>
                                                                            <CheckIcon color="primary" fontSize="small" />
                                                                       </ListItemIcon>
@@ -286,19 +285,29 @@ export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, clientS
                                                   </CardContent>
 
                                                   <CardActions sx={{ p: 2, pt: 0 }}>
-                                                       <Button
-                                                            variant="contained"
-                                                            fullWidth
-                                                            onClick={() => handleStartFreeTrial(pricesByInterval['year'].id, mainProduct?.id || '')}
-                                                            disabled={
-                                                                 loadingKey !== null ||
-                                                                 (clientSubscriptionPlanData?.product_id === mainProduct?.id &&
-                                                                      (clientSubscriptionPlanData?.status === 'active' || clientSubscriptionPlanData?.status === 'trialing'))
-                                                            }
-                                                            startIcon={loadingKey === pricesByInterval['year'].id ? <CircularProgress size={20} color="inherit" /> : undefined}
-                                                       >
-                                                            {loadingKey === pricesByInterval['year'].id ? "Redirecting..." : "Start Free Trial"}
-                                                       </Button>
+                                                       {currentPrice ? (
+                                                            <Button
+                                                                 variant="contained"
+                                                                 fullWidth
+                                                                 onClick={() => handleStartFreeTrial(currentPrice.id, currentProduct.id)}
+                                                                 disabled={
+                                                                      loadingKey !== null ||
+                                                                      (clientSubscriptionPlanData?.product_id === currentProduct.id &&
+                                                                           (clientSubscriptionPlanData?.status === 'active' || clientSubscriptionPlanData?.status === 'trialing'))
+                                                                 }
+                                                                 startIcon={loadingKey === currentPrice.id ? <CircularProgress size={20} color="inherit" /> : undefined}
+                                                            >
+                                                                 {loadingKey === currentPrice.id ? "Redirecting..." : "Start Free Trial"}
+                                                            </Button>
+                                                       ) : (
+                                                            <Button
+                                                                 variant="contained"
+                                                                 fullWidth
+                                                                 onClick={() => handleNavClick("/contact")}
+                                                            >
+                                                                 Contact Sales
+                                                            </Button>
+                                                       )}
                                                   </CardActions>
                                              </Card>
                                         </Grid>
