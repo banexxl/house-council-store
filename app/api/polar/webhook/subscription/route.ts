@@ -148,6 +148,26 @@ export const POST = Webhooks({
           const eventType = "subscription.updated";
           console.log(`${eventType} webhook received:`, payload);
 
+          //Get subscription_id from polar_subscription_id (product_id)
+          const { data: subscriptionId, error: subscriptionIdError } = await supabase
+               .from("tblClient_Subscription")
+               .select("subscription_id")
+               .eq("polar_subscription_id", payload.data.productId)
+               .single();
+
+          if (subscriptionIdError || !subscriptionId) {
+               await logServerAction({
+                    user_id: null,
+                    action: `Store Webhook - ${eventType} could not resolve subscription plan from polar_subscription_id`,
+                    payload: { eventType, polarSubscriptionId: payload.data.productId },
+                    status: "fail",
+                    error: "No subscription plan found for polar_subscription_id",
+                    duration_ms: Date.now() - t0,
+                    type: "webhook",
+               })
+
+          }
+
           const subscriptionData = convertToSnakeCase(payload.data);
           const meta = extractMeta(payload);
 
