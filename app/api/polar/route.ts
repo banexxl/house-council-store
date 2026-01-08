@@ -61,12 +61,29 @@ export async function POST(req: Request) {
                return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
           }
 
+          const normalizedProductIds: string[] = Array.isArray(productIds)
+               ? productIds
+                    .map((p: any) => {
+                         if (typeof p === "string") return p;
+                         if (p && typeof p === "object") return p.id ?? p.value ?? p.productId ?? null;
+                         return null;
+                    })
+                    .filter((x): x is string => typeof x === "string" && x.length > 0)
+               : [];
+
+          if (!normalizedProductIds.length) {
+               return NextResponse.json(
+                    { error: "productIds must be an array of product ID strings" },
+                    { status: 400 }
+               );
+          }
+
           // ✅ server-truth seats
           const apartmentsCount = await getApartmentCountForClient(clientId);
           let checkout;
           try {
                checkout = await polar.checkouts.create({
-                    products: productIds,
+                    products: normalizedProductIds,
                     successUrl,
                     returnUrl,
                     customerEmail,
