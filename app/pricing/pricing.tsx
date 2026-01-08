@@ -63,7 +63,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, clientS
      const [loadingKey, setLoadingKey] = useState<string | null>(null);
      const theme = useTheme()
      const [isPending, startTransition] = useTransition()
-     const [selectedInterval, setSelectedInterval] = useState<'month' | 'year'>('month');
+     const [selectedIntervalKey, setSelectedIntervalKey] = useState<string>('month-1');
 
      const handleNavClick = (path: string) => {
           startTransition(() => {
@@ -75,27 +75,20 @@ export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, clientS
           void startPolarCheckout(priceId, productId);
      };
 
-     // Group products by name (products with same name but different billing intervals)
-     const productGroups = useMemo(() => {
+     // Sort products by interval count for display
+     const sortedProducts = useMemo(() => {
           if (!polarProducts) return [];
 
-          const groups = new Map<string, (PolarProduct & { prices: PolarProductPrice[] })[]>();
-
-          polarProducts.forEach(product => {
-               const existing = groups.get(product.name) || [];
-               groups.set(product.name, [...existing, product]);
+          // Sort by interval type (month first, then year) and then by count
+          return [...polarProducts].sort((a, b) => {
+               if (a.recurringInterval !== b.recurringInterval) {
+                    return a.recurringInterval === 'month' ? -1 : 1;
+               }
+               return a.recurringIntervalCount - b.recurringIntervalCount;
           });
-
-          return Array.from(groups.values());
      }, [polarProducts]);
 
-     // Get the first product group
-     const mainProductGroup = productGroups[0] || [];
-     const mainProduct = mainProductGroup[0];
-
-     console.log('mainProductGroup:', mainProductGroup);
-     console.log('mainProduct:', mainProduct);
-     console.log('currentProduct logic - selectedInterval:', selectedInterval);
+     const mainProduct = sortedProducts[0];
 
      // Extract features from metadata
      const features = useMemo(() => {
@@ -108,22 +101,35 @@ export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, clientS
           }));
      }, [mainProduct]);
 
-     // Get prices for the selected interval
-     const currentProduct = mainProductGroup.find(p => p.recurringInterval === selectedInterval) || mainProduct;
+     // Get current selected product by interval key
+     const currentProduct = useMemo(() => {
+          const [interval, count] = selectedIntervalKey.split('-');
+          return sortedProducts.find(
+               p => p.recurringInterval === interval && p.recurringIntervalCount === parseInt(count)
+          ) || mainProduct;
+     }, [sortedProducts, selectedIntervalKey, mainProduct]);
+
      const currentPrice = currentProduct?.prices?.[0];
-     // Calculate discount percentage compared to monthly
-     const monthlyProduct = mainProductGroup.find(p => p.recurringInterval === 'month');
-     const monthlyPrice = monthlyProduct?.prices?.[0];
+
+     // Get 1-month product for baseline comparison
+     const baseMonthlyProduct = sortedProducts.find(p => p.recurringInterval === 'month' && p.recurringIntervalCount === 1);
+     const baseMonthlyPrice = baseMonthlyProduct?.prices?.[0];
 
      const discountPercentage = useMemo(() => {
-          if (!currentPrice || !monthlyPrice || selectedInterval === 'month') return 0;
+          if (!currentPrice || !baseMonthlyPrice || !currentProduct) return 0;
+          if (currentProduct.recurringInterval === 'month' && currentProduct.recurringIntervalCount === 1) return 0;
 
-          const monthlyTotal = (monthlyPrice.priceAmount / 100) * (currentProduct?.recurringIntervalCount || 1);
-          const currentTotal = currentPrice.priceAmount / 100;
-          const savings = monthlyTotal - currentTotal;
+          // Calculate what this period would cost at monthly rate
+          const monthsInPeriod = currentProduct.recurringInterval === 'year'
+               ? currentProduct.recurringIntervalCount * 12
+               : currentProduct.recurringIntervalCount;
 
-          return Math.round((savings / monthlyTotal) * 100);
-     }, [currentPrice, monthlyPrice, selectedInterval, currentProduct]);
+          const baselineCost = (baseMonthlyPrice.priceAmount / 100) * monthsInPeriod;
+          const actualCost = currentPrice.priceAmount / 100;
+          const savings = baselineCost - actualCost;
+
+          return Math.round((savings / baselineCost) * 100);
+     }, [currentPrice, baseMonthlyPrice, currentProduct]);
 
      const startPolarCheckout = async (priceId: string, productId: string) => {
 
@@ -197,24 +203,44 @@ export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, clientS
                               </Box>
 
                               {/* Billing Interval Selector */}
-                              {mainProductGroup.length > 1 && (
+                              {sortedProducts.length > 1 && (
                                    <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
-                                        <Paper sx={{ p: 0.5, display: 'inline-flex', gap: 0.5 }}>
-                                             {mainProductGroup.map(product => (
-                                                  <Button
-                                                       key={product.id}
-                                                       variant={selectedInterval === product.recurringInterval ? 'contained' : 'outlined'}
-                                                       onClick={() => setSelectedInterval(product.recurringInterval as 'month' | 'year')}
-                                                       sx={{ minWidth: 120 }}
-                                                  >
-                                                       {product.recurringInterval === 'month' ? 'Monthly' : 'Annually'}
-                                                       {product.recurringInterval === 'year' && discountPercentage > 0 && (
-                                                            <Typography component="span" variant="caption" sx={{ ml: 0.5, color: 'success.main' }}>
-                                                                 (-{discountPercentage}%)
-                                                            </Typography>
-                                                       )}
-                                                  </Button>
-                                             ))}
+                                        <Paper sx={{ p: 0.5, display: 'inline-flex', gap: 0.5, flexWrap: 'wrap' }}>
+                                             {sortedProducts.map(product => {
+                                                  const intervalKey = `${product.recurringInterval}-${product.recurringIntervalCount}`;
+                                                  const label = product.recurringInterval === 'month'
+                                                       ? product.recurringIntervalCount === 1 ? 'Monthly' : `${product.recurringIntervalCount} Months`
+                                                       : product.recurringIntervalCount === 1 ? 'Annually' : `${product.recurringIntervalCount} Years`;
+
+                                                  // Calculate discount for this product
+                                                  const productPrice = product.prices?.[0];
+                                                  let discount = 0;
+                                                  if (productPrice && baseMonthlyPrice && intervalKey !== 'month-1') {
+                                                       const monthsInPeriod = product.recurringInterval === 'year'
+                                                            ? product.recurringIntervalCount * 12
+                                                            : product.recurringIntervalCount;
+                                                       const baselineCost = (baseMonthlyPrice.priceAmount / 100) * monthsInPeriod;
+                                                       const actualCost = productPrice.priceAmount / 100;
+                                                       const savings = baselineCost - actualCost;
+                                                       discount = Math.round((savings / baselineCost) * 100);
+                                                  }
+
+                                                  return (
+                                                       <Button
+                                                            key={intervalKey}
+                                                            variant={selectedIntervalKey === intervalKey ? 'contained' : 'outlined'}
+                                                            onClick={() => setSelectedIntervalKey(intervalKey)}
+                                                            sx={{ minWidth: 100 }}
+                                                       >
+                                                            {label}
+                                                            {discount > 0 && (
+                                                                 <Typography component="span" variant="caption" sx={{ ml: 0.5, color: selectedIntervalKey === intervalKey ? 'inherit' : 'success.main' }}>
+                                                                      (-{discount}%)
+                                                                 </Typography>
+                                                            )}
+                                                       </Button>
+                                                  );
+                                             })}
                                         </Paper>
                                    </Box>
                               )}
@@ -247,17 +273,22 @@ export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, clientS
                                                        {currentPrice ? (
                                                             <Paper variant="outlined" sx={{ p: 2, my: 3 }}>
                                                                  <Typography variant="subtitle2" color="text.secondary">
-                                                                      Billed {currentProduct.recurringInterval === 'month' ? 'monthly' : 'annually'}
+                                                                      Billed every {currentProduct.recurringIntervalCount} {currentProduct.recurringInterval}{currentProduct.recurringIntervalCount > 1 ? 's' : ''}
                                                                  </Typography>
                                                                  <Typography variant="h4" display="block" sx={{ mt: 1 }}>
                                                                       ${(currentPrice.priceAmount / 100).toFixed(2)}
                                                                       <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
-                                                                           per apartment/{currentProduct.recurringInterval}
+                                                                           per apartment
                                                                       </Typography>
                                                                  </Typography>
-                                                                 {selectedInterval === 'year' && monthlyPrice && (
+                                                                 {(currentProduct.recurringInterval === 'year' || currentProduct.recurringIntervalCount > 1) && baseMonthlyPrice && (
                                                                       <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
-                                                                           Equivalent to ${((currentPrice.priceAmount / 100) / 12).toFixed(2)}/month
+                                                                           Equivalent to ${(
+                                                                                (currentPrice.priceAmount / 100) /
+                                                                                (currentProduct.recurringInterval === 'year'
+                                                                                     ? currentProduct.recurringIntervalCount * 12
+                                                                                     : currentProduct.recurringIntervalCount)
+                                                                           ).toFixed(2)}/month
                                                                       </Typography>
                                                                  )}
                                                             </Paper>
