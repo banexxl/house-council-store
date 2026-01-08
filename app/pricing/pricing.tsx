@@ -33,6 +33,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Backdrop from '@mui/material/Backdrop';
 import { Client } from "../types/client"
 import { PolarSubscription } from "../types/polar-subscription-types"
+import { PolarProduct, PolarProductPrice } from "../types/polar-product-types"
 
 const faqs = [
      {
@@ -55,12 +56,13 @@ const faqs = [
 
 interface PricingPageProps {
      subscriptionPlans: SubscriptionPlan[]
+     polarProducts?: (PolarProduct & { prices: PolarProductPrice[], benefits: any[], medias: any[] })[]
      clientSubscriptionPlanData?: PolarSubscription & { subscription_plan: SubscriptionPlan } | null
      apartmentCount?: number
      client?: Client | null
 }
 
-export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, clientSubscriptionPlanData, apartmentCount, client }) => {
+export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, polarProducts, clientSubscriptionPlanData, apartmentCount, client }) => {
      const router = useRouter()
      const [loadingKey, setLoadingKey] = useState<string | null>(null);
      const [planBillingCycles, setPlanBillingCycles] = useState<Record<string, "monthly" | "annually">>({});
@@ -73,8 +75,8 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
           });
      };
 
-     const handleStartFreeTrial = (plan: SubscriptionPlan) => {
-          void startPolarCheckout(plan);
+     const handleStartFreeTrial = (plan: SubscriptionPlan, priceId: string) => {
+          void startPolarCheckout(plan, priceId);
      };
 
      const handlePlanBillingCycleChange = (planKey: string, newValue: "monthly" | "annually" | null) => {
@@ -90,7 +92,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
           [subscriptionPlans]
      );
 
-     const startPolarCheckout = async (plan: SubscriptionPlan) => {
+     const startPolarCheckout = async (plan: SubscriptionPlan, priceId: string) => {
 
           if (!client?.id) {
                toast.error("Please sign in to start a trial.");
@@ -120,9 +122,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
                          customerEmail: client.email,
                          successUrl,
                          returnUrl,
-                         productIds: plan.is_billed_annually
-                              ? [plan.polar_product_id_annually]
-                              : [plan.polar_product_id_monthly],
+                         productIds: [priceId], // Use the price ID directly
                     }),
                });
 
@@ -175,6 +175,14 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
                                         const key = `${plan.id}-${billingCycle}`;
                                         const isThisLoading = loadingKey === key;
                                         const isAnyLoading = loadingKey !== null;
+
+                                        // Find matching Polar product and get price ID
+                                        const polarProductId = isAnnual ? plan.polar_product_id_annually : plan.polar_product_id_monthly;
+                                        const matchingProduct = polarProducts?.find(p => p.id === polarProductId);
+                                        const matchingPrice = matchingProduct?.prices?.find(p =>
+                                             p.recurring_interval === (isAnnual ? 'year' : 'month') && !p.is_archived
+                                        );
+                                        const priceId = matchingPrice?.id || polarProductId; // Fallback to product ID if price not found
 
                                         const monthlyBasePrice = plan.monthly_total_price_per_apartment;
                                         const monthlyPrice = hasGeneralDiscount
@@ -310,7 +318,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ subscriptionPlans, cli
                                                             <Button
                                                                  variant="contained"
                                                                  fullWidth
-                                                                 onClick={() => handleStartFreeTrial(plan)}
+                                                                 onClick={() => handleStartFreeTrial(plan, priceId)}
                                                                  disabled={
                                                                       isAnyLoading ||
                                                                       !isThisLoading &&

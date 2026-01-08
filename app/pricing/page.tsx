@@ -4,8 +4,7 @@ import { getSessionUser } from "@/app/lib/get-session";
 import { Footer } from "@/app/components/footer";
 import { Header } from "@/app/components/header";
 import { PricingPage } from "./pricing";
-import { readSubscriptionPlansByStatus, readClientSubscriptionPlanFromClientId, getApartmentCountForClient } from "../profile/subscription-plan-actions";
-import { logServerAction } from "../lib/server-logging";
+import { readActivePolarProducts, readAllSubscriptionPlans, readClientSubscriptionPlanFromClientId, getApartmentCountForClient } from "../profile/subscription-plan-actions";
 import { readAccountByEmailAction } from "../profile/account-action";
 import { buildCanonicalUrl } from "@/app/lib/seo";
 
@@ -39,7 +38,8 @@ export default async function Page() {
 
   const user = await getSessionUser();
   const { client, error } = await readAccountByEmailAction(user?.email!);
-  const { subscriptionPlanData } = await readSubscriptionPlansByStatus('active')
+  const { subscriptionPlans } = await readAllSubscriptionPlans();
+  const { polarProducts } = await readActivePolarProducts();
   const { clientSubscriptionPlanData } = await readClientSubscriptionPlanFromClientId(client?.id!)
   const apartmentCountResult = client?.id ? await getApartmentCountForClient(client.id) : 0;
 
@@ -47,7 +47,8 @@ export default async function Page() {
     <>
       <Header user={user ? user : null} />
       <PricingPage
-        subscriptionPlans={subscriptionPlanData || []}
+        subscriptionPlans={subscriptionPlans || []}
+        polarProducts={polarProducts || []}
         clientSubscriptionPlanData={clientSubscriptionPlanData}
         apartmentCount={apartmentCountResult || 0}
         client={client || null}

@@ -73,7 +73,7 @@ export async function POST(req: Request) {
 
           if (!normalizedProductIds.length) {
                return NextResponse.json(
-                    { error: "productIds must be an array of product ID strings" },
+                    { error: "productIds must be an array of price ID strings" },
                     { status: 400 }
                );
           }
