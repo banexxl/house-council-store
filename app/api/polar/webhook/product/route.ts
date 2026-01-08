@@ -238,13 +238,13 @@ export const POST = Webhooks({
      webhookSecret: process.env.POLAR_WEBHOOK_SECRET_SANDBOX_PRODUCT!,
 
      onProductCreated: async (payload) => {
-          console.log(`Product created payload: ${payload}`);
+          console.log(`Product created payload: ${JSON.stringify(payload)}`);
           const product = payload.data as unknown as PolarProductPayload;
           await syncProductToDb(product, "product.created");
      },
 
      onProductUpdated: async (payload) => {
-          console.log(`Product updated payload: ${payload}`);
+          console.log(`Product updated payload: ${JSON.stringify(payload)}`);
           const product = payload.data as unknown as PolarProductPayload;
           await syncProductToDb(product, "product.updated");
      },
