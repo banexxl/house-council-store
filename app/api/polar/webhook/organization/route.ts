@@ -117,10 +117,11 @@ async function upsertOrganization(organization: PolarOrganization, eventType: st
 export const POST = Webhooks({
      webhookSecret: process.env.POLAR_WEBHOOK_SECRET_SANDBOX_ORGANIZATION!,
 
+
      onOrganizationUpdated: async (payload) => {
           const eventType = "organization.updated";
           console.log(`${eventType} webhook received:`, payload);
-
+          console.log(process.env.NEXT_PUBLIC_SUPABASE_URL! + " " + process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
           try {
                const organization = convertOrganizationToPolarOrganization(payload.data);
                await upsertOrganization(organization, eventType);
