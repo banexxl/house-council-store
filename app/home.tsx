@@ -217,13 +217,13 @@ const LandingPage = () => {
                                                   {[
                                                        {
                                                             icon: <AdminPanelSettingsIcon />,
-                                                            title: 'Client (Owner / Manager)',
+                                                            title: 'Building manager',
                                                             text:
                                                                  'Purchases the subscription, manages buildings & apartments, creates members, invites tenants, configures permissions and workflows.',
                                                        },
                                                        {
                                                             icon: <GroupsIcon />,
-                                                            title: 'Client Members (Reserved Seats)',
+                                                            title: 'Members (Reserved Seats)',
                                                             text:
                                                                  'Same dashboard, different authorizations. Collaborate on moderation, polls, announcements, and incident handling.',
                                                        },
@@ -318,7 +318,7 @@ const LandingPage = () => {
                               {[
                                    {
                                         icon: <DashboardCustomizeIcon />,
-                                        title: 'Client Dashboard (Web)',
+                                        title: 'Building Manager Dashboard (Web)',
                                         description:
                                              'Manage buildings, apartments, and tenants. Configure roles, create announcements, run polls, and track service issues in one place.',
                                    },
@@ -517,12 +517,12 @@ const LandingPage = () => {
 
                                         <Stack spacing={1.5}>
                                              {[
-                                                  'Client web dashboard for buildings & apartments',
+                                                  'Building manager web dashboard for buildings & apartments',
                                                   'Tenant web + mobile access',
                                                   'Announcements, posts, and notifications',
                                                   'Polls and voting with clear results',
                                                   'Incident/service reports with photos (mobile)',
-                                                  'Role-based permissions for clients, members, tenants',
+                                                  'Role-based permissions for building managers, members, tenants',
                                              ].map((t) => (
                                                   <Stack key={t} direction="row" spacing={1.5} alignItems="flex-start">
                                                        <Box

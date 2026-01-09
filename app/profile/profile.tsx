@@ -4,13 +4,12 @@ import { useState } from "react"
 import { Box, Container, Grid } from "@mui/material"
 import ProfileSidebar, { ActivityItem } from "./components/profile-sidebar"
 import ProfileTabs from "./components/profile-tabs"
-import { Client } from "../types/client"
 import { User } from "@supabase/supabase-js"
 import { SubscriptionPlan } from "../types/subscription-plan"
 import { Feature } from "../types/feature"
 import Animate from "@/app/components/animation-framer-motion"
-import { Currency } from "../types/currency"
 import { PolarSubscription } from "../types/polar-subscription-types"
+import { PolarCustomer } from "../types/polar-customer-types"
 
 // Mock data for notification preferences
 const notificationPreferences = [
@@ -39,19 +38,19 @@ const notificationPreferences = [
 ]
 
 type ProfilePageProps = {
-     sessionAndClientDataCombined?: { client: Client, session: User }
-     clientSubscriptionObject: PolarSubscription & { subscription_plan: SubscriptionPlan }
+     sessionAndCustomerDataCombined?: { customer: PolarCustomer, session: User }
+     customerSubscriptionObject: PolarSubscription
      recentActivity: ActivityItem[]
      binCheckerAPIKey?: string,
-     subsrciptioFeatures: SubscriptionPlan & { features: Feature[] } | null
+     subscriptionFeatures: SubscriptionPlan & { features: Feature[] } | null
      apartmentsCount: number
 }
 export const ProfilePage = ({
-     sessionAndClientDataCombined,
-     clientSubscriptionObject,
+     sessionAndCustomerDataCombined,
+     customerSubscriptionObject,
      recentActivity,
      binCheckerAPIKey,
-     subsrciptioFeatures,
+     subscriptionFeatures,
      apartmentsCount
 }: ProfilePageProps) => {
 
@@ -66,7 +65,7 @@ export const ProfilePage = ({
                                    {/* Profile Sidebar */}
                                    <Grid size={{ xs: 12, md: 4 }}>
                                         <ProfileSidebar
-                                             userData={sessionAndClientDataCombined!}
+                                             userData={sessionAndCustomerDataCombined!}
                                              recentActivity={recentActivity}
                                              onEditProfile={() => setEditMode(true)}
                                         />
@@ -75,15 +74,14 @@ export const ProfilePage = ({
                                    {/* Main Content */}
                                    <Grid size={{ xs: 12, md: 8 }}>
                                         <ProfileTabs
-                                             userData={sessionAndClientDataCombined!}
+                                             userData={sessionAndCustomerDataCombined!}
                                              editMode={editMode}
                                              setEditMode={setEditMode}
-                                             clientSubscriptionObject={clientSubscriptionObject}
+                                             customerSubscriptionObject={customerSubscriptionObject}
                                              // notificationSettings={notificationSettings}
                                              // setNotificationSettings={setNotificationSettings}
                                              recentActivity={recentActivity || []}
                                              binCheckerAPIKey={binCheckerAPIKey}
-                                             subsrciptioFeatures={subsrciptioFeatures}
                                              apartmentsCount={apartmentsCount}
                                         />
                                    </Grid>

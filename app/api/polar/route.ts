@@ -12,20 +12,20 @@ const supabase = createClient(
      process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-async function getApartmentCountForClient(clientId: string): Promise<number> {
+async function getApartmentCountForClient(customerId: string): Promise<number> {
      const { count, error } = await supabase
           .from("tblApartments")
-          .select("id, tblBuildings!inner(client_id)", { count: "exact", head: true })
-          .eq("tblBuildings.client_id", clientId);
+          .select("id, tblBuildings!inner(customerId)", { count: "exact", head: true })
+          .eq("tblBuildings.customerId", customerId);
      if (error) throw error;
      return count ?? 0;
 }
 
-async function isSubscriptionPlanInStatus(status: 'active' | 'canceled' | 'past_due' | 'trialing' | 'unpaid', clientSubscriptionPlanPolarId: string): Promise<boolean> {
+async function isSubscriptionPlanInStatus(status: 'active' | 'canceled' | 'past_due' | 'trialing' | 'unpaid', customerSubscriptionPlanPolarId: string): Promise<boolean> {
      const { data, error } = await supabase
-          .from("tblClientSubscriptions")
+          .from("tblPolarSubscriptions")
           .select("status", { head: true, count: "exact" })
-          .eq("polar_subscription_id", clientSubscriptionPlanPolarId)
+          .eq("polar_subscription_id", customerSubscriptionPlanPolarId)
           .single();
      if (error || !data) return false;
      return data.status === status;
@@ -35,14 +35,14 @@ export async function POST(req: Request) {
      try {
           const body = await req.json();
           const {
-               clientId,
+               customerId,
                productIds,
                customerEmail,
                successUrl,
                returnUrl,
                priceIds,
           } = body as {
-               clientId: string;
+               customerId: string;
                productIds: string[];
                customerEmail?: string;
                successUrl: string;
@@ -52,7 +52,7 @@ export async function POST(req: Request) {
           console.log('usao sa', productIds);
 
           if (
-               !clientId ||
+               !customerId ||
                !customerEmail ||
                !priceIds ||
                !successUrl ||
@@ -63,7 +63,7 @@ export async function POST(req: Request) {
           }
 
           // ✅ server-truth seats
-          const apartmentsCount = await getApartmentCountForClient(clientId);
+          const apartmentsCount = await getApartmentCountForClient(customerId);
           let checkout;
           try {
                checkout = await polar.checkouts.create({
@@ -72,7 +72,7 @@ export async function POST(req: Request) {
                     returnUrl,
                     customerEmail,
                     metadata: {
-                         client_id: clientId,
+                         customerId: customerId,
                          subscription_id: productIds.join(","),
                          apartments_count: apartmentsCount,
                     },
@@ -100,7 +100,7 @@ export async function DELETE(req: Request) {
           }
 
           if (!polarSubscriptionId || !polarCustomerId) {
-               return NextResponse.json({ error: "Missing subscriptionId or clientId" }, { status: 400 });
+               return NextResponse.json({ error: "Missing subscriptionId or customerId" }, { status: 400 });
           }
 
           let canceled;

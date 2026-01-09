@@ -1,11 +1,11 @@
 'use server';
 
 import { useServerSideSupabaseServiceRoleClient } from "@/app/lib/ss-supabase-service-role-client";
-import { Client } from "../types/client";
 import { revalidatePath } from "next/cache";
 import { logServerAction } from "../lib/server-logging";
 import { ActivityItem } from "./components/profile-sidebar";
 import { useServerSideSupabaseAnonClient } from "../lib/ss-supabase-anon-client";
+import { PolarCustomer } from "../types/polar-customer-types";
 
 export const logoutUserAction = async (): Promise<string | null> => {
      const startTime = Date.now();
@@ -60,14 +60,14 @@ export const deleteAccountAction = async (clientId: string, clientEmail: string)
      }
 
      const { data: deleteClientData, error: deleteClientError } = await supabase
-          .from('tblClients')
+          .from('tblPolarCustomers')
           .delete()
           .eq('email', clientEmail);
      if (deleteClientError) {
 
           await logServerAction({
                user_id: clientId,
-               action: 'Delete Account - Error for tblClients table.',
+               action: 'Delete Account - Error for tblPolarCustomers table.',
                payload: {},
                status: 'fail',
                error: deleteClientError.message,
@@ -90,14 +90,14 @@ export const deleteAccountAction = async (clientId: string, clientEmail: string)
      return { success: true }
 }
 
-export const readAccountByEmailAction = async (email: string): Promise<{ client?: Client, error?: string }> => {
+export const readAccountByEmailAction = async (email: string): Promise<{ customer?: PolarCustomer, error?: string }> => {
 
      const startTime = Date.now();
 
      const supabase = await useServerSideSupabaseAnonClient();
      const userId = (await supabase.auth.getUser()).data.user?.id;
-     const { data: client, error } = await supabase
-          .from('tblClients')
+     const { data: customer, error } = await supabase
+          .from('tblPolarCustomers')
           .select('*')
           .eq('email', email)
           .single();
@@ -106,7 +106,7 @@ export const readAccountByEmailAction = async (email: string): Promise<{ client?
 
           await logServerAction({
                user_id: userId ? userId : '',
-               action: 'Read Account - Error for tblClients table.',
+               action: 'Read Account - Error for tblPolarCustomers table.',
                payload: { email },
                status: 'fail',
                error: error.message,
@@ -117,7 +117,7 @@ export const readAccountByEmailAction = async (email: string): Promise<{ client?
      }
 
      await logServerAction({
-          user_id: client?.id,
+          user_id: customer?.id,
           action: 'Read Account - Success.',
           payload: { email },
           status: 'success',
@@ -126,17 +126,17 @@ export const readAccountByEmailAction = async (email: string): Promise<{ client?
           type: 'db'
      })
 
-     return { client }
+     return { customer }
 }
 
-export const updateAccountAction = async (id: string, update: Partial<Client>): Promise<{ success: boolean, error?: string, data?: Client }> => {
+export const updateAccountAction = async (id: string, update: Partial<PolarCustomer>): Promise<{ success: boolean, error?: string, data?: PolarCustomer }> => {
 
      const startTime = Date.now();
 
      const supabase = await useServerSideSupabaseAnonClient();
 
      const { data, error } = await supabase
-          .from('tblClients')
+          .from('tblPolarCustomers')
           .update(update)
           .eq('id', id)
           .single();
@@ -145,7 +145,7 @@ export const updateAccountAction = async (id: string, update: Partial<Client>): 
 
           await logServerAction({
                user_id: id,
-               action: 'Update Account - Error for tblClients table.',
+               action: 'Update Account - Error for tblPolarCustomers table.',
                payload: { update },
                status: 'fail',
                error: error.message,

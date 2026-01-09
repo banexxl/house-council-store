@@ -76,18 +76,12 @@ export const registerUser = async (values: RegisterFormValues): Promise<{ succes
           };
      }
 
-     // If sign up is successful, insert into tblClients with user_id
+     // If sign up is successful, insert into tblPolarCustomers with user_id
      const userId = signUpData?.user?.id ?? null;
-     const { data, error } = await supabase.from('tblClients').insert({
-          user_id: userId,
-          contact_person: values.contact_person,
-          name: values.name,
+     const { data, error } = await supabase.from('tblPolarCustomers').insert({
+          externalId: userId,
+          name: values.contact_person,
           email: values.email,
-          client_type: values.name.replace(/\s/g, '') === '' ? 'individual' : 'business',
-          client_status: 'pending_activation',
-          has_accepted_terms_and_conditions: values.has_accepted_terms_and_conditions,
-          has_accepted_privacy_policy: values.has_accepted_privacy_policy,
-          has_accepted_marketing: values.has_accepted_marketing
      }).select().single();
 
      if (error) {

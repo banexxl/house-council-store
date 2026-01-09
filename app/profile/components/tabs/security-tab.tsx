@@ -3,7 +3,6 @@
 import { Box, Button, Card, CardContent, Chip, Typography, List, ListItem, ListItemText, Stack, Alert, InputAdornment, TextField, LinearProgress, IconButton, CircularProgress, useTheme } from "@mui/material"
 import LogoutIcon from "@mui/icons-material/Logout"
 import LockIcon from "@mui/icons-material/Lock"
-import { Client } from "@/app/types/client"
 import { Session, User, } from "@supabase/supabase-js"
 import { createBrowserClient } from '@supabase/ssr'
 import { Visibility, VisibilityOff } from "@mui/icons-material"
@@ -16,9 +15,10 @@ import { deleteAccountAction, logoutUserAction } from "../../account-action"
 import { useFormik } from "formik"
 import { resetPasswordWithOldPassword } from "@/app/auth/reset-password/reset-password-actions"
 import { challengeTOTP, startEnrollTOTP, verifyTOTPEnrollment } from "@/app/lib/account-2fa-actions"
+import { PolarCustomer } from "@/app/types/polar-customer-types"
 
 interface SecurityTabProps {
-     userData: { client: Client; session: User }
+     userData: { customer: PolarCustomer; session: User }
 }
 
 export default function SecurityTab({ userData }: SecurityTabProps) {
@@ -151,7 +151,7 @@ export default function SecurityTab({ userData }: SecurityTabProps) {
 
      const handleConfirmDelete = async () => {
           setConfirmDeleteLoading(true)
-          const deleteAccount = await deleteAccountAction(userData.session.id, userData.client.email);
+          const deleteAccount = await deleteAccountAction(userData.session.id, userData.customer.email);
           if (deleteAccount.success) {
                toast.success("Account deleted successfully.");
                logoutUserAction();
@@ -183,7 +183,7 @@ export default function SecurityTab({ userData }: SecurityTabProps) {
           onSubmit: async (values) => {
                setResetingPassword(true)
                try {
-                    const resetPasswordResponse = await resetPasswordWithOldPassword(userData.client.email, values.oldPassword, values.newPassword);
+                    const resetPasswordResponse = await resetPasswordWithOldPassword(userData.customer.email, values.oldPassword, values.newPassword);
                     if (resetPasswordResponse.success) {
                          toast.success("Password reset successfully.")
                          formik.resetForm()

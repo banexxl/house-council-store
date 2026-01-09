@@ -23,14 +23,13 @@ import {
 import CheckIcon from "@mui/icons-material/Check"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import toast, { Toaster } from "react-hot-toast"
-import { Feature } from "../types/feature"
 import { useRouter } from "next/navigation"
 import Animate from "@/app/components/animation-framer-motion"
 import CircularProgress from '@mui/material/CircularProgress';
 import Backdrop from '@mui/material/Backdrop';
-import { Client } from "../types/client"
 import { PolarSubscription } from "../types/polar-subscription-types"
 import { PolarProduct, PolarProductPrice } from "../types/polar-product-types"
+import { PolarCustomer } from "../types/polar-customer-types"
 
 const faqs = [
      {
@@ -52,13 +51,13 @@ const faqs = [
 ]
 
 interface PricingPageProps {
-     polarProducts?: (PolarProduct & { prices: PolarProductPrice[] })[]
-     clientSubscriptionPlanData?: PolarSubscription & { subscription_plan: any } | null
+     polarProducts?: PolarProduct[]
+     customerSubscriptionPlanData?: PolarSubscription
      apartmentCount?: number
-     client?: Client | null
+     customer?: PolarCustomer | null
 }
 
-export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, clientSubscriptionPlanData, apartmentCount, client }) => {
+export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, customerSubscriptionPlanData, apartmentCount, customer }) => {
      const router = useRouter()
      const [loadingKey, setLoadingKey] = useState<string | null>(null);
      const theme = useTheme()
@@ -129,13 +128,13 @@ export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, clientS
 
      const startPolarCheckout = async (priceId: string, productId: string) => {
 
-          if (!client?.id) {
+          if (!customer?.id) {
                toast.error("Please sign in to start a trial.");
                router.push("/auth/sign-in");
                return;
           }
 
-          if (clientSubscriptionPlanData && clientSubscriptionPlanData.status === "trialing") {
+          if (customerSubscriptionPlanData && customerSubscriptionPlanData.status === "trialing") {
                toast.error("You are currently in a free trial. Please wait for it to finish before starting a new one.");
                return;
           }
@@ -144,7 +143,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, clientS
 
           try {
                const successUrl =
-                    `https://nest-link.app/pricing/subscription-plan-purchase/success?client_id=${client.id}&subscription_id=${productId}`;
+                    `https://nest-link.app/pricing/subscription-plan-purchase/success?customerId=${customer.id}&subscription_id=${productId}`;
                const returnUrl =
                     `https://nest-link.app/pricing`;
 
@@ -152,9 +151,9 @@ export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, clientS
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                         clientId: client.id!,
+                         customerId: customer.id!,
                          productIds: [productId],
-                         customerEmail: client.email,
+                         customerEmail: customer.email,
                          successUrl,
                          returnUrl,
                          priceIds: [priceId],
@@ -293,8 +292,8 @@ export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, clientS
                                                                  onClick={() => startPolarCheckout(currentPrice.id, currentProduct.id)}
                                                                  disabled={
                                                                       loadingKey !== null ||
-                                                                      (clientSubscriptionPlanData?.product_id === currentProduct.id &&
-                                                                           (clientSubscriptionPlanData?.status === 'active' || clientSubscriptionPlanData?.status === 'trialing'))
+                                                                      (customerSubscriptionPlanData?.productId === currentProduct.id &&
+                                                                           (customerSubscriptionPlanData?.status === 'active' || customerSubscriptionPlanData?.status === 'trialing'))
                                                                  }
                                                                  startIcon={loadingKey === currentPrice.id ? <CircularProgress size={20} color="inherit" /> : undefined}
                                                             >

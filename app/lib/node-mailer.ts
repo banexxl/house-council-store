@@ -2,7 +2,7 @@
 
 import nodemailer, { SentMessageInfo } from 'nodemailer';
 import { logServerAction } from './server-logging';
-import { readClientSubscriptionPlanFromClientId } from '../profile/subscription-plan-actions';
+import { readCustomerSubscriptionPlanFromCustomerId } from '../profile/subscription-plan-actions';
 
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_SERVER_HOST,
@@ -232,7 +232,7 @@ export const sendTrialEndingEmailToClient = async ({ to, daysRemaining }: SendTr
 
 export const sendSubscriptionEndingNotificationToSupport = async ({ daysRemaining, clientEmail, clientId }: SendEndingSubscriptionEmail): Promise<SentMessageInfo> => {
 
-  const { clientSubscriptionPlanData } = await readClientSubscriptionPlanFromClientId(clientId)
+  const { customerSubscriptionPlanData } = await readCustomerSubscriptionPlanFromCustomerId(clientId)
 
   const htmlContent = `
 <!DOCTYPE html>
@@ -310,7 +310,7 @@ export const sendSubscriptionEndingNotificationToSupport = async ({ daysRemainin
     <table role="presentation" class="main">
       <tr>
         <td style="padding: 40px 20px; text-align: center;">
-          <h1 style="font-size: 48px; font-weight: 300; margin: 0;">Subscription ${clientSubscriptionPlanData?.subscription_plan.name} Ending Soon</h1>
+          <h1 style="font-size: 48px; font-weight: 300; margin: 0;">Subscription ${customerSubscriptionPlanData?.product.name} Ending Soon</h1>
           <h2 style="font-size: 24px; margin: 10px 0 20px;">Client Email: ${clientEmail}</h2>
 
           <p style="font-size: 16px; margin-top: 20px;">

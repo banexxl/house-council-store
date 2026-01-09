@@ -5,8 +5,7 @@ import { Header } from "@/app/components/header";
 import { ProfilePage } from "./profile";
 import { readAccountByEmailAction, readAllApartmentsByClientId, readClientRecentActivityAction } from "./account-action";
 import { User } from "@supabase/supabase-js";
-import { clientInitialValues } from "../types/client";
-import { readClientSubscriptionPlanFromClientId, readSubscriptionPlanFeatures } from "./subscription-plan-actions";
+import { readCustomerSubscriptionPlanFromCustomerId, readSubscriptionPlanFeatures } from "./subscription-plan-actions";
 import { redirect } from "next/navigation";
 import { useServerSideSupabaseServiceRoleClient } from "../lib/ss-supabase-service-role-client";
 import { buildCanonicalUrl } from "../lib/seo";
@@ -35,29 +34,27 @@ export default async function Page() {
      }
 
      // Fetch client data
-     const { client, error } = await readAccountByEmailAction(user.email);
+     const { customer, error } = await readAccountByEmailAction(user.email);
 
-     if (!client) {
+     if (!customer) {
           const supabase = await useServerSideSupabaseServiceRoleClient();
           supabase.auth.signOut()
           return redirect("/auth/sign-in")
      }
 
      // Fetch related data in parallel
-     const [clientSubscriptionObject, recentActivity, apartments] = await Promise.all([
-          readClientSubscriptionPlanFromClientId(client.id),
-          readClientRecentActivityAction(user.email, client.id),
-          readAllApartmentsByClientId(client.id)
+     const [customerSubscriptionObject, recentActivity, apartments] = await Promise.all([
+          readCustomerSubscriptionPlanFromCustomerId(customer.id),
+          readClientRecentActivityAction(user.email, customer.id),
+          readAllApartmentsByClientId(customer.id)
      ])
 
 
-     const subsrciptionFeatures = await readSubscriptionPlanFeatures(clientSubscriptionObject.clientSubscriptionPlanData?.subscription_id ?? null)
-
+     const subscriptionFeatures = await readSubscriptionPlanFeatures(customerSubscriptionObject.customerSubscriptionPlanData?.id ?? null)
      // Merge session and client data
-     const sessionAndClientDataCombined = {
-          client: {
-               ...clientInitialValues,
-               ...client,
+     const sessionAndCustomerDataCombined = {
+          customer: {
+               ...customer,
           },
           session: { ...user },
      };
@@ -68,11 +65,11 @@ export default async function Page() {
           <>
                <Header user={user} />
                <ProfilePage
-                    sessionAndClientDataCombined={sessionAndClientDataCombined}
-                    clientSubscriptionObject={clientSubscriptionObject?.clientSubscriptionPlanData! ?? null}
+                    sessionAndCustomerDataCombined={sessionAndCustomerDataCombined}
+                    customerSubscriptionObject={customerSubscriptionObject?.customerSubscriptionPlanData! ?? null}
                     recentActivity={recentActivity.data ?? []}
                     binCheckerAPIKey={binCheckerAPIKey ?? ""}
-                    subsrciptioFeatures={subsrciptionFeatures?.subscriptionPlanFeatures ?? null}
+                    subscriptionFeatures={subscriptionFeatures?.subscriptionPlanFeatures ?? null}
                     apartmentsCount={apartments ? apartments?.data!.length : 0}
                />
                <Footer />

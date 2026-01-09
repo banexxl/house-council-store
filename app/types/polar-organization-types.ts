@@ -8,22 +8,22 @@ export interface PolarOrganizationEvent {
 
 export interface PolarOrganization {
      id: string;
-     created_at: string;
-     modified_at: string;
+     createdAt: string;
+     modifiedAt: string;
      name: string;
      slug: string;
-     avatar_url: string;
-     proration_behavior: "invoice" | "none";
-     allow_customer_updates: boolean;
+     avatarUrl: string;
+     prorationBehavior: "invoice" | "none";
+     allowCustomerUpdates: boolean;
      email: string;
      website: string;
      socials: PolarOrganizationSocial[];
      status: string;
-     details_submitted_at: string | null;
-     feature_settings: PolarOrganizationFeatureSettings;
-     subscription_settings: PolarOrganizationSubscriptionSettings;
-     notification_settings: PolarOrganizationNotificationSettings;
-     customer_email_settings: PolarOrganizationCustomerEmailSettings;
+     detailsSubmittedAt: string | null;
+     featureSettings: PolarOrganizationFeatureSettings;
+     subscriptionSettings: PolarOrganizationSubscriptionSettings;
+     notificationSettings: PolarOrganizationNotificationSettings;
+     customerEmailSettings: PolarOrganizationCustomerEmailSettings;
 }
 
 export interface PolarOrganizationSocial {
@@ -32,32 +32,32 @@ export interface PolarOrganizationSocial {
 }
 
 export interface PolarOrganizationFeatureSettings {
-     issue_funding_enabled: boolean;
-     seat_based_pricing_enabled: boolean;
-     revops_enabled: boolean;
-     wallets_enabled: boolean;
+     issueFundingEnabled: boolean;
+     seatBasedPricingEnabled: boolean;
+     revopsEnabled: boolean;
+     walletsEnabled: boolean;
 }
 
 export interface PolarOrganizationSubscriptionSettings {
-     allow_multiple_subscriptions: boolean;
-     allow_customer_updates: boolean;
-     proration_behavior: "invoice" | "none";
-     benefit_revocation_grace_period: number;
-     prevent_trial_abuse: boolean;
+     allowMultipleSubscriptions: boolean;
+     allowCustomerUpdates: boolean;
+     prorationBehavior: "invoice" | "none";
+     benefitRevocationGracePeriod: number;
+     preventTrialAbuse: boolean;
 }
 
 export interface PolarOrganizationNotificationSettings {
-     new_order: boolean;
-     new_subscription: boolean;
+     newOrder: boolean;
+     newSubscription: boolean;
 }
 
 export interface PolarOrganizationCustomerEmailSettings {
-     order_confirmation: boolean;
-     subscription_cancellation: boolean;
-     subscription_confirmation: boolean;
-     subscription_cycled: boolean;
-     subscription_past_due: boolean;
-     subscription_revoked: boolean;
-     subscription_uncanceled: boolean;
-     subscription_updated: boolean;
+     orderConfirmation: boolean;
+     subscriptionCancellation: boolean;
+     subscriptionConfirmation: boolean;
+     subscriptionCycled: boolean;
+     subscriptionPastDue: boolean;
+     subscriptionRevoked: boolean;
+     subscriptionUncanceled: boolean;
+     subscriptionUpdated: boolean;
 }

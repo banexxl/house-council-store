@@ -124,7 +124,7 @@ export async function GET(request: Request) {
           console.log('Checking if email exists in other role tables...');
 
           const [clientCheck, clientMemberCheck, tenantCheck] = await Promise.all([
-               supabase.from('tblClients').select('id').eq('email', email).single(),
+               supabase.from('tblPolarCustomers').select('id').eq('email', email).single(),
                supabase.from('tblClientMembers').select('id').eq('email', email).single(),
                supabase.from('tblTenants').select('id').eq('email', email).single()
           ]);

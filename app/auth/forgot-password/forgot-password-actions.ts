@@ -19,7 +19,7 @@ export async function sendPasswordResetEmail(email: string): Promise<void> {
      }
 
      const { data: userExists, error: userCheckError } = await supabase
-          .from("tblClients")
+          .from("tblPolarCustomers")
           .select("email, id")
           .eq("email", email)
           .single()

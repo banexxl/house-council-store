@@ -4,9 +4,6 @@ import { getSessionUser } from "@/app/lib/get-session"
 import { Header } from "@/app/components/header"
 import { Footer } from "@/app/components/footer"
 import SubscriptionSuccessPage from "./subscription-plan-success"
-import { logServerAction } from "@/app/lib/server-logging"
-import { readClientSubscriptionPlanFromClientId } from "@/app/profile/subscription-plan-actions"
-import { readAccountByEmailAction } from "@/app/profile/account-action"
 import { buildCanonicalUrl } from "@/app/lib/seo"
 
 const canonicalUrl = buildCanonicalUrl("/pricing/subscription-plan-purchase/success");

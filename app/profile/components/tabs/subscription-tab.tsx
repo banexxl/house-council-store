@@ -29,8 +29,8 @@ import { initClientSubscriptionRealtime, type InitListenerOptions } from "@/app/
 import { PolarSubscription } from "@/app/types/polar-subscription-types"
 
 interface SubscriptionTabProps {
-     clientSubscriptionObject: PolarSubscription & { subscription_plan: SubscriptionPlan } | null;
-     subsrciptioFeatures?: SubscriptionPlan & { features: Feature[] } | null;
+     customerSubscriptionObject: PolarSubscription
+     subsriptionFeatures?: SubscriptionPlan & { features: Feature[] } | null;
      apartmentsCount: number
 }
 
@@ -41,16 +41,16 @@ const isClientSubscriptionRecord = (record: unknown): record is ClientSubscripti
      return "id" in record && "status" in record
 }
 
-export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioFeatures, apartmentsCount }: SubscriptionTabProps) {
-     const [subscriptionData, setSubscriptionData] = useState<ClientSubscriptionWithOptionalPlan | null>(clientSubscriptionObject)
+export default function SubscriptionTab({ customerSubscriptionObject, subsriptionFeatures, apartmentsCount }: SubscriptionTabProps) {
+     const [subscriptionData, setSubscriptionData] = useState<ClientSubscriptionWithOptionalPlan | null>(customerSubscriptionObject)
 
      useEffect(() => {
-          setSubscriptionData(clientSubscriptionObject)
-     }, [clientSubscriptionObject])
+          setSubscriptionData(customerSubscriptionObject)
+     }, [customerSubscriptionObject])
 
      useEffect(() => {
-          const clientId = clientSubscriptionObject?.client_id;
-          if (!clientId) return;
+          const customerId = customerSubscriptionObject?.customerId;
+          if (!customerId) return;
 
           let isMounted = true;
           let cleanup: (() => Promise<void>) | null = null;
@@ -86,11 +86,11 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
                     subscription_plan: prev?.subscription_plan,
                }));
 
-               // 2) Refresh to get joined `subscription_plan` and `subsrciptioFeatures` updated
+               // 2) Refresh to get joined `subscription_plan` and `subsriptionFeatures` updated
                scheduleRefresh();
           };
 
-          initClientSubscriptionRealtime<ClientSubscriptionWithOptionalPlan>(clientId, handleRealtimeUpdate)
+          initClientSubscriptionRealtime<ClientSubscriptionWithOptionalPlan>(customerId, handleRealtimeUpdate)
                .then((stop) => {
                     if (!isMounted) {
                          void stop();
@@ -107,7 +107,7 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
                if (refreshTimer) clearTimeout(refreshTimer);
                if (cleanup) void cleanup();
           };
-     }, [clientSubscriptionObject?.client_id]);
+     }, [customerSubscriptionObject?.customerId]);
 
 
      const theme = useTheme()
@@ -136,7 +136,7 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
 
      const handleCancelSubscription = async () => {
           setIsProcessing(true)
-          if (!subscriptionData?.polar_subscription_id || !subscriptionData?.customer_id) {
+          if (!subscriptionData?.customerId) {
                toast.error("Missing subscription identifiers.")
                setIsProcessing(false)
                return
@@ -147,13 +147,13 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
                          method: "DELETE",
                          headers: { "Content-Type": "application/json" },
                          body: JSON.stringify({
-                              polarSubscriptionId: subscriptionData.polar_subscription_id,
-                              polarCustomerId: subscriptionData.customer_id,
+                              polarSubscriptionId: subscriptionData.id,
+                              polarCustomerId: subscriptionData.customerId,
                          }),
                     });
                     if (!res.ok) {
                          const errorData = await res.json().catch(() => ({}));
-                         if (errorData?.error === "Missing subscriptionId or clientId") {
+                         if (errorData?.error === "Missing subscriptionId or customerId") {
                               toast.error("Missing subscription identifiers. Please contact support.");
                          } else if (errorData?.error === "Subscription is already canceled.") {
                               toast.error("This subscription is already canceled or will be canceled at the end of the current billing period.");
@@ -190,13 +190,13 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
      }
 
      const handleOpenCustomerPortal = async () => {
-          const hasSubscription = Boolean(subscriptionData?.id && subscriptionData?.subscription_id)
+          const hasSubscription = Boolean(subscriptionData?.id && subscriptionData?.id)
           if (!hasSubscription) {
                toast.error("No subscription found. Please purchase a plan first.")
                return
           }
 
-          if (!subscriptionData?.customer_id) {
+          if (!subscriptionData?.customerId) {
                toast.error("Missing customer identifier.")
                return
           }
@@ -211,7 +211,7 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                         polarCustomerId: subscriptionData.customer_id,
+                         polarCustomerId: subscriptionData.customerId,
                          returnUrl,
                     }),
                })
@@ -241,7 +241,7 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
 
      // const handleReactivateSubscription = async () => {
      //      setIsProcessing(true)
-     //      if (!subscriptionData?.subscription_id || !subscriptionData?.customer_id) {
+     //      if (!subscriptionData?.subscription_id || !subscriptionData?.customerId) {
      //           toast.error("Missing subscription identifiers.")
      //           setIsProcessing(false)
      //           return
@@ -253,7 +253,7 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
      //                     headers: { "Content-Type": "application/json" },
      //                     body: JSON.stringify({
      //                          subscriptionId: subscriptionData.subscription_id,
-     //                          polarCustomerId: subscriptionData.customer_id,
+     //                          polarCustomerId: subscriptionData.customerId,
      //                     }),
      //                });
      //                if (!res.ok) {
@@ -279,14 +279,14 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
 
      const currencyFormatter = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" })
      const pricePerApartment = subscriptionData?.subscription_plan
-          ? subscriptionData.recurring_interval === "year"
+          ? subscriptionData.recurringInterval === "year"
                ? subscriptionData.subscription_plan.total_price_per_apartment_with_discounts
                : subscriptionData.subscription_plan.monthly_total_price_per_apartment
           : null
      const totalForAllApartments = pricePerApartment !== null ? pricePerApartment * apartmentsCount : null
 
-     const billingPeriodLabel = subscriptionData?.recurring_interval === "year" ? "year" : "month"
-     const hasSubscription = Boolean(subscriptionData?.id || subscriptionData?.subscription_id)
+     const billingPeriodLabel = subscriptionData?.recurringInterval === "year" ? "year" : "month"
+     const hasSubscription = Boolean(subscriptionData?.id || subscriptionData?.id)
 
      return (
           <Box>
@@ -322,7 +322,7 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
                                         variant="outlined"
                                         color="primary"
                                         onClick={handleOpenCustomerPortal}
-                                        disabled={isPortalLoading || isProcessing || !subscriptionData?.customer_id}
+                                        disabled={isPortalLoading || isProcessing || !subscriptionData?.customerId}
                                         startIcon={isPortalLoading ? <CircularProgress size={18} /> : <OpenInNewIcon />}
                                    >
                                         Customer Portal
@@ -347,7 +347,7 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
                                         <CalendarTodayIcon fontSize="small" sx={{ mr: 1, color: "text.secondary" }} />
                                         <Typography variant="body2">
                                              {(() => {
-                                                  const startDateNode = renderDate(subscriptionData?.created_at)
+                                                  const startDateNode = renderDate(subscriptionData?.createdAt)
 
                                                   if (!subscriptionData) return startDateNode
 
@@ -427,13 +427,13 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
                                                   <Box
                                                        component="span"
                                                        sx={{
-                                                            color: subscriptionData.recurring_interval === "year"
+                                                            color: subscriptionData.recurringInterval === "year"
                                                                  ? "success.main"
                                                                  : "warning.main",
                                                             fontWeight: 600,
                                                        }}
                                                   >
-                                                       {subscriptionData.recurring_interval === "year" ? "ANNUALLY" : "MONTHLY"}
+                                                       {subscriptionData.recurringInterval === "year" ? "ANNUALLY" : "MONTHLY"}
                                                   </Box>
                                              )}
                                         </Typography>
@@ -451,19 +451,19 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
                </Card>
                <Card>
                     <CardContent>
-                         {!subsrciptioFeatures && (
+                         {!subsriptionFeatures && (
                               <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
                                    <Typography variant="h6">
                                         No Subscription plan selected...
                                    </Typography>
                               </Box>
                          )}
-                         {subsrciptioFeatures && (
+                         {subsriptionFeatures && (
                               <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
                                    <Typography variant="h6">
                                         Features Included in {' '}
                                         <Typography component="span" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
-                                             {subsrciptioFeatures?.name}
+                                             {subsriptionFeatures?.name}
                                         </Typography> Plan:
                                    </Typography>
                               </Box>
@@ -471,7 +471,7 @@ export default function SubscriptionTab({ clientSubscriptionObject, subsrciptioF
 
                          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
                               <List dense={true}>
-                                   {subsrciptioFeatures?.features.map((feature, index) => (
+                                   {subsriptionFeatures?.features.map((feature, index) => (
                                         <ListItem key={index} component={Link} href={`/docs#${feature.slug!}`} sx={{ cursor: "pointer" }}>
                                              <ListItemIcon>
                                                   <CheckCircleIcon fontSize="small" color="success" />

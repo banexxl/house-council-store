@@ -23,7 +23,7 @@ export const checkClientExistsAndIsPermitted = async (
      const allowedStatuses = ['active', 'trial', 'vip']
 
      const { data, error } = await supabaseBrowserClient
-          .from('tblClients')
+          .from('tblPolarCustomers')
           .select('*')
           .eq('email', values.email)
           .single()

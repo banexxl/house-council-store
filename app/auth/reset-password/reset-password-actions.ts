@@ -12,7 +12,7 @@ export async function resetPasswordWithOldPassword(email: string, oldPassword: s
      const supabase = await useServerSideSupabaseAnonClient();
 
      const { data: user, error: userError } = await supabase
-          .from('tblClients')
+          .from('tblPolarCustomers')
           .select('*')
           .eq('email', email)
           .single();
@@ -142,7 +142,7 @@ export async function resetPassword(email: string, newPassword: string): Promise
      const supabase = await useServerSideSupabaseAnonClient();
 
      const { data: user, error: userError } = await supabase
-          .from('tblClients')
+          .from('tblPolarCustomers')
           .select('*')
           .eq('email', email)
           .single();

@@ -282,83 +282,80 @@ export const readAllSubscriptionPlans = async (): Promise<{
      };
 };
 
-export const readClientSubscriptionPlanFromClientId = async (clientId: string): Promise<{ success: boolean, clientSubscriptionPlanData?: PolarSubscription & { subscription_plan: SubscriptionPlan } | null, error?: string }> => {
+export const readCustomerSubscriptionPlanFromCustomerId = async (customerId: string): Promise<{ success: boolean, customerSubscriptionPlanData?: PolarSubscription, error?: string }> => {
 
-     if (!clientId) {
+     if (!customerId) {
           await logServerAction({
                user_id: null,
-               action: 'Read Client Subscription Plan - Client ID not provided',
-               payload: { clientId },
+               action: 'Read Customer Subscription Plan - Customer ID not provided',
+               payload: { customerId },
                status: 'fail',
-               error: "Client ID is required",
+               error: "Customer ID is required",
                duration_ms: 0,
                type: 'db'
           })
-          return { success: false, error: "Client ID is required" };
+          return { success: false, error: "Customer ID is required" };
      }
-     const supabase = await useServerSideSupabaseAnonClient(); // Use the server-side Supabase client
+     const supabase = await useServerSideSupabaseAnonClient(); // Use the server-side Supabase customer
 
-     const { data: clientSubscriptionPlanData, error: clientSubscriptionDataError } = await supabase
-          .from("tblClient_Subscription")
-          .select(`
-    *,
-    subscription_plan:subscription_id (*)
-  `)
-          .eq("client_id", clientId)
+     const { data: customerSubscriptionPlanData, error: customerSubscriptionDataError } = await supabase
+          .from("tblPolarSubscriptions")
+          .select(`*`)
+          .eq("customerId", customerId)
           .single();
 
-     if (clientSubscriptionDataError) {
+     if (customerSubscriptionDataError) {
           await logServerAction({
                user_id: null,
-               action: 'Read Client Subscription Plan - Client Subscription Not Created',
-               payload: { clientId },
+               action: 'Read Customer Subscription Plan - Customer Subscription Not Created',
+               payload: { customerId },
                status: 'fail',
-               error: clientSubscriptionDataError.message,
+               error: customerSubscriptionDataError.message,
                duration_ms: 0,
                type: 'db'
           })
-          return { success: false, error: clientSubscriptionDataError.message, clientSubscriptionPlanData: null };
+          return { success: false, error: customerSubscriptionDataError.message, customerSubscriptionPlanData: undefined };
      }
 
-     if (!clientSubscriptionPlanData) {
+     if (!customerSubscriptionPlanData) {
           await logServerAction({
                user_id: null,
-               action: 'Read Client Subscription Plan - Not Found',
-               payload: { clientId },
+               action: 'Read Customer Subscription Plan - Not Found',
+               payload: { customerId },
                status: 'fail',
-               error: "Client subscription data not found",
+               error: "Customer subscription data not found",
                duration_ms: 0,
                type: 'db'
           })
-          return { success: false, error: "Client subscription data not found", clientSubscriptionPlanData: null };
+          return { success: false, error: "Customer subscription data not found", customerSubscriptionPlanData: undefined };
      }
      await logServerAction({
           user_id: null,
-          action: 'Read Client Subscription Plan - Success',
-          payload: { clientId },
+          action: 'Read Customer Subscription Plan - Success',
+          payload: { customerId },
           status: 'success',
           error: '',
           duration_ms: 0,
           type: 'db'
      })
 
-     return { success: true, clientSubscriptionPlanData };
+     return { success: true, customerSubscriptionPlanData };
 
 }
 
-export async function getApartmentCountForClient(clientId: string): Promise<number> {
+export async function getApartmentCountForCustomer(customerId: string): Promise<number> {
      const supabase = await useServerSideSupabaseAnonClient();
-     // Join apartments -> buildings to filter by client_id
+     // Join apartments -> buildings to filter by customerId
      const { count, error } = await supabase
           .from("tblApartments")
-          .select("id, tblBuildings!inner(client_id)", { count: "exact", head: true })
-          .eq("tblBuildings.client_id", clientId);
+          .select("id, tblBuildings!inner(customerId)", { count: "exact", head: true })
+          .eq("tblBuildings.customerId", customerId);
 
      if (error) {
           await logServerAction({
                user_id: null,
                action: "Store Webhook - Apartment count query failed",
-               payload: { clientId },
+               payload: { customerId },
                status: "fail",
                error: error.message,
                duration_ms: 0,

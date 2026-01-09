@@ -17,13 +17,13 @@ export interface PolarBenefitUpdatedEvent extends PolarBenefitEventBase<"benefit
 
 export interface PolarBenefit {
      id: string;
-     created_at: string;
-     modified_at: string;
+     createdAt: string;
+     modifiedAt: string;
      type: "custom";
      description: string;
      selectable: boolean;
      deletable: boolean;
-     organization_id: string;
+     organizationId: string;
      metadata: Record<string, unknown>;
      properties: Record<string, string>;
 }

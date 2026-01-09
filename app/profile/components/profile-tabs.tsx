@@ -10,13 +10,12 @@ import SecurityIcon from "@mui/icons-material/Security"
 import AccountTab from "./tabs/account-tab"
 import SecurityTab from "./tabs/security-tab"
 import { User } from "@supabase/supabase-js"
-import { Client } from "@/app/types/client"
 import { SubscriptionPlan } from "@/app/types/subscription-plan"
 import { ActivityItem } from "./profile-sidebar"
 import { Feature } from "@/app/types/feature"
 import SubscriptionTab from "./tabs/subscription-tab"
-import { Currency } from "@/app/types/currency"
 import { PolarSubscription } from "@/app/types/polar-subscription-types"
+import { PolarCustomer } from "@/app/types/polar-customer-types"
 
 interface TabPanelProps {
      children?: React.ReactNode
@@ -41,14 +40,13 @@ function TabPanel(props: TabPanelProps) {
 }
 
 interface ProfileTabsProps {
-     userData: { client: Client, session: User }
+     userData: { customer: PolarCustomer, session: User }
      editMode: boolean
      setEditMode: (value: boolean) => void
-     clientSubscriptionObject: PolarSubscription & { subscription_plan: SubscriptionPlan } | null
+     customerSubscriptionObject: PolarSubscription
      recentActivity: ActivityItem[]
-     subscriptionFeatures?: Feature[],
      binCheckerAPIKey?: string,
-     subsrciptioFeatures?: SubscriptionPlan & { features: Feature[] } | null,
+     subsriptionFeatures?: SubscriptionPlan & { features: Feature[] } | null,
      apartmentsCount: number
 }
 
@@ -56,9 +54,9 @@ export default function ProfileTabs({
      userData,
      editMode,
      setEditMode,
-     clientSubscriptionObject,
+     customerSubscriptionObject,
      recentActivity,
-     subsrciptioFeatures,
+     subsriptionFeatures,
      apartmentsCount
 }: ProfileTabsProps) {
 
@@ -103,7 +101,7 @@ export default function ProfileTabs({
                     <Box sx={{ px: 3 }}>
                          {/* Account Tab */}
                          <TabPanel value={tabValue} index={0}>
-                              <AccountTab userData={userData} editMode={editMode} setEditMode={setEditMode} />
+                              <AccountTab userData={userData} />
                          </TabPanel>
 
                          {/* Billing Tab */}
@@ -118,8 +116,8 @@ export default function ProfileTabs({
                          {/* Subscription Tab */}
                          <TabPanel value={tabValue} index={1}>
                               <SubscriptionTab
-                                   clientSubscriptionObject={clientSubscriptionObject || null}
-                                   subsrciptioFeatures={subsrciptioFeatures}
+                                   customerSubscriptionObject={customerSubscriptionObject || null}
+                                   subsriptionFeatures={subsriptionFeatures}
                                    apartmentsCount={apartmentsCount}
                               />
                          </TabPanel>

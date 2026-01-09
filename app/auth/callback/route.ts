@@ -122,9 +122,9 @@ export async function GET(request: Request) {
      const sessionUser = sessionData.session.user;
      const userEmail = normalizeEmail(sessionUser.email);
 
-     // Check if the user's email exists in tblClients.
+     // Check if the user's email exists in tblPolarCustomers.
      const { data, error: clientError } = await supabase
-          .from('tblClients')
+          .from('tblPolarCustomers')
           .select('*')
           .eq('email', userEmail)
      // If there's an error checking the email, log it and redirect to error page
@@ -153,18 +153,12 @@ export async function GET(request: Request) {
           const clientInsertData = {
                name: (user as any).user_metadata?.contact_person || (user as any).user_metadata?.name || user.email,
                email: user.email,
-               client_type: 'individual',
-               client_status: 'active',
-               has_accepted_terms_and_conditions: false,
-               has_accepted_privacy_policy: false,
-               has_accepted_marketing: false,
-               is_verified: true,
-               user_id: sessionData.session.user.id
+               external: sessionData.session.user.id
           };
-          const { data: insertData, error: insertError } = await supabase.from('tblClients').insert(clientInsertData);
+          const { data: insertData, error: insertError } = await supabase.from('tblPolarCustomers').insert(clientInsertData);
           insertData ?? await logServerAction({
                action: 'Auth callback success',
-               error: 'Successfully inserted new user into tblClients',
+               error: 'Successfully inserted new user into tblPolarCustomers',
                duration_ms: Date.now() - start,
                payload: { code, requestUrl },
                status: 'success',
@@ -175,7 +169,7 @@ export async function GET(request: Request) {
           if (insertError) {
                insertError ?? await logServerAction({
                     action: 'Auth callback errored',
-                    error: 'Failed to insert new user into tblClients',
+                    error: 'Failed to insert new user into tblPolarCustomers',
                     duration_ms: Date.now() - start,
                     payload: { code, requestUrl },
                     status: 'fail',
@@ -201,35 +195,12 @@ export async function GET(request: Request) {
                     type: 'auth'
                });
           }
-     } else {
-          // Optional: if provider is google, promote your business status here
-          if (sessionUser.app_metadata?.provider === 'google') {
-               const client = data[0];
-               // Example normalization — adjust fields to your rules
-               if (client.client_status === 'pending_activation' || client.is_verified === false) {
-                    const { data: upd, error: updErr } = await supabase
-                         .from('tblClients')
-                         .update({ client_status: 'active', is_verified: true })
-                         .eq('id', client.id);
-                    if (updErr) {
-                         await logServerAction({
-                              action: 'Auth callback errored',
-                              error: 'Failed to promote client status after Google sign-in',
-                              duration_ms: Date.now() - start,
-                              payload: { code, requestUrl },
-                              status: 'fail',
-                              user_id: null,
-                              type: 'auth'
-                         });
-                    }
-               }
-          }
      }
 
      if (data && data.length > 1) {
           await logServerAction({
                action: 'Auth callback errored',
-               error: 'Duplicate email found in tblClients.',
+               error: 'Duplicate email found in tblPolarCustomers.',
                duration_ms: Date.now() - start,
                payload: { code, requestUrl },
                status: 'fail',
@@ -241,7 +212,7 @@ export async function GET(request: Request) {
           const { data: deleteData, error: deleteError } = await supabase.auth.admin.deleteUser(sessionData.session.user.id);
           const allCookies = cookieStore.getAll();
           allCookies.forEach(cookie => cookieStore.delete(cookie.name));
-          const redirectUrl = `${requestUrl.origin}/auth/error?error=Duplicate email found in tblClients. Please contact support.`;
+          const redirectUrl = `${requestUrl.origin}/auth/error?error=Duplicate email found in tblPolarCustomers. Please contact support.`;
           return NextResponse.redirect(redirectUrl);
      }
 

@@ -29,86 +29,86 @@ export interface CustomerSeatRevoked {
 }
 
 export interface CustomerSeatAssignment {
-     created_at: string;
-     modified_at: string;
+     createdAt: string;
+     modifiedAt: string;
      id: string;
      status: string;
-     subscription_id: string;
-     order_id: string;
-     customer_id: string;
-     customer_email: string;
-     invitation_token_expires_at: string | null;
-     claimed_at: string | null;
-     revoked_at: string | null;
-     seat_metadata: Record<string, unknown>;
+     subscriptionId: string;
+     orderId: string;
+     customerId: string;
+     customerEmail: string;
+     invitationTokenExpiresAt: string | null;
+     claimedAt: string | null;
+     revokedAt: string | null;
+     seatMetadata: Record<string, unknown>;
 }
 
 export interface CheckoutData {
      id: string;
-     created_at: string;
-     modified_at: string;
-     payment_processor: string;
+     createdAt: string;
+     modifiedAt: string;
+     paymentProcessor: string;
      status: string;
-     client_secret: string;
+     clientSecret: string;
      url: string;
-     expires_at: string;
-     success_url: string;
-     return_url: string;
-     embed_origin: string;
+     expiresAt: string;
+     successUrl: string;
+     returnUrl: string;
+     embedOrigin: string;
      amount: number;
-     discount_amount: number;
-     net_amount: number;
-     tax_amount: number;
-     total_amount: number;
+     discountAmount: number;
+     netAmount: number;
+     taxAmount: number;
+     totalAmount: number;
      currency: string;
-     allow_trial: boolean;
-     active_trial_interval: string;
-     active_trial_interval_count: number;
-     trial_end: string;
-     organization_id: string;
-     product_id: string;
-     product_price_id: string;
-     discount_id: string;
-     allow_discount_codes: boolean;
-     require_billing_address: boolean;
-     is_discount_applicable: boolean;
-     is_free_product_price: boolean;
-     is_payment_required: boolean;
-     is_payment_setup_required: boolean;
-     is_payment_form_required: boolean;
-     customer_id: string;
-     is_business_customer: boolean;
-     customer_name: string;
-     customer_email: string;
-     customer_ip_address: string;
-     customer_billing_name: string;
-     customer_billing_address: CustomerBillingAddress;
-     customer_tax_id: string;
-     payment_processor_metadata: Record<string, unknown>;
-     billing_address_fields: BillingAddressFields;
-     trial_interval: string;
-     trial_interval_count: number;
+     allowTrial: boolean;
+     activeTrialInterval: string;
+     activeTrialIntervalCount: number;
+     trialEnd: string;
+     organizationId: string;
+     productId: string;
+     productPriceId: string;
+     discountId: string;
+     allowDiscountCodes: boolean;
+     requireBillingAddress: boolean;
+     isDiscountApplicable: boolean;
+     isFreeProductPrice: boolean;
+     isPaymentRequired: boolean;
+     isPaymentSetupRequired: boolean;
+     isPaymentFormRequired: boolean;
+     customerId: string;
+     isBusinessCustomer: boolean;
+     customerName: string;
+     customerEmail: string;
+     customerIpAddress: string;
+     customerBillingName: string;
+     customerBillingAddress: CustomerBillingAddress;
+     customerTaxId: string;
+     paymentProcessorMetadata: Record<string, unknown>;
+     billingAddressFields: BillingAddressFields;
+     trialInterval: string;
+     trialIntervalCount: number;
      metadata: Record<string, unknown>;
-     external_customer_id: string;
-     customer_external_id: string;
+     externalCustomerId: string;
+     customerExternalId: string;
      products: CheckoutProduct[];
      product: CheckoutProduct;
-     product_price: CheckoutPrice;
+     productPrice: CheckoutPrice;
      prices: Record<string, unknown>;
      discount: CheckoutDiscount;
-     subscription_id: string;
-     attached_custom_fields: CheckoutAttachedCustomField[];
-     customer_metadata: Record<string, unknown>;
-     custom_field_data: Record<string, unknown>;
+     subscriptionId: string;
+     attachedCustomFields: CheckoutAttachedCustomField[];
+     customerMetadata: Record<string, unknown>;
+     customFieldData: Record<string, unknown>;
      seats: number;
-     price_per_seat: number;
+     pricePerSeat: number;
 }
 
 export interface CustomerBillingAddress {
      country: string;
      line1: string;
      line2: string;
-     postal_code: string;
+     postalCode: string;
      city: string;
      state: string;
 }
@@ -117,73 +117,73 @@ export interface BillingAddressFields {
      country: string;
      state: string;
      city: string;
-     postal_code: string;
+     postalCode: string;
      line1: string;
      line2: string;
 }
 
 export interface CheckoutProduct {
      id: string;
-     created_at: string;
-     modified_at: string;
-     trial_interval: string;
-     trial_interval_count: number;
+     createdAt: string;
+     modifiedAt: string;
+     trialInterval: string;
+     trialIntervalCount: number;
      name: string;
      description: string;
-     recurring_interval: string;
-     recurring_interval_count: number;
-     is_recurring: boolean;
-     is_archived: boolean;
-     organization_id: string;
+     recurringInterval: string;
+     recurringIntervalCount: number;
+     isRecurring: boolean;
+     isArchived: boolean;
+     organizationId: string;
      prices: CheckoutPrice[];
      benefits: CheckoutBenefit[];
      medias: CheckoutMedia[];
 }
 
 export interface CheckoutPrice {
-     created_at: string;
-     modified_at: string;
+     createdAt: string;
+     modifiedAt: string;
      id: string;
      source: string;
-     amount_type: string;
-     is_archived: boolean;
-     product_id: string;
+     amountType: string;
+     isArchived: boolean;
+     productId: string;
      type: string;
-     recurring_interval: string;
-     price_currency: string;
-     price_amount: number;
+     recurringInterval: string;
+     priceCurrency: string;
+     priceAmount: number;
      legacy: boolean;
 }
 
 export interface CheckoutBenefit {
      id: string;
-     created_at: string;
-     modified_at: string;
+     createdAt: string;
+     modifiedAt: string;
      type: string;
      description: string;
      selectable: boolean;
      deletable: boolean;
-     organization_id: string;
+     organizationId: string;
 }
 
 export interface CheckoutMedia {
      id: string;
-     organization_id: string;
+     organizationId: string;
      name: string;
      path: string;
-     mime_type: string;
+     mimeType: string;
      size: number;
-     storage_version: string;
-     checksum_etag: string;
-     checksum_sha256_base64: string;
-     checksum_sha256_hex: string;
-     last_modified_at: string;
+     storageVersion: string;
+     checksumEtag: string;
+     checksumSha256Base64: string;
+     checksumSha256Hex: string;
+     lastModifiedAt: string;
      version: string;
      service: string;
-     is_uploaded: boolean;
-     created_at: string;
-     size_readable: string;
-     public_url: string;
+     isUploaded: boolean;
+     createdAt: string;
+     sizeReadable: string;
+     publicUrl: string;
 }
 
 export interface CheckoutDiscount {
@@ -197,29 +197,29 @@ export interface CheckoutDiscount {
 }
 
 export interface CheckoutAttachedCustomField {
-     custom_field_id: string;
-     custom_field: CheckoutCustomField;
+     customFieldId: string;
+     customField: CheckoutCustomField;
      order: number;
      required: boolean;
 }
 
 export interface CheckoutCustomField {
-     created_at: string;
-     modified_at: string;
+     createdAt: string;
+     modifiedAt: string;
      id: string;
      metadata: Record<string, unknown>;
      type: string;
      slug: string;
      name: string;
-     organization_id: string;
+     organizationId: string;
      properties: CheckoutCustomFieldProperties;
 }
 
 export interface CheckoutCustomFieldProperties {
-     form_label: string;
-     form_help_text: string;
-     form_placeholder: string;
+     formLabel: string;
+     formHelpText: string;
+     formPlaceholder: string;
      textarea: boolean;
-     min_length: number;
-     max_length: number;
+     minLength: number;
+     maxLength: number;
 }

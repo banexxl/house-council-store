@@ -1,3 +1,7 @@
+import { PolarActiveMeter } from "./polar-customer-types";
+import { PolarOrderDiscount } from "./polar-order-types";
+import { PolarProduct, PolarProductPrice } from "./polar-product-types";
+
 export type PolarSubscriptionEventType =
      | "subscription.created"
      | "subscription.updated"
@@ -19,7 +23,7 @@ export type PolarSubscriptionEvent =
 export interface PolarSubscriptionEventBase<TType extends PolarSubscriptionEventType> {
      type: TType;
      timestamp: string;
-     subscription_id: string;
+     subscriptionId: string;
 }
 export interface PolarSubscriptionCreatedEvent extends PolarSubscriptionEventBase<"subscription.created"> { }
 export interface PolarSubscriptionUpdatedEvent extends PolarSubscriptionEventBase<"subscription.updated"> { }
@@ -33,38 +37,37 @@ export type PolarRecurringInterval = "day" | "week" | "month" | "year";
 
 export interface PolarSubscription {
      id: string;
-     client_id: string | null;
-     subscription_id: string;
-     polar_subscription_id: string;
-     order_id?: string | null;
-     created_at: string;
-     modified_at: string;
-     apartment_count: number;
+     orderId?: string | null;
+     createdAt: string;
+     modifiedAt: string;
+     apartmentCount: number;
      metadata: Record<string, unknown>;
      amount: number;
      currency: string;
-     recurring_interval: PolarRecurringInterval;
-     recurring_interval_count: number;
+     recurringInterval: PolarRecurringInterval;
+     recurringIntervalCount: number;
      status: PolarSubscriptionStatus;
-     current_period_start: string;
-     current_period_end: string;
-     trial_start: string | null;
-     trial_end: string | null;
-     cancel_at_period_end: boolean;
-     canceled_at: string | null;
-     started_at: string;
-     ends_at: string | null;
-     ended_at: string | null;
-     customer_id: string;
-     product_id: string;
-     discount_id: string | null;
-     checkout_id: string | null;
-     customer_cancellation_reason: string | null;
-     customer_cancellation_comment: string | null;
-     prices: string[];
-     meters: string[];
+     currentPeriodStart: string;
+     currentPeriodEnd: string;
+     trialStart: string | null;
+     trialEnd: string | null;
+     cancelAtPeriodEnd: boolean;
+     canceledAt: string | null;
+     startedAt: string;
+     endsAt: string | null;
+     endedAt: string | null;
+     customerId: string;
+     productId: string;
+     product: PolarProduct
+     discountId: string | null;
+     discount: PolarOrderDiscount | null;
+     checkoutId: string | null;
+     customerCancellationReason: string | null;
+     customerCancellationComment: string | null;
+     prices: PolarProductPrice[];
+     meters: PolarActiveMeter[];
      seats: number;
-     custom_field_data: Record<string, unknown>;
+     customFieldData: Record<string, unknown>;
 }
 
 export type PolarSubscriptionStatus =

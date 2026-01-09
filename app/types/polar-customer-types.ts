@@ -43,86 +43,86 @@ export interface PolarCustomerSeatEvent<T extends PolarCustomerSeatEventType = P
 }
 
 export interface PolarCustomerState extends PolarCustomer {
-     active_subscriptions: PolarCustomerSubscription[];
-     granted_benefits: PolarGrantedBenefit[];
-     active_meters: PolarActiveMeter[];
+     activeSubscriptions: PolarCustomerSubscription[];
+     grantedBenefits: PolarGrantedBenefit[];
+     activeMeters: PolarActiveMeter[];
 }
 
 export interface PolarCustomerSubscription {
      id: string;
-     created_at: string;
-     modified_at: string;
+     createdAt: string;
+     modifiedAt: string;
      metadata: Record<string, unknown>;
      status: string;
      amount: number;
      currency: string;
-     recurring_interval: string;
-     current_period_start: string;
-     current_period_end: string;
-     trial_start: string | null;
-     trial_end: string | null;
-     cancel_at_period_end: boolean;
-     canceled_at: string | null;
-     started_at: string;
-     ends_at: string | null;
-     product_id: string;
-     discount_id: string | null;
+     recurringInterval: string;
+     currentPeriodStart: string;
+     currentPeriodEnd: string;
+     trialStart: string | null;
+     trialEnd: string | null;
+     cancelAtPeriodEnd: boolean;
+     canceledAt: string | null;
+     startedAt: string;
+     endsAt: string | null;
+     productId: string;
+     discountId: string | null;
      meters: PolarCustomerMeter[];
-     custom_field_data: Record<string, unknown>;
+     customFieldData: Record<string, unknown>;
 }
 
 export interface PolarCustomerMeter {
-     created_at: string;
-     modified_at: string;
+     createdAt: string;
+     modifiedAt: string;
      id: string;
-     consumed_units: number;
-     credited_units: number;
+     consumedUnits: number;
+     creditedUnits: number;
      amount: number;
-     meter_id: string;
+     meterId: string;
 }
 
 export interface PolarGrantedBenefit {
      id: string;
-     created_at: string;
-     modified_at: string;
-     granted_at: string;
-     benefit_id: string;
-     benefit_type: string;
-     benefit_metadata: Record<string, unknown>;
+     createdAt: string;
+     modifiedAt: string;
+     grantedAt: string;
+     benefitId: string;
+     benefitType: string;
+     benefitMetadata: Record<string, unknown>;
      properties: Record<string, string>;
 }
 
 export interface PolarActiveMeter {
      id: string;
-     created_at: string;
-     modified_at: string;
-     meter_id: string;
-     consumed_units: number;
-     credited_units: number;
+     createdAt: string;
+     modifiedAt: string;
+     meterId: string;
+     consumedUnits: number;
+     creditedUnits: number;
      balance: number;
 }
 
 export interface PolarCustomer {
      id: string;
-     created_at: string;
-     modified_at: string;
+     createdAt: string;
+     modifiedAt: string;
      metadata: Record<string, unknown>;
-     external_id: string;
+     externalId: string;
      email: string;
-     email_verified: boolean;
+     emailVerified: boolean;
      name: string;
-     billing_address: PolarCustomerAddress;
-     tax_id: string[];
-     organization_id: string;
-     deleted_at: string | null;
-     avatar_url: string | null;
+     billingAddress: PolarCustomerAddress;
+     taxId: string[];
+     organizationId: string;
+     deletedAt: string | null;
+     avatarUrl: string | null;
 }
 
 export interface PolarCustomerAddress {
      country: string;
      line1: string;
      line2: string;
-     postal_code: string;
+     postalCode: string;
      city: string;
      state: string;
 }

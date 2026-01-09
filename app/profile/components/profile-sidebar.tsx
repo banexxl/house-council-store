@@ -31,16 +31,14 @@ import MoreVertIcon from "@mui/icons-material/MoreVert"
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera"
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser"
 import EmailIcon from "@mui/icons-material/Email"
-import PhoneIcon from "@mui/icons-material/Phone"
-import PhonelinkRingIcon from '@mui/icons-material/PhonelinkRing';
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday"
 import toast from "react-hot-toast"
 import { useRouter } from "next/navigation"
-import { Client } from "@/app/types/client"
 import { User } from "@supabase/supabase-js"
 import { logoutUserAction, updateAccountAction } from "../account-action"
 import { deleteClientAvatarAction, uploadClientAvatarAction } from "@/app/lib/sb-storage"
 import { PolarSubscriptionStatus } from "@/app/types/polar-subscription-types"
+import { PolarCustomer } from "@/app/types/polar-customer-types"
 
 export interface ActivityItem {
      id: string
@@ -51,7 +49,7 @@ export interface ActivityItem {
 }
 
 interface ProfileSidebarProps {
-     userData: { client: Client; session: User }
+     userData: { customer: PolarCustomer; session: User }
      recentActivity: ActivityItem[] | undefined
      onEditProfile: () => void
 }
@@ -164,16 +162,16 @@ export default function ProfileSidebar({ userData, recentActivity, onEditProfile
                     const formData = new FormData();
 
                     formData.append('file', base64String);
-                    formData.append('title', userData.client.name);
+                    formData.append('title', userData.customer.name);
                     formData.append('extension', extension);
                     formData.append('fileName', file.name);
-                    formData.append('folderName', userData.client.id); // or use a unique ID
+                    formData.append('folderName', userData.customer.id); // or use a unique ID
 
                     const uploadResponse = await uploadClientAvatarAction(formData);
 
                     if (uploadResponse.success && uploadResponse.awsUrl) {
-                         const updateAccountActionResponse = await updateAccountAction(userData.client.id, {
-                              avatar: uploadResponse.awsUrl,
+                         const updateAccountActionResponse = await updateAccountAction(userData.customer.id, {
+                              avatarUrl: uploadResponse.awsUrl,
                          });
 
                          if (updateAccountActionResponse.success) {
@@ -307,33 +305,33 @@ export default function ProfileSidebar({ userData, recentActivity, onEditProfile
                                    }
                               >
                                    <Avatar
-                                        src={userData.client.avatar}
-                                        alt={userData.client.name}
+                                        src={userData.customer.avatarUrl!}
+                                        alt={userData.customer.name}
                                         sx={{ width: 120, height: 120 }}
-                                        onClick={() => handleDeleteAvatar(userData.client.avatar!)}
+                                        onClick={() => handleDeleteAvatar(userData.customer.avatarUrl!)}
                                    />
                               </Badge>
                          </Box>
                          <Typography variant="h5" gutterBottom>
-                              {userData.client.name}
+                              {userData.customer.name}
                          </Typography>
-                         <Chip
-                              label={userData.client.client_status}
+                         {/* <Chip
+                              label={userData.customer.client_status}
                               size="small"
                               sx={{
                                    mb: 1,
                                    color: "common.white",
-                                   bgcolor: userData.client.client_status === "active" ? "success.main" : "warning.dark",
+                                   bgcolor: userData.customer.client_status === "active" ? "success.main" : "warning.dark",
                               }}
                          />
                          <Typography variant="body2" color="text.secondary" gutterBottom>
-                              {userData.client.updated_at
+                              {userData.customer.updated_at
                                    ? `Last updated ${new Intl.DateTimeFormat(undefined, {
                                         dateStyle: "medium",
                                         timeStyle: "short",
-                                   }).format(new Date(userData.client.updated_at))}`
+                                   }).format(new Date(userData.customer.updated_at))}`
                                    : "No updates yet"}
-                         </Typography>
+                         </Typography> */}
 
                          <Divider sx={{ my: 2 }} />
 
@@ -346,27 +344,13 @@ export default function ProfileSidebar({ userData, recentActivity, onEditProfile
                                    <ListItemText
                                         primary={
                                              <Typography variant="body2" noWrap sx={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                                                  {userData.client.email}
+                                                  {userData.customer.email}
                                              </Typography>
                                         }
                                         secondary={userData.session.confirmed_at ? "Verified" : "Not verified"}
                                    />
-                                   {userData.client.is_verified &&
+                                   {userData.customer.emailVerified &&
                                         <VerifiedUserIcon color="success" fontSize="small" />}
-                              </ListItem>
-
-                              <ListItem>
-                                   <ListItemIcon>
-                                        <PhoneIcon fontSize="small" />
-                                   </ListItemIcon>
-                                   <ListItemText primary={userData.client.phone} />
-                              </ListItem>
-
-                              <ListItem>
-                                   <ListItemIcon>
-                                        <PhonelinkRingIcon fontSize="small" />
-                                   </ListItemIcon>
-                                   <ListItemText primary={userData.client.mobile_phone} />
                               </ListItem>
 
                               <ListItem>

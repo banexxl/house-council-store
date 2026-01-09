@@ -17,17 +17,17 @@ export interface PolarRefundUpdatedEvent extends PolarRefundEventBase<"refund.up
 
 export interface PolarRefund {
      id: string;
-     created_at: string;
-     modified_at: string;
+     createdAt: string;
+     modifiedAt: string;
      metadata: Record<string, unknown>;
      status: "pending" | "succeeded" | "failed" | "canceled";
      reason: string;
      amount: number;
-     tax_amount: number;
+     taxAmount: number;
      currency: string;
-     organization_id: string;
-     order_id: string;
-     subscription_id: string;
-     customer_id: string;
-     revoke_benefits: boolean;
+     organizationId: string;
+     orderId: string;
+     subscriptionId: string;
+     customerId: string;
+     revokeBenefits: boolean;
 }

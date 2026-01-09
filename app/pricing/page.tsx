@@ -4,7 +4,11 @@ import { getSessionUser } from "@/app/lib/get-session";
 import { Footer } from "@/app/components/footer";
 import { Header } from "@/app/components/header";
 import { PricingPage } from "./pricing";
-import { readActivePolarProducts, readClientSubscriptionPlanFromClientId, getApartmentCountForClient } from "../profile/subscription-plan-actions";
+import {
+  readActivePolarProducts,
+  readCustomerSubscriptionPlanFromCustomerId,
+  getApartmentCountForCustomer
+} from "../profile/subscription-plan-actions";
 import { readAccountByEmailAction } from "../profile/account-action";
 import { buildCanonicalUrl } from "@/app/lib/seo";
 
@@ -37,19 +41,19 @@ export const metadata: Metadata = {
 export default async function Page() {
 
   const user = await getSessionUser();
-  const { client, error } = await readAccountByEmailAction(user?.email!);
+  const { customer, error } = await readAccountByEmailAction(user?.email!);
   const { polarProducts } = await readActivePolarProducts();
-  const { clientSubscriptionPlanData } = await readClientSubscriptionPlanFromClientId(client?.id!)
-  const apartmentCountResult = client?.id ? await getApartmentCountForClient(client.id) : 0;
+  const { customerSubscriptionPlanData } = await readCustomerSubscriptionPlanFromCustomerId(customer?.id!)
+  const apartmentCountResult = customer?.id ? await getApartmentCountForCustomer(customer.id) : 0;
 
   return (
     <>
       <Header user={user ? user : null} />
       <PricingPage
         polarProducts={polarProducts || []}
-        clientSubscriptionPlanData={clientSubscriptionPlanData}
+        customerSubscriptionPlanData={customerSubscriptionPlanData}
         apartmentCount={apartmentCountResult || 0}
-        client={client || null}
+        customer={customer || null}
       />
       <Footer />
     </>
