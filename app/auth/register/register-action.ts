@@ -99,10 +99,42 @@ export const registerUser = async (values: RegisterFormValues): Promise<{ succes
      }
 
      if (signUpData) {
-          await polar.customers.create({
-               email: values.email,
-               name: values.contact_person,
-          })
+          try {
+               await polar.customers.create({
+                    email: values.email,
+                    name: values.contact_person,
+               });
+          } catch (polarError) {
+               // Rollback: Delete the Polar customer record
+               if (data?.id) {
+                    await supabase.from('tblPolarCustomers').delete().eq('id', data.id);
+               }
+
+               // Rollback: Delete the auth user
+               if (userId) {
+                    await supabase.auth.admin.deleteUser(userId);
+               }
+
+               await logServerAction({
+                    user_id: userId,
+                    action: 'Register user - Polar customer creation failed',
+                    payload: { values },
+                    status: 'fail',
+                    error: polarError instanceof Error ? polarError.message : 'Unknown error',
+                    duration_ms: 0,
+                    type: 'auth'
+               });
+
+               return {
+                    success: false,
+                    error: {
+                         code: 'POLAR_ERROR',
+                         details: 'Failed to create customer account',
+                         hint: null,
+                         message: 'Failed to create customer account'
+                    }
+               };
+          }
           await sendSuccessfullClientRegistrationToSupport(values.email, values.contact_person);
      }
 
