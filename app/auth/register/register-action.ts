@@ -1,6 +1,7 @@
 'use server';
 
 import { sendSuccessfullClientRegistrationToSupport } from '@/app/lib/node-mailer';
+import { polar } from '@/app/lib/polar';
 import { logServerAction } from '@/app/lib/server-logging';
 import { useServerSideSupabaseServiceRoleClient } from '@/app/lib/ss-supabase-service-role-client';
 
@@ -98,6 +99,10 @@ export const registerUser = async (values: RegisterFormValues): Promise<{ succes
      }
 
      if (signUpData) {
+          await polar.customers.create({
+               email: values.email,
+               name: values.contact_person,
+          })
           await sendSuccessfullClientRegistrationToSupport(values.email, values.contact_person);
      }
 
