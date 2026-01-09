@@ -7,7 +7,6 @@ import { useServerSideSupabaseServiceRoleClient } from '@/app/lib/ss-supabase-se
 
 export type RegisterFormValues = {
      contact_person: string;
-     name: string;
      email: string;
      confirm_email: string;
      password: string;
