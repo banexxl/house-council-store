@@ -248,7 +248,14 @@ export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, clientS
                               <Grid container spacing={4} justifyContent="center">
                                    {mainProduct && currentProduct && (
                                         <Grid key={currentProduct.id} size={{ xs: 12, md: 8 }}>
-                                             <Card sx={{ height: "100%", display: "flex", flexDirection: "column", border: `2px solid ${theme.palette.primary.main}` }}>
+                                             <Card sx={{
+                                                  height: "100%",
+                                                  width: { xs: "100%", md: "70%" },
+                                                  display: "flex",
+                                                  flexDirection: "column",
+                                                  border: `2px solid ${theme.palette.primary.main}`,
+                                                  mx: "auto"
+                                             }}>
                                                   <CardContent sx={{ flexGrow: 1 }}>
                                                        <Typography variant="h5" gutterBottom>
                                                             {mainProduct.name}
@@ -269,39 +276,6 @@ export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, clientS
                                                        >
                                                             {mainProduct.description}
                                                        </Typography>
-
-                                                       {currentPrice ? (
-                                                            <Paper variant="outlined" sx={{ p: 2, my: 3 }}>
-                                                                 <Typography variant="subtitle2" color="text.secondary">
-                                                                      Billed every {currentProduct.recurringIntervalCount} {currentProduct.recurringInterval}{currentProduct.recurringIntervalCount > 1 ? 's' : ''}
-                                                                 </Typography>
-                                                                 <Typography variant="h4" display="block" sx={{ mt: 1 }}>
-                                                                      ${(currentPrice.priceAmount / 100).toFixed(2)}
-                                                                      <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
-                                                                           per apartment
-                                                                      </Typography>
-                                                                 </Typography>
-                                                                 {(currentProduct.recurringInterval === 'year' || currentProduct.recurringIntervalCount > 1) && baseMonthlyPrice && (
-                                                                      <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
-                                                                           Equivalent to ${(
-                                                                                (currentPrice.priceAmount / 100) /
-                                                                                (currentProduct.recurringInterval === 'year'
-                                                                                     ? currentProduct.recurringIntervalCount * 12
-                                                                                     : currentProduct.recurringIntervalCount)
-                                                                           ).toFixed(2)}/month
-                                                                      </Typography>
-                                                                 )}
-                                                            </Paper>
-                                                       ) : (
-                                                            <Paper variant="outlined" sx={{ p: 2, my: 3, textAlign: 'center' }}>
-                                                                 <Typography variant="h6" color="text.secondary">
-                                                                      Contact us for pricing
-                                                                 </Typography>
-                                                                 <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                                                                      Custom pricing available for your needs
-                                                                 </Typography>
-                                                            </Paper>
-                                                       )}
 
                                                        <List dense>
                                                             {features.map((feature) => (
