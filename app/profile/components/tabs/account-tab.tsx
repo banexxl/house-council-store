@@ -62,13 +62,6 @@ export default function AccountTab({ userData }: AccountTabProps) {
 
                     <Grid size={{ xs: 12, md: 6 }}>
                          <Typography variant="subtitle2" color="text.secondary">
-                              External ID
-                         </Typography>
-                         <Typography variant="body1">{userData.customer.externalId || 'N/A'}</Typography>
-                    </Grid>
-
-                    <Grid size={{ xs: 12, md: 6 }}>
-                         <Typography variant="subtitle2" color="text.secondary">
                               Name
                          </Typography>
                          <Typography variant="body1">{userData.customer.name}</Typography>

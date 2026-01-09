@@ -70,7 +70,6 @@ export interface PolarOrderCustomer {
      createdAt: string;
      modifiedAt: string;
      metadata: Record<string, unknown>;
-     externalId: string;
      email: string;
      emailVerified: boolean;
      name: string;
