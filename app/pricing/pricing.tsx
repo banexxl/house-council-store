@@ -59,8 +59,6 @@ interface PricingPageProps {
 }
 
 export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, clientSubscriptionPlanData, apartmentCount, client }) => {
-     console.log('polarProducts', polarProducts);
-
      const router = useRouter()
      const [loadingKey, setLoadingKey] = useState<string | null>(null);
      const theme = useTheme()
