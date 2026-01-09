@@ -98,10 +98,15 @@ export const registerUser = async (values: RegisterFormValues): Promise<{ succes
      }
 
      if (signUpData) {
-          await supabase.from('tblPolarCustomer_AuthID').insert({
+          const { data: connectionTableData, error: connectionTableError } = await supabase.from('tblPolarCustomer_AuthID').insert({
                auth_user_id: userId,
                polar_customer_id: data.id,
           });
+          if (connectionTableError) {
+               //Rollback
+               await supabase.from('tblPolarCustomers').delete().eq('id', data.id);
+               await supabase.auth.admin.deleteUser(userId!);
+          }
           try {
                await polar.customers.create({
                     email: values.email,
