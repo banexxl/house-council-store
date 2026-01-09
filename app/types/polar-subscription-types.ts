@@ -40,8 +40,7 @@ export interface PolarSubscription {
      orderId?: string | null;
      createdAt: string;
      modifiedAt: string;
-     apartmentCount: number;
-     metadata: Record<string, unknown>;
+     metadata: object;
      amount: number;
      currency: string;
      recurringInterval: PolarRecurringInterval;
