@@ -121,7 +121,7 @@ export const POST = Webhooks({
      onOrganizationUpdated: async (payload) => {
           const eventType = "organization.updated";
           console.log(`${eventType} webhook received:`, payload);
-          console.log(process.env.NEXT_PUBLIC_SUPABASE_URL! + " " + process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+
           try {
                const organization = convertOrganizationToPolarOrganization(payload.data);
                await upsertOrganization(organization, eventType);
