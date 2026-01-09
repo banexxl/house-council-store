@@ -19,6 +19,7 @@ export type ErrorType = {
      hint: string | null;
      message: string;
 }
+
 export const registerUser = async (values: RegisterFormValues): Promise<{ success: boolean, error?: ErrorType }> => {
 
      if (!values.email || !values.password || !values.confirm_password || !values.contact_person) {
