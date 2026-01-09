@@ -11,9 +11,6 @@ export type RegisterFormValues = {
      confirm_email: string;
      password: string;
      confirm_password: string;
-     has_accepted_terms_and_conditions: boolean;
-     has_accepted_privacy_policy: boolean;
-     has_accepted_marketing: boolean;
 };
 export type ErrorType = {
      code: string;

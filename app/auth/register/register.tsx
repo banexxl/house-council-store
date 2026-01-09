@@ -1,7 +1,6 @@
 "use client"
 
-import { startTransition, useEffect, useState, useTransition } from "react"
-import Link from "next/link"
+import { useState, useTransition } from "react"
 import { useFormik } from "formik"
 import {
      Backdrop,
@@ -29,7 +28,6 @@ import { ErrorType, RegisterFormValues, registerUser } from "./register-action"
 import toast, { Toaster } from "react-hot-toast"
 import { useRouter } from "next/navigation"
 import Animate from "@/app/components/animation-framer-motion"
-import { createBrowserClient } from "@supabase/ssr"
 
 export const RegisterPage = () => {
 
@@ -61,9 +59,6 @@ export const RegisterPage = () => {
                confirm_email: "",
                password: "",
                confirm_password: "",
-               has_accepted_terms_and_conditions: false,
-               has_accepted_privacy_policy: false,
-               has_accepted_marketing: false,
           },
           validationSchema: registrationSchema,
           onSubmit: async (values: RegisterFormValues) => {
@@ -234,94 +229,6 @@ export const RegisterPage = () => {
                                                                       ),
                                                                  }
                                                             }}
-                                                       />
-                                                  </Box>
-                                             </Grid>
-
-                                             <Grid size={{ xs: 12 }}>
-                                                  <Box sx={{ height: "50px" }}>
-                                                       <FormControl
-                                                            error={
-                                                                 formik.touched.has_accepted_terms_and_conditions &&
-                                                                 Boolean(formik.errors.has_accepted_terms_and_conditions)}
-                                                            fullWidth
-                                                       >
-                                                            <FormControlLabel
-                                                                 control={
-                                                                      <Checkbox
-                                                                           id="has_accepted_terms_and_conditions"
-                                                                           name="has_accepted_terms_and_conditions"
-                                                                           checked={formik.values.has_accepted_terms_and_conditions}
-                                                                           onChange={formik.handleChange}
-                                                                           color="primary"
-                                                                      />
-                                                                 }
-                                                                 label={
-                                                                      <Typography variant="body2">
-                                                                           I agree to the{" "}
-                                                                           <Link href="#" color="primary">
-                                                                                Terms and Conditions
-                                                                           </Link>
-                                                                      </Typography>
-                                                                 }
-                                                            />
-                                                            {formik.touched.has_accepted_terms_and_conditions && formik.errors.has_accepted_terms_and_conditions && (
-                                                                 <FormHelperText error>{formik.errors.has_accepted_terms_and_conditions}</FormHelperText>
-                                                            )}
-                                                       </FormControl>
-                                                  </Box>
-                                             </Grid>
-
-                                             <Grid size={{ xs: 12 }}>
-                                                  <Box sx={{ height: "50px" }}>
-                                                       <FormControl
-                                                            error={formik.touched.has_accepted_privacy_policy &&
-                                                                 Boolean(formik.errors.has_accepted_privacy_policy)}
-                                                            fullWidth
-                                                       >
-                                                            <FormControlLabel
-                                                                 control={
-                                                                      <Checkbox
-                                                                           id="has_accepted_privacy_policy"
-                                                                           name="has_accepted_privacy_policy"
-                                                                           checked={formik.values.has_accepted_privacy_policy}
-                                                                           onChange={formik.handleChange}
-                                                                           color="primary"
-                                                                      />
-                                                                 }
-                                                                 label={
-                                                                      <Typography variant="body2">
-                                                                           I agree to the{" "}
-                                                                           <Link href="#" color="primary">
-                                                                                Privacy Policy
-                                                                           </Link>
-                                                                      </Typography>
-                                                                 }
-                                                            />
-                                                            {formik.touched.has_accepted_privacy_policy && formik.errors.has_accepted_privacy_policy && (
-                                                                 <FormHelperText error>{formik.errors.has_accepted_privacy_policy}</FormHelperText>
-                                                            )}
-                                                       </FormControl>
-                                                  </Box>
-                                             </Grid>
-
-                                             <Grid size={{ xs: 12 }}>
-                                                  <Box sx={{ height: "65px" }}>
-                                                       <FormControlLabel
-                                                            control={
-                                                                 <Checkbox
-                                                                      id="has_accepted_marketing"
-                                                                      name="has_accepted_marketing"
-                                                                      checked={formik.values.has_accepted_marketing}
-                                                                      onChange={formik.handleChange}
-                                                                      color="primary"
-                                                                 />
-                                                            }
-                                                            label={
-                                                                 <Typography variant="body2">
-                                                                      I would like to receive marketing emails about product updates and offers
-                                                                 </Typography>
-                                                            }
                                                        />
                                                   </Box>
                                              </Grid>
