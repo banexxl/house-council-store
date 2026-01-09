@@ -88,6 +88,7 @@ async function upsertOrganization(organization: PolarOrganization, eventType: st
           .upsert(orgData, { onConflict: "id" })
           .select()
           .single();
+     console.log('error', error);
 
      const duration = Date.now() - t0;
 
