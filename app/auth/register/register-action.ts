@@ -46,7 +46,7 @@ export const registerUser = async (values: RegisterFormValues): Promise<{ succes
           email: values.email,
           password: values.password,
           options: {
-               emailRedirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/registration-confirmed`,
+               emailRedirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/sign-in`,
           }
      });
 

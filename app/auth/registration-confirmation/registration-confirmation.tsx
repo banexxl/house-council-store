@@ -21,9 +21,8 @@ import EmailIcon from "@mui/icons-material/Email"
 import MarkEmailReadIcon from "@mui/icons-material/MarkEmailRead"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
 import { resendRegistrationEmail } from "./resend-email-action"
-import toast, { Toaster } from "react-hot-toast"
+import { Toaster } from "react-hot-toast"
 import Animate from "@/app/components/animation-framer-motion"
-import { useRouter } from "next/navigation"
 
 export const RegistrationConfirmationPage = () => {
 
