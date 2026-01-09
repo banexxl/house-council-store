@@ -36,46 +36,30 @@ export async function POST(req: Request) {
           const body = await req.json();
           const {
                clientId,
+               productIds,
                customerEmail,
-               subscriptionPlanId,
                successUrl,
                returnUrl,
-               productIds,
+               priceIds,
           } = body as {
                clientId: string;
+               productIds: string[];
                customerEmail?: string;
-               subscriptionPlanId: string;
                successUrl: string;
                returnUrl: string;
-               productIds: string[];
+               priceIds: string[];
           };
+          console.log('usao sa', productIds);
 
           if (
                !clientId ||
                !customerEmail ||
-               !subscriptionPlanId ||
+               !priceIds ||
                !successUrl ||
                !returnUrl ||
-               !productIds?.length
+               !priceIds?.length
           ) {
                return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
-          }
-
-          const normalizedProductIds: string[] = Array.isArray(productIds)
-               ? productIds
-                    .map((p: any) => {
-                         if (typeof p === "string") return p;
-                         if (p && typeof p === "object") return p.id ?? p.value ?? p.productId ?? null;
-                         return null;
-                    })
-                    .filter((x): x is string => typeof x === "string" && x.length > 0)
-               : [];
-
-          if (!normalizedProductIds.length) {
-               return NextResponse.json(
-                    { error: "productIds must be an array of price ID strings" },
-                    { status: 400 }
-               );
           }
 
           // ✅ server-truth seats
@@ -83,13 +67,13 @@ export async function POST(req: Request) {
           let checkout;
           try {
                checkout = await polar.checkouts.create({
-                    products: normalizedProductIds,
+                    products: productIds,
                     successUrl,
                     returnUrl,
                     customerEmail,
                     metadata: {
                          client_id: clientId,
-                         subscription_id: subscriptionPlanId,
+                         subscription_id: productIds.join(","),
                          apartments_count: apartmentsCount,
                     },
                     requireBillingAddress: true,

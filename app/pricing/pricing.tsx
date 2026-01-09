@@ -59,6 +59,8 @@ interface PricingPageProps {
 }
 
 export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, clientSubscriptionPlanData, apartmentCount, client }) => {
+     console.log('polarProducts', polarProducts);
+
      const router = useRouter()
      const [loadingKey, setLoadingKey] = useState<string | null>(null);
      const theme = useTheme()
@@ -69,10 +71,6 @@ export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, clientS
           startTransition(() => {
                router.push(path);
           });
-     };
-
-     const handleStartFreeTrial = (priceId: string, productId: string) => {
-          void startPolarCheckout(priceId, productId);
      };
 
      // Sort products by interval count for display
@@ -157,11 +155,11 @@ export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, clientS
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                          clientId: client.id!,
-                         subscriptionPlanId: productId,
+                         productIds: [productId],
                          customerEmail: client.email,
                          successUrl,
                          returnUrl,
-                         productIds: [priceId],
+                         priceIds: [priceId],
                     }),
                });
 
@@ -294,7 +292,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, clientS
                                                             <Button
                                                                  variant="contained"
                                                                  fullWidth
-                                                                 onClick={() => handleStartFreeTrial(currentPrice.id, currentProduct.id)}
+                                                                 onClick={() => startPolarCheckout(currentPrice.id, currentProduct.id)}
                                                                  disabled={
                                                                       loadingKey !== null ||
                                                                       (clientSubscriptionPlanData?.product_id === currentProduct.id &&
