@@ -84,7 +84,7 @@ async function upsertOrganization(organization: PolarOrganization, eventType: st
      };
 
      const { data, error } = await supabase
-          .from("tblPolarOrganization")
+          .from("tblPolarOrganizations")
           .upsert(orgData, { onConflict: "id" })
           .select()
           .single();
