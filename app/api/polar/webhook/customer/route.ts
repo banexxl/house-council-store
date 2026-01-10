@@ -55,7 +55,7 @@ async function upsertCustomer(customer: PolarCustomer, eventType: string) {
           avatarUrl: customer.avatarUrl,
      };
 
-     const insertable = { ...customerData, id: customer.id, email: customer.email };
+     const insertable = { ...customerData, id: customer.id, email: customer.email, userId: '' };
      const supabase = await useServerSideSupabaseAnonClient();
      const { data, error } = await supabase
           .from("tblPolarCustomers")
