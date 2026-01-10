@@ -39,8 +39,6 @@ export const RegisterPage = () => {
 
      const handleNavClick = (path: string) => {
           startTransition(() => {
-               console.log('path', path);
-
                router.push(path);
           });
      };
