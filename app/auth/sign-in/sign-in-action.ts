@@ -19,90 +19,159 @@ export const checkClientExistsAndIsPermitted = async (
      values: SignInFormValues
 ): Promise<{ success: boolean; error?: ErrorType }> => {
      const start = Date.now()
+     const supabase = supabaseBrowserClient
+     const { data: customerData, error: customerError } = await supabase.from('tblPolarCustomers').select('email').eq('email', values.email).single()
 
-     const { data, error } = await supabaseBrowserClient
-          .from('tblPolarCustomers')
-          .select('*')
-          .eq('email', values.email)
-          .single()
-
-     if (data) {
+     // If customer not found in tblPolarCustomer
+     if (customerError) {
           await logClientAction({
                user_id: null,
-               action: 'Check if client exists and is permitted - client found',
+               action: 'Check if client exists - not found in tblPolarCustomer',
                payload: { email: values.email },
+               status: 'fail',
+               error: customerError.message || '',
+               duration_ms: Date.now() - start,
+               type: 'auth'
+          })
+
+          if (customerError.code === 'PGRST116') {
+               return {
+                    success: false,
+                    error: {
+                         code: 'UserNotFound',
+                         details: 'No account found with this email',
+                         message: 'Invalid credentials',
+                         hint: 'Please try registering first or check your email address',
+                    },
+               }
+          }
+
+          return {
+               success: false,
+               error: {
+                    code: customerError.code || 'DatabaseError',
+                    details: customerError.details || 'Database query failed',
+                    message: customerError.message || 'Unknown error',
+                    hint: 'Please try again later',
+               },
+          }
+     }
+
+     const { data, error } = await supabaseBrowserClient.auth.admin.getUserById(customerData?.email)
+
+     // If auth user found, check their status
+     if (data?.user) {
+          const userMetadata = data.user.user_metadata
+          const clientStatus = userMetadata?.client_status
+
+          await logClientAction({
+               user_id: data.user.id,
+               action: 'Check if client is permitted - checking status',
+               payload: { email: values.email, clientStatus },
                status: 'success',
                error: '',
                duration_ms: Date.now() - start,
                type: 'auth'
           })
+
+          // If status exists and is not 'active', deny access
+          if (clientStatus && clientStatus !== 'active') {
+               let hint = `Your email is registered, but your account status "${clientStatus}" does not permit sign-in. Please contact support for assistance.`;
+               switch (clientStatus) {
+                    case 'inactive':
+                         hint = 'Your account is inactive. Please contact support to activate your account.';
+                         break;
+                    case 'pending_activation':
+                         hint = 'Your account is pending activation. Please check your email for activation instructions or contact support.';
+                         break;
+                    case 'suspended':
+                         hint = 'Your account has been suspended. Please contact support for more information.';
+                         break;
+                    case 'archived':
+                         hint = 'Your account has been archived and cannot be used. Please contact support if you believe this is an error.';
+                         break;
+               }
+               return {
+                    success: false, error: {
+                         code: 'ClientRestricted',
+                         details: 'Your account is restricted',
+                         hint,
+                    }
+               }
+          }
+
+          // User exists and is permitted
+          return { success: true }
+     }
+
+     // Handle errors from getUserById
+     if (error) {
           await logClientAction({
-               user_id: data.id,
-               action: 'Check if client exists and is permitted - Client status is restricted',
-               payload: { email: values.email, status: data.client_status },
+               user_id: null,
+               action: 'Check if client exists - auth error',
+               payload: { email: values.email },
                status: 'fail',
-               error: `Client is restricted with status ${data.client_status}`,
+               error: error.message || '',
                duration_ms: Date.now() - start,
                type: 'auth'
           })
-          let hint = `Your email is registered, but your account status "${data.client_status}" does not permit sign-in. Please contact support for assistance.`;
-          switch (data.client_status) {
-               case 'inactive':
-                    hint = 'Your account is inactive. Please contact support to activate your account.';
-                    break;
-               case 'pending_activation':
-                    hint = 'Your account is pending activation. Please check your email for activation instructions or contact support.';
-                    break;
-               case 'suspended':
-                    hint = 'Your account has been suspended. Please contact support for more information.';
-                    break;
-               case 'archived':
-                    hint = 'Your account has been archived and cannot be used. Please contact support if you believe this is an error.';
-                    break;
-          }
-          return {
-               success: false, error: {
-                    code: 'ClientRestricted',
-                    details: 'Your account is restricted',
-                    hint,
+
+          // User not found in auth
+          if (error.message?.includes('User not found') || error.status === 404) {
+               return {
+                    success: false,
+                    error: {
+                         code: 'AuthUserNotFound',
+                         details: 'Authentication user not found',
+                         message: 'Invalid credentials',
+                         hint: 'Your account setup is incomplete. Please try registering again or contact support.',
+                    },
                }
+          }
+
+          // Invalid user ID format
+          if (error.message?.includes('Invalid') || error.message?.includes('invalid')) {
+               return {
+                    success: false,
+                    error: {
+                         code: 'InvalidUserId',
+                         details: 'Invalid user identifier',
+                         message: 'Invalid credentials',
+                         hint: 'There was an issue with your account. Please contact support.',
+                    },
+               }
+          }
+
+          // Permission or other errors
+          return {
+               success: false,
+               error: {
+                    code: error.code || 'AuthError',
+                    details: error.message || 'Authentication service error',
+                    message: error.message || 'Unknown error',
+                    hint: 'Unable to verify your account. Please try again later or contact support.',
+               },
           }
      }
 
-     const baseError = error
-          ? {
-               code: error.code,
-               details: error.details,
-               message: error.message,
-               hint: error.hint || 'Please try again later',
-          }
-          : {
+     // No data and no error - unexpected state
+     await logClientAction({
+          user_id: null,
+          action: 'Check if client exists - unexpected state',
+          payload: { email: values.email },
+          status: 'fail',
+          error: 'No data and no error from getUserById',
+          duration_ms: Date.now() - start,
+          type: 'auth'
+     })
+
+     return {
+          success: false,
+          error: {
                code: 'UnknownError',
                details: 'An unknown error occurred',
                message: 'Unknown error',
                hint: 'Please try again later',
-          }
-
-     switch (error?.code) {
-          case 'PGRST116':
-               return {
-                    success: false,
-                    error: {
-                         ...baseError,
-                         hint: 'Please try registering first',
-                         message: 'Invalid credentials',
-                    },
-               }
-          case 'PGRS003':
-               return {
-                    success: false,
-                    error: {
-                         ...baseError,
-                         hint: 'Please try resetting your password',
-                         message: 'Invalid credentials',
-                    },
-               }
-          default:
-               return { success: false, error: baseError }
+          },
      }
 }

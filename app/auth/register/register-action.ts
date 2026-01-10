@@ -81,13 +81,14 @@ export const registerUser = async (values: RegisterFormValues): Promise<{ succes
      const { data, error } = await supabase.from('tblPolarCustomers').insert({
           name: values.contact_person,
           email: values.email,
+          userId: signUpData?.user?.id
      }).select().single();
 
      if (error) {
           await logServerAction({
                user_id: userId,
                action: 'Register user - insert error',
-               payload: { values },
+               payload: { values, error },
                status: 'fail',
                error: error.message,
                duration_ms: 0,
@@ -100,19 +101,9 @@ export const registerUser = async (values: RegisterFormValues): Promise<{ succes
      }
 
      if (signUpData) {
-          const { data: connectionTableData, error: connectionTableError } = await supabase.from('tblPolarCustomer_AuthID').insert({
-               authId: userId,
-               customerId: data.id,
-          });
-          console.log('Inserted into tblPolarCustomer_AuthID:', connectionTableData, connectionTableError);
-
-          if (connectionTableError) {
-               //Rollback
-               await supabase.from('tblPolarCustomers').delete().eq('id', data.id);
-               await supabaseAdmin.auth.admin.deleteUser(userId!);
-          }
+          let polarResponse
           try {
-               await polar.customers.create({
+               polarResponse = await polar.customers.create({
                     email: values.email,
                     name: values.contact_person,
                });
@@ -130,7 +121,7 @@ export const registerUser = async (values: RegisterFormValues): Promise<{ succes
                await logServerAction({
                     user_id: userId,
                     action: 'Register user - Polar customer creation failed',
-                    payload: { values },
+                    payload: { values, polarResponse },
                     status: 'fail',
                     error: polarError instanceof Error ? polarError.message : 'Unknown error',
                     duration_ms: 0,
@@ -148,6 +139,21 @@ export const registerUser = async (values: RegisterFormValues): Promise<{ succes
                };
           }
           await sendSuccessfullClientRegistrationToSupport(values.email, values.contact_person);
+     } else {
+          //rollback
+          if (userId) {
+               await supabaseAdmin.auth.admin.deleteUser(userId);
+          }
+
+          return {
+               success: false,
+               error: {
+                    code: 'SIGNUP_FAILED',
+                    details: 'User sign up failed',
+                    hint: null,
+                    message: 'User sign up failed'
+               }
+          };
      }
 
      await logServerAction({
