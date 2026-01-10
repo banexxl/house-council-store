@@ -86,8 +86,11 @@ async function upsertCustomer(customer: PolarCustomer, eventType: string) {
 async function deleteCustomer(customerId: string, eventType: string) {
      const t0 = Date.now();
 
+     const supabase = await useServerSideSupabaseAnonClient();
+     const { data: customerData, error: customerError } = await supabase.from("tblPolarCustomers").select('userId').eq('id', customerId).single();
+
      const supabaseAdmin = await useServerSideSupabaseServiceRoleClient()
-     const { data, error } = await supabaseAdmin.auth.admin.deleteUser(customerId)
+     const { data, error } = await supabaseAdmin.auth.admin.deleteUser(customerData?.userId)
 
      const duration = Date.now() - t0;
 
