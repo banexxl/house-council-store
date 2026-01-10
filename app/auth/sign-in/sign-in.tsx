@@ -30,6 +30,7 @@ import toast from "react-hot-toast"
 import Animate from "@/app/components/animation-framer-motion"
 import { createBrowserClient } from "@supabase/ssr"
 import { logClientAction } from "@/app/lib/client-logging"
+import { checkUserPermissionServer } from "./check-user-server-action"
 
 // Custom multi-colored Google icon
 const GoogleMultiColorIcon = (props: any) => (
@@ -89,7 +90,7 @@ export const LoginPage = () => {
           validationSchema: signInSchema,
 
           onSubmit: async (values) => {
-               const { success, error } = await checkClientExistsAndIsPermitted(values)
+               const { success, error } = await checkUserPermissionServer(values.email)
 
                if (!success) {
                     toast.error(error?.message || error?.hint || error?.details || "Unknown error")

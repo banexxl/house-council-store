@@ -1,12 +1,8 @@
-'use client';
+'use server';
 
-import { logClientAction } from '@/app/lib/client-logging';
-import { supabaseBrowserClient } from '@/app/lib/sb-browser-client';
-
-export type SignInFormValues = {
-     email: string;
-     password: string;
-};
+import { useServerSideSupabaseServiceRoleClient } from '@/app/lib/ss-supabase-service-role-client';
+import { useServerSideSupabaseAnonClient } from '@/app/lib/ss-supabase-anon-client';
+import { logServerAction } from '@/app/lib/server-logging';
 
 export type ErrorType = {
      code: string;
@@ -15,24 +11,29 @@ export type ErrorType = {
      message?: string;
 }
 
-export const checkClientExistsAndIsPermitted = async (
-     values: SignInFormValues
-): Promise<{ success: boolean; error?: ErrorType }> => {
-     const start = Date.now()
-     const supabase = supabaseBrowserClient
-     const { data: customerData, error: customerError } = await supabase.from('tblPolarCustomers').select('email').eq('email', values.email).single()
+export async function checkUserPermissionServer(email: string): Promise<{ success: boolean; error?: ErrorType }> {
+     const start = Date.now();
+     const supabase = await useServerSideSupabaseAnonClient();
 
-     // If customer not found in tblPolarCustomer
+     const { data: customerData, error: customerError } = await supabase
+          .from('tblPolarCustomers')
+          .select('email, userId')
+          .eq('email', email)
+          // And non deleted customers only
+          .is('deletedAt', null)
+          .single();
+
+     // If customer not found in tblPolarCustomers
      if (customerError) {
-          await logClientAction({
+          await logServerAction({
                user_id: null,
-               action: 'Check if client exists - not found in tblPolarCustomer',
-               payload: { email: values.email },
+               action: 'Check if client exists - not found in tblPolarCustomers',
+               payload: { email },
                status: 'fail',
                error: customerError.message || '',
                duration_ms: Date.now() - start,
                type: 'auth'
-          })
+          });
 
           if (customerError.code === 'PGRST116') {
                return {
@@ -43,7 +44,7 @@ export const checkClientExistsAndIsPermitted = async (
                          message: 'Invalid credentials',
                          hint: 'Please try registering first or check your email address',
                     },
-               }
+               };
           }
 
           return {
@@ -54,25 +55,40 @@ export const checkClientExistsAndIsPermitted = async (
                     message: customerError.message || 'Unknown error',
                     hint: 'Please try again later',
                },
-          }
+          };
      }
 
-     const { data, error } = await supabaseBrowserClient.auth.admin.getUserById(customerData?.email)
+     // If no userId, user setup is incomplete
+     if (!customerData?.userId) {
+          return {
+               success: false,
+               error: {
+                    code: 'IncompleteSetup',
+                    details: 'User setup incomplete',
+                    message: 'Invalid credentials',
+                    hint: 'Your account setup is incomplete. Please try registering again or contact support.',
+               },
+          };
+     }
+
+     // Get auth user with service role client
+     const supabaseAdmin = await useServerSideSupabaseServiceRoleClient();
+     const { data, error } = await supabaseAdmin.auth.admin.getUserById(customerData.userId);
 
      // If auth user found, check their status
      if (data?.user) {
-          const userMetadata = data.user.user_metadata
-          const clientStatus = userMetadata?.client_status
+          const userMetadata = data.user.user_metadata;
+          const clientStatus = userMetadata?.client_status;
 
-          await logClientAction({
+          await logServerAction({
                user_id: data.user.id,
                action: 'Check if client is permitted - checking status',
-               payload: { email: values.email, clientStatus },
+               payload: { email, clientStatus },
                status: 'success',
                error: '',
                duration_ms: Date.now() - start,
                type: 'auth'
-          })
+          });
 
           // If status exists and is not 'active', deny access
           if (clientStatus && clientStatus !== 'active') {
@@ -92,29 +108,30 @@ export const checkClientExistsAndIsPermitted = async (
                          break;
                }
                return {
-                    success: false, error: {
+                    success: false,
+                    error: {
                          code: 'ClientRestricted',
                          details: 'Your account is restricted',
                          hint,
                     }
-               }
+               };
           }
 
           // User exists and is permitted
-          return { success: true }
+          return { success: true };
      }
 
      // Handle errors from getUserById
      if (error) {
-          await logClientAction({
+          await logServerAction({
                user_id: null,
                action: 'Check if client exists - auth error',
-               payload: { email: values.email },
+               payload: { email },
                status: 'fail',
                error: error.message || '',
                duration_ms: Date.now() - start,
                type: 'auth'
-          })
+          });
 
           // User not found in auth
           if (error.message?.includes('User not found') || error.status === 404) {
@@ -126,7 +143,7 @@ export const checkClientExistsAndIsPermitted = async (
                          message: 'Invalid credentials',
                          hint: 'Your account setup is incomplete. Please try registering again or contact support.',
                     },
-               }
+               };
           }
 
           // Invalid user ID format
@@ -139,7 +156,7 @@ export const checkClientExistsAndIsPermitted = async (
                          message: 'Invalid credentials',
                          hint: 'There was an issue with your account. Please contact support.',
                     },
-               }
+               };
           }
 
           // Permission or other errors
@@ -151,19 +168,19 @@ export const checkClientExistsAndIsPermitted = async (
                     message: error.message || 'Unknown error',
                     hint: 'Unable to verify your account. Please try again later or contact support.',
                },
-          }
+          };
      }
 
      // No data and no error - unexpected state
-     await logClientAction({
+     await logServerAction({
           user_id: null,
           action: 'Check if client exists - unexpected state',
-          payload: { email: values.email },
+          payload: { email },
           status: 'fail',
           error: 'No data and no error from getUserById',
           duration_ms: Date.now() - start,
           type: 'auth'
-     })
+     });
 
      return {
           success: false,
@@ -173,5 +190,5 @@ export const checkClientExistsAndIsPermitted = async (
                message: 'Unknown error',
                hint: 'Please try again later',
           },
-     }
+     };
 }
