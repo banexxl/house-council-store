@@ -1,6 +1,6 @@
 // app/api/polar/webhook/customer/route.ts
-import { supabase } from "@/app/lib/sb-client";
 import { logServerAction } from "@/app/lib/server-logging";
+import { useServerSideSupabaseAnonClient } from "@/app/lib/ss-supabase-anon-client";
 import { useServerSideSupabaseServiceRoleClient } from "@/app/lib/ss-supabase-service-role-client";
 import { PolarCustomer, PolarCustomerState } from "@/app/types/polar-customer-types";
 import { Webhooks } from "@polar-sh/nextjs";
@@ -56,7 +56,7 @@ async function upsertCustomer(customer: PolarCustomer, eventType: string) {
      };
 
      const insertable = { ...customerData, id: customer.id, email: customer.email };
-
+     const supabase = await useServerSideSupabaseAnonClient();
      const { data, error } = await supabase
           .from("tblPolarCustomers")
           .upsert(insertable, { onConflict: "id" })
@@ -85,6 +85,7 @@ async function upsertCustomer(customer: PolarCustomer, eventType: string) {
 
 async function deleteCustomer(customerId: string, eventType: string) {
      const t0 = Date.now();
+     const supabase = await useServerSideSupabaseAnonClient();
      const supabaseAdmin = await useServerSideSupabaseServiceRoleClient();
      // Soft delete by setting deletedAt timestamp
      const { data, error } = await supabase
