@@ -1,15 +1,11 @@
 // app/api/polar/webhook/customer/route.ts
+import { supabase } from "@/app/lib/sb-client";
 import { logServerAction } from "@/app/lib/server-logging";
+import { useServerSideSupabaseServiceRoleClient } from "@/app/lib/ss-supabase-service-role-client";
 import { PolarCustomer, PolarCustomerState } from "@/app/types/polar-customer-types";
 import { Webhooks } from "@polar-sh/nextjs";
-import { createClient } from "@supabase/supabase-js";
 
 export const runtime = "nodejs";
-
-const supabase = createClient(
-     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 // ---------------------------------------------------------------------------
 // Helper Functions
@@ -89,7 +85,7 @@ async function upsertCustomer(customer: PolarCustomer, eventType: string) {
 
 async function deleteCustomer(customerId: string, eventType: string) {
      const t0 = Date.now();
-
+     const supabaseAdmin = await useServerSideSupabaseServiceRoleClient();
      // Soft delete by setting deletedAt timestamp
      const { data, error } = await supabase
           .from("tblPolarCustomers")
@@ -97,6 +93,10 @@ async function deleteCustomer(customerId: string, eventType: string) {
           .eq("id", customerId)
           .select()
           .single();
+
+     const { } = await supabase.from('tblPolarCustomer_AuthID').delete().eq('customerId', customerId)
+
+     const { } = await supabaseAdmin.auth.admin.deleteUser(customerId)
 
      const duration = Date.now() - t0;
 
