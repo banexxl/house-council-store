@@ -40,6 +40,7 @@ function convertCustomerToPolarCustomer(customer: any): PolarCustomer {
 async function upsertCustomer(customer: PolarCustomer, eventType: string) {
      const t0 = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
+     const supabaseAdmin = await useServerSideSupabaseServiceRoleClient();
 
      // Query existing customer by id or email to preserve userId and handle duplicates
      const { data: existingById } = await supabase
@@ -54,8 +55,25 @@ async function upsertCustomer(customer: PolarCustomer, eventType: string) {
           .eq('email', customer.email)
           .maybeSingle();
 
-     // Determine the userId to use
-     let userId = existingById?.userId || existingByEmail?.userId || customer.id;
+     // Determine the userId to use - verify it exists in auth.users
+     let userId = existingById?.userId || existingByEmail?.userId || null;
+
+     // If we have a candidate userId, verify it exists in auth
+     if (userId) {
+          const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.getUserById(userId);
+          if (authError || !authUser?.user) {
+               userId = null; // User doesn't exist in auth, set to null
+          }
+     }
+
+     // If still no userId, try to find auth user by email
+     if (!userId) {
+          const { data: authUserByEmail } = await supabaseAdmin.auth.admin.listUsers();
+          const matchingUser = authUserByEmail?.users?.find(u => u.email === customer.email);
+          if (matchingUser) {
+               userId = matchingUser.id;
+          }
+     }
 
      // If email exists with different id, delete the old record first
      if (existingByEmail && existingByEmail.id !== customer.id) {
