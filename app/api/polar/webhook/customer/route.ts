@@ -41,12 +41,29 @@ async function upsertCustomer(customer: PolarCustomer, eventType: string) {
      const t0 = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
 
-     // Query existing customer to preserve userId
-     const { data: existingCustomer } = await supabase
+     // Query existing customer by id or email to preserve userId and handle duplicates
+     const { data: existingById } = await supabase
           .from("tblPolarCustomers")
-          .select('userId')
+          .select('id, userId, email')
           .eq('id', customer.id)
-          .single();
+          .maybeSingle();
+
+     const { data: existingByEmail } = await supabase
+          .from("tblPolarCustomers")
+          .select('id, userId, email')
+          .eq('email', customer.email)
+          .maybeSingle();
+
+     // Determine the userId to use
+     let userId = existingById?.userId || existingByEmail?.userId || customer.id;
+
+     // If email exists with different id, delete the old record first
+     if (existingByEmail && existingByEmail.id !== customer.id) {
+          await supabase
+               .from("tblPolarCustomers")
+               .delete()
+               .eq('id', existingByEmail.id);
+     }
 
      const customerData = {
           id: customer.id,
@@ -61,7 +78,7 @@ async function upsertCustomer(customer: PolarCustomer, eventType: string) {
           organizationId: customer.organizationId,
           deletedAt: customer.deletedAt,
           avatarUrl: customer.avatarUrl,
-          userId: existingCustomer?.userId || customer.id, // Use existing userId or fallback to customer.id
+          userId: userId,
      };
 
      const insertable = { ...customerData };
