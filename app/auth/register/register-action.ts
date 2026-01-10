@@ -101,8 +101,8 @@ export const registerUser = async (values: RegisterFormValues): Promise<{ succes
 
      if (signUpData) {
           const { data: connectionTableData, error: connectionTableError } = await supabase.from('tblPolarCustomer_AuthID').insert({
-               auth_user_id: userId,
-               polar_customer_id: data.id,
+               authId: userId,
+               customerId: data.id,
           });
           console.log('Inserted into tblPolarCustomer_AuthID:', connectionTableData, connectionTableError);
 
