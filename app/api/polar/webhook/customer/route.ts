@@ -132,8 +132,36 @@ async function deleteCustomer(customerId: string, eventType: string) {
      const supabase = await useServerSideSupabaseAnonClient();
      const { data: customerData, error: customerError } = await supabase.from("tblPolarCustomers").select('userId').eq('id', customerId).single();
 
-     const supabaseAdmin = await useServerSideSupabaseServiceRoleClient()
-     const { data, error } = await supabaseAdmin.auth.admin.deleteUser(customerData?.userId)
+     let deleteAuthError = null;
+     let deleteAuthData = null;
+
+     // Only attempt to delete auth user if userId exists and is a valid UUID
+     if (customerData?.userId) {
+          // UUID regex validation
+          const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+          if (uuidRegex.test(customerData.userId)) {
+               const supabaseAdmin = await useServerSideSupabaseServiceRoleClient();
+               const result = await supabaseAdmin.auth.admin.deleteUser(customerData.userId);
+               deleteAuthData = result.data;
+               deleteAuthError = result.error;
+
+               if (deleteAuthError) {
+                    console.warn(`Warning: Could not delete auth user ${customerData.userId}:`, deleteAuthError.message);
+               }
+          } else {
+               console.warn(`Warning: Invalid UUID format for userId: ${customerData.userId}`);
+          }
+     } else {
+          console.warn(`Warning: No userId found for customer ${customerId}, skipping auth user deletion`);
+     }
+
+     // Soft delete the customer record regardless of auth deletion result
+     const { data, error } = await supabase
+          .from("tblPolarCustomers")
+          .update({ deletedAt: new Date().toISOString() })
+          .eq("id", customerId)
+          .select()
+          .single();
 
      const duration = Date.now() - t0;
 
