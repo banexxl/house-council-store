@@ -1,7 +1,6 @@
 // app/api/polar/webhook/subscription/route.ts
 import { logServerAction } from "@/app/lib/server-logging";
 import { getApartmentCountForCustomer } from "@/app/profile/subscription-plan-actions";
-import { PolarSubscription } from "@/app/types/polar-subscription-types";
 import { Webhooks } from "@polar-sh/nextjs";
 import { createClient } from "@supabase/supabase-js";
 
