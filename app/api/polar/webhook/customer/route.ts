@@ -59,9 +59,11 @@ async function upsertCustomer(customer: PolarCustomer, eventType: string) {
           avatarUrl: customer.avatarUrl,
      };
 
+     const insertable = { ...customerData, id: customer.id, email: customer.email };
+
      const { data, error } = await supabase
           .from("tblPolarCustomers")
-          .upsert(customerData, { onConflict: "id" })
+          .upsert(insertable, { onConflict: "id" })
           .select()
           .single();
 
