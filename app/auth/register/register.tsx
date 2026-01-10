@@ -39,6 +39,8 @@ export const RegisterPage = () => {
 
      const handleNavClick = (path: string) => {
           startTransition(() => {
+               console.log('path', path);
+
                router.push(path);
           });
      };
@@ -62,7 +64,6 @@ export const RegisterPage = () => {
           validationSchema: registrationSchema,
           onSubmit: async (values: RegisterFormValues) => {
                const { success, error }: { success: boolean, error?: ErrorType } = await registerUser(values);
-
                if (success) {
                     toast.success("Registration successful!");
                     handleNavClick("/auth/registration-confirmation");

@@ -41,6 +41,8 @@ export async function updateSession(request: NextRequest) {
           '/auth/callback',
           '/auth/error',
           '/auth/register',
+          '/auth/registration-confirmation',
+          '/auth/registration-confirmed',
           '/auth/reset-password',
           '/documentation',
           '/pricing',
