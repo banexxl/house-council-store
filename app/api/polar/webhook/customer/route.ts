@@ -39,6 +39,14 @@ function convertCustomerToPolarCustomer(customer: any): PolarCustomer {
 
 async function upsertCustomer(customer: PolarCustomer, eventType: string) {
      const t0 = Date.now();
+     const supabase = await useServerSideSupabaseAnonClient();
+
+     // Query existing customer to preserve userId
+     const { data: existingCustomer } = await supabase
+          .from("tblPolarCustomers")
+          .select('userId')
+          .eq('id', customer.id)
+          .single();
 
      const customerData = {
           id: customer.id,
@@ -53,10 +61,10 @@ async function upsertCustomer(customer: PolarCustomer, eventType: string) {
           organizationId: customer.organizationId,
           deletedAt: customer.deletedAt,
           avatarUrl: customer.avatarUrl,
+          userId: existingCustomer?.userId || customer.id, // Use existing userId or fallback to customer.id
      };
 
-     const insertable = { ...customerData, id: customer.id, email: customer.email };
-     const supabase = await useServerSideSupabaseAnonClient();
+     const insertable = { ...customerData };
      const { data, error } = await supabase
           .from("tblPolarCustomers")
           .upsert(insertable, { onConflict: "id" })
