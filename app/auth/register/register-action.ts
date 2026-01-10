@@ -3,6 +3,7 @@
 import { sendSuccessfullClientRegistrationToSupport } from '@/app/lib/node-mailer';
 import { polar } from '@/app/lib/polar';
 import { logServerAction } from '@/app/lib/server-logging';
+import { useServerSideSupabaseAnonClient } from '@/app/lib/ss-supabase-anon-client';
 import { useServerSideSupabaseServiceRoleClient } from '@/app/lib/ss-supabase-service-role-client';
 
 export type RegisterFormValues = {
@@ -25,7 +26,8 @@ export const registerUser = async (values: RegisterFormValues): Promise<{ succes
           return { success: false, error: { code: 'VALIDATION_ERROR', details: 'All fields are required', hint: null, message: 'All fields are required' } };
      }
 
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabaseAdmin = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
 
      if (values.password !== values.confirm_password) {
           logServerAction({
@@ -42,7 +44,7 @@ export const registerUser = async (values: RegisterFormValues): Promise<{ succes
 
 
      // First, sign up the user with Supabase Auth
-     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+     const { data: signUpData, error: signUpError } = await supabaseAdmin.auth.signUp({
           email: values.email,
           password: values.password,
           options: {
@@ -102,10 +104,12 @@ export const registerUser = async (values: RegisterFormValues): Promise<{ succes
                auth_user_id: userId,
                polar_customer_id: data.id,
           });
+          console.log('Inserted into tblPolarCustomer_AuthID:', connectionTableData, connectionTableError);
+
           if (connectionTableError) {
                //Rollback
                await supabase.from('tblPolarCustomers').delete().eq('id', data.id);
-               await supabase.auth.admin.deleteUser(userId!);
+               await supabaseAdmin.auth.admin.deleteUser(userId!);
           }
           try {
                await polar.customers.create({
@@ -120,7 +124,7 @@ export const registerUser = async (values: RegisterFormValues): Promise<{ succes
 
                // Rollback: Delete the auth user
                if (userId) {
-                    await supabase.auth.admin.deleteUser(userId);
+                    await supabaseAdmin.auth.admin.deleteUser(userId);
                }
 
                await logServerAction({
