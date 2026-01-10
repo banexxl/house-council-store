@@ -130,7 +130,15 @@ async function deleteCustomer(customerId: string, eventType: string) {
      });
 
      if (error) {
-          console.error(`Error deleting customer for ${eventType}:`, error);
+          await logServerAction({
+               user_id: customerId,
+               action: `${eventType} - Delete Customer - Failed to delete auth user ${customerData?.userId}`,
+               payload: { customerId },
+               status: "fail",
+               error: customerError?.message || "",
+               duration_ms: duration,
+               type: "webhook",
+          });
           throw error;
      }
 
