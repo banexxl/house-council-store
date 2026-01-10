@@ -36,10 +36,21 @@ export default async function Page() {
      // Fetch client data
      const { customer, error } = await readAccountByEmailAction(user.email);
 
-     if (!customer) {
-          const supabase = await useServerSideSupabaseServiceRoleClient();
-          supabase.auth.signOut()
-          return redirect("/auth/sign-in")
+     if (!customer || error) {
+          // Customer not found but user is authenticated - show error instead of redirect loop
+          return (
+               <>
+                    <Header user={user} />
+                    <div style={{ padding: '2rem', textAlign: 'center' }}>
+                         <h1>Account Setup Required</h1>
+                         <p>Your account is authenticated but customer data is missing.</p>
+                         <p>Email: {user.email}</p>
+                         <p>Please contact support or complete your registration.</p>
+                         {error && <p style={{ color: 'red' }}>Error: {error}</p>}
+                    </div>
+                    <Footer />
+               </>
+          );
      }
 
      // Fetch related data in parallel

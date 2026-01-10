@@ -8,8 +8,8 @@ export async function updateSession(request: NextRequest) {
      });
 
      const supabase = createServerClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.SUPABASE_SERVICE_ROLE_KEY!,
+          process.env.SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
           {
                cookies: {
                     getAll() {
@@ -69,17 +69,16 @@ export async function updateSession(request: NextRequest) {
                // Redirect to homepage if trying to access login page or root
                return NextResponse.redirect(new URL('/', request.url));
           }
+          // Allow authenticated users to access any route
+          return supabaseResponse;
      } else {
           // User is not authenticated
-          if (!isPublicRoute || pathname.startsWith('/profile')) {
-               {
-                    // Redirect to login page if trying to access a protected route
-                    return NextResponse.redirect(new URL('/auth/sign-in', request.url));
-               }
+          if (!isPublicRoute) {
+               // Redirect to login page if trying to access a protected route
+               return NextResponse.redirect(new URL('/auth/sign-in', request.url));
           }
 
           // Return the response for all other cases
           return supabaseResponse;
      }
-
 }

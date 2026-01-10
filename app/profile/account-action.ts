@@ -94,13 +94,14 @@ export const readAccountByEmailAction = async (email: string): Promise<{ custome
 
      const startTime = Date.now();
 
+     const supabaseAdmin = await useServerSideSupabaseServiceRoleClient();
+     const userId = (await supabaseAdmin.auth.getUser()).data.user?.id;
      const supabase = await useServerSideSupabaseAnonClient();
-     const userId = (await supabase.auth.getUser()).data.user?.id;
      const { data: customer, error } = await supabase
           .from('tblPolarCustomers')
           .select('*')
-          .eq('email', email)
-          .single();
+          .eq('userId', userId)
+          .maybeSingle();
 
      if (error) {
 
@@ -114,6 +115,19 @@ export const readAccountByEmailAction = async (email: string): Promise<{ custome
                type: 'db'
           })
           return { error: error.message }
+     }
+
+     if (!customer) {
+          await logServerAction({
+               user_id: userId ? userId : '',
+               action: 'Read Account - Customer not found.',
+               payload: { email },
+               status: 'fail',
+               error: 'No customer found with this email',
+               duration_ms: Date.now() - startTime,
+               type: 'db'
+          })
+          return { error: 'No customer found with this email' }
      }
 
      await logServerAction({
