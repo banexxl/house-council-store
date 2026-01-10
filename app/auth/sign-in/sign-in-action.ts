@@ -19,8 +19,6 @@ export const checkClientExistsAndIsPermitted = async (
      values: SignInFormValues
 ): Promise<{ success: boolean; error?: ErrorType }> => {
      const start = Date.now()
-     const restrictingStatuses = ['inactive', 'pending_activation', 'suspended', 'archived']
-     const allowedStatuses = ['active', 'trial', 'vip']
 
      const { data, error } = await supabaseBrowserClient
           .from('tblPolarCustomers')
@@ -38,18 +36,6 @@ export const checkClientExistsAndIsPermitted = async (
                duration_ms: Date.now() - start,
                type: 'auth'
           })
-          if (!restrictingStatuses.includes(data.client_status)) {
-               await logClientAction({
-                    user_id: data.id,
-                    action: 'Check if client exists and is permitted - Client status is allowed',
-                    payload: { email: values.email, status: data.client_status },
-                    status: 'success',
-                    error: '',
-                    duration_ms: Date.now() - start,
-                    type: 'auth'
-               })
-               return { success: true }
-          }
           await logClientAction({
                user_id: data.id,
                action: 'Check if client exists and is permitted - Client status is restricted',
