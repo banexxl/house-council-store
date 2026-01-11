@@ -87,7 +87,7 @@ export async function checkUserPermissionServer(email: string): Promise<{ succes
                status: 'success',
                error: '',
                duration_ms: Date.now() - start,
-               type: 'auth'
+               type: 'db'
           });
 
           // If status exists and is not 'active', deny access
