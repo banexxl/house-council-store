@@ -126,6 +126,57 @@ export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, custome
           return Math.round((savings / baselineCost) * 100);
      }, [currentPrice, baseMonthlyPrice, currentProduct]);
 
+     const handleOpenCustomerPortal = async () => {
+          if (!customer?.id) {
+               toast.error("Please sign in to manage your subscription.");
+               router.push("/auth/sign-in");
+               return;
+          }
+
+          if (!customerSubscriptionPlanData?.customerId) {
+               toast.error("Missing customer identifier.");
+               return;
+          }
+
+          setLoadingKey('portal');
+
+          try {
+               const returnUrl = typeof window !== "undefined"
+                    ? `${window.location.origin}/pricing`
+                    : null;
+
+               const res = await fetch("/api/polar/customer-portal", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                         polarCustomerId: customerSubscriptionPlanData.customerId,
+                         returnUrl,
+                    }),
+               });
+
+               const data = await res.json().catch(() => ({}));
+               if (!res.ok) {
+                    if (data?.error === "customer_not_found") {
+                         throw new Error("Please subscribe to a plan before opening the customer portal.");
+                    }
+                    throw new Error(data?.error || "Failed to open customer portal.");
+               }
+
+               const url = data?.url as string | undefined;
+               if (!url) {
+                    throw new Error("Customer portal URL missing.");
+               }
+
+               if (typeof window !== "undefined") {
+                    window.open(url, "_blank", "noopener,noreferrer");
+               }
+          } catch (err: any) {
+               toast.error(err?.message || "Failed to open customer portal.");
+          } finally {
+               setLoadingKey(null);
+          }
+     };
+
      const startPolarCheckout = async (priceId: string, productId: string) => {
 
           if (!customer?.id) {
@@ -136,6 +187,15 @@ export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, custome
 
           if (customerSubscriptionPlanData && customerSubscriptionPlanData.status === "trialing") {
                toast.error("You are currently in a free trial. Please wait for it to finish before starting a new one.");
+               return;
+          }
+
+          // If customer has an active/trialing subscription and is trying to change to a different plan,
+          // redirect to customer portal instead
+          if (customerSubscriptionPlanData &&
+               (customerSubscriptionPlanData.status === 'active' || customerSubscriptionPlanData.status === 'trialing') &&
+               customerSubscriptionPlanData.productId !== productId) {
+               handleOpenCustomerPortal();
                return;
           }
 
@@ -296,9 +356,15 @@ export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, custome
                                                                       (customerSubscriptionPlanData?.productId === currentProduct.id &&
                                                                            (customerSubscriptionPlanData?.status === 'active' || customerSubscriptionPlanData?.status === 'trialing'))
                                                                  }
-                                                                 startIcon={loadingKey === currentPrice.id ? <CircularProgress size={20} color="inherit" /> : undefined}
+                                                                 startIcon={loadingKey === currentPrice.id || loadingKey === 'portal' ? <CircularProgress size={20} color="inherit" /> : undefined}
                                                             >
-                                                                 {loadingKey === currentPrice.id ? "Redirecting..." : "Start Free Trial"}
+                                                                 {loadingKey === currentPrice.id ? "Redirecting..." :
+                                                                      loadingKey === 'portal' ? "Opening Portal..." :
+                                                                           (customerSubscriptionPlanData?.productId === currentProduct.id &&
+                                                                                (customerSubscriptionPlanData?.status === 'active' || customerSubscriptionPlanData?.status === 'trialing'))
+                                                                                ? "Current Plan" :
+                                                                                (customerSubscriptionPlanData && (customerSubscriptionPlanData.status === 'active' || customerSubscriptionPlanData.status === 'trialing'))
+                                                                                     ? "Change Plan" : "Start Free Trial"}
                                                             </Button>
                                                        ) : (
                                                             <Button

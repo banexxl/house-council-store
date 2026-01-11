@@ -45,7 +45,6 @@ const isClientSubscriptionRecord = (record: unknown): record is ClientSubscripti
 
 export default function SubscriptionTab({ customerSubscriptionObject, subsriptionFeatures, apartmentsCount, productData }: SubscriptionTabProps) {
      const [subscriptionData, setSubscriptionData] = useState<ClientSubscriptionWithOptionalPlan | null>(customerSubscriptionObject)
-     console.log('subscriptionData', subscriptionData);
 
      useEffect(() => {
           setSubscriptionData(customerSubscriptionObject)

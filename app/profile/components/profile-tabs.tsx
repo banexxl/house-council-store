@@ -107,15 +107,6 @@ export default function ProfileTabs({
                               <AccountTab userData={userData} />
                          </TabPanel>
 
-                         {/* Billing Tab */}
-                         {/* <TabPanel value={tabValue} index={1}>
-                              <BillingTab
-                                   userData={userData}
-                                   allClientBillingInformation={allClientBillingInformation}
-                                   binCheckerAPIKey={binCheckerAPIKey}
-                              />
-                         </TabPanel> */}
-
                          {/* Subscription Tab */}
                          <TabPanel value={tabValue} index={1}>
                               <SubscriptionTab
