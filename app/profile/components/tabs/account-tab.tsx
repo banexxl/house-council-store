@@ -55,13 +55,6 @@ export default function AccountTab({ userData }: AccountTabProps) {
                <Grid container spacing={3}>
                     <Grid size={{ xs: 12, md: 6 }}>
                          <Typography variant="subtitle2" color="text.secondary">
-                              Customer ID
-                         </Typography>
-                         <Typography variant="body1">{userData.customer.id}</Typography>
-                    </Grid>
-
-                    <Grid size={{ xs: 12, md: 6 }}>
-                         <Typography variant="subtitle2" color="text.secondary">
                               Name
                          </Typography>
                          <Typography variant="body1">{userData.customer.name}</Typography>
@@ -77,25 +70,11 @@ export default function AccountTab({ userData }: AccountTabProps) {
                          </Box>
                     </Grid>
 
-                    <Grid size={{ xs: 12, md: 6 }}>
-                         <Typography variant="subtitle2" color="text.secondary">
-                              Organization ID
-                         </Typography>
-                         <Typography variant="body1">{userData.customer.organizationId}</Typography>
-                    </Grid>
-
-                    <Grid size={{ xs: 12, md: 6 }}>
-                         <Typography variant="subtitle2" color="text.secondary">
-                              Avatar
-                         </Typography>
-                         <Typography variant="body1">{userData.customer.avatarUrl || 'N/A'}</Typography>
-                    </Grid>
-
                     <Grid size={{ xs: 12 }}>
                          <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
                               Billing Address
                          </Typography>
-                         <Box sx={{ pl: 2 }}>
+                         <Box>
                               <Typography variant="body1">
                                    {userData.customer.billingAddress?.line1 && `${userData.customer.billingAddress.line1}`}
                                    {userData.customer.billingAddress?.line2 && `, ${userData.customer.billingAddress.line2}`}
