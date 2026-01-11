@@ -96,6 +96,7 @@ export const POST = Webhooks({
      onPayload: async (payload: any) => {
           const eventType = String(payload?.type ?? "");
           const data = payload?.data ?? {};
+          console.log('Customer payload data:', payload.data);
 
           if (
                eventType === "customer.created" ||
