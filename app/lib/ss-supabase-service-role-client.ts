@@ -6,7 +6,7 @@ export const useServerSideSupabaseServiceRoleClient = async () => {
      const cookieStore = await cookies();
      const supabase = createServerClient(
           process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.SUPABASE_SERVICE_ROLE_KEY!,
+          process.env.SB_SERVICE_KEY!,
           {
                cookies: {
                     getAll: () => cookieStore.getAll(),
