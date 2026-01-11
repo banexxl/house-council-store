@@ -6,6 +6,7 @@ import { logServerAction } from "../lib/server-logging";
 import { useServerSideSupabaseAnonClient } from "../lib/ss-supabase-anon-client";
 import { PolarSubscription } from "../types/polar-subscription-types";
 import { PolarProduct, PolarProductPrice } from "../types/polar-product-types";
+import { useServerSideSupabaseServiceRoleClient } from "../lib/ss-supabase-service-role-client";
 
 
 export const readSubscriptionPlanFeatures = async (
@@ -296,12 +297,17 @@ export const readCustomerSubscriptionPlanFromCustomerId = async (customerId: str
           })
           return { success: false, error: "Customer ID is required" };
      }
+
      const supabase = await useServerSideSupabaseAnonClient(); // Use the server-side Supabase customer
      const { data: customerSubscriptionPlanData, error: customerSubscriptionDataError } = await supabase
           .from("tblPolarSubscriptions")
           .select(`*`)
           .eq("customerId", customerId)
+          //find the one with the greatest currentPeriodStart
+          .order("currentPeriodStart", { ascending: false })
+          .limit(1)
           .single();
+
      if (customerSubscriptionDataError) {
           await logServerAction({
                user_id: null,

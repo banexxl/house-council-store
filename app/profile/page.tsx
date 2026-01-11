@@ -58,7 +58,6 @@ export default async function Page() {
           readCustomerSubscriptionPlanFromCustomerId(customer.customerId!),
           readClientRecentActivityAction(user.email, customer.id),
           readAllApartmentsByClientId(customer.id),
-
      ])
 
      const subscriptionFeatures = await readSubscriptionPlanFeatures(customerSubscriptionObject.customerSubscriptionPlanData?.id ?? null)
