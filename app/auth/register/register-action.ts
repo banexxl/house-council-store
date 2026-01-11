@@ -53,7 +53,7 @@ export const registerUser = async (
                email: values.email,
                password: values.password,
                options: {
-                    emailRedirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/registration-confirmation`,
+                    emailRedirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/registration-confirmed`,
                },
           });
 
