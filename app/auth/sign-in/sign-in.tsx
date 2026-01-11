@@ -30,6 +30,9 @@ import Animate from "@/app/components/animation-framer-motion"
 import { createBrowserClient } from "@supabase/ssr"
 import { logClientAction } from "@/app/lib/client-logging"
 import { checkUserPermissionServer } from "./check-user-server-action"
+import { useSearchParams } from "next/navigation";
+import { useEffect } from "react";
+
 
 // Custom multi-colored Google icon
 const GoogleMultiColorIcon = (props: any) => (
@@ -64,6 +67,34 @@ export const LoginPage = () => {
      const [isPending, startTransition] = useTransition()
      const [challengeId, setChallengeId] = useState<string>("")
      const [factorId, setFactorId] = useState<string>("")
+     const searchParams = useSearchParams();
+     const mfaParam = searchParams.get("mfa"); // "1" when middleware forces MFA
+
+     useEffect(() => {
+          const run = async () => {
+               if (mfaParam !== "1") return;
+
+               // show OTP UI
+               setDoesRequire2FA(true);
+
+               // get factors + challenge again (challenge must be fresh after refresh)
+               const { data: factorsData, error: factorsErr } = await supabase.auth.mfa.listFactors();
+               if (factorsErr) return;
+
+               const totp = factorsData?.totp?.find((f) => f.status === "verified");
+               if (!totp) return;
+
+               const { data: ch, error: chErr } = await supabase.auth.mfa.challenge({ factorId: totp.id });
+               if (chErr || !ch?.id) return;
+
+               setFactorId(totp.id);
+               setChallengeId(ch.id);
+          };
+
+          run();
+          // eslint-disable-next-line react-hooks/exhaustive-deps
+     }, [mfaParam]);
+
 
      const supabase = createBrowserClient(
           process.env.NEXT_PUBLIC_SUPABASE_URL as string,
@@ -89,97 +120,113 @@ export const LoginPage = () => {
           validationSchema: signInSchema,
 
           onSubmit: async (values) => {
-               const { success, error } = await checkUserPermissionServer(values.email)
+               const { success, error } = await checkUserPermissionServer(values.email);
 
                if (!success) {
-                    toast.error(error?.message || error?.hint || error?.details || "Unknown error")
-                    return
+                    toast.error(error?.message || error?.hint || error?.details || "Unknown error");
+                    return;
                }
 
+               setLoading(true);
                try {
                     const { data, error: signInError } = await supabase.auth.signInWithPassword({
                          email: values.email,
                          password: values.password,
-                    })
+                    });
 
                     if (signInError) {
-                         toast.error(signInError.message)
-                         return
+                         toast.error(signInError.message);
+                         return;
                     }
 
-                    // ✅ If MFA not required → we get a session
-                    if (data.session) {
-                         toast.success("Sign in successful!")
-                         handleNavClick("/")
-                         return
+                    // We have a session now (AAL1 typically).
+                    if (!data.session) {
+                         toast.error("No session returned from sign in.");
+                         return;
                     }
 
-                    // ✅ If MFA required → Supabase sends `data.mfa`
-                    if (data.user.factors?.length! < 1) {
-                         const factor = data.user?.factors?.find(
-                              (f) => f.status === "verified" && f.factor_type === "totp"
-                         )
-                         if (!factor) {
-                              toast.error("2FA required but no valid factor found.")
-                              return
+                    // If you WANT to require 2FA when user has TOTP enabled:
+                    const { data: factorsData, error: factorsErr } = await supabase.auth.mfa.listFactors();
+                    if (factorsErr) {
+                         toast.error("Failed to load 2FA factors: " + factorsErr.message);
+                         return;
+                    }
+
+                    const totpFactor = factorsData?.totp?.find((f) => f.status === "verified");
+                    if (totpFactor) {
+                         // Create a real challenge
+                         const { data: challengeData, error: challengeErr } = await supabase.auth.mfa.challenge({
+                              factorId: totpFactor.id,
+                         });
+
+                         if (challengeErr || !challengeData?.id) {
+                              toast.error("Failed to create 2FA challenge: " + (challengeErr?.message ?? "Unknown"));
+                              return;
                          }
 
-                         const challenge = data.user.factors?.find(
-                              (f) => f.id === factor.id
-                         )?.status === "verified" ? { id: "existing_challenge" } : null
-                         if (!challenge?.id) {
-                              toast.error("Failed to create 2FA challenge.")
-                              return
-                         }
+                         // Show OTP UI (do NOT redirect yet)
+                         setDoesRequire2FA(true);
+                         setFactorId(totpFactor.id);
+                         setChallengeId(challengeData.id);
 
-                         // logout before asking for OTP
-                         await supabase.auth.signOut()
-
-                         setDoesRequire2FA(true)
-                         setChallengeId(challenge.id)
-                         setFactorId(factor.id)
-                         toast("2FA code required. Please enter the 6-digit code.")
+                         toast("Enter the 6-digit code from your authenticator.");
+                         return;
                     }
+
+                    // No TOTP factor -> proceed normally
+                    toast.success("Sign in successful!");
+                    handleNavClick("/");
                } catch (err) {
-                    toast.error("Unexpected error during sign in. Please try again.")
+                    toast.error("Unexpected error during sign in. Please try again.");
+               } finally {
+                    setLoading(false);
                }
           },
+
      })
 
      const handleVerify = async (e?: React.FormEvent) => {
-          e?.preventDefault()
-          setLoading(true)
+          e?.preventDefault();
+          setLoading(true);
 
-          const { data, error } = await supabase.auth.mfa.verify({
-               factorId,
-               challengeId,
-               code: twoFactorCode,
-          })
+          try {
+               const { data, error } = await supabase.auth.mfa.verify({
+                    factorId,
+                    challengeId,
+                    code: twoFactorCode,
+               });
 
-          if (error) {
-               toast.error("Invalid 2FA code: " + error.message)
-               setLoading(false)
-               return
-          }
+               if (error) {
+                    toast.error("Invalid 2FA code: " + error.message);
+                    return;
+               }
 
-          if (data.access_token != '') {
+               // After verify, Supabase updates the session (AAL2).
+               // `data` may contain session/user depending on supabase-js version,
+               // but the safest is to just fetch the session.
+               const { data: sessionData, error: sessionErr } = await supabase.auth.getSession();
+               if (sessionErr || !sessionData.session) {
+                    toast.error("2FA verified, but session is missing.");
+                    return;
+               }
+
                await logClientAction({
-                    user_id: data.user.id,
+                    user_id: sessionData.session.user.id,
                     action: "Sign In with 2FA - Success",
                     payload: {},
                     status: "success",
                     error: "",
                     duration_ms: 0,
                     type: "action",
-               })
-               toast.success("2FA verified. You're now signed in!")
-               handleNavClick("/")
-          } else {
-               toast.error("Verification failed — no session returned.")
-          }
+               });
 
-          setLoading(false)
-     }
+               toast.success("2FA verified. You're now signed in!");
+               handleNavClick("/");
+          } finally {
+               setLoading(false);
+          }
+     };
+
 
      const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: any }> => {
           setGoogleSignInLoading(true)
