@@ -66,7 +66,7 @@ export const POST = Webhooks({
 
                // Upsert checkout data to database
                const { data, error: upsertError } = await supabase
-                    .from("tblPolarCheckout")
+                    .from("tblPolarCheckouts")
                     .upsert(checkoutData, { onConflict: "id" })
                     .select();
 
@@ -155,7 +155,7 @@ export const POST = Webhooks({
 
                // Upsert checkout data to database
                const { data, error: upsertError } = await supabase
-                    .from("tblPolarCheckout")
+                    .from("tblPolarCheckouts")
                     .upsert(checkoutData, { onConflict: "id" })
                     .select();
 
