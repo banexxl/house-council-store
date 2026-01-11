@@ -49,7 +49,6 @@ export async function POST(req: Request) {
                returnUrl: string;
                priceIds: string[];
           };
-          console.log('body', body);
 
           if (
                !customerId ||
