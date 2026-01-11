@@ -1,6 +1,6 @@
 "use client"
 
-import { Box, Button, Divider, Typography, Grid } from "@mui/material"
+import { Box, Button, Typography, Grid } from "@mui/material"
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser"
 import LogoutIcon from "@mui/icons-material/Logout"
 import { logoutUserAction } from "../../account-action"

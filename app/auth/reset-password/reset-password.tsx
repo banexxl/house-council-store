@@ -34,7 +34,7 @@ import { calculatePasswordStrength, getStrengthColor, getStrengthLabel, validati
 export const ResetPasswordPage = () => {
 
      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+     const supabaseKey = process.env.NEXT_PUBLIC_SB_CLIENT_KEY || "";
      const email = useSearchParams().get("email") || ""
      const token = useSearchParams().get("token") || ""
 

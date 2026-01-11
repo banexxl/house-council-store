@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useFormik } from "formik"
 import * as Yup from "yup"
@@ -8,8 +8,6 @@ import { Box, Button, Container, Paper, Typography, TextField, CircularProgress,
 import LockResetIcon from "@mui/icons-material/LockReset"
 import { sendPasswordResetEmail } from "./forgot-password-actions"
 import Animate from "@/app/components/animation-framer-motion"
-import toast from "react-hot-toast"
-import { createBrowserClient } from "@supabase/ssr"
 
 // Validation schema using Yup
 const validationSchema = Yup.object({

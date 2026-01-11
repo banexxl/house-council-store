@@ -3,7 +3,7 @@
 import { Box, Button, Card, CardContent, Chip, Typography, List, ListItem, ListItemText, Stack, Alert, InputAdornment, TextField, LinearProgress, IconButton, CircularProgress, useTheme } from "@mui/material"
 import LogoutIcon from "@mui/icons-material/Logout"
 import LockIcon from "@mui/icons-material/Lock"
-import { Session, User, } from "@supabase/supabase-js"
+import { User, } from "@supabase/supabase-js"
 import { createBrowserClient } from '@supabase/ssr'
 import { Visibility, VisibilityOff } from "@mui/icons-material"
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -23,7 +23,7 @@ interface SecurityTabProps {
 
 export default function SecurityTab({ userData }: SecurityTabProps) {
 
-     const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL || "", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "");
+     const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL || "", process.env.NEXT_PUBLIC_SB_CLIENT_KEY || "");
      const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
      const [confirmText, setConfirmText] = useState("");
      const [showPasswordChange, setShowPasswordChange] = useState(false);

@@ -12,32 +12,6 @@ import { PolarSubscription } from "../types/polar-subscription-types"
 import { PolarCustomer } from "../types/polar-customer-types"
 import { PolarProduct } from "../types/polar-product-types"
 
-// Mock data for notification preferences
-const notificationPreferences = [
-     { id: "notif_1", type: "Email Notifications", description: "Receive important updates via email", enabled: true },
-     { id: "notif_2", type: "SMS Notifications", description: "Receive urgent alerts via text message", enabled: true },
-     {
-          id: "notif_3",
-          type: "Community Announcements",
-          description: "Get notified about new announcements",
-          enabled: true,
-     },
-     {
-          id: "notif_4",
-          type: "Payment Reminders",
-          description: "Receive reminders before payment due dates",
-          enabled: true,
-     },
-     { id: "notif_5", type: "Maintenance Updates", description: "Get updates on maintenance requests", enabled: false },
-     { id: "notif_6", type: "Event Reminders", description: "Receive reminders about upcoming events", enabled: true },
-     {
-          id: "notif_7",
-          type: "Voting Notifications",
-          description: "Get notified about new votes and results",
-          enabled: true,
-     },
-]
-
 type ProfilePageProps = {
      sessionAndCustomerDataCombined?: { customer: PolarCustomer, session: User }
      customerSubscriptionObject: PolarSubscription

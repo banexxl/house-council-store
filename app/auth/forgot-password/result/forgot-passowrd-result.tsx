@@ -5,9 +5,6 @@ import { Box, Button, Container, Paper, Typography, Divider, Alert } from "@mui/
 import CheckCircleIcon from "@mui/icons-material/CheckCircle"
 import CancelIcon from "@mui/icons-material/Cancel"
 import Animate from "@/app/components/animation-framer-motion"
-import { createBrowserClient } from "@supabase/ssr"
-import { useEffect } from "react"
-import toast from "react-hot-toast"
 
 export function ForgotPasswordResult() {
 

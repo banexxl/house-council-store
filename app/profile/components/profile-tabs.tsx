@@ -64,16 +64,9 @@ export default function ProfileTabs({
 }: ProfileTabsProps) {
 
      const [tabValue, setTabValue] = useState(0)
-
      const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
           setTabValue(newValue)
      }
-
-     // const handleNotificationToggle = (id: string) => {
-     //      setNotificationSettings((prevSettings: any[]) =>
-     //           prevSettings.map((setting) => (setting.id === id ? { ...setting, enabled: !setting.enabled } : setting)),
-     //      )
-     // }
 
      const lastAction = recentActivity
           .filter(activity => activity.type === 'action')

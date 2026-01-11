@@ -7,7 +7,6 @@ import { readAccountByEmailAction, readAllApartmentsByClientId, readClientRecent
 import { User } from "@supabase/supabase-js";
 import { readCustomerSubscriptionPlanFromCustomerId, readSubscriptionPlanFeatures, readProductFromSubscriptionId } from "./subscription-plan-actions";
 import { redirect } from "next/navigation";
-import { useServerSideSupabaseServiceRoleClient } from "../lib/ss-supabase-service-role-client";
 import { buildCanonicalUrl } from "../lib/seo";
 
 const canonicalUrl = buildCanonicalUrl("/profile");
@@ -27,7 +26,6 @@ export const metadata: Metadata = {
 export default async function Page() {
      // Fetch user session
      const user: User | null = await getSessionUser();
-
      if (!user?.email) {
           // Server-side redirect to sign-in page
           return redirect("/auth/sign-in");
