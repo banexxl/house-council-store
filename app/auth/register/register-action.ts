@@ -101,7 +101,7 @@ export const registerUser = async (
 
                await logServerAction({
                     user_id: userId,
-                    action: "Register user - Polar customer created",
+                    action: "Register user - Customer created",
                     payload: {
                          email: values.email,
                          name: values.contact_person,
@@ -115,7 +115,7 @@ export const registerUser = async (
           } catch (error: any) {
                await logServerAction({
                     user_id: userId,
-                    action: "Register user - Polar customer creation failed",
+                    action: "Register user - Customer creation failed",
                     payload: { email: values.email, name: values.contact_person },
                     status: "fail",
                     error: error?.message || String(error),
@@ -125,17 +125,6 @@ export const registerUser = async (
 
                throw error;
           }
-
-          await logServerAction({
-               user_id: userId,
-               action: "Register user - auth + Polar customer created (DB row via webhook)",
-               payload: { email: values.email, name: values.contact_person },
-               status: "success",
-               error: "",
-               duration_ms: Date.now() - t0,
-               type: "auth",
-          });
-
           return { success: true };
      } catch (e: any) {
           // Rollback auth user if Polar create fails (or any error after signup)
@@ -145,7 +134,7 @@ export const registerUser = async (
 
           await logServerAction({
                user_id: userId,
-               action: "Register user - failed (rolled back auth user)",
+               action: "Register user - failed",
                payload: { email: values.email },
                status: "fail",
                error: e?.message || String(e),

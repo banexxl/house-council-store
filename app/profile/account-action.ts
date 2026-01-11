@@ -196,7 +196,7 @@ export const readClientRecentActivityAction = async (clientEmail: string, client
 
 
      const userIds = [userObject?.id, clientAuthId].filter(Boolean);
-     const logTypes = ['action', 'auth'];
+     const logTypes = ['auth'];
 
      const { data, error } = await supabase
           .from('tblServerLogs')
