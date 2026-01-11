@@ -297,12 +297,14 @@ export const readCustomerSubscriptionPlanFromCustomerId = async (customerId: str
           return { success: false, error: "Customer ID is required" };
      }
      const supabase = await useServerSideSupabaseAnonClient(); // Use the server-side Supabase customer
+     console.log('customerId', customerId);
 
      const { data: customerSubscriptionPlanData, error: customerSubscriptionDataError } = await supabase
           .from("tblPolarSubscriptions")
           .select(`*`)
           .eq("customerId", customerId)
           .single();
+     console.log('customerSubscriptionPlanData', customerSubscriptionPlanData);
 
      if (customerSubscriptionDataError) {
           await logServerAction({
