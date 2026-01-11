@@ -44,7 +44,7 @@ async function updateCustomer(customer: PolarCustomer, eventType: string) {
      const { data, error } = await supabase
           .from("tblPolarCustomers")
           .update(customer)
-          .eq("id", customer.id)
+          .eq("customerId", customer.id)
           .select()
           .single();
 
