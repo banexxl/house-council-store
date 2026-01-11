@@ -79,7 +79,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, custome
                if (a.recurringInterval !== b.recurringInterval) {
                     return a.recurringInterval === 'month' ? -1 : 1;
                }
-               return a.recurringIntervalCount - b.recurringIntervalCount;
+               return (a.recurringIntervalCount ?? 0) - (b.recurringIntervalCount ?? 0);
           });
      }, [polarProducts]);
 
@@ -116,11 +116,11 @@ export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, custome
 
           // Calculate what this period would cost at monthly rate
           const monthsInPeriod = currentProduct.recurringInterval === 'year'
-               ? currentProduct.recurringIntervalCount * 12
-               : currentProduct.recurringIntervalCount;
+               ? (currentProduct.recurringIntervalCount ?? 1) * 12
+               : (currentProduct.recurringIntervalCount ?? 1);
 
-          const baselineCost = (baseMonthlyPrice.priceAmount / 100) * monthsInPeriod;
-          const actualCost = currentPrice.priceAmount / 100;
+          const baselineCost = ((baseMonthlyPrice.priceAmount ?? 0) / 100) * monthsInPeriod;
+          const actualCost = ((currentPrice.priceAmount ?? 0) / 100);
           const savings = baselineCost - actualCost;
 
           return Math.round((savings / baselineCost) * 100);
@@ -202,20 +202,21 @@ export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, custome
                                    <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
                                         <Paper sx={{ p: 0.5, display: 'inline-flex', gap: 0.5, flexWrap: 'wrap' }}>
                                              {sortedProducts.map(product => {
-                                                  const intervalKey = `${product.recurringInterval}-${product.recurringIntervalCount}`;
+                                                  const intervalKey = `${product.recurringInterval}-${product.recurringIntervalCount ?? 1}`;
+                                                  const intervalCount = product.recurringIntervalCount ?? 1;
                                                   const label = product.recurringInterval === 'month'
-                                                       ? product.recurringIntervalCount === 1 ? 'Monthly' : `${product.recurringIntervalCount} Months`
-                                                       : product.recurringIntervalCount === 1 ? 'Annually' : `${product.recurringIntervalCount} Years`;
+                                                       ? intervalCount === 1 ? 'Monthly' : `${intervalCount} Months`
+                                                       : intervalCount === 1 ? 'Annually' : `${intervalCount} Years`;
 
                                                   // Calculate discount for this product
                                                   const productPrice = product.prices?.[0];
                                                   let discount = 0;
                                                   if (productPrice && baseMonthlyPrice && intervalKey !== 'month-1') {
                                                        const monthsInPeriod = product.recurringInterval === 'year'
-                                                            ? product.recurringIntervalCount * 12
-                                                            : product.recurringIntervalCount;
-                                                       const baselineCost = (baseMonthlyPrice.priceAmount / 100) * monthsInPeriod;
-                                                       const actualCost = productPrice.priceAmount / 100;
+                                                            ? (product.recurringIntervalCount ?? 1) * 12
+                                                            : (product.recurringIntervalCount ?? 1);
+                                                       const baselineCost = ((baseMonthlyPrice.priceAmount ?? 0) / 100) * monthsInPeriod;
+                                                       const actualCost = ((productPrice.priceAmount ?? 0) / 100);
                                                        const savings = baselineCost - actualCost;
                                                        discount = Math.round((savings / baselineCost) * 100);
                                                   }
