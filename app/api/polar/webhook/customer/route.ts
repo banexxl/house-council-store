@@ -1,153 +1,111 @@
-// app/api/polar/webhook/customer/route.ts
-import { logServerAction } from "@/app/lib/server-logging";
-import { useServerSideSupabaseAnonClient } from "@/app/lib/ss-supabase-anon-client";
-import { useServerSideSupabaseServiceRoleClient } from "@/app/lib/ss-supabase-service-role-client";
-import { PolarCustomer, PolarCustomerState } from "@/app/types/polar-customer-types";
+// app/api/polar/webhook/route.ts
 import { Webhooks } from "@polar-sh/nextjs";
+import { createClient } from "@supabase/supabase-js";
+import { logServerAction } from "@/app/lib/server-logging"; // adjust path if different
 
 export const runtime = "nodejs";
 
-// ---------------------------------------------------------------------------
-// Helper Functions
-// ---------------------------------------------------------------------------
+// Service role for webhooks (bypasses RLS)
+const supabase = createClient(
+     process.env.NEXT_PUBLIC_SUPABASE_URL!,
+     process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
-function convertCustomerToPolarCustomer(customer: any): PolarCustomer {
+// --------------------
+// Types (minimal)
+// --------------------
+type PolarCustomerPayload = {
+     id: string; // Polar customer id (uuid string)
+     createdAt?: string | null;
+     modifiedAt?: string | null;
+     deletedAt?: string | null;
+
+     metadata?: Record<string, any> | null;
+     externalId?: string | null;
+
+     email: string;
+     emailVerified?: boolean | null;
+     name: string;
+
+     billingAddress?: any | null;
+     taxId?: string[] | null;
+
+     organizationId?: string | null;
+     avatarUrl?: string | null;
+};
+
+function mapPolarCustomerToRow(c: PolarCustomerPayload) {
      return {
-          id: customer.id,
-          createdAt: customer.createdAt instanceof Date ? customer.createdAt.toISOString() : customer.createdAt,
-          modifiedAt: customer.modifiedAt instanceof Date ? customer.modifiedAt.toISOString() : customer.modifiedAt,
-          metadata: customer.metadata || {},
-          email: customer.email,
-          emailVerified: customer.emailVerified ?? customer.email_verified ?? false,
-          name: customer.name,
-          billingAddress: customer.billingAddress || customer.billing_address || {
-               country: "",
-               line1: "",
-               line2: "",
-               postalCode: "",
-               city: "",
-               state: ""
-          },
-          taxId: customer.taxId || customer.tax_id || [],
-          organizationId: customer.organizationId || customer.organization_id || "",
-          deletedAt: customer.deletedAt instanceof Date
-               ? customer.deletedAt.toISOString()
-               : customer.deletedAt || null,
-          avatarUrl: customer.avatarUrl || customer.avatar_url || null,
+          customerId: c.id, // <-- your new column that stores Polar id
+
+          // Your table columns (camelCase quoted in Postgres)
+          email: c.email,
+          name: c.name,
+          emailVerified: c.emailVerified ?? false,
+          organizationId: c.organizationId ?? null,
+          avatarUrl: c.avatarUrl ?? null,
+          billingAddress: c.billingAddress ?? null,
+          taxId: c.taxId ?? [],
+          metadata: c.metadata ?? {},
+          deletedAt: c.deletedAt ?? null,
+          createdAt: c.createdAt ?? null,
+          modifiedAt: c.modifiedAt ?? null,
+
+          // Your NOT NULL column: only include if present
+          // (we set externalId=userId at registration, so it should be present for your customers)
+          ...(c.externalId ? { userId: c.externalId } : {}),
      };
 }
 
-async function upsertCustomer(customer: PolarCustomer, eventType: string) {
+async function upsertPolarCustomer(eventType: string, customer: PolarCustomerPayload) {
      const t0 = Date.now();
-     const supabase = await useServerSideSupabaseAnonClient(); // ideally SERVICE ROLE in webhooks
 
-     // Map Polar payload -> DB columns
-     const row = {
-          customerId: customer.id,                 // <-- Polar customer id stored here
+     const row = mapPolarCustomerToRow(customer);
 
-          email: customer.email,
-          name: customer.name,
-          emailVerified: customer.emailVerified ?? false,
-          organizationId: customer.organizationId ?? null,
-          avatarUrl: customer.avatarUrl ?? null,
+     // IMPORTANT:
+     // If externalId is missing, we should NOT attempt an insert because userId is NOT NULL in your schema.
+     // In that case, do update-only by customerId.
+     const q = customer.externalId
+          ? supabase.from("tblPolarCustomers").upsert(row, { onConflict: "customerId" })
+          : supabase.from("tblPolarCustomers").update(row).eq("customerId", customer.id);
 
-          billingAddress: customer.billingAddress ?? null,
-          taxId: customer.taxId ?? [],
-
-          metadata: customer.metadata ?? {},
-
-          deletedAt: customer.deletedAt ?? null,
-          createdAt: customer.createdAt ?? null,
-          modifiedAt: customer.modifiedAt ?? null,
-     };
-
-     // IMPORTANT: customerId must be UNIQUE for onConflict to work.
-     const { data, error } = await supabase
-          .from("tblPolarCustomers")
-          .upsert(row, { onConflict: "customerId" })
-          .select()
-          .single();
-
-     const duration = Date.now() - t0;
+     const { data, error } = await q.select().maybeSingle();
 
      await logServerAction({
-          user_id: customer.id, // (this is Polar id; if you want supabase user id, store that separately)
-          action: `${eventType} - Upsert Customer`,
-          payload: row,
+          user_id: customer.externalId ?? null, // Supabase user id if you set externalId
+          action: `${eventType} - Upsert Polar Customer`,
+          payload: { customer, mappedRow: row },
           status: error ? "fail" : "success",
           error: error?.message || "",
-          duration_ms: duration,
+          duration_ms: Date.now() - t0,
           type: "webhook",
      });
 
-     if (error) {
-          console.error(`Error upserting customer for ${eventType}:`, error);
-          throw error;
-     }
-
+     if (error) throw error;
      return data;
 }
 
-// ---------------------------------------------------------------------------
-// Customer Webhook Handler
-// ---------------------------------------------------------------------------
-
 export const POST = Webhooks({
-     webhookSecret: process.env.POLAR_WEBHOOK_SECRET_SANDBOX_CUSTOMER!,
+     webhookSecret: process.env.POLAR_WEBHOOK_SECRET_SANDBOX!, // or POLAR_WEBHOOK_SECRET
+     onPayload: async (payload: any) => {
+          const eventType = String(payload?.type ?? "");
+          const data = payload?.data ?? {};
 
-     onCustomerCreated: async (payload) => {
-          const eventType = "customer.created";
-          console.log(`${eventType} webhook received:`, payload);
-
-          try {
-               const customer = convertCustomerToPolarCustomer(payload.data);
-               await upsertCustomer(customer, eventType);
-               console.log(`${eventType} processed successfully for customer:`, customer.id);
-          } catch (error) {
-               console.error(`Error processing ${eventType}:`, error);
-               throw error;
+          // Only handle customer.* here (you can extend this later)
+          if (eventType === "customer.created" || eventType === "customer.updated" || eventType === "customer.deleted") {
+               await upsertPolarCustomer(eventType, data as PolarCustomerPayload);
+               return;
           }
-     },
 
-     onCustomerUpdated: async (payload) => {
-          const eventType = "customer.updated";
-          console.log(`${eventType} webhook received:`, payload);
-
-          try {
-               const customer = convertCustomerToPolarCustomer(payload.data);
-               await upsertCustomer(customer, eventType);
-               console.log(`${eventType} processed successfully for customer:`, customer.id);
-          } catch (error) {
-               console.error(`Error processing ${eventType}:`, error);
-               throw error;
-          }
-     },
-
-     onCustomerDeleted: async (payload) => {
-          const eventType = "customer.deleted";
-          console.log(`${eventType} webhook received:`, payload);
-
-          try {
-               const customer = convertCustomerToPolarCustomer(payload.data);
-               await upsertCustomer(customer, eventType);
-               console.log(`${eventType} processed successfully for customer:`, customer.id);
-          } catch (error) {
-               console.error(`Error processing ${eventType}:`, error);
-               throw error;
-          }
-     },
-
-     onCustomerStateChanged: async (payload) => {
-          const eventType = "customer.state_changed";
-          console.log(`${eventType} webhook received:`, payload);
-
-          try {
-               const customer = convertCustomerToPolarCustomer(payload.data);
-               await upsertCustomer(customer, eventType);
-               console.log(`${eventType} processed successfully for customer:`, customer.id);
-          } catch (error) {
-               console.error(`Error processing ${eventType}:`, error);
-               throw error;
-          }
+          // Optionally log other events
+          await logServerAction({
+               user_id: null,
+               action: `Polar Webhook - Ignored Event (${eventType})`,
+               payload,
+               status: "success",
+               error: "",
+               duration_ms: 0,
+               type: "webhook",
+          });
      },
 });
