@@ -40,69 +40,11 @@ function convertCustomerToPolarCustomer(customer: any): PolarCustomer {
 async function upsertCustomer(customer: PolarCustomer, eventType: string) {
      const t0 = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
-     const supabaseAdmin = await useServerSideSupabaseServiceRoleClient();
 
-     // Query existing customer by id or email to preserve userId and handle duplicates
-     const { data: existingById } = await supabase
-          .from("tblPolarCustomers")
-          .select('id, userId, email')
-          .eq('id', customer.id)
-          .maybeSingle();
-
-     const { data: existingByEmail } = await supabase
-          .from("tblPolarCustomers")
-          .select('id, userId, email')
-          .eq('email', customer.email)
-          .maybeSingle();
-
-     // Determine the userId to use - verify it exists in auth.users
-     let userId = existingById?.userId || existingByEmail?.userId || null;
-
-     // If we have a candidate userId, verify it exists in auth
-     if (userId) {
-          const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.getUserById(userId);
-          if (authError || !authUser?.user) {
-               userId = null; // User doesn't exist in auth, set to null
-          }
-     }
-
-     // If still no userId, try to find auth user by email
-     if (!userId) {
-          const { data: authUserByEmail } = await supabaseAdmin.auth.admin.listUsers();
-          const matchingUser = authUserByEmail?.users?.find(u => u.email === customer.email);
-          if (matchingUser) {
-               userId = matchingUser.id;
-          }
-     }
-
-     // If email exists with different id, delete the old record first
-     if (existingByEmail && existingByEmail.id !== customer.id) {
-          await supabase
-               .from("tblPolarCustomers")
-               .delete()
-               .eq('id', existingByEmail.id);
-     }
-
-     const customerData = {
-          id: customer.id,
-          createdAt: customer.createdAt,
-          modifiedAt: customer.modifiedAt,
-          metadata: customer.metadata,
-          email: customer.email,
-          emailVerified: customer.emailVerified,
-          name: customer.name,
-          billingAddress: customer.billingAddress,
-          taxId: customer.taxId,
-          organizationId: customer.organizationId,
-          deletedAt: customer.deletedAt,
-          avatarUrl: customer.avatarUrl,
-          userId: userId,
-     };
-
-     const insertable = { ...customerData };
      const { data, error } = await supabase
           .from("tblPolarCustomers")
-          .upsert(insertable, { onConflict: "id" })
+          .update(customer)
+          .eq("id", customer.id)
           .select()
           .single();
 
@@ -111,7 +53,7 @@ async function upsertCustomer(customer: PolarCustomer, eventType: string) {
      await logServerAction({
           user_id: customer.id,
           action: `${eventType} - Upsert Customer`,
-          payload: customerData,
+          payload: customer,
           status: error ? "fail" : "success",
           error: error?.message || "",
           duration_ms: duration,
@@ -125,73 +67,6 @@ async function upsertCustomer(customer: PolarCustomer, eventType: string) {
 
      return data;
 }
-
-async function deleteCustomer(customerId: string, eventType: string) {
-     const t0 = Date.now();
-
-     const supabase = await useServerSideSupabaseAnonClient();
-     // const { data: customerData, error: customerError } = await supabase.from("tblPolarCustomers").select('userId').eq('id', customerId).single();
-
-     // let deleteAuthError = null;
-     // let deleteAuthData = null;
-
-     // // Only attempt to delete auth user if userId exists and is a valid UUID
-     // if (customerData?.userId) {
-     //      // UUID regex validation
-     //      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-     //      if (uuidRegex.test(customerData.userId)) {
-     //           const supabaseAdmin = await useServerSideSupabaseServiceRoleClient();
-     //           const result = await supabaseAdmin.auth.admin.deleteUser(customerData.userId);
-     //           deleteAuthData = result.data;
-     //           deleteAuthError = result.error;
-
-     //           if (deleteAuthError) {
-     //                console.warn(`Warning: Could not delete auth user ${customerData.userId}:`, deleteAuthError.message);
-     //           }
-     //      } else {
-     //           console.warn(`Warning: Invalid UUID format for userId: ${customerData.userId}`);
-     //      }
-     // } else {
-     //      console.warn(`Warning: No userId found for customer ${customerId}, skipping auth user deletion`);
-     // }
-
-     // Soft delete the customer record regardless of auth deletion result
-     const { data, error } = await supabase
-          .from("tblPolarCustomers")
-          .update({ deletedAt: new Date().toISOString() })
-          .eq("id", customerId)
-          .select()
-          .single();
-
-     const duration = Date.now() - t0;
-
-     if (error) {
-          await logServerAction({
-               user_id: customerId,
-               action: `${eventType} - Delete Customer - Failed to delete auth user ${customerId}`,
-               payload: { customerId },
-               status: "fail",
-               error: error?.message || "",
-               duration_ms: duration,
-               type: "webhook",
-          });
-          throw error;
-     }
-
-     await logServerAction({
-          user_id: customerId,
-          action: `${eventType} - Delete Customer`,
-          payload: { customerId },
-          status: "success",
-          error: '',
-          duration_ms: duration,
-          type: "webhook",
-     });
-
-
-     return data;
-}
-
 // ---------------------------------------------------------------------------
 // Customer Webhook Handler
 // ---------------------------------------------------------------------------
@@ -233,7 +108,7 @@ export const POST = Webhooks({
 
           try {
                const customer = convertCustomerToPolarCustomer(payload.data);
-               await deleteCustomer(customer.id, eventType);
+               await upsertCustomer(customer, eventType);
                console.log(`${eventType} processed successfully for customer:`, customer.id);
           } catch (error) {
                console.error(`Error processing ${eventType}:`, error);
