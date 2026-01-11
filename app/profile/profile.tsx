@@ -10,6 +10,7 @@ import { Feature } from "../types/feature"
 import Animate from "@/app/components/animation-framer-motion"
 import { PolarSubscription } from "../types/polar-subscription-types"
 import { PolarCustomer } from "../types/polar-customer-types"
+import { PolarProduct } from "../types/polar-product-types"
 
 // Mock data for notification preferences
 const notificationPreferences = [
@@ -44,6 +45,7 @@ type ProfilePageProps = {
      binCheckerAPIKey?: string,
      subscriptionFeatures: SubscriptionPlan & { features: Feature[] } | null
      apartmentsCount: number
+     productData: PolarProduct | null
 }
 export const ProfilePage = ({
      sessionAndCustomerDataCombined,
@@ -51,7 +53,8 @@ export const ProfilePage = ({
      recentActivity,
      binCheckerAPIKey,
      subscriptionFeatures,
-     apartmentsCount
+     apartmentsCount,
+     productData
 }: ProfilePageProps) => {
 
      const [editMode, setEditMode] = useState(false)
@@ -83,6 +86,8 @@ export const ProfilePage = ({
                                              recentActivity={recentActivity || []}
                                              binCheckerAPIKey={binCheckerAPIKey}
                                              apartmentsCount={apartmentsCount}
+                                             subscriptionFeatures={subscriptionFeatures}
+                                             productData={productData}
                                         />
                                    </Grid>
                               </Grid>

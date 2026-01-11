@@ -5,7 +5,7 @@ import { Header } from "@/app/components/header";
 import { ProfilePage } from "./profile";
 import { readAccountByEmailAction, readAllApartmentsByClientId, readClientRecentActivityAction } from "./account-action";
 import { User } from "@supabase/supabase-js";
-import { readCustomerSubscriptionPlanFromCustomerId, readSubscriptionPlanFeatures } from "./subscription-plan-actions";
+import { readCustomerSubscriptionPlanFromCustomerId, readSubscriptionPlanFeatures, readProductFromSubscriptionId } from "./subscription-plan-actions";
 import { redirect } from "next/navigation";
 import { useServerSideSupabaseServiceRoleClient } from "../lib/ss-supabase-service-role-client";
 import { buildCanonicalUrl } from "../lib/seo";
@@ -57,11 +57,17 @@ export default async function Page() {
      const [customerSubscriptionObject, recentActivity, apartments] = await Promise.all([
           readCustomerSubscriptionPlanFromCustomerId(customer.customerId!),
           readClientRecentActivityAction(user.email, customer.id),
-          readAllApartmentsByClientId(customer.id)
+          readAllApartmentsByClientId(customer.id),
+
      ])
 
-
      const subscriptionFeatures = await readSubscriptionPlanFeatures(customerSubscriptionObject.customerSubscriptionPlanData?.id ?? null)
+
+     // Fetch product data from subscription's productId
+     const productData = customerSubscriptionObject.customerSubscriptionPlanData?.productId
+          ? await readProductFromSubscriptionId(customerSubscriptionObject.customerSubscriptionPlanData.productId)
+          : null;
+
      // Merge session and client data
      const sessionAndCustomerDataCombined = {
           customer: {
@@ -82,6 +88,7 @@ export default async function Page() {
                     binCheckerAPIKey={binCheckerAPIKey ?? ""}
                     subscriptionFeatures={subscriptionFeatures?.subscriptionPlanFeatures ?? null}
                     apartmentsCount={apartments ? apartments?.data!.length : 0}
+                    productData={productData?.product ?? null}
                />
                <Footer />
           </>

@@ -27,11 +27,13 @@ import { Feature } from "@/app/types/feature"
 import Link from "next/link"
 import { initClientSubscriptionRealtime, type InitListenerOptions } from "@/app/lib/sb-realtime"
 import { PolarSubscription } from "@/app/types/polar-subscription-types"
+import { PolarProduct } from "@/app/types/polar-product-types"
 
 interface SubscriptionTabProps {
      customerSubscriptionObject: PolarSubscription
      subsriptionFeatures?: SubscriptionPlan & { features: Feature[] } | null;
      apartmentsCount: number
+     productData: PolarProduct | null
 }
 
 type ClientSubscriptionWithOptionalPlan = PolarSubscription & { subscription_plan?: SubscriptionPlan }
@@ -41,8 +43,9 @@ const isClientSubscriptionRecord = (record: unknown): record is ClientSubscripti
      return "id" in record && "status" in record
 }
 
-export default function SubscriptionTab({ customerSubscriptionObject, subsriptionFeatures, apartmentsCount }: SubscriptionTabProps) {
+export default function SubscriptionTab({ customerSubscriptionObject, subsriptionFeatures, apartmentsCount, productData }: SubscriptionTabProps) {
      const [subscriptionData, setSubscriptionData] = useState<ClientSubscriptionWithOptionalPlan | null>(customerSubscriptionObject)
+     console.log('subscriptionData', subscriptionData);
 
      useEffect(() => {
           setSubscriptionData(customerSubscriptionObject)
@@ -239,41 +242,6 @@ export default function SubscriptionTab({ customerSubscriptionObject, subsriptio
           }
      }
 
-     // const handleReactivateSubscription = async () => {
-     //      setIsProcessing(true)
-     //      if (!subscriptionData?.subscription_id || !subscriptionData?.customerId) {
-     //           toast.error("Missing subscription identifiers.")
-     //           setIsProcessing(false)
-     //           return
-     //      }
-     //      try {
-     //           try {
-     //                const res = await fetch("/api/polar/", {
-     //                     method: "PUT",
-     //                     headers: { "Content-Type": "application/json" },
-     //                     body: JSON.stringify({
-     //                          subscriptionId: subscriptionData.subscription_id,
-     //                          polarCustomerId: subscriptionData.customerId,
-     //                     }),
-     //                });
-     //                if (!res.ok) {
-     //                     toast.error("Failed to reactivate subscription. Please try again.");
-     //                     handleDialogToggle("confirmCancel", false);
-     //                } else {
-     //                     toast.success("Subscription reactivated successfully.");
-     //                     handleDialogToggle("confirmCancel", false);
-     //                }
-     //           } catch (err: any) {
-     //                console.error(err);
-     //                toast.error(err?.message || "Could not start checkout. Please try again.");
-     //           }
-     //      } catch {
-     //           toast.error("Failed to cancel subscription. Please try again.")
-     //      } finally {
-     //           setIsProcessing(false)
-     //      }
-     // }
-
      const renderDate = (date?: string | Date) => {
           if (!date) return <i>No subscription plan selected</i>
           const dateObj = date instanceof Date ? date : new Date(date)
@@ -310,15 +278,20 @@ export default function SubscriptionTab({ customerSubscriptionObject, subsriptio
                               {!subscriptionData ? (
                                    <Chip label="No Subscription" color="error" size="small" />
                               ) : (
-                                   <Chip label={subscriptionData.subscription_plan?.name ?? "Plan"} color={getStatusColor(subscriptionData.status)} size="small" />
+                                   <Chip label={productData?.name ?? "Plan"} color={getStatusColor(subscriptionData.status)} size="small" />
                               )}
                          </Box>
 
                          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
                               <Box>
                                    <Typography variant="h5" color="primary.main" gutterBottom>
-                                        {subscriptionData?.subscription_plan?.name ?? "No plan selected"}
+                                        {productData?.name ?? "No plan selected"}
                                    </Typography>
+                                   {productData?.description && (
+                                        <Typography variant="body2" color="text.secondary">
+                                             {productData.description}
+                                        </Typography>
+                                   )}
                               </Box>
                               <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", justifyContent: "flex-end" }}>
                                    <Button
@@ -425,7 +398,7 @@ export default function SubscriptionTab({ customerSubscriptionObject, subsriptio
                                         <ReceiptIcon fontSize="small" sx={{ mr: 1, color: "text.secondary" }} />
                                         <Typography variant="body2">Billing Cycle:
                                              {!subscriptionData ? (
-                                                  <Box component="span" sx={{ color: "text.secondary" }}>N/A</Box>
+                                                  <Box component="span" sx={{ color: "text.secondary", ml: 0.5 }}>N/A</Box>
                                              ) : (
                                                   <Box
                                                        component="span"
@@ -434,13 +407,22 @@ export default function SubscriptionTab({ customerSubscriptionObject, subsriptio
                                                                  ? "success.main"
                                                                  : "warning.main",
                                                             fontWeight: 600,
+                                                            ml: 0.5
                                                        }}
                                                   >
-                                                       {subscriptionData.recurringInterval === "year" ? "ANNUALLY" : "MONTHLY"}
+                                                       {productData?.recurringInterval === "year"
+                                                            ? `EVERY ${productData.recurringIntervalCount ?? 1} YEAR${(productData.recurringIntervalCount ?? 1) > 1 ? 'S' : ''}`
+                                                            : `EVERY ${productData?.recurringIntervalCount ?? 1} MONTH${(productData?.recurringIntervalCount ?? 1) > 1 ? 'S' : ''}`
+                                                       }
                                                   </Box>
                                              )}
                                         </Typography>
                                    </Box>
+                                   {productData?.trialIntervalCount && (
+                                        <Alert severity="success" sx={{ mt: 1 }}>
+                                             This plan includes a {productData.trialIntervalCount} {productData.trialInterval} free trial!
+                                        </Alert>
+                                   )}
                                    {pricePerApartment !== null && (
                                         <Alert severity="info" sx={{ mt: 1 }}>
                                              Billing is per apartment. With {apartmentsCount} apartment{apartmentsCount === 1 ? "" : "s"}, your {billingPeriodLabel}ly charge is {currencyFormatter.format(pricePerApartment)} x {apartmentsCount} = {currencyFormatter.format(totalForAllApartments ?? 0)}.
@@ -466,7 +448,7 @@ export default function SubscriptionTab({ customerSubscriptionObject, subsriptio
                                    <Typography variant="h6">
                                         Features Included in {' '}
                                         <Typography component="span" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
-                                             {subsriptionFeatures?.name}
+                                             {productData?.name ?? subsriptionFeatures?.name}
                                         </Typography> Plan:
                                    </Typography>
                               </Box>

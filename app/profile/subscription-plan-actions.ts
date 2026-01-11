@@ -341,7 +341,7 @@ export const readCustomerSubscriptionPlanFromCustomerId = async (customerId: str
 
 }
 
-export async function getApartmentCountForCustomer(customerId: string): Promise<number> {
+export const getApartmentCountForCustomer = async (customerId: string): Promise<number> => {
      const supabase = await useServerSideSupabaseAnonClient();
      // Join apartments -> buildings to filter by customerId
      const { count, error } = await supabase
@@ -364,5 +364,67 @@ export async function getApartmentCountForCustomer(customerId: string): Promise<
      }
 
      return count ?? 0;
+}
+
+export const readProductFromSubscriptionId = async (subscriptionPlanId: string): Promise<{ success: boolean, product?: PolarProduct, error?: string }> => {
+     if (!subscriptionPlanId) {
+          await logServerAction({
+               user_id: null,
+               action: 'Read Product from Subscription ID - ID not provided',
+               payload: { subscriptionPlanId },
+               status: 'fail',
+               error: "Subscription plan ID is required",
+               duration_ms: 0,
+               type: 'db'
+          });
+          return { success: false, error: "Subscription plan ID is required" };
+     }
+
+     const supabase = await useServerSideSupabaseAnonClient();
+     const userId = (await supabase.auth.getUser()).data.user?.id;
+
+     const { data: product, error: productError } = await supabase
+          .from("tblPolarProducts")
+          .select(`*`)
+          .eq("id", subscriptionPlanId)
+          .single();
+
+     if (productError) {
+          await logServerAction({
+               user_id: userId ?? null,
+               action: 'Read Product from Subscription ID - Query Failed',
+               payload: { subscriptionPlanId, error: productError.message },
+               status: 'fail',
+               error: productError.message,
+               duration_ms: 0,
+               type: 'db'
+          });
+          return { success: false, error: productError.message };
+     }
+
+     if (!product) {
+          await logServerAction({
+               user_id: userId ?? null,
+               action: 'Read Product from Subscription ID - Not Found',
+               payload: { subscriptionPlanId },
+               status: 'fail',
+               error: "Product not found",
+               duration_ms: 0,
+               type: 'db'
+          });
+          return { success: false, error: "Product not found" };
+     }
+
+     await logServerAction({
+          user_id: userId ?? null,
+          action: 'Read Product from Subscription ID - Success',
+          payload: { subscriptionPlanId, productId: product.id },
+          status: 'success',
+          error: '',
+          duration_ms: 0,
+          type: 'db'
+     });
+
+     return { success: true, product };
 }
 

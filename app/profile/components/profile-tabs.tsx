@@ -16,6 +16,7 @@ import { Feature } from "@/app/types/feature"
 import SubscriptionTab from "./tabs/subscription-tab"
 import { PolarSubscription } from "@/app/types/polar-subscription-types"
 import { PolarCustomer } from "@/app/types/polar-customer-types"
+import { PolarProduct } from "@/app/types/polar-product-types"
 
 interface TabPanelProps {
      children?: React.ReactNode
@@ -46,8 +47,9 @@ interface ProfileTabsProps {
      customerSubscriptionObject: PolarSubscription
      recentActivity: ActivityItem[]
      binCheckerAPIKey?: string,
-     subsriptionFeatures?: SubscriptionPlan & { features: Feature[] } | null,
+     subscriptionFeatures?: SubscriptionPlan & { features: Feature[] } | null,
      apartmentsCount: number
+     productData: PolarProduct | null
 }
 
 export default function ProfileTabs({
@@ -56,8 +58,9 @@ export default function ProfileTabs({
      setEditMode,
      customerSubscriptionObject,
      recentActivity,
-     subsriptionFeatures,
-     apartmentsCount
+     subscriptionFeatures,
+     apartmentsCount,
+     productData
 }: ProfileTabsProps) {
 
      const [tabValue, setTabValue] = useState(0)
@@ -117,8 +120,9 @@ export default function ProfileTabs({
                          <TabPanel value={tabValue} index={1}>
                               <SubscriptionTab
                                    customerSubscriptionObject={customerSubscriptionObject || null}
-                                   subsriptionFeatures={subsriptionFeatures}
+                                   subsriptionFeatures={subscriptionFeatures}
                                    apartmentsCount={apartmentsCount}
+                                   productData={productData}
                               />
                          </TabPanel>
 
