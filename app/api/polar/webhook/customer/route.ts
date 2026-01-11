@@ -37,13 +37,13 @@ function convertCustomerToPolarCustomer(customer: any): PolarCustomer {
      };
 }
 
-async function upsertCustomer(customer: PolarCustomer, eventType: string) {
+async function updateCustomer(customer: PolarCustomer, eventType: string) {
      const t0 = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
 
      const { data, error } = await supabase
           .from("tblPolarCustomers")
-          .upsert(customer, { onConflict: "id" })
+          .update(customer)
           .eq("id", customer.id)
           .select()
           .single();
@@ -61,7 +61,7 @@ async function upsertCustomer(customer: PolarCustomer, eventType: string) {
      });
 
      if (error) {
-          console.error(`Error upserting customer for ${eventType}:`, error);
+          console.error(`Error updating customer for ${eventType}:`, error);
           throw error;
      }
 
@@ -80,7 +80,7 @@ export const POST = Webhooks({
 
           try {
                const customer = convertCustomerToPolarCustomer(payload.data);
-               await upsertCustomer(customer, eventType);
+               await updateCustomer(customer, eventType);
                console.log(`${eventType} processed successfully for customer:`, customer.id);
           } catch (error) {
                console.error(`Error processing ${eventType}:`, error);
@@ -94,7 +94,7 @@ export const POST = Webhooks({
 
           try {
                const customer = convertCustomerToPolarCustomer(payload.data);
-               await upsertCustomer(customer, eventType);
+               await updateCustomer(customer, eventType);
                console.log(`${eventType} processed successfully for customer:`, customer.id);
           } catch (error) {
                console.error(`Error processing ${eventType}:`, error);
@@ -108,7 +108,7 @@ export const POST = Webhooks({
 
           try {
                const customer = convertCustomerToPolarCustomer(payload.data);
-               await upsertCustomer(customer, eventType);
+               await updateCustomer(customer, eventType);
                console.log(`${eventType} processed successfully for customer:`, customer.id);
           } catch (error) {
                console.error(`Error processing ${eventType}:`, error);
@@ -122,7 +122,7 @@ export const POST = Webhooks({
 
           try {
                const customer = convertCustomerToPolarCustomer(payload.data);
-               await upsertCustomer(customer, eventType);
+               await updateCustomer(customer, eventType);
                console.log(`${eventType} processed successfully for customer:`, customer.id);
           } catch (error) {
                console.error(`Error processing ${eventType}:`, error);
