@@ -17,7 +17,7 @@ async function getApartmentCountForClient(customerId: string): Promise<number> {
           .from("tblApartments")
           .select("id, tblBuildings!inner(customerId)", { count: "exact", head: true })
           .eq("tblBuildings.customerId", customerId);
-     if (error) throw error;
+     console.log('error', count, error);
      return count ?? 0;
 }
 
@@ -49,7 +49,7 @@ export async function POST(req: Request) {
                returnUrl: string;
                priceIds: string[];
           };
-          console.log('usao sa', productIds);
+          console.log('body', body);
 
           if (
                !customerId ||
@@ -64,6 +64,8 @@ export async function POST(req: Request) {
 
           // ✅ server-truth seats
           const apartmentsCount = await getApartmentCountForClient(customerId);
+          console.log(apartmentsCount);
+
           let checkout;
           try {
                checkout = await polar.checkouts.create({

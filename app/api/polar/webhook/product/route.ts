@@ -1,15 +1,9 @@
 // app/api/polar/webhook/product/route.ts
 import { Webhooks } from "@polar-sh/nextjs";
-import { createClient } from "@supabase/supabase-js";
 import { logServerAction } from "@/app/lib/server-logging";
+import { useServerSideSupabaseAnonClient } from "@/app/lib/ss-supabase-anon-client";
 
 export const runtime = "nodejs";
-
-// ✅ service role (bypasses RLS)
-const supabase = createClient(
-     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 // ------------------------------------------------------------
 // Helpers
@@ -38,7 +32,7 @@ function toNumericString(v: unknown): string {
 // ------------------------------------------------------------
 async function syncProductToDb(product: any, eventLabel: string) {
      const t0 = Date.now();
-
+     const supabase = await useServerSideSupabaseAnonClient();
      const productId: string | undefined = product?.id;
      const organizationId: string | undefined = product?.organizationId;
 

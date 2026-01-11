@@ -1,15 +1,10 @@
 // app/api/polar/webhook/order/route.ts
 import { logServerAction } from "@/app/lib/server-logging";
+import { useServerSideSupabaseAnonClient } from "@/app/lib/ss-supabase-anon-client";
 import { PolarOrder } from "@/app/types/polar-order-types";
 import { Webhooks } from "@polar-sh/nextjs";
-import { createClient } from "@supabase/supabase-js";
 
 export const runtime = "nodejs";
-
-const supabase = createClient(
-     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 // ---------------------------------------------------------------------------
 // Helper Functions
@@ -99,6 +94,8 @@ async function upsertOrder(order: PolarOrder, eventType: string) {
           seats: order.seats,
           customFieldData: order.customFieldData,
      };
+
+     const supabase = await useServerSideSupabaseAnonClient();
 
      const { data, error } = await supabase
           .from("tblPolarOrders")

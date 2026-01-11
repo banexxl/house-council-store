@@ -1,15 +1,10 @@
 // app/api/polar/webhook/organization/route.ts
 import { logServerAction } from "@/app/lib/server-logging";
+import { useServerSideSupabaseAnonClient } from "@/app/lib/ss-supabase-anon-client";
 import { PolarOrganization } from "@/app/types/polar-organization-types";
 import { Webhooks } from "@polar-sh/nextjs";
-import { createClient } from "@supabase/supabase-js";
 
 export const runtime = "nodejs";
-
-const supabase = createClient(
-     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 // ---------------------------------------------------------------------------
 // Helper Functions
@@ -62,6 +57,8 @@ function convertOrganizationToPolarOrganization(org: any): PolarOrganization {
 
 async function upsertOrganization(organization: PolarOrganization, eventType: string) {
      const t0 = Date.now();
+
+     const supabase = await useServerSideSupabaseAnonClient();
 
      const orgData = {
           id: organization.id,
