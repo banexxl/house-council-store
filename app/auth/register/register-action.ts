@@ -90,13 +90,41 @@ export const registerUser = async (
           if (!userId) throw new Error("SIGNUP_FAILED_NO_USER_ID");
 
           // 2) Create Polar customer
-          // ✅ externalId lets the webhook map back to your Supabase userId
-          await polar.customers.create({
-               email: values.email,
-               name: values.contact_person,
-               externalId: userId,
-               metadata: { userId }, // optional safety
-          });
+          let polarCustomer
+          try {
+               polarCustomer = await polar.customers.create({
+                    email: values.email,
+                    name: values.contact_person,
+                    externalId: userId,
+                    metadata: { userId },
+               });
+
+               await logServerAction({
+                    user_id: userId,
+                    action: "Register user - Polar customer created",
+                    payload: {
+                         email: values.email,
+                         name: values.contact_person,
+                         polar_customer_id: polarCustomer.id,
+                    },
+                    status: "success",
+                    error: "",
+                    duration_ms: Date.now() - t0,
+                    type: "auth",
+               });
+          } catch (error: any) {
+               await logServerAction({
+                    user_id: userId,
+                    action: "Register user - Polar customer creation failed",
+                    payload: { email: values.email, name: values.contact_person },
+                    status: "fail",
+                    error: error?.message || String(error),
+                    duration_ms: Date.now() - t0,
+                    type: "auth",
+               });
+
+               throw error;
+          }
 
           await logServerAction({
                user_id: userId,
