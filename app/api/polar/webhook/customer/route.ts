@@ -92,7 +92,7 @@ async function upsertCustomer(eventType: string, customer: PolarCustomerPayload)
 }
 
 export const POST = Webhooks({
-     webhookSecret: process.env.POLAR_WEBHOOK_SECRET_SANDBOX!, // or POLAR_WEBHOOK_SECRET
+     webhookSecret: process.env.POLAR_WEBHOOK_SECRET_SANDBOX_CUSTOMER!,
      onPayload: async (payload: any) => {
           const eventType = String(payload?.type ?? "");
           const data = payload?.data ?? {};
