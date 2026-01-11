@@ -22,62 +22,22 @@ export const POST = Webhooks({
           const t0 = Date.now();
           console.log('Checkout created webhook received:', JSON.stringify(payload, null, 2));
           try {
-               // Extract and structure checkout data
-               const checkoutData = {
-                    id: payload.data.id,
-                    created_at: payload.data.createdAt,
-                    modified_at: payload.data.modifiedAt,
-                    payment_processor: payload.data.paymentProcessor,
-                    status: payload.data.status,
-                    client_secret: payload.data.clientSecret,
-                    url: payload.data.url,
-                    expires_at: payload.data.expiresAt,
-                    success_url: payload.data.successUrl,
-                    embed_origin: payload.data.embedOrigin,
-                    amount: payload.data.amount,
-                    tax_amount: payload.data.taxAmount,
-                    currency: payload.data.currency,
-                    total_amount: payload.data.totalAmount,
-                    product_id: payload.data.productId,
-                    discount_id: payload.data.discountId,
-                    allow_discount_codes: payload.data.allowDiscountCodes,
-                    is_discount_applicable: payload.data.isDiscountApplicable,
-                    is_free_product_price: payload.data.isFreeProductPrice,
-                    is_payment_required: payload.data.isPaymentRequired,
-                    is_payment_setup_required: payload.data.isPaymentSetupRequired,
-                    is_payment_form_required: payload.data.isPaymentFormRequired,
-                    customer_id: payload.data.customerId,
-                    customer_name: payload.data.customerName,
-                    customer_email: payload.data.customerEmail,
-                    customer_ip_address: payload.data.customerIpAddress,
-                    customer_billing_address: payload.data.customerBillingAddress,
-                    customer_tax_id: payload.data.customerTaxId,
-                    payment_processor_metadata: payload.data.paymentProcessorMetadata,
-                    metadata: payload.data.metadata,
-                    product: payload.data.product,
-                    product_price: payload.data.productPrice,
-                    discount: payload.data.discount,
-                    subscription_id: payload.data.subscriptionId,
-                    attached_custom_fields: payload.data.attachedCustomFields,
-                    customer_metadata: payload.data.customerMetadata,
-               };
-
-               console.log('Structured checkout data:', JSON.stringify(checkoutData, null, 2));
-
                // Upsert checkout data to database
                const { data, error: upsertError } = await supabase
                     .from("tblPolarCheckouts")
-                    .upsert(checkoutData, { onConflict: "id" })
+                    .upsert(payload.data, { onConflict: "id" })
                     .select();
 
-               console.log('Upsert result:', { data, error: upsertError });
-
                if (upsertError) {
-                    console.error('Upsert error code:', upsertError.code);
-                    console.error('Upsert error message:', upsertError.message);
-                    console.error('Upsert error details:', upsertError.details);
-                    console.error('Upsert error hint:', upsertError.hint);
-                    throw new Error(`Database error: ${upsertError.message} (${upsertError.code})`);
+                    await logServerAction({
+                         user_id: payload.data.customerId || null,
+                         action: "Store Webhook - checkout.updated failed",
+                         payload: { checkout_id: payload.data.id, error: upsertError.message },
+                         status: "fail",
+                         error: upsertError.message,
+                         duration_ms: Date.now() - t0,
+                         type: "webhook",
+                    });
                }
 
                await logServerAction({
@@ -112,63 +72,23 @@ export const POST = Webhooks({
           const t0 = Date.now();
           console.log('Checkout updated webhook received:', JSON.stringify(payload, null, 2));
           try {
-               // Extract and structure checkout data
-               const checkoutData = {
-                    id: payload.data.id,
-                    created_at: payload.data.createdAt,
-                    modified_at: payload.data.modifiedAt,
-                    payment_processor: payload.data.paymentProcessor,
-                    status: payload.data.status,
-                    client_secret: payload.data.clientSecret,
-                    url: payload.data.url,
-                    expires_at: payload.data.expiresAt,
-                    success_url: payload.data.successUrl,
-                    embed_origin: payload.data.embedOrigin,
-                    amount: payload.data.amount,
-                    tax_amount: payload.data.taxAmount,
-                    currency: payload.data.currency,
-                    total_amount: payload.data.totalAmount,
-                    product_id: payload.data.productId,
-                    discount_id: payload.data.discountId,
-                    allow_discount_codes: payload.data.allowDiscountCodes,
-                    is_discount_applicable: payload.data.isDiscountApplicable,
-                    is_free_product_price: payload.data.isFreeProductPrice,
-                    is_payment_required: payload.data.isPaymentRequired,
-                    is_payment_setup_required: payload.data.isPaymentSetupRequired,
-                    is_payment_form_required: payload.data.isPaymentFormRequired,
-                    customer_id: payload.data.customerId,
-                    customer_name: payload.data.customerName,
-                    customer_email: payload.data.customerEmail,
-                    customer_ip_address: payload.data.customerIpAddress,
-                    customer_billing_address: payload.data.customerBillingAddress,
-                    customer_tax_id: payload.data.customerTaxId,
-                    payment_processor_metadata: payload.data.paymentProcessorMetadata,
-                    metadata: payload.data.metadata,
-                    product: payload.data.product,
-                    discount: payload.data.discount,
-                    subscription_id: payload.data.subscriptionId,
-                    attached_custom_fields: payload.data.attachedCustomFields,
-                    customer_metadata: payload.data.customerMetadata,
-               };
-
-               console.log('Structured checkout data:', JSON.stringify(checkoutData, null, 2));
-
                // Upsert checkout data to database
                const { data, error: upsertError } = await supabase
                     .from("tblPolarCheckouts")
-                    .upsert(checkoutData, { onConflict: "id" })
+                    .upsert(payload.data, { onConflict: "id" })
                     .select();
 
-               console.log('Upsert result:', { data, error: upsertError });
-
                if (upsertError) {
-                    console.error('Upsert error code:', upsertError.code);
-                    console.error('Upsert error message:', upsertError.message);
-                    console.error('Upsert error details:', upsertError.details);
-                    console.error('Upsert error hint:', upsertError.hint);
-                    throw new Error(`Database error: ${upsertError.message} (${upsertError.code})`);
+                    await logServerAction({
+                         user_id: payload.data.customerId || null,
+                         action: "Store Webhook - checkout.updated failed",
+                         payload: { checkout_id: payload.data.id, error: upsertError.message },
+                         status: "fail",
+                         error: upsertError.message,
+                         duration_ms: Date.now() - t0,
+                         type: "webhook",
+                    });
                }
-
                await logServerAction({
                     user_id: payload.data.customerId || null,
                     action: "Store Webhook - checkout.updated success",
