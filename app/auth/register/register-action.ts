@@ -1,18 +1,17 @@
-'use server';
+'use server'
 
-import { polar } from "@/app/lib/polar"; // adjust if needed
-import { logServerAction } from "@/app/lib/server-logging"; // adjust if needed
-import { useServerSideSupabaseAnonClient } from "@/app/lib/ss-supabase-anon-client";
+import { polar } from "@/app/lib/polar"; // adjust
+import { logServerAction } from "@/app/lib/server-logging"; // adjust
 import { useServerSideSupabaseServiceRoleClient } from "@/app/lib/ss-supabase-service-role-client";
 
 export type RegisterErrorType = { code: string; details: string; hint: string | null; message: string };
 
 export type RegisterFormValues = {
-     contact_person: string;
      email: string;
-     confirm_email: string
+     confirm_email: string;
      password: string;
      confirm_password: string;
+     contact_person: string;
 };
 
 export const registerUser = async (
@@ -31,7 +30,7 @@ export const registerUser = async (
           await logServerAction({
                user_id: null,
                action: "Register user - passwords do not match",
-               payload: { values: { ...values, password: "***", confirm_password: "***" } },
+               payload: { email: values.email },
                status: "fail",
                error: "Passwords do not match",
                duration_ms: Date.now() - t0,
@@ -45,13 +44,11 @@ export const registerUser = async (
      }
 
      const supabaseAdmin = await useServerSideSupabaseServiceRoleClient();
-     const supabase = await useServerSideSupabaseAnonClient();
 
      let userId: string | null = null;
-     let polarCustomerId: string | null = null;
 
      try {
-          // 1) Create auth user (service role)
+          // 1) Create auth user
           const { data: signUpData, error: signUpError } = await supabaseAdmin.auth.signUp({
                email: values.email,
                password: values.password,
@@ -64,7 +61,7 @@ export const registerUser = async (
                await logServerAction({
                     user_id: null,
                     action: "Register user - sign up error",
-                    payload: { values: { ...values, password: "***", confirm_password: "***" } },
+                    payload: { email: values.email },
                     status: "fail",
                     error: signUpError.message,
                     duration_ms: Date.now() - t0,
@@ -90,92 +87,21 @@ export const registerUser = async (
           }
 
           userId = signUpData?.user?.id ?? null;
-          if (!userId) {
-               throw new Error("SIGNUP_FAILED_NO_USER_ID");
-          }
+          if (!userId) throw new Error("SIGNUP_FAILED_NO_USER_ID");
 
-          // 2) Upsert local row (no customerId yet)
-          const { data: localRow, error: localErr } = await supabase
-               .from("tblPolarCustomers")
-               .upsert(
-                    {
-                         name: values.contact_person,
-                         email: values.email,
-                         userId,
-                    },
-                    { onConflict: "userId" }
-               )
-               .select("id,userId,email,name")
-               .single();
-
-          if (localErr) {
-               await logServerAction({
-                    user_id: userId,
-                    action: "Register user - local customer upsert failed",
-                    payload: { values: { ...values, password: "***", confirm_password: "***" }, error: localErr },
-                    status: "fail",
-                    error: localErr.message,
-                    duration_ms: Date.now() - t0,
-                    type: "auth",
-               });
-
-               // Rollback auth user if local insert fails
-               await supabaseAdmin.auth.admin.deleteUser(userId);
-               return {
-                    success: false,
-                    error: { code: localErr.code || "DB_ERROR", details: localErr.details || "", hint: localErr.hint, message: localErr.message },
-               };
-          }
-
-          // 3) Create Polar customer (link to supabase user via externalId)
-          const polarCustomer = await polar.customers.create({
+          // 2) Create Polar customer
+          // ✅ externalId lets the webhook map back to your Supabase userId
+          await polar.customers.create({
                email: values.email,
                name: values.contact_person,
-               externalId: userId, // ✅ critical
-               metadata: { userId }, // ✅ optional but helpful
+               externalId: userId,
+               metadata: { userId }, // optional safety
           });
 
-          polarCustomerId = polarCustomer.id;
-
-          // 4) Store Polar id in your table
-          const { error: linkErr } = await supabase
-               .from("tblPolarCustomers")
-               .update({
-                    customerId: polarCustomer.id,
-                    organizationId: polarCustomer.organizationId ?? null,
-                    avatarUrl: polarCustomer.avatarUrl ?? null,
-                    emailVerified: polarCustomer.emailVerified ?? false,
-                    billingAddress: polarCustomer.billingAddress ?? null,
-                    taxId: polarCustomer.taxId ?? [],
-                    metadata: polarCustomer.metadata ?? {},
-                    deletedAt: polarCustomer.deletedAt ?? null,
-                    createdAt: polarCustomer.createdAt ?? null,
-                    modifiedAt: polarCustomer.modifiedAt ?? null,
-               })
-               .eq("userId", userId);
-
-          if (linkErr) {
-               // Rollback Polar + auth user + local row (best effort)
-               try {
-                    if (polarCustomerId) await polar.customers.delete({ id: polarCustomerId });
-               } catch { }
-
-               try {
-                    await supabase.from("tblPolarCustomers").delete().eq("userId", userId);
-               } catch { }
-
-               try {
-                    await supabaseAdmin.auth.admin.deleteUser(userId);
-               } catch { }
-
-               throw linkErr;
-          }
-
-          // 5) Success log
           await logServerAction({
                user_id: userId,
-               action: "Register user - sign up & Polar customer success",
-               payload: { email: values.email, contact_person: values.contact_person, polarCustomerId },
+               action: "Register user - auth + Polar customer created (DB row via webhook)",
+               payload: { email: values.email, name: values.contact_person },
                status: "success",
                error: "",
                duration_ms: Date.now() - t0,
@@ -184,23 +110,15 @@ export const registerUser = async (
 
           return { success: true };
      } catch (e: any) {
-          // Best-effort rollback
-          try {
-               if (polarCustomerId) await polar.customers.delete({ id: polarCustomerId });
-          } catch { }
-
-          try {
-               if (userId) await supabase.from("tblPolarCustomers").delete().eq("userId", userId);
-          } catch { }
-
+          // Rollback auth user if Polar create fails (or any error after signup)
           try {
                if (userId) await supabaseAdmin.auth.admin.deleteUser(userId);
           } catch { }
 
           await logServerAction({
                user_id: userId,
-               action: "Register user - unexpected failure",
-               payload: { email: values.email, contact_person: values.contact_person, polarCustomerId },
+               action: "Register user - failed (rolled back auth user)",
+               payload: { email: values.email },
                status: "fail",
                error: e?.message || String(e),
                duration_ms: Date.now() - t0,

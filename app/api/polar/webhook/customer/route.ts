@@ -1,44 +1,43 @@
 // app/api/polar/webhook/route.ts
 import { Webhooks } from "@polar-sh/nextjs";
 import { createClient } from "@supabase/supabase-js";
-import { logServerAction } from "@/app/lib/server-logging"; // adjust path if different
+import { logServerAction } from "@/app/lib/server-logging"; // adjust path if needed
 
 export const runtime = "nodejs";
 
-// Service role for webhooks (bypasses RLS)
+// ✅ Service role for webhooks (bypasses RLS)
 const supabase = createClient(
      process.env.NEXT_PUBLIC_SUPABASE_URL!,
      process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-// --------------------
-// Types (minimal)
-// --------------------
 type PolarCustomerPayload = {
-     id: string; // Polar customer id (uuid string)
-     createdAt?: string | null;
-     modifiedAt?: string | null;
-     deletedAt?: string | null;
-
-     metadata?: Record<string, any> | null;
-     externalId?: string | null;
-
+     id: string;                 // Polar customer id (uuid)
+     externalId: string | null;  // we will set this to Supabase auth user id
      email: string;
-     emailVerified?: boolean | null;
      name: string;
+
+     emailVerified?: boolean | null;
+     organizationId?: string | null;
+     avatarUrl?: string | null;
 
      billingAddress?: any | null;
      taxId?: string[] | null;
 
-     organizationId?: string | null;
-     avatarUrl?: string | null;
+     metadata?: Record<string, any> | null;
+
+     createdAt?: string | null;
+     modifiedAt?: string | null;
+     deletedAt?: string | null;
 };
 
 function mapPolarCustomerToRow(c: PolarCustomerPayload) {
      return {
-          customerId: c.id, // <-- your new column that stores Polar id
+          customerId: c.id, // ✅ NOT NULL
 
-          // Your table columns (camelCase quoted in Postgres)
+          // Required in your schema:
+          userId: c.externalId!, // ✅ NOT NULL (we enforce below)
+
           email: c.email,
           name: c.name,
           emailVerified: c.emailVerified ?? false,
@@ -50,31 +49,38 @@ function mapPolarCustomerToRow(c: PolarCustomerPayload) {
           deletedAt: c.deletedAt ?? null,
           createdAt: c.createdAt ?? null,
           modifiedAt: c.modifiedAt ?? null,
-
-          // Your NOT NULL column: only include if present
-          // (we set externalId=userId at registration, so it should be present for your customers)
-          ...(c.externalId ? { userId: c.externalId } : {}),
      };
 }
 
-async function upsertPolarCustomer(eventType: string, customer: PolarCustomerPayload) {
+async function upsertCustomer(eventType: string, customer: PolarCustomerPayload) {
      const t0 = Date.now();
+
+     // If you don’t set externalId during create, you cannot insert because userId is NOT NULL.
+     if (!customer.externalId) {
+          await logServerAction({
+               user_id: null,
+               action: `${eventType} - Customer skipped (missing externalId)`,
+               payload: customer,
+               status: "fail",
+               error: "Polar customer.externalId is null; cannot map to tblPolarCustomers.userId (NOT NULL). Ensure you set externalId=userId when creating customer.",
+               duration_ms: Date.now() - t0,
+               type: "webhook",
+          });
+          return;
+     }
 
      const row = mapPolarCustomerToRow(customer);
 
-     // IMPORTANT:
-     // If externalId is missing, we should NOT attempt an insert because userId is NOT NULL in your schema.
-     // In that case, do update-only by customerId.
-     const q = customer.externalId
-          ? supabase.from("tblPolarCustomers").upsert(row, { onConflict: "customerId" })
-          : supabase.from("tblPolarCustomers").update(row).eq("customerId", customer.id);
-
-     const { data, error } = await q.select().maybeSingle();
+     const { data, error } = await supabase
+          .from("tblPolarCustomers")
+          .upsert(row, { onConflict: "customerId" })
+          .select()
+          .single();
 
      await logServerAction({
-          user_id: customer.externalId ?? null, // Supabase user id if you set externalId
+          user_id: customer.externalId,
           action: `${eventType} - Upsert Polar Customer`,
-          payload: { customer, mappedRow: row },
+          payload: row,
           status: error ? "fail" : "success",
           error: error?.message || "",
           duration_ms: Date.now() - t0,
@@ -91,16 +97,19 @@ export const POST = Webhooks({
           const eventType = String(payload?.type ?? "");
           const data = payload?.data ?? {};
 
-          // Only handle customer.* here (you can extend this later)
-          if (eventType === "customer.created" || eventType === "customer.updated" || eventType === "customer.deleted") {
-               await upsertPolarCustomer(eventType, data as PolarCustomerPayload);
+          if (
+               eventType === "customer.created" ||
+               eventType === "customer.updated" ||
+               eventType === "customer.deleted"
+          ) {
+               await upsertCustomer(eventType, data as PolarCustomerPayload);
                return;
           }
 
-          // Optionally log other events
+          // Optional log for other event types
           await logServerAction({
                user_id: null,
-               action: `Polar Webhook - Ignored Event (${eventType})`,
+               action: `Polar Webhook - Ignored (${eventType})`,
                payload,
                status: "success",
                error: "",
