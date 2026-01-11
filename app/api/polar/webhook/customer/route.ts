@@ -37,23 +37,43 @@ function convertCustomerToPolarCustomer(customer: any): PolarCustomer {
      };
 }
 
-async function updateCustomer(customer: PolarCustomer, eventType: string) {
+async function upsertCustomer(customer: PolarCustomer, eventType: string) {
      const t0 = Date.now();
-     const supabase = await useServerSideSupabaseAnonClient();
+     const supabase = await useServerSideSupabaseAnonClient(); // ideally SERVICE ROLE in webhooks
 
+     // Map Polar payload -> DB columns
+     const row = {
+          customerId: customer.id,                 // <-- Polar customer id stored here
+
+          email: customer.email,
+          name: customer.name,
+          emailVerified: customer.emailVerified ?? false,
+          organizationId: customer.organizationId ?? null,
+          avatarUrl: customer.avatarUrl ?? null,
+
+          billingAddress: customer.billingAddress ?? null,
+          taxId: customer.taxId ?? [],
+
+          metadata: customer.metadata ?? {},
+
+          deletedAt: customer.deletedAt ?? null,
+          createdAt: customer.createdAt ?? null,
+          modifiedAt: customer.modifiedAt ?? null,
+     };
+
+     // IMPORTANT: customerId must be UNIQUE for onConflict to work.
      const { data, error } = await supabase
           .from("tblPolarCustomers")
-          .update(customer)
-          .eq("customerId", customer.id)
+          .upsert(row, { onConflict: "customerId" })
           .select()
           .single();
 
      const duration = Date.now() - t0;
 
      await logServerAction({
-          user_id: customer.id,
+          user_id: customer.id, // (this is Polar id; if you want supabase user id, store that separately)
           action: `${eventType} - Upsert Customer`,
-          payload: customer,
+          payload: row,
           status: error ? "fail" : "success",
           error: error?.message || "",
           duration_ms: duration,
@@ -61,12 +81,13 @@ async function updateCustomer(customer: PolarCustomer, eventType: string) {
      });
 
      if (error) {
-          console.error(`Error updating customer for ${eventType}:`, error);
+          console.error(`Error upserting customer for ${eventType}:`, error);
           throw error;
      }
 
      return data;
 }
+
 // ---------------------------------------------------------------------------
 // Customer Webhook Handler
 // ---------------------------------------------------------------------------
@@ -80,7 +101,7 @@ export const POST = Webhooks({
 
           try {
                const customer = convertCustomerToPolarCustomer(payload.data);
-               await updateCustomer(customer, eventType);
+               await upsertCustomer(customer, eventType);
                console.log(`${eventType} processed successfully for customer:`, customer.id);
           } catch (error) {
                console.error(`Error processing ${eventType}:`, error);
@@ -94,7 +115,7 @@ export const POST = Webhooks({
 
           try {
                const customer = convertCustomerToPolarCustomer(payload.data);
-               await updateCustomer(customer, eventType);
+               await upsertCustomer(customer, eventType);
                console.log(`${eventType} processed successfully for customer:`, customer.id);
           } catch (error) {
                console.error(`Error processing ${eventType}:`, error);
@@ -108,7 +129,7 @@ export const POST = Webhooks({
 
           try {
                const customer = convertCustomerToPolarCustomer(payload.data);
-               await updateCustomer(customer, eventType);
+               await upsertCustomer(customer, eventType);
                console.log(`${eventType} processed successfully for customer:`, customer.id);
           } catch (error) {
                console.error(`Error processing ${eventType}:`, error);
@@ -122,7 +143,7 @@ export const POST = Webhooks({
 
           try {
                const customer = convertCustomerToPolarCustomer(payload.data);
-               await updateCustomer(customer, eventType);
+               await upsertCustomer(customer, eventType);
                console.log(`${eventType} processed successfully for customer:`, customer.id);
           } catch (error) {
                console.error(`Error processing ${eventType}:`, error);

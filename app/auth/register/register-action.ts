@@ -78,11 +78,11 @@ export const registerUser = async (values: RegisterFormValues): Promise<{ succes
 
      // If sign up is successful, insert into tblPolarCustomers with user_id
      const userId = signUpData?.user?.id ?? null;
-     const { data, error } = await supabase.from('tblPolarCustomers').insert({
+     const { data, error } = await supabase.from('tblPolarCustomers').upsert({
           name: values.contact_person,
           email: values.email,
           userId: signUpData?.user?.id
-     }).select().single();
+     }, { onConflict: "userId" }).select().single();
 
      if (error) {
           await logServerAction({
