@@ -10,12 +10,6 @@ const supabase = createClient(
      process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-type WebhookPayload<T> = {
-     type: string;
-     timestamp?: string;
-     data: T;
-};
-
 type PolarCustomer = {
      id: string;                 // Polar customer id (uuid)
      externalId: string | null;  // should be Supabase auth.users.id
