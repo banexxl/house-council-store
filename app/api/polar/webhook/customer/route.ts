@@ -58,6 +58,7 @@ export const POST = Webhooks({
      onCustomerCreated: async (payload) => {
           const t0 = Date.now();
           const customer = payload.data;
+          console.log('On customer created payload data: ', payload);
 
           if (!customer.externalId) {
                await logServerAction({
@@ -101,7 +102,7 @@ export const POST = Webhooks({
      onCustomerUpdated: async (payload) => {
           const t0 = Date.now();
           const customer = payload.data;
-
+          console.log('On customer updated payload data: ', payload);
           // If externalId is missing, avoid insert risk (userId NOT NULL) -> update-only.
           if (!customer.externalId) {
                const patch = {
@@ -167,7 +168,7 @@ export const POST = Webhooks({
      onCustomerDeleted: async (payload) => {
           const t0 = Date.now();
           const customer = payload.data;
-
+          console.log('On customer deleted payload data: ', payload);
           const patch = {
                deletedAt: customer.deletedAt ?? new Date().toISOString(),
                modifiedAt: customer.modifiedAt ?? new Date().toISOString(),
@@ -204,7 +205,7 @@ export const POST = Webhooks({
      onCustomerStateChanged: async (payload) => {
           const t0 = Date.now();
           const customer = payload.data;
-
+          console.log('On customer state_changed payload data: ', payload);
           // Store a snapshot in metadata (safe even if event fields evolve)
           const patch = {
                modifiedAt: customer.modifiedAt ?? new Date().toISOString(),
