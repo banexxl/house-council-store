@@ -162,7 +162,7 @@ export default function ProfileSidebar({ userData, recentActivity, onEditProfile
                     const formData = new FormData();
 
                     formData.append('file', base64String);
-                    formData.append('title', userData.customer.name);
+                    formData.append('title', userData.customer.name ?? 'avatar');
                     formData.append('extension', extension);
                     formData.append('fileName', file.name);
                     formData.append('folderName', userData.customer.id); // or use a unique ID
@@ -306,7 +306,7 @@ export default function ProfileSidebar({ userData, recentActivity, onEditProfile
                               >
                                    <Avatar
                                         src={userData.customer.avatarUrl!}
-                                        alt={userData.customer.name}
+                                        alt={userData.customer.name ?? 'avatar'}
                                         sx={{ width: 120, height: 120 }}
                                         onClick={() => handleDeleteAvatar(userData.customer.avatarUrl!)}
                                    />

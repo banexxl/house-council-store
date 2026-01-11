@@ -110,7 +110,7 @@ export default function AccountTab({ userData }: AccountTabProps) {
                                    day: "numeric",
                                    hour: "2-digit",
                                    minute: "2-digit",
-                              }).format(new Date(userData.customer.createdAt))}
+                              }).format(new Date(userData.customer.createdAt ?? 'N/A'))}
                          </Typography>
                     </Grid>
 
@@ -125,7 +125,7 @@ export default function AccountTab({ userData }: AccountTabProps) {
                                    day: "numeric",
                                    hour: "2-digit",
                                    minute: "2-digit",
-                              }).format(new Date(userData.customer.modifiedAt))}
+                              }).format(new Date(userData.customer.modifiedAt ?? 'N/A'))}
                          </Typography>
                     </Grid>
 

@@ -274,8 +274,11 @@ export default function SubscriptionTab({ customerSubscriptionObject, subsriptio
      //      }
      // }
 
-     const renderDate = (date?: string) =>
-          date ? new Date(date).toLocaleDateString() : <i>No subscription plan selected</i>
+     const renderDate = (date?: string | Date) => {
+          if (!date) return <i>No subscription plan selected</i>
+          const dateObj = date instanceof Date ? date : new Date(date)
+          return dateObj.toLocaleDateString()
+     }
 
      const currencyFormatter = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" })
      const pricePerApartment = subscriptionData?.subscription_plan
@@ -347,7 +350,7 @@ export default function SubscriptionTab({ customerSubscriptionObject, subsriptio
                                         <CalendarTodayIcon fontSize="small" sx={{ mr: 1, color: "text.secondary" }} />
                                         <Typography variant="body2">
                                              {(() => {
-                                                  const startDateNode = renderDate(subscriptionData?.createdAt)
+                                                  const startDateNode = renderDate(subscriptionData?.createdAt ?? undefined)
 
                                                   if (!subscriptionData) return startDateNode
 
