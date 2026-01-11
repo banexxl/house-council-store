@@ -70,7 +70,6 @@ export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, custome
           });
      };
 
-     // Sort products by interval count for display
      const sortedProducts = useMemo(() => {
           if (!polarProducts) return [];
 
@@ -85,17 +84,6 @@ export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, custome
 
      const mainProduct = sortedProducts[0];
 
-     // Extract features from metadata
-     const features = useMemo(() => {
-          if (!mainProduct?.metadata) return [];
-
-          return Object.entries(mainProduct.metadata).map(([key, value]) => ({
-               id: key,
-               name: String(value),
-               description: String(value)
-          }));
-     }, [mainProduct]);
-
      // Get current selected product by interval key
      const currentProduct = useMemo(() => {
           const [interval, count] = selectedIntervalKey.split('-');
@@ -104,27 +92,38 @@ export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, custome
           ) || mainProduct;
      }, [sortedProducts, selectedIntervalKey, mainProduct]);
 
-     const currentPrice = currentProduct?.prices?.[0];
-
      // Get 1-month product for baseline comparison
      const baseMonthlyProduct = sortedProducts.find(p => p.recurringInterval === 'month' && p.recurringIntervalCount === 1);
      const baseMonthlyPrice = baseMonthlyProduct?.prices?.[0];
 
+     // Calculate discount for current product
      const discountPercentage = useMemo(() => {
-          if (!currentPrice || !baseMonthlyPrice || !currentProduct) return 0;
+          if (!currentProduct) return 0;
+          const productPrice = currentProduct.prices?.[0];
+          if (!productPrice || !baseMonthlyPrice) return 0;
           if (currentProduct.recurringInterval === 'month' && currentProduct.recurringIntervalCount === 1) return 0;
 
-          // Calculate what this period would cost at monthly rate
           const monthsInPeriod = currentProduct.recurringInterval === 'year'
                ? (currentProduct.recurringIntervalCount ?? 1) * 12
                : (currentProduct.recurringIntervalCount ?? 1);
 
           const baselineCost = ((baseMonthlyPrice.priceAmount ?? 0) / 100) * monthsInPeriod;
-          const actualCost = ((currentPrice.priceAmount ?? 0) / 100);
+          const actualCost = ((productPrice.priceAmount ?? 0) / 100);
           const savings = baselineCost - actualCost;
 
           return Math.round((savings / baselineCost) * 100);
-     }, [currentPrice, baseMonthlyPrice, currentProduct]);
+     }, [currentProduct, baseMonthlyPrice]);
+
+     // Extract features from current product
+     const features = useMemo(() => {
+          if (!currentProduct?.metadata) return [];
+
+          return Object.entries(currentProduct.metadata).map(([key, value]) => ({
+               id: key,
+               name: String(value),
+               description: String(value)
+          }));
+     }, [currentProduct]);
 
      const handleOpenCustomerPortal = async () => {
           if (!customer?.id) {
@@ -250,7 +249,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, custome
                                         Simple, Transparent Pricing
                                    </Typography>
                                    <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 700, mx: "auto" }}>
-                                        Choose the plan that's right for your community. All plans include a 30-day free trial.
+                                        Choose the plan that's right for your community. All plans include a free trial.
                                    </Typography>
                                    <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 700, mx: "auto", mt: 1 }}>
                                         Pricing is billed per apartment. {apartmentCount !== undefined ? `You currently have ${apartmentCount} apartment${apartmentCount === 1 ? "" : "s"} on your account.` : "Sign in to see your apartment count."}
@@ -302,7 +301,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, custome
                               )}
 
                               <Grid container spacing={4} justifyContent="center">
-                                   {mainProduct && currentProduct && (
+                                   {currentProduct && (
                                         <Grid key={currentProduct.id} size={{ xs: 12, md: 8 }}>
                                              <Card sx={{
                                                   height: "100%",
@@ -314,10 +313,12 @@ export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, custome
                                              }}>
                                                   <CardContent sx={{ flexGrow: 1 }}>
                                                        <Typography variant="h5" gutterBottom>
-                                                            {mainProduct.name}
-                                                            <Typography component="span" variant="caption" color="primary" sx={{ ml: 1 }}>
-                                                                 {mainProduct.trialIntervalCount} {mainProduct.trialInterval} free trial
-                                                            </Typography>
+                                                            {currentProduct.name}
+                                                            {currentProduct.trialIntervalCount && (
+                                                                 <Typography component="span" variant="caption" color="primary" sx={{ ml: 1 }}>
+                                                                      {currentProduct.trialIntervalCount} {currentProduct.trialInterval} free trial
+                                                                 </Typography>
+                                                            )}
                                                             {discountPercentage > 0 && (
                                                                  <Typography component="span" variant="caption" sx={{ ml: 1, px: 1, py: 0.5, bgcolor: 'success.main', color: 'white', borderRadius: 1 }}>
                                                                       Save {discountPercentage}%
@@ -330,7 +331,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, custome
                                                             gutterBottom
                                                             sx={{ minHeight: 60, maxHeight: 80, overflowY: "auto" }}
                                                        >
-                                                            {mainProduct.description}
+                                                            {currentProduct.description}
                                                        </Typography>
 
                                                        <List dense>
@@ -346,19 +347,19 @@ export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, custome
                                                   </CardContent>
 
                                                   <CardActions sx={{ p: 2, pt: 0 }}>
-                                                       {currentPrice ? (
+                                                       {currentProduct.prices?.[0] ? (
                                                             <Button
                                                                  variant="contained"
                                                                  fullWidth
-                                                                 onClick={() => startPolarCheckout(currentPrice.id, currentProduct.id)}
+                                                                 onClick={() => startPolarCheckout(currentProduct.prices[0].id, currentProduct.id)}
                                                                  disabled={
                                                                       loadingKey !== null ||
                                                                       (customerSubscriptionPlanData?.productId === currentProduct.id &&
                                                                            (customerSubscriptionPlanData?.status === 'active' || customerSubscriptionPlanData?.status === 'trialing'))
                                                                  }
-                                                                 startIcon={loadingKey === currentPrice.id || loadingKey === 'portal' ? <CircularProgress size={20} color="inherit" /> : undefined}
+                                                                 startIcon={loadingKey === currentProduct.prices[0].id || loadingKey === 'portal' ? <CircularProgress size={20} color="inherit" /> : undefined}
                                                             >
-                                                                 {loadingKey === currentPrice.id ? "Redirecting..." :
+                                                                 {loadingKey === currentProduct.prices[0].id ? "Redirecting..." :
                                                                       loadingKey === 'portal' ? "Opening Portal..." :
                                                                            (customerSubscriptionPlanData?.productId === currentProduct.id &&
                                                                                 (customerSubscriptionPlanData?.status === 'active' || customerSubscriptionPlanData?.status === 'trialing'))
