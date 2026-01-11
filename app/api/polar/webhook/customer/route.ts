@@ -43,7 +43,7 @@ async function upsertCustomer(customer: PolarCustomer, eventType: string) {
 
      const { data, error } = await supabase
           .from("tblPolarCustomers")
-          .update(customer)
+          .upsert(customer, { onConflict: "id" })
           .eq("id", customer.id)
           .select()
           .single();
