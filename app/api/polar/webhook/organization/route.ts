@@ -1,10 +1,16 @@
 // app/api/polar/webhook/organization/route.ts
 import { logServerAction } from "@/app/lib/server-logging";
-import { useServerSideSupabaseAnonClient } from "@/app/lib/ss-supabase-anon-client";
 import { PolarOrganization } from "@/app/types/polar-organization-types";
 import { Webhooks } from "@polar-sh/nextjs";
+import { createClient } from "@supabase/supabase-js";
 
 export const runtime = "nodejs";
+
+// ✅ Webhooks should use SERVICE ROLE (bypasses RLS)
+const supabase = createClient(
+     process.env.NEXT_PUBLIC_SUPABASE_URL!,
+     process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 // ---------------------------------------------------------------------------
 // Helper Functions
@@ -58,8 +64,6 @@ function convertOrganizationToPolarOrganization(org: any): PolarOrganization {
 async function upsertOrganization(organization: PolarOrganization, eventType: string) {
      const t0 = Date.now();
 
-     const supabase = await useServerSideSupabaseAnonClient();
-
      const orgData = {
           id: organization.id,
           createdAt: organization.createdAt,
@@ -85,24 +89,37 @@ async function upsertOrganization(organization: PolarOrganization, eventType: st
           .upsert(orgData, { onConflict: "id" })
           .select()
           .single();
-     console.log('error', error);
 
      const duration = Date.now() - t0;
+
+     if (error) {
+          await logServerAction({
+               user_id: null,
+               action: `${eventType} - Upsert Organization Failed`,
+               payload: {
+                    organizationId: organization.id,
+                    errorCode: error.code,
+                    errorMessage: error.message,
+                    errorDetails: error.details,
+                    errorHint: error.hint,
+               },
+               status: "fail",
+               error: error.message,
+               duration_ms: duration,
+               type: "webhook",
+          });
+          throw error;
+     }
 
      await logServerAction({
           user_id: null,
           action: `${eventType} - Upsert Organization`,
-          payload: orgData,
-          status: error ? "fail" : "success",
-          error: error?.message || "",
+          payload: { organizationId: organization.id },
+          status: "success",
+          error: "",
           duration_ms: duration,
           type: "webhook",
      });
-
-     if (error) {
-          console.error(`Error upserting organization for ${eventType}:`, error);
-          throw error;
-     }
 
      return data;
 }

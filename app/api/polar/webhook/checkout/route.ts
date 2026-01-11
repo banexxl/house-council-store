@@ -1,9 +1,15 @@
 // app/api/polar/webhook/checkout/route.ts
 import { logServerAction } from "@/app/lib/server-logging";
-import { useServerSideSupabaseAnonClient } from "@/app/lib/ss-supabase-anon-client";
 import { Webhooks } from "@polar-sh/nextjs";
+import { createClient } from "@supabase/supabase-js";
 
 export const runtime = "nodejs";
+
+// ✅ Webhooks should use SERVICE ROLE (bypasses RLS)
+const supabase = createClient(
+     process.env.NEXT_PUBLIC_SUPABASE_URL!,
+     process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 // ---------------------------------------------------------------------------
 // Checkout Webhook Handler
@@ -15,7 +21,6 @@ export const POST = Webhooks({
      onCheckoutCreated: async (payload) => {
           const t0 = Date.now();
           console.log('Checkout created webhook received:', JSON.stringify(payload, null, 2));
-          const supabase = await useServerSideSupabaseAnonClient();
           try {
                // Extract and structure checkout data
                const checkoutData = {
@@ -68,8 +73,11 @@ export const POST = Webhooks({
                console.log('Upsert result:', { data, error: upsertError });
 
                if (upsertError) {
-                    console.error('Upsert error details:', JSON.stringify(upsertError, null, 2));
-                    throw upsertError;
+                    console.error('Upsert error code:', upsertError.code);
+                    console.error('Upsert error message:', upsertError.message);
+                    console.error('Upsert error details:', upsertError.details);
+                    console.error('Upsert error hint:', upsertError.hint);
+                    throw new Error(`Database error: ${upsertError.message} (${upsertError.code})`);
                }
 
                await logServerAction({
@@ -84,24 +92,25 @@ export const POST = Webhooks({
 
           } catch (e: any) {
                console.error('Checkout created error:', e);
-               const err = e instanceof Error ? e : new Error(e?.message ?? JSON.stringify(e) ?? "unknown error");
+               console.error('Error message:', e?.message);
+               console.error('Error stack:', e?.stack);
+               const errorMessage = e?.message || e?.toString() || "unknown error";
                await logServerAction({
                     user_id: null,
                     action: "Store Webhook - checkout.created failed",
-                    payload: { type: payload.type, error: err.message },
+                    payload: { type: payload.type, error: errorMessage },
                     status: "fail",
-                    error: err.message,
+                    error: errorMessage,
                     duration_ms: Date.now() - t0,
                     type: "webhook",
                });
-               throw err;
+               throw new Error(errorMessage);
           }
      },
 
      onCheckoutUpdated: async (payload) => {
           const t0 = Date.now();
           console.log('Checkout updated webhook received:', JSON.stringify(payload, null, 2));
-          const supabase = await useServerSideSupabaseAnonClient();
           try {
                // Extract and structure checkout data
                const checkoutData = {
@@ -153,8 +162,11 @@ export const POST = Webhooks({
                console.log('Upsert result:', { data, error: upsertError });
 
                if (upsertError) {
-                    console.error('Upsert error details:', JSON.stringify(upsertError, null, 2));
-                    throw upsertError;
+                    console.error('Upsert error code:', upsertError.code);
+                    console.error('Upsert error message:', upsertError.message);
+                    console.error('Upsert error details:', upsertError.details);
+                    console.error('Upsert error hint:', upsertError.hint);
+                    throw new Error(`Database error: ${upsertError.message} (${upsertError.code})`);
                }
 
                await logServerAction({
@@ -169,17 +181,19 @@ export const POST = Webhooks({
 
           } catch (e: any) {
                console.error('Checkout updated error:', e);
-               const err = e instanceof Error ? e : new Error(e?.message ?? JSON.stringify(e) ?? "unknown error");
+               console.error('Error message:', e?.message);
+               console.error('Error stack:', e?.stack);
+               const errorMessage = e?.message || e?.toString() || "unknown error";
                await logServerAction({
                     user_id: null,
                     action: "Store Webhook - checkout.updated failed",
-                    payload: { type: payload.type, error: err.message },
+                    payload: { type: payload.type, error: errorMessage },
                     status: "fail",
-                    error: err.message,
+                    error: errorMessage,
                     duration_ms: Date.now() - t0,
                     type: "webhook",
                });
-               throw err;
+               throw new Error(errorMessage);
           }
      }
 });

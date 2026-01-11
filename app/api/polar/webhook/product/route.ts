@@ -1,9 +1,15 @@
 // app/api/polar/webhook/product/route.ts
 import { Webhooks } from "@polar-sh/nextjs";
 import { logServerAction } from "@/app/lib/server-logging";
-import { useServerSideSupabaseAnonClient } from "@/app/lib/ss-supabase-anon-client";
+import { createClient } from "@supabase/supabase-js";
 
 export const runtime = "nodejs";
+
+// ✅ Webhooks should use SERVICE ROLE (bypasses RLS)
+const supabase = createClient(
+     process.env.NEXT_PUBLIC_SUPABASE_URL!,
+     process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 // ------------------------------------------------------------
 // Helpers
@@ -32,7 +38,6 @@ function toNumericString(v: unknown): string {
 // ------------------------------------------------------------
 async function syncProductToDb(product: any, eventLabel: string) {
      const t0 = Date.now();
-     const supabase = await useServerSideSupabaseAnonClient();
      const productId: string | undefined = product?.id;
      const organizationId: string | undefined = product?.organizationId;
 
@@ -72,7 +77,10 @@ async function syncProductToDb(product: any, eventLabel: string) {
                payload: {
                     productId,
                     organizationId,
-                    dbError: prodErr.message,
+                    errorCode: prodErr.code,
+                    errorMessage: prodErr.message,
+                    errorDetails: prodErr.details,
+                    errorHint: prodErr.hint,
                     productRow,
                },
                status: "fail",
@@ -112,7 +120,24 @@ async function syncProductToDb(product: any, eventLabel: string) {
                .from("tblPolarProductPrices")
                .upsert(priceRows, { onConflict: "id" });
 
-          if (priceErr) throw priceErr;
+          if (priceErr) {
+               await logServerAction({
+                    user_id: null,
+                    action: `Polar Product Webhook - price upsert failed (${eventLabel})`,
+                    payload: {
+                         productId,
+                         errorCode: priceErr.code,
+                         errorMessage: priceErr.message,
+                         errorDetails: priceErr.details,
+                         errorHint: priceErr.hint,
+                    },
+                    status: "fail",
+                    error: priceErr.message,
+                    duration_ms: Date.now() - t0,
+                    type: "internal",
+               });
+               throw priceErr;
+          }
      }
 
      // delete removed prices
@@ -166,7 +191,24 @@ async function syncProductToDb(product: any, eventLabel: string) {
                .from("tblPolarProductCustomFields")
                .upsert(customFieldRows, { onConflict: "id" });
 
-          if (cfErr) throw cfErr;
+          if (cfErr) {
+               await logServerAction({
+                    user_id: null,
+                    action: `Polar Product Webhook - custom field upsert failed (${eventLabel})`,
+                    payload: {
+                         productId,
+                         errorCode: cfErr.code,
+                         errorMessage: cfErr.message,
+                         errorDetails: cfErr.details,
+                         errorHint: cfErr.hint,
+                    },
+                    status: "fail",
+                    error: cfErr.message,
+                    duration_ms: Date.now() - t0,
+                    type: "internal",
+               });
+               throw cfErr;
+          }
      }
 
      // Upsert mapping rows
@@ -182,7 +224,24 @@ async function syncProductToDb(product: any, eventLabel: string) {
                .from("tblPolarProductAttachedCustomFields")
                .upsert(mappingRows, { onConflict: "productId,customFieldId" });
 
-          if (mapErr) throw mapErr;
+          if (mapErr) {
+               await logServerAction({
+                    user_id: null,
+                    action: `Polar Product Webhook - mapping upsert failed (${eventLabel})`,
+                    payload: {
+                         productId,
+                         errorCode: mapErr.code,
+                         errorMessage: mapErr.message,
+                         errorDetails: mapErr.details,
+                         errorHint: mapErr.hint,
+                    },
+                    status: "fail",
+                    error: mapErr.message,
+                    duration_ms: Date.now() - t0,
+                    type: "internal",
+               });
+               throw mapErr;
+          }
      }
 
      // Delete removed mappings

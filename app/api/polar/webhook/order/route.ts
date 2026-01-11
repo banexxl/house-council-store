@@ -1,10 +1,16 @@
 // app/api/polar/webhook/order/route.ts
 import { logServerAction } from "@/app/lib/server-logging";
-import { useServerSideSupabaseAnonClient } from "@/app/lib/ss-supabase-anon-client";
 import { PolarOrder } from "@/app/types/polar-order-types";
 import { Webhooks } from "@polar-sh/nextjs";
+import { createClient } from "@supabase/supabase-js";
 
 export const runtime = "nodejs";
+
+// ✅ Webhooks should use SERVICE ROLE (bypasses RLS)
+const supabase = createClient(
+     process.env.NEXT_PUBLIC_SUPABASE_URL!,
+     process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 // ---------------------------------------------------------------------------
 // Helper Functions
@@ -95,8 +101,6 @@ async function upsertOrder(order: PolarOrder, eventType: string) {
           customFieldData: order.customFieldData,
      };
 
-     const supabase = await useServerSideSupabaseAnonClient();
-
      const { data, error } = await supabase
           .from("tblPolarOrders")
           .upsert(orderData, { onConflict: "id" })
@@ -105,20 +109,34 @@ async function upsertOrder(order: PolarOrder, eventType: string) {
 
      const duration = Date.now() - t0;
 
+     if (error) {
+          await logServerAction({
+               user_id: order.customerId,
+               action: `${eventType} - Upsert Order Failed`,
+               payload: {
+                    orderId: order.id,
+                    errorCode: error.code,
+                    errorMessage: error.message,
+                    errorDetails: error.details,
+                    errorHint: error.hint,
+               },
+               status: "fail",
+               error: error.message,
+               duration_ms: duration,
+               type: "webhook",
+          });
+          throw error;
+     }
+
      await logServerAction({
           user_id: order.customerId,
           action: `${eventType} - Upsert Order`,
-          payload: orderData,
-          status: error ? "fail" : "success",
-          error: error?.message || "",
+          payload: { orderId: order.id },
+          status: "success",
+          error: "",
           duration_ms: duration,
           type: "webhook",
      });
-
-     if (error) {
-          console.error(`Error upserting order for ${eventType}:`, error);
-          throw error;
-     }
 
      return data;
 }
