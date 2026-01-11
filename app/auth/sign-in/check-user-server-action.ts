@@ -82,12 +82,12 @@ export async function checkUserPermissionServer(email: string): Promise<{ succes
 
           await logServerAction({
                user_id: data.user.id,
-               action: 'Check if client is permitted - checking status',
+               action: 'User successfully authenticated.',
                payload: { email, clientStatus },
                status: 'success',
                error: '',
                duration_ms: Date.now() - start,
-               type: 'db'
+               type: 'auth'
           });
 
           // If status exists and is not 'active', deny access
