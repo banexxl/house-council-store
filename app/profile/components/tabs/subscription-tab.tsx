@@ -475,7 +475,7 @@ export default function SubscriptionTab({ customerSubscriptionObject, subsriptio
                     <DialogTitle>Confirm Cancellation</DialogTitle>
                     <DialogContent>
                          <DialogContentText>
-                              Please confirm that you want to cancel your subscription. This action cannot be undone.
+                              Please confirm that you want to cancel your subscription.
                          </DialogContentText>
                     </DialogContent>
                     <DialogActions>
