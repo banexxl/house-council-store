@@ -1,23 +1,26 @@
+'use server';
+
 import { polar } from "@/app/lib/polar"; // adjust if needed
 import { logServerAction } from "@/app/lib/server-logging"; // adjust if needed
 import { useServerSideSupabaseAnonClient } from "@/app/lib/ss-supabase-anon-client";
 import { useServerSideSupabaseServiceRoleClient } from "@/app/lib/ss-supabase-service-role-client";
 
-type ErrorType = { code: string; details: string; hint: string | null; message: string };
+export type RegisterErrorType = { code: string; details: string; hint: string | null; message: string };
 
 export type RegisterFormValues = {
+     contact_person: string;
      email: string;
+     confirm_email: string
      password: string;
      confirm_password: string;
-     contact_person: string;
 };
 
 export const registerUser = async (
      values: RegisterFormValues
-): Promise<{ success: boolean; error?: ErrorType }> => {
+): Promise<{ success: boolean; error?: RegisterErrorType }> => {
      const t0 = Date.now();
 
-     if (!values.email || !values.password || !values.confirm_password || !values.contact_person) {
+     if (!values.email || !values.confirm_email || !values.password || !values.confirm_password || !values.contact_person) {
           return {
                success: false,
                error: { code: "VALIDATION_ERROR", details: "All fields are required", hint: null, message: "All fields are required" },

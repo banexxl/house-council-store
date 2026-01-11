@@ -24,7 +24,7 @@ import {
 import Visibility from "@mui/icons-material/Visibility"
 import VisibilityOff from "@mui/icons-material/VisibilityOff"
 import { registrationSchema } from "./register-schema"
-import { ErrorType, RegisterFormValues, registerUser } from "./register-action"
+import { RegisterErrorType, RegisterFormValues, registerUser } from "./register-action"
 import toast, { Toaster } from "react-hot-toast"
 import { useRouter } from "next/navigation"
 import Animate from "@/app/components/animation-framer-motion"
@@ -61,7 +61,7 @@ export const RegisterPage = () => {
           },
           validationSchema: registrationSchema,
           onSubmit: async (values: RegisterFormValues) => {
-               const { success, error }: { success: boolean, error?: ErrorType } = await registerUser(values);
+               const { success, error }: { success: boolean, error?: RegisterErrorType } = await registerUser(values);
                if (success) {
                     toast.success("Registration successful!");
                     handleNavClick("/auth/registration-confirmation");
