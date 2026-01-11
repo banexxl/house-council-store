@@ -19,14 +19,14 @@ export type PolarProductInterval = "day" | "week" | "month" | "year";
 
 export interface PolarProduct {
      id: string;
-     createdAt: string;
-     modifiedAt: string;
-     trialInterval: PolarProductInterval;
-     trialIntervalCount: number;
+     createdAt: Date | null;
+     modifiedAt: Date | null;
+     trialInterval: PolarProductInterval | null;
+     trialIntervalCount: number | null;
      name: string;
-     description: string;
-     recurringInterval: PolarProductInterval;
-     recurringIntervalCount: number;
+     description: string | null;
+     recurringInterval: PolarProductInterval | null;
+     recurringIntervalCount: number | null;
      isRecurring: boolean;
      isArchived: boolean;
      organizationId: string;
@@ -34,28 +34,28 @@ export interface PolarProduct {
      prices: PolarProductPrice[];
      benefits: PolarProductBenefit[];
      medias: PolarProductMedia[];
-     attached_custom_fields: PolarProductAttachedCustomField[];
+     attachedCustomFields: PolarProductAttachedCustomField[];
 }
 
 export interface PolarProductPrice {
-     createdAt: string;
-     modifiedAt: string;
+     createdAt: Date | null;
+     modifiedAt: Date | null;
      id: string;
      source: string;
      amountType: string;
      isArchived: boolean;
      productId: string;
      type: string;
-     recurringInterval: PolarProductInterval;
-     priceCurrency: string;
-     priceAmount: number;
-     legacy: boolean;
+     recurringInterval: PolarProductInterval | null;
+     priceCurrency?: string;
+     priceAmount?: number;
+     legacy?: boolean;
 }
 
 export interface PolarProductBenefit {
      id: string;
-     createdAt: string;
-     modifiedAt: string;
+     createdAt: Date | null;
+     modifiedAt: Date | null;
      type: string;
      description: string;
      selectable: boolean;
@@ -76,11 +76,11 @@ export interface PolarProductMedia {
      checksumEtag: string;
      checksumSha256Base64: string;
      checksumSha256Hex: string;
-     lastModifiedAt: string;
+     lastModifiedAt: Date | null;
      version: string;
      service: string;
      isUploaded: boolean;
-     createdAt: string;
+     createdAt: Date | null;
      sizeReadable: string;
      publicUrl: string;
 }
@@ -93,8 +93,8 @@ export interface PolarProductAttachedCustomField {
 }
 
 export interface PolarProductCustomField {
-     createdAt: string;
-     modifiedAt: string;
+     createdAt: Date | null;
+     modifiedAt: Date | null;
      id: string;
      metadata: Record<string, unknown>;
      type: string;

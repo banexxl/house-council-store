@@ -1,72 +1,117 @@
 // app/api/polar/webhook/subscription/route.ts
 import { logServerAction } from "@/app/lib/server-logging";
 import { getApartmentCountForCustomer } from "@/app/profile/subscription-plan-actions";
+import { PolarSubscription } from "@/app/types/polar-subscription-types";
 import { Webhooks } from "@polar-sh/nextjs";
 import { createClient } from "@supabase/supabase-js";
 
 export const runtime = "nodejs";
 
+// ✅ Webhooks should use SERVICE ROLE (bypasses RLS)
 const supabase = createClient(
      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+     process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
 // ---------------------------------------------------------------------------
-// Helper Functions
+// Helpers
 // ---------------------------------------------------------------------------
+
+async function convertToPolarSubscription(subscription: any): Promise<PolarSubscription> {
+     // Get apartment count for customer
+     const apartmentCount = await getApartmentCountForCustomer(subscription.customerId ?? subscription.customer_id);
+
+     return {
+          id: subscription.id,
+          orderId: subscription.orderId ?? subscription.order_id ?? null,
+          createdAt: subscription.createdAt ? new Date(subscription.createdAt) : null,
+          modifiedAt: subscription.modifiedAt ? new Date(subscription.modifiedAt) : null,
+          metadata: {
+               ...(subscription.metadata || {}),
+               apartmentCount, // Add apartment count to metadata
+          },
+          amount: subscription.amount,
+          currency: subscription.currency,
+          recurringInterval: subscription.recurringInterval ?? subscription.recurring_interval,
+          recurringIntervalCount: subscription.recurringIntervalCount ?? subscription.recurring_interval_count,
+          status: subscription.status,
+          currentPeriodStart: subscription.currentPeriodStart ? new Date(subscription.currentPeriodStart) : null,
+          currentPeriodEnd: subscription.currentPeriodEnd ? new Date(subscription.currentPeriodEnd) : null,
+          trialStart: subscription.trialStart ? new Date(subscription.trialStart) : null,
+          trialEnd: subscription.trialEnd ? new Date(subscription.trialEnd) : null,
+          cancelAtPeriodEnd: subscription.cancelAtPeriodEnd ?? subscription.cancel_at_period_end ?? false,
+          canceledAt: subscription.canceledAt ? new Date(subscription.canceledAt) : null,
+          startedAt: subscription.startedAt ? new Date(subscription.startedAt) : null,
+          endsAt: subscription.endsAt ? new Date(subscription.endsAt) : null,
+          endedAt: subscription.endedAt ? new Date(subscription.endedAt) : null,
+          customerId: subscription.customerId ?? subscription.customer_id,
+          productId: subscription.productId ?? subscription.product_id,
+          product: subscription.product,
+          discountId: subscription.discountId ?? subscription.discount_id ?? null,
+          discount: subscription.discount ?? null,
+          checkoutId: subscription.checkoutId ?? subscription.checkout_id ?? null,
+          customerCancellationReason: subscription.customerCancellationReason ?? subscription.customer_cancellation_reason ?? null,
+          customerCancellationComment: subscription.customerCancellationComment ?? subscription.customer_cancellation_comment ?? null,
+          prices: subscription.prices || [],
+          meters: subscription.meters || [],
+          seats: subscription.seats ?? 0,
+          customFieldData: subscription.customFieldData ?? subscription.custom_field_data ?? {},
+     };
+}
 
 async function upsertSubscription(subscription: any, eventType: string) {
      const t0 = Date.now();
-     const apartmentCount = await getApartmentCountForCustomer(subscription.customerId);
 
-     const subscriptionData = {
-          id: subscription.id,
-          orderId: subscription.orderId || null,
-          createdAt: subscription.createdAt,
-          modifiedAt: subscription.modifiedAt,
-          apartmentCount: apartmentCount,
-          metadata: subscription.metadata,
-          amount: subscription.amount,
-          currency: subscription.currency,
-          recurringInterval: subscription.recurringInterval,
-          recurringIntervalCount: subscription.recurringIntervalCount,
-          status: subscription.status,
-          currentPeriodStart: subscription.currentPeriodStart,
-          currentPeriodEnd: subscription.currentPeriodEnd,
-          trialStart: subscription.trialStart,
-          trialEnd: subscription.trialEnd,
-          cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
-          canceledAt: subscription.canceledAt,
-          startedAt: subscription.startedAt,
-          endsAt: subscription.endsAt,
-          endedAt: subscription.endedAt,
-          customerId: subscription.customerId,
-          productId: subscription.productId,
-          discountId: subscription.discountId,
-          checkoutId: subscription.checkoutId,
-          customerCancellationReason: subscription.customerCancellationReason,
-          customerCancellationComment: subscription.customerCancellationComment,
-          prices: subscription.prices,
-          meters: subscription.meters,
-          seats: subscription.seats,
-          customFieldData: subscription.customFieldData,
+     // Convert to PolarSubscription type with apartment count in metadata
+     const polarSubscription = await convertToPolarSubscription(subscription);
+
+     // Map to database row structure
+     const row = {
+          subscriptionId: polarSubscription.id,
+          orderId: polarSubscription.orderId ?? null,
+          checkoutId: polarSubscription.checkoutId ?? null,
+          customerId: polarSubscription.customerId,
+          productId: polarSubscription.productId ?? null,
+          discountId: polarSubscription.discountId ?? null,
+          createdAt: polarSubscription.createdAt ?? null,
+          modifiedAt: polarSubscription.modifiedAt ?? null,
+          metadata: polarSubscription.metadata ?? {},
+          amount: polarSubscription.amount ?? null,
+          currency: polarSubscription.currency ?? null,
+          recurringInterval: polarSubscription.recurringInterval ?? null,
+          recurringIntervalCount: polarSubscription.recurringIntervalCount ?? null,
+          status: polarSubscription.status ?? null,
+          currentPeriodStart: polarSubscription.currentPeriodStart ?? null,
+          currentPeriodEnd: polarSubscription.currentPeriodEnd ?? null,
+          trialStart: polarSubscription.trialStart ?? null,
+          trialEnd: polarSubscription.trialEnd ?? null,
+          cancelAtPeriodEnd: polarSubscription.cancelAtPeriodEnd ?? null,
+          canceledAt: polarSubscription.canceledAt ?? null,
+          startedAt: polarSubscription.startedAt ?? null,
+          endsAt: polarSubscription.endsAt ?? null,
+          endedAt: polarSubscription.endedAt ?? null,
+          customerCancellationReason: polarSubscription.customerCancellationReason ?? null,
+          customerCancellationComment: polarSubscription.customerCancellationComment ?? null,
+          prices: polarSubscription.prices ?? null,
+          meters: polarSubscription.meters ?? null,
+          seats: polarSubscription.seats ?? null,
+          customFieldData: polarSubscription.customFieldData ?? null,
      };
 
+     // ✅ Use subscriptionId as conflict target (external id)
      const { data, error } = await supabase
           .from("tblPolarSubscriptions")
-          .upsert(subscriptionData, { onConflict: "id" })
+          .upsert(row, { onConflict: "subscriptionId" })
           .select()
           .single();
 
-     const duration = Date.now() - t0;
-
      await logServerAction({
-          user_id: subscription.customerId,
+          user_id: polarSubscription.customerId,
           action: `${eventType} - Upsert Subscription`,
-          payload: subscriptionData,
+          payload: row,
           status: error ? "fail" : "success",
           error: error?.message || "",
-          duration_ms: duration,
+          duration_ms: Date.now() - t0,
           type: "webhook",
      });
 
@@ -79,7 +124,7 @@ async function upsertSubscription(subscription: any, eventType: string) {
 }
 
 // ---------------------------------------------------------------------------
-// Subscription Webhook Handler
+// Webhook Handler (all payload types separately)
 // ---------------------------------------------------------------------------
 
 export const POST = Webhooks({
@@ -87,71 +132,69 @@ export const POST = Webhooks({
 
      onSubscriptionCreated: async (payload) => {
           const eventType = "subscription.created";
-          console.log(`${eventType} webhook received:`, payload);
+          const subscription = payload.data;
 
-          try {
-               const subscription = payload.data;
-               await upsertSubscription(subscription, eventType);
-               console.log(`${eventType} processed successfully for subscription:`, subscription.id);
-          } catch (error) {
-               console.error(`Error processing ${eventType}:`, error);
-               throw error;
-          }
+          console.log(`${eventType} webhook received`, {
+               id: subscription.id,
+               customerId: subscription.customerId,
+               status: subscription.status,
+          });
+
+          await upsertSubscription(subscription, eventType);
      },
 
      onSubscriptionUpdated: async (payload) => {
           const eventType = "subscription.updated";
-          console.log(`${eventType} webhook received:`, payload);
+          const subscription = payload.data;
 
-          try {
-               const subscription = payload.data;
-               await upsertSubscription(subscription, eventType);
-               console.log(`${eventType} processed successfully for subscription:`, subscription.id);
-          } catch (error) {
-               console.error(`Error processing ${eventType}:`, error);
-               throw error;
-          }
+          console.log(`${eventType} webhook received`, {
+               id: subscription.id,
+               customerId: subscription.customerId,
+               status: subscription.status,
+          });
+
+          await upsertSubscription(subscription, eventType);
      },
 
      onSubscriptionActive: async (payload) => {
           const eventType = "subscription.active";
-          console.log(`${eventType} webhook received:`, payload);
+          const subscription = payload.data;
 
-          try {
-               const subscription = payload.data;
-               await upsertSubscription(subscription, eventType);
-               console.log(`${eventType} processed successfully for subscription:`, subscription.id);
-          } catch (error) {
-               console.error(`Error processing ${eventType}:`, error);
-               throw error;
-          }
+          console.log(`${eventType} webhook received`, {
+               id: subscription.id,
+               customerId: subscription.customerId,
+               status: subscription.status,
+          });
+
+          // Active is just a state; upsert the snapshot
+          await upsertSubscription(subscription, eventType);
      },
 
      onSubscriptionCanceled: async (payload) => {
           const eventType = "subscription.canceled";
-          console.log(`${eventType} webhook received:`, payload);
+          const subscription = payload.data;
 
-          try {
-               const subscription = payload.data;
-               await upsertSubscription(subscription, eventType);
-               console.log(`${eventType} processed successfully for subscription:`, subscription.id);
-          } catch (error) {
-               console.error(`Error processing ${eventType}:`, error);
-               throw error;
-          }
+          console.log(`${eventType} webhook received`, {
+               id: subscription.id,
+               customerId: subscription.customerId,
+               status: subscription.status,
+               cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+          });
+
+          await upsertSubscription(subscription, eventType);
      },
 
      onSubscriptionRevoked: async (payload) => {
-          const eventType = "subscription.revoked";
-          console.log(`${eventType} webhook received:`, payload);
+          const eventType = "subscription.revoked"
+          const subscription = payload.data;
 
-          try {
-               const subscription = payload.data;
-               await upsertSubscription(subscription, eventType);
-               console.log(`${eventType} processed successfully for subscription:`, subscription.id);
-          } catch (error) {
-               console.error(`Error processing ${eventType}:`, error);
-               throw error;
-          }
+          console.log(`${eventType} webhook received`, {
+               id: subscription.id,
+               customerId: subscription.customerId,
+               status: subscription.status,
+               cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+          });
+
+          await upsertSubscription(subscription, eventType);
      },
 });
