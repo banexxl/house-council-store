@@ -1,3 +1,4 @@
+import { polar } from '@/app/lib/polar';
 import { logServerAction } from '@/app/lib/server-logging';
 import { useServerSideSupabaseServiceRoleClient } from '@/app/lib/ss-supabase-service-role-client';
 import { cookies } from 'next/headers';
