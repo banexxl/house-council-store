@@ -2,6 +2,7 @@
 import { Webhooks } from "@polar-sh/nextjs";
 import { createClient } from "@supabase/supabase-js";
 import { logServerAction } from "@/app/lib/server-logging";
+import { PolarCustomer } from "@/app/types/polar-customer-types";
 
 export const runtime = "nodejs";
 
@@ -9,26 +10,6 @@ const supabase = createClient(
      process.env.NEXT_PUBLIC_SUPABASE_URL!,
      process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
-
-type PolarCustomer = {
-     id: string;                 // Polar customer id (uuid)
-     externalId: string | null;  // should be Supabase auth.users.id
-     email: string;
-     name: string | null;
-
-     emailVerified?: boolean | null;
-     organizationId?: string | null;
-     avatarUrl?: string | null;
-
-     billingAddress?: any | null;
-     taxId?: (string | null)[] | null;
-
-     metadata?: Record<string, any> | null;
-
-     createdAt?: Date | null;
-     modifiedAt?: Date | null;
-     deletedAt?: Date | null;
-};
 
 function mapCustomerToRow(c: PolarCustomer) {
      return {

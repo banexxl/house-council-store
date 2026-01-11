@@ -50,8 +50,8 @@ export interface PolarCustomerState extends PolarCustomer {
 
 export interface PolarCustomerSubscription {
      id: string;
-     createdAt: string;
-     modifiedAt: string;
+     createdAt: Date;
+     modifiedAt: Date;
      metadata: Record<string, unknown>;
      status: string;
      amount: number;
@@ -72,8 +72,8 @@ export interface PolarCustomerSubscription {
 }
 
 export interface PolarCustomerMeter {
-     createdAt: string;
-     modifiedAt: string;
+     createdAt: Date;
+     modifiedAt: Date;
      id: string;
      consumedUnits: number;
      creditedUnits: number;
@@ -104,24 +104,26 @@ export interface PolarActiveMeter {
 
 export interface PolarCustomer {
      id: string;
-     createdAt: string;
-     modifiedAt: string;
+     customerId?: string
+     externalId: string | null;
+     createdAt: Date | null;
+     modifiedAt: Date | null;
      metadata: Record<string, unknown>;
      email: string;
      emailVerified: boolean;
-     name: string;
-     billingAddress: PolarCustomerAddress;
-     taxId: string[];
+     name: string | null;
+     billingAddress: PolarCustomerAddress | null;
+     taxId: (string | null)[] | null;
      organizationId: string;
-     deletedAt: string | null;
+     deletedAt: Date | null;
      avatarUrl: string | null;
 }
 
 export interface PolarCustomerAddress {
-     country: string;
-     line1: string;
-     line2: string;
-     postalCode: string;
-     city: string;
-     state: string;
+     country: string | null;
+     line1?: string | null;
+     line2?: string | null;
+     postalCode?: string | null;
+     city?: string | null;
+     state?: string | null;
 }
