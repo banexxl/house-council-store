@@ -136,7 +136,7 @@ export async function GET(request: Request) {
                action: 'Auth callback errored - Inserting user into tblPolarCustomers failed',
                error: customerInsertError.message,
                duration_ms: Date.now() - start,
-               payload: { code, requestUrl, email: userEmail },
+               payload: { externalId: userId, email: userEmail },
                status: 'fail',
                user_id: userId,
                type: 'auth'
