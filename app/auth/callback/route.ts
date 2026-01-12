@@ -124,6 +124,12 @@ export async function GET(request: Request) {
      const userEmail = normalizeEmail(sessionUser.email);
      const userId = sessionUser.id;
 
+     const { } = supabase.from('tblPolarCustomers').insert({
+          externalId: userId,
+          email: userEmail,
+          emailVerified: sessionUser.email_confirmed_at !== null,
+          metadata: sessionUser.user_metadata,
+     })
      // Check if Polar customer already exists for this user
      try {
           // Search by email since that's the primary identifier
@@ -131,7 +137,6 @@ export async function GET(request: Request) {
                email: userEmail,
                limit: 1,
           });
-          console.log('existingcustomer', existingCustomer);
 
           if (existingCustomer.result && existingCustomer.result.items.length > 0) {
                // Customer already exists, proceed to login

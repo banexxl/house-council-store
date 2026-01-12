@@ -36,7 +36,7 @@ export default async function Page() {
 
      // Fetch related data in parallel
      const [customerSubscriptionObject, recentActivity, apartments, ordersResult] = await Promise.all([
-          readCustomerSubscriptionPlanFromCustomerId(customer!.customerId!),
+          readCustomerSubscriptionPlanFromCustomerId(customer!.externalId!),
           readClientRecentActivityAction(user.email, customer!.id),
           readAllApartmentsByClientId(customer!.id),
           readOrdersByCustomerId(customer!.customerId!),
