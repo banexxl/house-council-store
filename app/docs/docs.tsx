@@ -418,7 +418,7 @@ export const DocsPage = () => {
                     <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
                          <Container maxWidth="lg">
                               <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", py: 2, gap: 2 }}>
-                                   <Box sx={{ display: "flex", alignItems: "center", minWidth: 0 }}>
+                                   <Box sx={{ display: { xs: "none", md: 'flex' }, alignItems: "center", minWidth: 0 }}>
                                         <MenuBookIcon sx={{ mr: 1 }} />
                                         <Typography variant="h4" noWrap>
                                              Docs
