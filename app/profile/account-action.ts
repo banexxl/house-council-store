@@ -37,19 +37,22 @@ export const logoutUserAction = async (): Promise<string | null> => {
      return null;
 }
 
-export const deleteAccountAction = async (clientId: string, clientEmail: string): Promise<{ success: boolean, error?: string }> => {
+export const deleteAccountAction = async (userId: string, clientEmail: string): Promise<{ success: boolean, error?: string }> => {
 
      const startTime = Date.now();
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
+     const { data: customer, error: customerError } = await supabase.from('tblPolarCustomers').select('customerId').eq('userId', userId).single();
+
+
      await logoutUserAction();
 
-     const { data, error } = await supabase.auth.admin.deleteUser(clientId);
+     const { data, error } = await supabase.auth.admin.deleteUser(userId);
 
      if (error) {
           await logServerAction({
-               user_id: clientId,
+               user_id: userId,
                action: 'Delete Account - Error for auth table of users.',
                payload: {},
                status: 'fail',
@@ -64,11 +67,11 @@ export const deleteAccountAction = async (clientId: string, clientEmail: string)
      let deleteCustomerResult
      try {
           deleteCustomerResult = await polar.customers.delete({
-               id: clientEmail
+               id: customer?.customerId || ''
           });
      } catch (error: any) {
           await logServerAction({
-               user_id: clientId,
+               user_id: userId || '',
                action: 'Delete Account - Error deleting Polar customer via API.',
                payload: { email: clientEmail },
                status: 'fail',
@@ -80,7 +83,7 @@ export const deleteAccountAction = async (clientId: string, clientEmail: string)
      }
 
      await logServerAction({
-          user_id: clientId,
+          user_id: userId,
           action: 'Delete Account - Success.',
           payload: {},
           status: 'success',
