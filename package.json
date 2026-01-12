@@ -14,7 +14,7 @@
     "@mui/icons-material": "^7.0.2",
     "@mui/material": "^7.0.2",
     "@polar-sh/nextjs": "^0.9.3",
-    "@supabase/ssr": "^0.5.2",
+    "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.49.1",
     "@types/react": "latest",
     "bcryptjs": "^3.0.2",
@@ -37,5 +37,8 @@
     "@types/node": "^22",
     "@types/nodemailer": "^6.4.17",
     "typescript": "^5"
+  },
+  "overrides": {
+    "@supabase/realtime-js": "2.11.0"
   }
 }

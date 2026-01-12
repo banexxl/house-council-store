@@ -25,9 +25,10 @@ import { SubscriptionPlan } from "@/app/types/subscription-plan"
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { Feature } from "@/app/types/feature"
 import Link from "next/link"
-import { initClientSubscriptionRealtime, type InitListenerOptions } from "@/app/lib/sb-realtime"
+import { initPolarSubscriptionRealtime, type InitListenerOptions } from "@/app/lib/sb-realtime"
 import { PolarSubscription } from "@/app/types/polar-subscription-types"
 import { PolarProduct } from "@/app/types/polar-product-types"
+import log from "@/app/lib/logger"
 
 interface SubscriptionTabProps {
      customerSubscriptionObject: PolarSubscription
@@ -51,18 +52,16 @@ export default function SubscriptionTab({ customerSubscriptionObject, subsriptio
      }, [customerSubscriptionObject])
 
      useEffect(() => {
-          const customerId = customerSubscriptionObject?.customerId;
-          if (!customerId) return;
+          const subscriptionId = customerSubscriptionObject?.subscriptionId;
+          if (!subscriptionId) return;
 
           let isMounted = true;
-          let cleanup: (() => Promise<void>) | null = null;
+          let stop: (() => Promise<void>) | null = null;
 
-          // Debounce refresh so multiple updates close together don't cause multiple refreshes
           let refreshTimer: ReturnType<typeof setTimeout> | null = null;
           const scheduleRefresh = () => {
                if (refreshTimer) clearTimeout(refreshTimer);
                refreshTimer = setTimeout(() => {
-                    // This re-runs the server components above this tab and re-passes new props
                     router.refresh();
                }, 250);
           };
@@ -70,46 +69,52 @@ export default function SubscriptionTab({ customerSubscriptionObject, subsriptio
           const handleRealtimeUpdate: InitListenerOptions<ClientSubscriptionWithOptionalPlan>["onEvent"] = (payload) => {
                if (!isMounted) return;
 
-               // 1) Update local subscription columns immediately (fast)
+               log(`[SubscriptionTab] 🔔 Received realtime event: ${payload.eventType}`);
+
                if (payload.eventType === "DELETE") {
-                    // if your DELETE means subscription row removed, clear local state
                     setSubscriptionData(null);
                     scheduleRefresh();
                     return;
                }
 
                const maybeRecord = payload.new;
-               if (!isClientSubscriptionRecord(maybeRecord)) return;
+               if (!isClientSubscriptionRecord(maybeRecord)) {
+                    console.log("Invalid payload:", payload);
+                    return;
+               }
 
                setSubscriptionData((prev) => ({
                     ...(prev ?? ({} as any)),
                     ...maybeRecord,
-                    // keep whatever plan we already had until refresh brings the joined plan
                     subscription_plan: prev?.subscription_plan,
                }));
 
-               // 2) Refresh to get joined `subscription_plan` and `subsriptionFeatures` updated
                scheduleRefresh();
           };
 
-          initClientSubscriptionRealtime<ClientSubscriptionWithOptionalPlan>(customerId, handleRealtimeUpdate)
-               .then((stop) => {
+          log("[SubscriptionTab] Starting realtime subscription...");
+
+          initPolarSubscriptionRealtime<ClientSubscriptionWithOptionalPlan>(subscriptionId, handleRealtimeUpdate)
+               .then((cleanup) => {
                     if (!isMounted) {
-                         void stop();
+                         void cleanup();
                          return;
                     }
-                    cleanup = stop;
+                    stop = cleanup;
+                    log("[SubscriptionTab] ✅ Realtime subscription established");
                })
-               .catch((error) => {
+               .catch((error: any) => {
+                    log(`[SubscriptionTab] ❌ Failed to start realtime listener: ${error?.message || String(error)}`, "error");
                     console.error("[SubscriptionTab] Failed to start realtime listener", error);
                });
 
           return () => {
                isMounted = false;
                if (refreshTimer) clearTimeout(refreshTimer);
-               if (cleanup) void cleanup();
+               if (stop) void stop();
           };
-     }, [customerSubscriptionObject?.customerId]);
+     }, [customerSubscriptionObject?.subscriptionId]);
+
 
 
      const theme = useTheme()
