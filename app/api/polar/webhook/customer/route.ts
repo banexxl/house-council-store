@@ -53,6 +53,22 @@ export const POST = Webhooks({
                return;
           }
 
+          // Check if user exists in auth.users table
+          const { data: userExists } = await supabase.auth.admin.getUserById(String(customer.metadata.userId));
+
+          if (!userExists.user) {
+               await logServerAction({
+                    user_id: String(customer.metadata.userId),
+                    action: "customer.created - skipped (user not found in auth.users)",
+                    payload: { userId: customer.metadata.userId, email: customer.email },
+                    status: "fail",
+                    error: "User ID not found in auth.users table",
+                    duration_ms: Date.now() - t0,
+                    type: "webhook",
+               });
+               return;
+          }
+
           const row = mapCustomerToRow(customer);
 
           const { data, error } = await supabase
