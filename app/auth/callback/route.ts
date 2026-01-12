@@ -141,6 +141,9 @@ export async function GET(request: Request) {
                user_id: userId,
                type: 'auth'
           });
+          // Rollback by deleting the auth user
+          await supabase.auth.signOut();
+          await supabase.auth.admin.deleteUser(userId);
      }
      // Check if Polar customer already exists for this user
      try {
