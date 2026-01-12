@@ -40,12 +40,12 @@ export const POST = Webhooks({
           const customer = payload.data;
           console.log('On customer created payload data: ', payload);
 
-          if (!customer.externalId) {
+          if (!customer.metadata?.userId) {
                await logServerAction({
                     user_id: null,
                     action: "customer.created - skipped (missing userId in metadata)",
                     payload,
-                    status: "fail",
+                    status: "success",
                     error: "Missing userId in metadata",
                     duration_ms: Date.now() - t0,
                     type: "webhook",
