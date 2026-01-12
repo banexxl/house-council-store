@@ -67,8 +67,6 @@ export async function GET(request: Request) {
      }
      // If "code" is not present, log an error and redirect to error page
      else {
-          console.log('ERROR: No code parameter provided in callback');
-
           await logServerAction({
                action: 'Auth callback errored',
                error: 'No code provided in the callback.',

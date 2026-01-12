@@ -16,8 +16,6 @@ export async function GET(request: Request) {
 
      // Validate email parameter (token may be consumed by Supabase verification)
      if (!email) {
-          console.log('ERROR: No email provided in request');
-
           await logServerAction({
                action: 'Invite user validation failed',
                error: 'No email provided',
@@ -61,10 +59,6 @@ export async function GET(request: Request) {
 
                // Check if token is valid and matches the email
                if (verifyError || !verifyData?.user || verifyData.user.email !== email) {
-                    console.log('ERROR: Invalid token or email mismatch');
-                    console.log('Expected email:', email);
-                    console.log('Token email:', verifyData?.user?.email);
-
                     await logServerAction({
                          action: 'Invite token verification failed',
                          error: verifyError?.message || 'Token/email mismatch',
@@ -90,16 +84,12 @@ export async function GET(request: Request) {
           const { data: users, error: listError } = await supabase.auth.admin.listUsers();
 
           if (listError) {
-               console.log('ERROR: Failed to list users');
-               console.log('List error:', listError);
                throw listError;
           }
 
           const user = users.users.find(u => u.email === email);
 
           if (!user) {
-               console.log('ERROR: User not found in auth.users - they may not have been invited yet');
-
                await logServerAction({
                     action: 'Invite user failed',
                     error: 'User not found in auth.users - not invited yet',
@@ -142,9 +132,6 @@ export async function GET(request: Request) {
           });
 
           if (existingRoles.length > 0) {
-               console.log('ERROR: User already has other roles, cannot create super admin');
-               console.log('Existing roles:', existingRoles);
-
                await logServerAction({
                     action: 'Invite user failed - existing roles conflict',
                     error: `User already has roles: ${existingRoles.join(', ')}`,
@@ -200,9 +187,6 @@ export async function GET(request: Request) {
                });
 
           if (insertError) {
-               console.log('ERROR: Failed to insert super admin');
-               console.log('Insert error:', insertError);
-
                await logServerAction({
                     action: 'Invite user super admin creation failed',
                     error: insertError.message,
@@ -232,11 +216,6 @@ export async function GET(request: Request) {
           return NextResponse.redirect('https://dashboard.nest-link.app');
 
      } catch (error) {
-          console.log('=== UNEXPECTED ERROR ===');
-          console.log('Error type:', error instanceof Error ? 'Error' : typeof error);
-          console.log('Error message:', error instanceof Error ? error.message : 'Unknown error');
-          console.log('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
-
           await logServerAction({
                action: 'Invite user processing error',
                error: error instanceof Error ? error.message : 'Unknown error',
