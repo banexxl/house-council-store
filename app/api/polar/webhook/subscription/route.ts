@@ -27,7 +27,6 @@ async function convertToPolarSubscription(subscription: any): Promise<PolarSubsc
           createdAt: subscription.createdAt ? new Date(subscription.createdAt) : null,
           modifiedAt: subscription.modifiedAt ? new Date(subscription.modifiedAt) : null,
           metadata: {
-               ...(subscription.metadata || {}),
                apartmentCount, // Add apartment count to metadata
           },
           amount: Number(subscription.amount * apartmentCount),
