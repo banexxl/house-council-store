@@ -35,7 +35,7 @@ export default async function Page() {
      const { customer, error } = await readAccountByEmailAction(user.email);
      // Fetch related data in parallel
      const [customerSubscriptionObject, recentActivity, apartments, ordersResult] = await Promise.all([
-          readCustomerSubscriptionPlanFromCustomerId(customer!.externalId!),
+          readCustomerSubscriptionPlanFromCustomerId(customer!.customerId!),
           readClientRecentActivityAction(user.email, customer!.id),
           readAllApartmentsByClientId(customer!.id),
           readOrdersByCustomerId(customer!.customerId!),
