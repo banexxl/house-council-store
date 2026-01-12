@@ -5,8 +5,6 @@ import { Box, Container, Grid } from "@mui/material"
 import ProfileSidebar, { ActivityItem } from "./components/profile-sidebar"
 import ProfileTabs from "./components/profile-tabs"
 import { User } from "@supabase/supabase-js"
-import { SubscriptionPlan } from "../types/subscription-plan"
-import { Feature } from "../types/feature"
 import Animate from "@/app/components/animation-framer-motion"
 import { PolarSubscription } from "../types/polar-subscription-types"
 import { PolarCustomer } from "../types/polar-customer-types"
@@ -17,8 +15,6 @@ type ProfilePageProps = {
      sessionAndCustomerDataCombined?: { customer: PolarCustomer, session: User }
      customerSubscriptionObject: PolarSubscription
      recentActivity: ActivityItem[]
-     binCheckerAPIKey?: string,
-     subscriptionFeatures: SubscriptionPlan & { features: Feature[] } | null
      apartmentsCount: number
      productData: PolarProduct | null
      payments: PolarOrder[] | null
@@ -27,8 +23,6 @@ export const ProfilePage = ({
      sessionAndCustomerDataCombined,
      customerSubscriptionObject,
      recentActivity,
-     binCheckerAPIKey,
-     subscriptionFeatures,
      apartmentsCount,
      productData,
      payments
@@ -55,15 +49,11 @@ export const ProfilePage = ({
                                    <Grid size={{ xs: 12, md: 8 }}>
                                         <ProfileTabs
                                              userData={sessionAndCustomerDataCombined!}
-                                             editMode={editMode}
-                                             setEditMode={setEditMode}
                                              customerSubscriptionObject={customerSubscriptionObject}
                                              // notificationSettings={notificationSettings}
                                              // setNotificationSettings={setNotificationSettings}
                                              recentActivity={recentActivity || []}
-                                             binCheckerAPIKey={binCheckerAPIKey}
                                              apartmentsCount={apartmentsCount}
-                                             subscriptionFeatures={subscriptionFeatures}
                                              productData={productData}
                                              payments={payments}
                                         />

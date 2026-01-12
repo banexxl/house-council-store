@@ -5,7 +5,7 @@ import { Header } from "@/app/components/header";
 import { ProfilePage } from "./profile";
 import { readAccountByEmailAction, readAllApartmentsByClientId, readClientRecentActivityAction } from "./account-action";
 import { User } from "@supabase/supabase-js";
-import { readCustomerSubscriptionPlanFromCustomerId, readSubscriptionPlanFeatures, readProductFromSubscriptionId, readOrdersByCustomerId } from "./subscription-plan-actions";
+import { readCustomerSubscriptionPlanFromCustomerId, readProductFromSubscriptionId, readOrdersByCustomerId } from "./subscription-plan-actions";
 import { redirect } from "next/navigation";
 import { buildCanonicalUrl } from "../lib/seo";
 
@@ -59,8 +59,6 @@ export default async function Page() {
           readOrdersByCustomerId(customer.customerId!),
      ])
 
-     const subscriptionFeatures = await readSubscriptionPlanFeatures(customerSubscriptionObject.customerSubscriptionPlanData?.id ?? null)
-
      // Fetch product data from subscription's productId
      const productData = customerSubscriptionObject.customerSubscriptionPlanData?.productId
           ? await readProductFromSubscriptionId(customerSubscriptionObject.customerSubscriptionPlanData.productId)
@@ -83,8 +81,6 @@ export default async function Page() {
                     sessionAndCustomerDataCombined={sessionAndCustomerDataCombined}
                     customerSubscriptionObject={customerSubscriptionObject?.customerSubscriptionPlanData! ?? null}
                     recentActivity={recentActivity.data ?? []}
-                    binCheckerAPIKey={binCheckerAPIKey ?? ""}
-                    subscriptionFeatures={subscriptionFeatures?.subscriptionPlanFeatures ?? null}
                     apartmentsCount={apartments ? apartments?.data!.length : 0}
                     productData={productData?.product ?? null}
                     payments={ordersResult?.orders ?? null}

@@ -22,10 +22,6 @@ import { useRouter } from "next/navigation"
 import toast from "react-hot-toast"
 import { getStatusColor } from "../profile-sidebar"
 import GradingIcon from '@mui/icons-material/Grading';
-import { SubscriptionPlan } from "@/app/types/subscription-plan"
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import { Feature } from "@/app/types/feature"
-import Link from "next/link"
 import { initPolarSubscriptionRealtime, type InitListenerOptions } from "@/app/lib/sb-realtime"
 import { PolarSubscription } from "@/app/types/polar-subscription-types"
 import { PolarProduct } from "@/app/types/polar-product-types"
@@ -34,21 +30,18 @@ import log from "@/app/lib/logger"
 
 interface SubscriptionTabProps {
      customerSubscriptionObject: PolarSubscription
-     subsriptionFeatures?: SubscriptionPlan & { features: Feature[] } | null;
      apartmentsCount: number
      productData: PolarProduct | null
      payments?: PolarOrder[] | null
 }
 
-type ClientSubscriptionWithOptionalPlan = PolarSubscription & { subscription_plan?: SubscriptionPlan }
-
-const isClientSubscriptionRecord = (record: unknown): record is ClientSubscriptionWithOptionalPlan => {
+const isClientSubscriptionRecord = (record: unknown): record is PolarSubscription => {
      if (!record || typeof record !== "object") return false
      return "id" in record && "status" in record
 }
 
-export default function SubscriptionTab({ customerSubscriptionObject, subsriptionFeatures, apartmentsCount, productData, payments }: SubscriptionTabProps) {
-     const [subscriptionData, setSubscriptionData] = useState<ClientSubscriptionWithOptionalPlan | null>(customerSubscriptionObject)
+export default function SubscriptionTab({ customerSubscriptionObject, apartmentsCount, productData, payments }: SubscriptionTabProps) {
+     const [subscriptionData, setSubscriptionData] = useState<PolarSubscription | null>(customerSubscriptionObject)
      const [currentPage, setCurrentPage] = useState(1)
      const itemsPerPage = 5
 
@@ -71,7 +64,7 @@ export default function SubscriptionTab({ customerSubscriptionObject, subsriptio
                }, 250);
           };
 
-          const handleRealtimeUpdate: InitListenerOptions<ClientSubscriptionWithOptionalPlan>["onEvent"] = (payload) => {
+          const handleRealtimeUpdate: InitListenerOptions<PolarSubscription>["onEvent"] = (payload) => {
                if (!isMounted) return;
 
                log(`[SubscriptionTab] 🔔 Received realtime event: ${payload.eventType}`);
@@ -91,7 +84,6 @@ export default function SubscriptionTab({ customerSubscriptionObject, subsriptio
                setSubscriptionData((prev) => ({
                     ...(prev ?? ({} as any)),
                     ...maybeRecord,
-                    subscription_plan: prev?.subscription_plan,
                }));
 
                scheduleRefresh();
@@ -99,7 +91,7 @@ export default function SubscriptionTab({ customerSubscriptionObject, subsriptio
 
           log("[SubscriptionTab] Starting realtime subscription...");
 
-          initPolarSubscriptionRealtime<ClientSubscriptionWithOptionalPlan>(subscriptionId, handleRealtimeUpdate)
+          initPolarSubscriptionRealtime<PolarSubscription>(subscriptionId, handleRealtimeUpdate)
                .then((cleanup) => {
                     if (!isMounted) {
                          void cleanup();
@@ -258,12 +250,12 @@ export default function SubscriptionTab({ customerSubscriptionObject, subsriptio
      }
 
      const currencyFormatter = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" })
-     const pricePerApartment = subscriptionData?.subscription_plan
-          ? subscriptionData.recurringInterval === "year"
-               ? subscriptionData.subscription_plan.total_price_per_apartment_with_discounts
-               : subscriptionData.subscription_plan.monthly_total_price_per_apartment
-          : null
-     const totalForAllApartments = pricePerApartment !== null ? pricePerApartment * apartmentsCount : null
+     // const pricePerApartment = subscriptionData?.metadata.
+     //      ? subscriptionData.recurringInterval === "year"
+     //           ? subscriptionData.subscription_plan.total_price_per_apartment_with_discounts
+     //           : subscriptionData.subscription_plan.monthly_total_price_per_apartment
+     //      : null
+     // const totalForAllApartments = pricePerApartment !== null ? pricePerApartment * apartmentsCount : null
 
      const billingPeriodLabel = subscriptionData?.recurringInterval === "year" ? "year" : "month"
      const hasSubscription = Boolean(subscriptionData?.id || subscriptionData?.id)
@@ -338,7 +330,7 @@ export default function SubscriptionTab({ customerSubscriptionObject, subsriptio
 
                                                   const nextPaymentDate =
                                                        subscriptionData && "next_payment_date" in subscriptionData
-                                                            ? (subscriptionData as ClientSubscriptionWithOptionalPlan & { next_payment_date?: string }).next_payment_date
+                                                            ? (subscriptionData as PolarSubscription & { next_payment_date?: string }).next_payment_date
                                                             : undefined
 
                                                   if (!nextPaymentDate) return startDateNode
@@ -431,12 +423,12 @@ export default function SubscriptionTab({ customerSubscriptionObject, subsriptio
                                         <Alert severity="success" sx={{ mt: 1 }}>
                                              This plan includes a {productData.trialIntervalCount} {productData.trialInterval} free trial!
                                         </Alert>
-                                   )}
-                                   {pricePerApartment !== null && (
+                                   )}aaaaaaa
+                                   {/* {pricePerApartment !== null && (
                                         <Alert severity="info" sx={{ mt: 1 }}>
                                              Billing is per apartment. With {apartmentsCount} apartment{apartmentsCount === 1 ? "" : "s"}, your {billingPeriodLabel}ly charge is {currencyFormatter.format(pricePerApartment)} x {apartmentsCount} = {currencyFormatter.format(totalForAllApartments ?? 0)}.
                                         </Alert>
-                                   )}
+                                   )} */}
                               </Grid>
                          </Grid>
 

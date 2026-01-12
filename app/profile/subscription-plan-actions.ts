@@ -1,87 +1,11 @@
 'use server'
 
-import { SubscriptionPlan } from "../types/subscription-plan";
 import { Feature } from "../types/feature";
 import { logServerAction } from "../lib/server-logging";
 import { useServerSideSupabaseAnonClient } from "../lib/ss-supabase-anon-client";
 import { PolarSubscription } from "../types/polar-subscription-types";
 import { PolarProduct, PolarProductPrice } from "../types/polar-product-types";
 import { PolarOrder } from "../types/polar-order-types";
-import { useServerSideSupabaseServiceRoleClient } from "../lib/ss-supabase-service-role-client";
-
-
-export const readSubscriptionPlanFeatures = async (
-     id: string | null
-): Promise<{
-     readSubscriptionPlanFeaturesSuccess: boolean;
-     subscriptionPlanFeatures?: SubscriptionPlan & { features: Feature[] };
-     readSubscriptionPlanFeaturesError?: string;
-}> => {
-     if (!id) {
-          return {
-               readSubscriptionPlanFeaturesSuccess: false,
-               readSubscriptionPlanFeaturesError: "Subscription plan ID is required",
-          };
-     }
-
-     const supabase = await useServerSideSupabaseAnonClient();
-     const userId = (await supabase.auth.getUser()).data.user?.id;
-
-     const { data: subscriptionPlan, error } = await supabase
-          .from("tblPolarProducts")
-          .select(`
-      *,
-      tblPolarProductBenefits (*)
-    `)
-          .eq("id", id)
-          .single();
-
-     if (error || !subscriptionPlan) {
-          await logServerAction({
-               user_id: userId || '',
-               action: 'Read Subscription Plan by ID',
-               payload: { id },
-               status: 'fail',
-               error: error?.message || 'Not found',
-               duration_ms: 0,
-               type: 'db',
-          });
-
-          return {
-               readSubscriptionPlanFeaturesSuccess: false,
-               readSubscriptionPlanFeaturesError: error?.message || 'Subscription plan not found',
-          };
-     }
-
-     // Convert Polar benefits to features structure
-     const features: Feature[] = subscriptionPlan.tblPolarProductBenefits?.map(
-          (benefit: any) => ({
-               id: benefit.id,
-               name: benefit.description || '',
-               description: benefit.description || ''
-          })
-     ) || [];
-
-     const { tblPolarProductBenefits, ...planData } = subscriptionPlan;
-
-     await logServerAction({
-          user_id: null,
-          action: 'Read Subscription Plan by ID',
-          payload: { id },
-          status: 'success',
-          error: '',
-          duration_ms: 0,
-          type: 'db',
-     });
-
-     return {
-          readSubscriptionPlanFeaturesSuccess: true,
-          subscriptionPlanFeatures: {
-               ...planData,
-               features,
-          },
-     };
-};
 
 export const readActivePolarProducts = async (): Promise<{
      readAllSubscriptionPlansSuccess: boolean;
@@ -225,7 +149,7 @@ export const readFeaturesFromSubscriptionPlanId = async (subscriptionPlanId: str
 
 export const readAllSubscriptionPlans = async (): Promise<{
      success: boolean;
-     subscriptionPlans?: (SubscriptionPlan & { features: Feature[] })[];
+     subscriptionPlans?: PolarProduct[]
      error?: string;
 }> => {
      const supabase = await useServerSideSupabaseAnonClient();
@@ -256,22 +180,10 @@ export const readAllSubscriptionPlans = async (): Promise<{
           };
      }
 
-     // Convert Polar benefits to features structure
-     const plansWithFeatures = (subscriptionPlans || []).map((plan: any) => ({
-          ...plan,
-          features: plan.tblPolarProductBenefits?.map(
-               (benefit: any) => ({
-                    id: benefit.id,
-                    name: benefit.description || '',
-                    description: benefit.description || ''
-               })
-          ) || [],
-     }));
-
      await logServerAction({
           user_id: null,
           action: "Read All Subscription Plans",
-          payload: { count: plansWithFeatures.length },
+          payload: { count: subscriptionPlans?.length ?? 0 },
           status: "success",
           error: "",
           duration_ms: 0,
@@ -280,7 +192,7 @@ export const readAllSubscriptionPlans = async (): Promise<{
 
      return {
           success: true,
-          subscriptionPlans: plansWithFeatures,
+          subscriptionPlans: subscriptionPlans as PolarProduct[],
      };
 };
 

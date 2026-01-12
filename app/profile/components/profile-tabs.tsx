@@ -10,7 +10,6 @@ import SecurityIcon from "@mui/icons-material/Security"
 import AccountTab from "./tabs/account-tab"
 import SecurityTab from "./tabs/security-tab"
 import { User } from "@supabase/supabase-js"
-import { SubscriptionPlan } from "@/app/types/subscription-plan"
 import { ActivityItem } from "./profile-sidebar"
 import { Feature } from "@/app/types/feature"
 import SubscriptionTab from "./tabs/subscription-tab"
@@ -43,12 +42,8 @@ function TabPanel(props: TabPanelProps) {
 
 interface ProfileTabsProps {
      userData: { customer: PolarCustomer, session: User }
-     editMode: boolean
-     setEditMode: (value: boolean) => void
      customerSubscriptionObject: PolarSubscription
      recentActivity: ActivityItem[]
-     binCheckerAPIKey?: string,
-     subscriptionFeatures?: SubscriptionPlan & { features: Feature[] } | null,
      apartmentsCount: number
      productData: PolarProduct | null
      payments: PolarOrder[] | null
@@ -56,11 +51,8 @@ interface ProfileTabsProps {
 
 export default function ProfileTabs({
      userData,
-     editMode,
-     setEditMode,
      customerSubscriptionObject,
      recentActivity,
-     subscriptionFeatures,
      apartmentsCount,
      productData,
      payments
@@ -107,7 +99,6 @@ export default function ProfileTabs({
                          <TabPanel value={tabValue} index={1}>
                               <SubscriptionTab
                                    customerSubscriptionObject={customerSubscriptionObject || null}
-                                   subsriptionFeatures={subscriptionFeatures}
                                    apartmentsCount={apartmentsCount}
                                    productData={productData}
                                    payments={payments}
