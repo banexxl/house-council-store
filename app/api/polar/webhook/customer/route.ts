@@ -15,6 +15,7 @@ function mapCustomerToRow(c: PolarCustomer) {
      return {
           customerId: c.id!,
           email: c.email!,
+          externalId: c.externalId,
           name: c.name!,
           emailVerified: c.emailVerified ?? false,
           organizationId: c.organizationId ?? null,
@@ -39,7 +40,7 @@ export const POST = Webhooks({
           const customer = payload.data;
           console.log('On customer created payload data: ', payload);
 
-          if (!customer.metadata['userId']) {
+          if (!customer.externalId) {
                await logServerAction({
                     user_id: null,
                     action: "customer.created - skipped (missing userId in metadata)",
@@ -61,7 +62,7 @@ export const POST = Webhooks({
                .single();
 
           await logServerAction({
-               user_id: customer.metadata['userId'] ? String(customer.metadata['userId']) : null,
+               user_id: customer.externalId,
                action: "customer.created - upsert tblPolarCustomers",
                payload: row,
                status: error ? "fail" : "success",
@@ -82,7 +83,7 @@ export const POST = Webhooks({
           const customer = payload.data;
           console.log('On customer updated payload data: ', payload);
           // If userId is missing, avoid insert risk (userId NOT NULL) -> update-only.
-          if (!customer.metadata['userId']) {
+          if (!customer.externalId) {
                const patch = {
                     email: customer.email,
                     name: customer.name,
@@ -105,7 +106,7 @@ export const POST = Webhooks({
                     .maybeSingle();
 
                await logServerAction({
-                    user_id: customer.metadata['userId'] ? String(customer.metadata['userId']) : null,
+                    user_id: customer.externalId ? String(customer.externalId) : null,
                     action: "customer.updated - update-only (missing userId in metadata)",
                     payload: { customerId: customer.id, patch },
                     status: error ? "fail" : "success",
@@ -127,7 +128,7 @@ export const POST = Webhooks({
                .single();
 
           await logServerAction({
-               user_id: customer.metadata['userId'] ? String(customer.metadata['userId']) : null,
+               user_id: customer.externalId ? String(customer.externalId) : null,
                action: "customer.updated - upsert tblPolarCustomers",
                payload: row,
                status: error ? "fail" : "success",
@@ -154,7 +155,7 @@ export const POST = Webhooks({
                modifiedAt: customer.modifiedAt ?? new Date().toISOString(),
           };
           await logServerAction({
-               user_id: customer.metadata['userId'] ? String(customer.metadata['userId']) : null,
+               user_id: customer.externalId ? String(customer.externalId) : null,
                action: "customer.deleted - mark deletedAt",
                payload: { customerId: customer.id, patch },
                status: "success",
@@ -189,7 +190,7 @@ export const POST = Webhooks({
                .maybeSingle();
 
           await logServerAction({
-               user_id: customer.metadata['userId'] ? String(customer.metadata['userId']) : null,
+               user_id: customer.externalId ? String(customer.externalId) : null,
                action: "customer.state_changed - snapshot in metadata",
                payload: { customerId: customer.id, patch },
                status: error ? "fail" : "success",
