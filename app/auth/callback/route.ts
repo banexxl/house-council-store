@@ -123,14 +123,13 @@ export async function GET(request: Request) {
      const sessionUser = sessionData.session.user;
      const userEmail = normalizeEmail(sessionUser.email);
      const userId = sessionUser.id;
-
      const { data: customerInsertData, error: customerInsertError } = await supabase.from('tblPolarCustomers').insert({
           externalId: userId,
           email: userEmail,
+          name: (sessionUser.user_metadata as any)?.full_name || (sessionUser.user_metadata as any)?.name || (sessionUser.user_metadata as any)?.contact_person || userEmail.split('@')[0],
           emailVerified: sessionUser.email_confirmed_at !== null,
           metadata: sessionUser.user_metadata,
      }).select().single();
-
      if (customerInsertError) {
           await logServerAction({
                action: 'Auth callback errored - Inserting user into tblPolarCustomers failed',
