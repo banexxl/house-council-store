@@ -18,23 +18,46 @@ function getAalFromJwt(accessToken?: string | null): "aal1" | "aal2" | null {
 }
 
 /**
- * Returns the session user ONLY when MFA is completed (AAL2).
- * If the user is signed in with password only (AAL1), returns null.
+ * Returns user if:
+ *  - session is AAL2 (MFA completed), OR
+ *  - session is AAL1 and user has NO verified TOTP factor enrolled
+ *
+ * Returns null if:
+ *  - no session, OR
+ *  - AAL1 + verified TOTP exists (user must complete OTP first)
  */
 export const getSessionUser = async (): Promise<User | null> => {
      const supabase = await useServerSideSupabaseAnonClient();
 
-     // First read the session (needed for access_token -> aal)
      const { data: sessionData, error: sessionErr } = await supabase.auth.getSession();
      if (sessionErr || !sessionData.session) return null;
 
      const aal = getAalFromJwt(sessionData.session.access_token);
-     if (aal !== "aal2") {
-          // Not fully verified yet (TOTP not done)
+
+     // If already AAL2 -> logged in
+     if (aal === "aal2") {
+          const { data: userData, error: userErr } = await supabase.auth.getUser();
+          if (userErr) return null;
+          return userData.user;
+     }
+
+     // AAL1: only treat as logged in if user has NO verified TOTP factor
+     const { data: factorsData, error: factorsErr } = await supabase.auth.mfa.listFactors();
+
+     // If we can't check factors, choose safe behavior:
+     // - return null (strict, prevents accidental access)
+     // - OR return user (lenient, prevents false logouts)
+     // I'd keep it strict:
+     if (factorsErr) return null;
+
+     const hasVerifiedTotp = !!factorsData?.totp?.some((f) => f.status === "verified");
+
+     if (hasVerifiedTotp) {
+          // MFA enrolled but not completed this session
           return null;
      }
 
-     // Now it's safe to treat as "logged in"
+     // No MFA enrolled -> logged in even with AAL1
      const { data: userData, error: userErr } = await supabase.auth.getUser();
      if (userErr) return null;
 

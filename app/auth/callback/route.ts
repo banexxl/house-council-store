@@ -1,8 +1,8 @@
-import { polar } from '@/app/lib/polar';
 import { logServerAction } from '@/app/lib/server-logging';
 import { useServerSideSupabaseServiceRoleClient } from '@/app/lib/ss-supabase-service-role-client';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { polar } from '@/app/lib/polar';
 
 function normalizeEmail(v?: string | null) {
      return (v ?? '').trim().toLowerCase();
@@ -122,115 +122,83 @@ export async function GET(request: Request) {
      // Extract the user's email from the session
      const sessionUser = sessionData.session.user;
      const userEmail = normalizeEmail(sessionUser.email);
+     const userId = sessionUser.id;
 
-     // Check if the user's email exists in tblPolarCustomers.
-     const { data, error: clientError } = await supabase
-          .from('tblPolarCustomers')
-          .select('*')
-          .eq('email', userEmail)
-     // If there's an error checking the email, log it and redirect to error page
-     if (clientError) {
-          await logServerAction({
-               action: 'Auth callback errored',
-               error: clientError.message,
-               duration_ms: Date.now() - start,
-               payload: { code, requestUrl },
-               status: 'fail',
-               user_id: null,
-               type: 'auth'
+     // Check if Polar customer already exists for this user
+     try {
+          // Search by email since that's the primary identifier
+          const existingCustomer = await polar.customers.list({
+               email: userEmail,
+               limit: 1,
           });
+          console.log('existingcustomer', existingCustomer);
 
-          await supabase.auth.signOut();
-          await supabase.auth.admin.deleteUser(sessionData.session.user.id);
-          const allCookies = cookieStore.getAll();
-          allCookies.forEach(cookie => cookieStore.delete(cookie.name));
-
-          const redirectUrl = `${requestUrl.origin}/auth/error?error=Error checking email in database.`;
-          return NextResponse.redirect(redirectUrl);
-     }
-
-     if (!data || data.length === 0) {
-          const user = sessionData.session.user;
-          const clientInsertData = {
-               name: (user as any).user_metadata?.contact_person || (user as any).user_metadata?.name || user.email,
-               email: user.email,
-               external: sessionData.session.user.id
-          };
-          const { data: insertData, error: insertError } = await supabase.from('tblPolarCustomers').insert(clientInsertData);
-          insertData ?? await logServerAction({
-               action: 'Auth callback success',
-               error: 'Successfully inserted new user into tblPolarCustomers',
-               duration_ms: Date.now() - start,
-               payload: { code, requestUrl },
-               status: 'success',
-               user_id: null,
-               type: 'auth'
-          });
-
-          if (insertError) {
-               insertError ?? await logServerAction({
-                    action: 'Auth callback errored',
-                    error: 'Failed to insert new user into tblPolarCustomers',
-                    duration_ms: Date.now() - start,
-                    payload: { code, requestUrl },
-                    status: 'fail',
-                    user_id: null,
-                    type: 'auth'
-               });
-
-
-               await supabase.auth.signOut();
-               const allCookies = cookieStore.getAll();
-               allCookies.forEach(cookie => cookieStore.delete(cookie.name));
-
-               const redirectUrl = `${requestUrl.origin}/auth/error?error=Failed to create user.`;
-               return NextResponse.redirect(redirectUrl);
-          } else {
+          if (existingCustomer.result && existingCustomer.result.items.length > 0) {
+               // Customer already exists, proceed to login
                await logServerAction({
-                    action: 'Auth callback success',
+                    action: 'Signed in with Google account (existing customer)',
                     error: '',
                     duration_ms: Date.now() - start,
-                    payload: { code, requestUrl },
+                    payload: { code, requestUrl, customerId: existingCustomer.result.items[0].id },
                     status: 'success',
-                    user_id: null,
+                    user_id: userId,
                     type: 'auth'
                });
-          }
-     }
 
-     if (data && data.length > 1) {
+               const dashboardUrl = `${requestUrl.origin}`;
+               return NextResponse.redirect(dashboardUrl);
+          }
+
+          // Customer doesn't exist, create new Polar customer
+          const userName = (sessionUser as any).user_metadata?.full_name
+               || (sessionUser as any).user_metadata?.name
+               || (sessionUser as any).user_metadata?.contact_person
+               || userEmail.split('@')[0];
+
+          const polarCustomer = await polar.customers.create({
+               email: userEmail,
+               name: userName,
+               metadata: { userId },
+          });
+
           await logServerAction({
-               action: 'Auth callback errored',
-               error: 'Duplicate email found in tblPolarCustomers.',
+               action: 'Signed in with Google account (new customer created)',
+               error: '',
                duration_ms: Date.now() - start,
-               payload: { code, requestUrl },
-               status: 'fail',
-               user_id: null,
+               payload: {
+                    code,
+                    requestUrl,
+                    customerId: polarCustomer.id,
+                    email: userEmail,
+                    name: userName,
+               },
+               status: 'success',
+               user_id: userId,
                type: 'auth'
           });
-          await supabase.auth.signOut();
 
-          const { data: deleteData, error: deleteError } = await supabase.auth.admin.deleteUser(sessionData.session.user.id);
+          const dashboardUrl = `${requestUrl.origin}`;
+          return NextResponse.redirect(dashboardUrl);
+
+     } catch (customerError: any) {
+          // If Polar customer creation fails, delete the auth user and sign out
+          await logServerAction({
+               action: 'Auth callback errored - Polar customer creation failed',
+               error: customerError.message || String(customerError),
+               duration_ms: Date.now() - start,
+               payload: { code, requestUrl, email: userEmail },
+               status: 'fail',
+               user_id: userId,
+               type: 'auth'
+          });
+
+          await supabase.auth.signOut();
+          await supabase.auth.admin.deleteUser(userId);
+
           const allCookies = cookieStore.getAll();
           allCookies.forEach(cookie => cookieStore.delete(cookie.name));
-          const redirectUrl = `${requestUrl.origin}/auth/error?error=Duplicate email found in tblPolarCustomers. Please contact support.`;
+
+          const redirectUrl = `${requestUrl.origin}/auth/error?error=Failed to create customer account. Please try again or contact support.`;
           return NextResponse.redirect(redirectUrl);
      }
-
-     // Final log for successful sign-in
-     await logServerAction({
-          action: 'Signed in with Google account',
-          error: '',
-          duration_ms: Date.now() - start,
-          payload: { code, requestUrl },
-          status: 'success',
-          user_id: sessionData.session.user.id,
-          type: 'auth'
-     });
-
-     // Redirect to dashboard with absolute URL
-     const dashboardUrl = `${requestUrl.origin}`;
-     console.log('SUCCESS: Redirecting to dashboard:', dashboardUrl);
-     console.log('Total callback processing time:', Date.now() - start, 'ms');
-     return NextResponse.redirect(dashboardUrl);
 }

@@ -27,9 +27,10 @@ export async function middleware(request: NextRequest) {
                          return request.cookies.getAll();
                     },
                     setAll(cookiesToSet) {
-                         cookiesToSet.forEach(({ name, value, options }) =>
-                              request.cookies.set(name, value)
-                         );
+                         cookiesToSet.forEach(({ name, value, options }) => {
+                              supabaseResponse.cookies.set(name, value, options);
+                         });
+
 
                          supabaseResponse = NextResponse.next({ request });
 
@@ -47,7 +48,6 @@ export async function middleware(request: NextRequest) {
      // Public routes (no auth needed)
      // -----------------------------
      const publicRoutes = [
-          "/", // keep if your homepage is public marketing; remove if "/" is your app dashboard
           "/auth/sign-in",
           "/auth/callback",
           "/auth/error",
@@ -89,7 +89,7 @@ export async function middleware(request: NextRequest) {
      }
 
      // -----------------------------
-     // Authenticated: enforce MFA (AAL2) on protected routes
+     // Authenticated: enforce MFA (AAL2) ONLY if the user has a verified TOTP factor
      // -----------------------------
      const isProtectedRoute = !isPublicRoute;
 
@@ -97,16 +97,37 @@ export async function middleware(request: NextRequest) {
           const aal = getAalFromJwt(session?.access_token);
 
           if (aal !== "aal2") {
-               // redirect to sign-in with a hint to show OTP UI
+               // Check if user actually has MFA enrolled (verified TOTP)
+               const { data: factorsData, error: factorsErr } = await supabase.auth.mfa.listFactors();
+
+               // If we can't read factors, be conservative: require MFA only if you want strict behavior.
+               // Here we choose: if factors can't be checked, DO NOT force MFA (prevents lockouts).
+               if (factorsErr) {
+                    return supabaseResponse;
+               }
+
+               const hasVerifiedTotp =
+                    !!factorsData?.totp?.some((f) => f.status === "verified");
+
+               // ✅ If no verified TOTP, do NOT force OTP
+               if (!hasVerifiedTotp) {
+                    return supabaseResponse;
+               }
+
+               // ✅ Verified TOTP exists -> force OTP
                const url = request.nextUrl.clone();
                url.pathname = "/auth/sign-in";
                url.searchParams.set("mfa", "1");
-               url.searchParams.set("next", pathname); // optional: return after verification
+               url.searchParams.set("next", pathname);
                return NextResponse.redirect(url);
           }
      }
 
-     // Optional: if you're already AAL2, keep your old behavior (bounce away from auth pages)
+
+     /// -----------------------------
+     // Bounce authenticated users away from auth pages
+     // BUT allow /auth/sign-in when MFA is enrolled and not yet completed
+     // -----------------------------
      const authPagesToBounce = [
           "/auth/sign-in",
           "/auth/register",
@@ -114,12 +135,33 @@ export async function middleware(request: NextRequest) {
           "/auth/registration-confirmed",
      ];
 
-     const aal = getAalFromJwt(session?.access_token);
-     if (aal === "aal2" && authPagesToBounce.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
-          return NextResponse.redirect(new URL("/", request.url));
+     if (authPagesToBounce.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
+          const aal = getAalFromJwt(session?.access_token);
+
+          if (aal === "aal2") {
+               // Fully authed -> bounce
+               return NextResponse.redirect(new URL("/", request.url));
+          }
+
+          // AAL1: bounce ONLY if user has no verified TOTP (i.e. MFA not enrolled)
+          const { data: factorsData, error: factorsErr } = await supabase.auth.mfa.listFactors();
+
+          // If we can't check factors, don't bounce to avoid trapping users
+          if (factorsErr) {
+               return supabaseResponse;
+          }
+
+          const hasVerifiedTotp = !!factorsData?.totp?.some((f) => f.status === "verified");
+
+          if (!hasVerifiedTotp) {
+               // Logged in, no MFA enrolled -> bounce away from auth pages
+               return NextResponse.redirect(new URL("/", request.url));
+          }
+
+          // Has MFA enrolled but session is AAL1 -> allow /auth/sign-in (they must enter OTP)
+          return supabaseResponse;
      }
 
-     return supabaseResponse;
 }
 
 export const config = {
