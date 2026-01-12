@@ -15,7 +15,7 @@ function mapCustomerToRow(c: PolarCustomer) {
      return {
           customerId: c.id!,
           email: c.email!,
-          externalId: c.externalId,
+          externalId: c.metadata?.userId ? String(c.metadata.userId) : null,
           name: c.name!,
           emailVerified: c.emailVerified ?? false,
           organizationId: c.organizationId ?? null,
