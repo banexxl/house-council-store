@@ -150,34 +150,21 @@ export const POST = Webhooks({
           const t0 = Date.now();
           const customer = payload.data;
           console.log('On customer deleted payload data: ', payload);
+
+          //Just loggin the deletedAt timestamp since the delete will be handled in a server action
           const patch = {
                deletedAt: customer.deletedAt ?? new Date().toISOString(),
                modifiedAt: customer.modifiedAt ?? new Date().toISOString(),
-               // keep snapshot fields fresh
-               email: customer.email,
-               name: customer.name,
-               metadata: customer.metadata ?? {},
           };
-
-          const { data, error } = await supabase
-               .from("tblPolarCustomers")
-               .update(patch)
-               .eq("customerId", customer.id)
-               .select()
-               .maybeSingle();
-
           await logServerAction({
                user_id: customer.externalId ?? null,
                action: "customer.deleted - mark deletedAt",
                payload: { customerId: customer.id, patch },
-               status: error ? "fail" : "success",
-               error: error?.message || "",
+               status: "success",
+               error: "",
                duration_ms: Date.now() - t0,
                type: "webhook",
           });
-
-          if (error) throw error;
-          return data;
      },
 
      // ---------------------------

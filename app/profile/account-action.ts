@@ -6,6 +6,7 @@ import { logServerAction } from "../lib/server-logging";
 import { ActivityItem } from "./components/profile-sidebar";
 import { useServerSideSupabaseAnonClient } from "../lib/ss-supabase-anon-client";
 import { PolarCustomer } from "../types/polar-customer-types";
+import { polar } from "../lib/polar";
 
 export const logoutUserAction = async (): Promise<string | null> => {
      const startTime = Date.now();
@@ -59,22 +60,23 @@ export const deleteAccountAction = async (clientId: string, clientEmail: string)
           return { success: false, error: error.message }
      }
 
-     const { data: deleteClientData, error: deleteClientError } = await supabase
-          .from('tblPolarCustomers')
-          .delete()
-          .eq('email', clientEmail);
-     if (deleteClientError) {
-
+     // Delete Polar customer via API
+     let deleteCustomerResult
+     try {
+          deleteCustomerResult = await polar.customers.delete({
+               id: clientEmail
+          });
+     } catch (error: any) {
           await logServerAction({
                user_id: clientId,
-               action: 'Delete Account - Error for tblPolarCustomers table.',
-               payload: {},
+               action: 'Delete Account - Error deleting Polar customer via API.',
+               payload: { email: clientEmail },
                status: 'fail',
-               error: deleteClientError.message,
+               error: JSON.stringify(deleteCustomerResult) || error.message || 'Unknown error',
                duration_ms: Date.now() - startTime,
-               type: 'auth'
+               type: 'api'
           })
-          return { success: false, error: deleteClientError.message }
+          return { success: false, error: error.message || 'Failed to delete Polar customer' }
      }
 
      await logServerAction({
