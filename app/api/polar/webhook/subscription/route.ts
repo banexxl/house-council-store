@@ -30,7 +30,7 @@ async function convertToPolarSubscription(subscription: any): Promise<PolarSubsc
                ...(subscription.metadata || {}),
                apartmentCount, // Add apartment count to metadata
           },
-          amount: subscription.amount,
+          amount: Number(subscription.amount * apartmentCount),
           currency: subscription.currency,
           recurringInterval: subscription.recurringInterval ?? subscription.recurring_interval,
           recurringIntervalCount: subscription.recurringIntervalCount ?? subscription.recurring_interval_count,
