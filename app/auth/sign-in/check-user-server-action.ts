@@ -17,7 +17,7 @@ export async function checkUserPermissionServer(email: string): Promise<{ succes
 
      const { data: customerData, error: customerError } = await supabase
           .from('tblPolarCustomers')
-          .select('email, userId')
+          .select('email, externalId')
           .eq('email', email)
           // And non deleted customers only
           .is('deletedAt', null)
@@ -59,7 +59,7 @@ export async function checkUserPermissionServer(email: string): Promise<{ succes
      }
 
      // If no userId, user setup is incomplete
-     if (!customerData?.userId) {
+     if (!customerData?.externalId) {
           return {
                success: false,
                error: {
@@ -73,7 +73,7 @@ export async function checkUserPermissionServer(email: string): Promise<{ succes
 
      // Get auth user with service role client
      const supabaseAdmin = await useServerSideSupabaseServiceRoleClient();
-     const { data, error } = await supabaseAdmin.auth.admin.getUserById(customerData.userId);
+     const { data, error } = await supabaseAdmin.auth.admin.getUserById(customerData.externalId);
 
      // If auth user found, check their status
      if (data?.user) {
