@@ -171,16 +171,12 @@ export async function GET(request: Request) {
                return NextResponse.redirect(dashboardUrl);
           }
 
-          // Customer doesn't exist, create new Polar customer
-          const userName = (sessionUser as any).user_metadata?.full_name
-               || (sessionUser as any).user_metadata?.name
-               || (sessionUser as any).user_metadata?.contact_person
-               || userEmail.split('@')[0];
-
           const polarCustomer = await polar.customers.create({
-               email: userEmail,
-               name: userName,
-               metadata: { userId },
+               email: sessionData.session.user.email || '',
+               name: (sessionUser.user_metadata as any)?.full_name || (sessionUser.user_metadata as any)?.name || (sessionUser.user_metadata as any)?.contact_person || userEmail.split('@')[0],
+               metadata: {
+                    userId: sessionUser.id,
+               }
           });
 
           await logServerAction({
@@ -191,8 +187,8 @@ export async function GET(request: Request) {
                     code,
                     requestUrl,
                     customerId: polarCustomer.id,
-                    email: userEmail,
-                    name: userName,
+                    email: sessionData.session.user.email || '',
+                    name: (sessionUser.user_metadata as any)?.full_name || (sessionUser.user_metadata as any)?.name || (sessionUser.user_metadata as any)?.contact_person || userEmail.split('@')[0],
                },
                status: 'success',
                user_id: userId,
