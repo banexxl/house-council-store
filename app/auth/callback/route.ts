@@ -124,12 +124,24 @@ export async function GET(request: Request) {
      const userEmail = normalizeEmail(sessionUser.email);
      const userId = sessionUser.id;
 
-     const { } = supabase.from('tblPolarCustomers').insert({
+     const { data: customerInsertData, error: customerInsertError } = await supabase.from('tblPolarCustomers').insert({
           externalId: userId,
           email: userEmail,
           emailVerified: sessionUser.email_confirmed_at !== null,
           metadata: sessionUser.user_metadata,
-     })
+     }).select().single();
+
+     if (customerInsertError) {
+          await logServerAction({
+               action: 'Auth callback errored - Inserting user into tblPolarCustomers failed',
+               error: customerInsertError.message,
+               duration_ms: Date.now() - start,
+               payload: { code, requestUrl, email: userEmail },
+               status: 'fail',
+               user_id: userId,
+               type: 'auth'
+          });
+     }
      // Check if Polar customer already exists for this user
      try {
           // Search by email since that's the primary identifier
