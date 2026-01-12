@@ -6,6 +6,7 @@ import { logServerAction } from "../lib/server-logging";
 import { useServerSideSupabaseAnonClient } from "../lib/ss-supabase-anon-client";
 import { PolarSubscription } from "../types/polar-subscription-types";
 import { PolarProduct, PolarProductPrice } from "../types/polar-product-types";
+import { PolarOrder } from "../types/polar-order-types";
 import { useServerSideSupabaseServiceRoleClient } from "../lib/ss-supabase-service-role-client";
 
 
@@ -434,3 +435,46 @@ export const readProductFromSubscriptionId = async (subscriptionPlanId: string):
      return { success: true, product };
 }
 
+export const readOrdersByCustomerId = async (customerId: string): Promise<{
+     success: boolean;
+     orders?: PolarOrder[];
+     error?: string;
+}> => {
+     if (!customerId) {
+          return { success: false, error: "Customer ID is required" };
+     }
+
+     const supabase = await useServerSideSupabaseAnonClient();
+     const userId = (await supabase.auth.getUser()).data.user?.id;
+
+     const { data: orders, error: ordersError } = await supabase
+          .from("tblPolarOrders")
+          .select("*")
+          .eq("customerId", customerId)
+          .order("createdAt", { ascending: false });
+
+     if (ordersError) {
+          await logServerAction({
+               user_id: userId ?? null,
+               action: "Read Orders by Customer ID - Query Failed",
+               payload: { customerId, error: ordersError.message },
+               status: "fail",
+               error: ordersError.message,
+               duration_ms: 0,
+               type: "db",
+          });
+          return { success: false, error: ordersError.message };
+     }
+
+     await logServerAction({
+          user_id: userId ?? null,
+          action: "Read Orders by Customer ID - Success",
+          payload: { customerId, orderCount: orders?.length ?? 0 },
+          status: "success",
+          error: "",
+          duration_ms: 0,
+          type: "db",
+     });
+
+     return { success: true, orders: orders as PolarOrder[] ?? [] };
+};

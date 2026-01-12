@@ -5,7 +5,7 @@ import { Header } from "@/app/components/header";
 import { ProfilePage } from "./profile";
 import { readAccountByEmailAction, readAllApartmentsByClientId, readClientRecentActivityAction } from "./account-action";
 import { User } from "@supabase/supabase-js";
-import { readCustomerSubscriptionPlanFromCustomerId, readSubscriptionPlanFeatures, readProductFromSubscriptionId } from "./subscription-plan-actions";
+import { readCustomerSubscriptionPlanFromCustomerId, readSubscriptionPlanFeatures, readProductFromSubscriptionId, readOrdersByCustomerId } from "./subscription-plan-actions";
 import { redirect } from "next/navigation";
 import { buildCanonicalUrl } from "../lib/seo";
 
@@ -52,10 +52,11 @@ export default async function Page() {
      }
 
      // Fetch related data in parallel
-     const [customerSubscriptionObject, recentActivity, apartments] = await Promise.all([
+     const [customerSubscriptionObject, recentActivity, apartments, ordersResult] = await Promise.all([
           readCustomerSubscriptionPlanFromCustomerId(customer.customerId!),
           readClientRecentActivityAction(user.email, customer.id),
           readAllApartmentsByClientId(customer.id),
+          readOrdersByCustomerId(customer.customerId!),
      ])
 
      const subscriptionFeatures = await readSubscriptionPlanFeatures(customerSubscriptionObject.customerSubscriptionPlanData?.id ?? null)
@@ -86,6 +87,7 @@ export default async function Page() {
                     subscriptionFeatures={subscriptionFeatures?.subscriptionPlanFeatures ?? null}
                     apartmentsCount={apartments ? apartments?.data!.length : 0}
                     productData={productData?.product ?? null}
+                    payments={ordersResult?.orders ?? null}
                />
                <Footer />
           </>

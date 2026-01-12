@@ -10,7 +10,8 @@ import {
      ListItemIcon,
      ListItemText,
      useTheme,
-     Tooltip
+     Tooltip,
+     Pagination
 } from "@mui/material"
 import {
      CalendarToday as CalendarTodayIcon,
@@ -28,6 +29,7 @@ import Link from "next/link"
 import { initPolarSubscriptionRealtime, type InitListenerOptions } from "@/app/lib/sb-realtime"
 import { PolarSubscription } from "@/app/types/polar-subscription-types"
 import { PolarProduct } from "@/app/types/polar-product-types"
+import { PolarOrder } from "@/app/types/polar-order-types"
 import log from "@/app/lib/logger"
 
 interface SubscriptionTabProps {
@@ -35,6 +37,7 @@ interface SubscriptionTabProps {
      subsriptionFeatures?: SubscriptionPlan & { features: Feature[] } | null;
      apartmentsCount: number
      productData: PolarProduct | null
+     payments?: PolarOrder[] | null
 }
 
 type ClientSubscriptionWithOptionalPlan = PolarSubscription & { subscription_plan?: SubscriptionPlan }
@@ -44,8 +47,10 @@ const isClientSubscriptionRecord = (record: unknown): record is ClientSubscripti
      return "id" in record && "status" in record
 }
 
-export default function SubscriptionTab({ customerSubscriptionObject, subsriptionFeatures, apartmentsCount, productData }: SubscriptionTabProps) {
+export default function SubscriptionTab({ customerSubscriptionObject, subsriptionFeatures, apartmentsCount, productData, payments }: SubscriptionTabProps) {
      const [subscriptionData, setSubscriptionData] = useState<ClientSubscriptionWithOptionalPlan | null>(customerSubscriptionObject)
+     const [currentPage, setCurrentPage] = useState(1)
+     const itemsPerPage = 5
 
      useEffect(() => {
           setSubscriptionData(customerSubscriptionObject)
@@ -440,37 +445,100 @@ export default function SubscriptionTab({ customerSubscriptionObject, subsriptio
                </Card>
                <Card>
                     <CardContent>
-                         {!subsriptionFeatures && (
-                              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                                   <Typography variant="h6">
-                                        No Subscription plan selected...
-                                   </Typography>
-                              </Box>
-                         )}
-                         {subsriptionFeatures && (
-                              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                                   <Typography variant="h6">
-                                        Features Included in {' '}
-                                        <Typography component="span" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
-                                             {productData?.name ?? subsriptionFeatures?.name}
-                                        </Typography> Plan:
-                                   </Typography>
-                              </Box>
-                         )}
-
                          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                              <List dense={true}>
-                                   {subsriptionFeatures?.features.map((feature, index) => (
-                                        <ListItem key={index} component={Link} href={`/docs#${feature.slug!}`} sx={{ cursor: "pointer" }}>
-                                             <ListItemIcon>
-                                                  <CheckCircleIcon fontSize="small" color="success" />
-                                             </ListItemIcon>
-                                             <Tooltip title={'Learn more about ' + feature.name} placement={'right'}>
-                                                  <ListItemText primary={feature.name} sx={{ color: theme.palette.primary.main }} />
-                                             </Tooltip>
-                                        </ListItem>
-                                   ))}
-                              </List>
+                              <Typography variant="h6">
+                                   Payment History
+                                   {productData?.name && (
+                                        <Typography component="span" sx={{ fontWeight: 600, color: theme.palette.primary.main, ml: 1 }}>
+                                             - {productData.name} Plan
+                                        </Typography>
+                                   )}
+                              </Typography>
+                         </Box>
+
+                         <Box sx={{ mb: 2 }}>
+                              {!payments || payments.length === 0 ? (
+                                   <Alert severity="info">
+                                        No payment history available.
+                                   </Alert>
+                              ) : (
+                                   <>
+                                        <List dense={true}>
+                                             {payments
+                                                  .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                                                  .map((payment) => {
+                                                       const statusColor =
+                                                            payment.status === "paid" ? "success" :
+                                                                 payment.status === "refunded" ? "error" :
+                                                                      payment.status === "partially_refunded" ? "warning" : "default";
+
+                                                       return (
+                                                            <ListItem
+                                                                 key={payment.id}
+                                                                 sx={{
+                                                                      border: 1,
+                                                                      borderColor: "divider",
+                                                                      borderRadius: 1,
+                                                                      mb: 1,
+                                                                      backgroundColor: "background.paper"
+                                                                 }}
+                                                            >
+                                                                 <ListItemIcon>
+                                                                      <ReceiptIcon fontSize="small" color={statusColor as any} />
+                                                                 </ListItemIcon>
+                                                                 <ListItemText
+                                                                      primary={
+                                                                           <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                                                                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                                                                     {currencyFormatter.format(payment.totalAmount / 100)}
+                                                                                </Typography>
+                                                                                <Chip
+                                                                                     label={payment.status.toUpperCase()}
+                                                                                     size="small"
+                                                                                     color={statusColor as any}
+                                                                                />
+                                                                           </Box>
+                                                                      }
+                                                                      secondary={
+                                                                           <Box>
+                                                                                <Typography variant="caption" color="text.secondary">
+                                                                                     {new Date(payment.createdAt).toLocaleDateString("en-US", {
+                                                                                          year: "numeric",
+                                                                                          month: "long",
+                                                                                          day: "numeric"
+                                                                                     })}
+                                                                                </Typography>
+                                                                                {payment.invoiceNumber && (
+                                                                                     <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
+                                                                                          Invoice: {payment.invoiceNumber}
+                                                                                     </Typography>
+                                                                                )}
+                                                                                {payment.refundedAmount > 0 && (
+                                                                                     <Typography variant="caption" color="error.main" sx={{ display: "block" }}>
+                                                                                          Refunded: {currencyFormatter.format(payment.refundedAmount / 100)}
+                                                                                     </Typography>
+                                                                                )}
+                                                                           </Box>
+                                                                      }
+                                                                 />
+                                                            </ListItem>
+                                                       );
+                                                  })}
+                                        </List>
+                                        {payments.length > itemsPerPage && (
+                                             <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+                                                  <Pagination
+                                                       count={Math.ceil(payments.length / itemsPerPage)}
+                                                       page={currentPage}
+                                                       onChange={(event, page) => setCurrentPage(page)}
+                                                       color="primary"
+                                                       showFirstButton
+                                                       showLastButton
+                                                  />
+                                             </Box>
+                                        )}
+                                   </>
+                              )}
                          </Box>
                     </CardContent>
                </Card>

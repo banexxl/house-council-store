@@ -11,6 +11,7 @@ import Animate from "@/app/components/animation-framer-motion"
 import { PolarSubscription } from "../types/polar-subscription-types"
 import { PolarCustomer } from "../types/polar-customer-types"
 import { PolarProduct } from "../types/polar-product-types"
+import { PolarOrder } from "../types/polar-order-types"
 
 type ProfilePageProps = {
      sessionAndCustomerDataCombined?: { customer: PolarCustomer, session: User }
@@ -20,6 +21,7 @@ type ProfilePageProps = {
      subscriptionFeatures: SubscriptionPlan & { features: Feature[] } | null
      apartmentsCount: number
      productData: PolarProduct | null
+     payments: PolarOrder[] | null
 }
 export const ProfilePage = ({
      sessionAndCustomerDataCombined,
@@ -28,7 +30,8 @@ export const ProfilePage = ({
      binCheckerAPIKey,
      subscriptionFeatures,
      apartmentsCount,
-     productData
+     productData,
+     payments
 }: ProfilePageProps) => {
 
      const [editMode, setEditMode] = useState(false)
@@ -62,6 +65,7 @@ export const ProfilePage = ({
                                              apartmentsCount={apartmentsCount}
                                              subscriptionFeatures={subscriptionFeatures}
                                              productData={productData}
+                                             payments={payments}
                                         />
                                    </Grid>
                               </Grid>

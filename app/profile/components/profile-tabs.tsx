@@ -17,6 +17,7 @@ import SubscriptionTab from "./tabs/subscription-tab"
 import { PolarSubscription } from "@/app/types/polar-subscription-types"
 import { PolarCustomer } from "@/app/types/polar-customer-types"
 import { PolarProduct } from "@/app/types/polar-product-types"
+import { PolarOrder } from "@/app/types/polar-order-types"
 
 interface TabPanelProps {
      children?: React.ReactNode
@@ -50,6 +51,7 @@ interface ProfileTabsProps {
      subscriptionFeatures?: SubscriptionPlan & { features: Feature[] } | null,
      apartmentsCount: number
      productData: PolarProduct | null
+     payments: PolarOrder[] | null
 }
 
 export default function ProfileTabs({
@@ -60,7 +62,8 @@ export default function ProfileTabs({
      recentActivity,
      subscriptionFeatures,
      apartmentsCount,
-     productData
+     productData,
+     payments
 }: ProfileTabsProps) {
 
      const [tabValue, setTabValue] = useState(0)
@@ -107,6 +110,7 @@ export default function ProfileTabs({
                                    subsriptionFeatures={subscriptionFeatures}
                                    apartmentsCount={apartmentsCount}
                                    productData={productData}
+                                   payments={payments}
                               />
                          </TabPanel>
 
