@@ -34,29 +34,12 @@ export default async function Page() {
      // Fetch client data
      const { customer, error } = await readAccountByEmailAction(user.email);
 
-     if (!customer || error) {
-          // Customer not found but user is authenticated - show error instead of redirect loop
-          return (
-               <>
-                    <Header user={user} />
-                    <div style={{ padding: '2rem', textAlign: 'center' }}>
-                         <h1>Account Setup Required</h1>
-                         <p>Your account is authenticated but customer data is missing.</p>
-                         <p>Email: {user.email}</p>
-                         <p>Please contact support or complete your registration.</p>
-                         {error && <p style={{ color: 'red' }}>Error: {error}</p>}
-                    </div>
-                    <Footer />
-               </>
-          );
-     }
-
      // Fetch related data in parallel
      const [customerSubscriptionObject, recentActivity, apartments, ordersResult] = await Promise.all([
-          readCustomerSubscriptionPlanFromCustomerId(customer.customerId!),
-          readClientRecentActivityAction(user.email, customer.id),
-          readAllApartmentsByClientId(customer.id),
-          readOrdersByCustomerId(customer.customerId!),
+          readCustomerSubscriptionPlanFromCustomerId(customer!.customerId!),
+          readClientRecentActivityAction(user.email, customer!.id),
+          readAllApartmentsByClientId(customer!.id),
+          readOrdersByCustomerId(customer!.customerId!),
      ])
 
      // Fetch product data from subscription's productId
@@ -67,7 +50,7 @@ export default async function Page() {
      // Merge session and client data
      const sessionAndCustomerDataCombined = {
           customer: {
-               ...customer,
+               ...customer!,
           },
           session: { ...user },
      };

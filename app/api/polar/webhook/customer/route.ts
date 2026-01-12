@@ -13,8 +13,8 @@ const supabase = createClient(
 
 function mapCustomerToRow(c: PolarCustomer) {
      return {
-          customerId: c.id!,          // ✅ NOT NULL in your table
-          userId: c.externalId!,     // ✅ NOT NULL in your table (must be present)
+          customerId: c.id!,
+          userId: c.metadata['userId']!,
 
           email: c.email!,
           name: c.name!,
@@ -41,14 +41,13 @@ export const POST = Webhooks({
           const customer = payload.data;
           console.log('On customer created payload data: ', payload);
 
-          if (!customer.externalId) {
+          if (!customer.metadata['userId']) {
                await logServerAction({
                     user_id: null,
-                    action: "customer.created - skipped (missing externalId)",
+                    action: "customer.created - skipped (missing userId in metadata)",
                     payload,
                     status: "fail",
-                    error:
-                         "customer.externalId is null; cannot insert because tblPolarCustomers.userId is NOT NULL. Ensure you set externalId=userId when creating the Polar customer.",
+                    error: "Missing userId in metadata",
                     duration_ms: Date.now() - t0,
                     type: "webhook",
                });
@@ -64,7 +63,7 @@ export const POST = Webhooks({
                .single();
 
           await logServerAction({
-               user_id: customer.externalId,
+               user_id: customer.metadata['userId'] ? String(customer.metadata['userId']) : null,
                action: "customer.created - upsert tblPolarCustomers",
                payload: row,
                status: error ? "fail" : "success",
@@ -84,8 +83,8 @@ export const POST = Webhooks({
           const t0 = Date.now();
           const customer = payload.data;
           console.log('On customer updated payload data: ', payload);
-          // If externalId is missing, avoid insert risk (userId NOT NULL) -> update-only.
-          if (!customer.externalId) {
+          // If userId is missing, avoid insert risk (userId NOT NULL) -> update-only.
+          if (!customer.metadata['userId']) {
                const patch = {
                     email: customer.email,
                     name: customer.name,
@@ -108,8 +107,8 @@ export const POST = Webhooks({
                     .maybeSingle();
 
                await logServerAction({
-                    user_id: null,
-                    action: "customer.updated - update-only (missing externalId)",
+                    user_id: customer.metadata['userId'] ? String(customer.metadata['userId']) : null,
+                    action: "customer.updated - update-only (missing userId in metadata)",
                     payload: { customerId: customer.id, patch },
                     status: error ? "fail" : "success",
                     error: error?.message || "",
@@ -130,7 +129,7 @@ export const POST = Webhooks({
                .single();
 
           await logServerAction({
-               user_id: customer.externalId,
+               user_id: customer.metadata['userId'] ? String(customer.metadata['userId']) : null,
                action: "customer.updated - upsert tblPolarCustomers",
                payload: row,
                status: error ? "fail" : "success",
@@ -157,7 +156,7 @@ export const POST = Webhooks({
                modifiedAt: customer.modifiedAt ?? new Date().toISOString(),
           };
           await logServerAction({
-               user_id: customer.externalId ?? null,
+               user_id: customer.metadata['userId'] ? String(customer.metadata['userId']) : null,
                action: "customer.deleted - mark deletedAt",
                payload: { customerId: customer.id, patch },
                status: "success",
@@ -192,7 +191,7 @@ export const POST = Webhooks({
                .maybeSingle();
 
           await logServerAction({
-               user_id: customer.externalId ?? null,
+               user_id: customer.metadata['userId'] ? String(customer.metadata['userId']) : null,
                action: "customer.state_changed - snapshot in metadata",
                payload: { customerId: customer.id, patch },
                status: error ? "fail" : "success",
