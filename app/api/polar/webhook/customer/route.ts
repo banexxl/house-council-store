@@ -14,7 +14,6 @@ const supabase = createClient(
 function mapCustomerToRow(c: PolarCustomer) {
      return {
           customerId: c.id!,
-          externalId: c.metadata['userId']!,
           email: c.email!,
           name: c.name!,
           emailVerified: c.emailVerified ?? false,
