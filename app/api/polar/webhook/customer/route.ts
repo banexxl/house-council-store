@@ -57,7 +57,7 @@ export const POST = Webhooks({
 
           const { data, error } = await supabase
                .from("tblPolarCustomers")
-               .upsert(row, { onConflict: "customerId" })
+               .upsert(row, { onConflict: "email" })
                .select()
                .single();
 
