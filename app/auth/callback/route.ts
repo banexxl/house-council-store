@@ -144,6 +144,7 @@ export async function GET(request: Request) {
           // Rollback by deleting the auth user
           await supabase.auth.signOut();
           await supabase.auth.admin.deleteUser(userId);
+          throw customerInsertError;
      }
      // Check if Polar customer already exists for this user
      try {
