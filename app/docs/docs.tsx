@@ -34,7 +34,7 @@ type DocSection = {
      title: string
      description: string
      bullets?: string[]
-     role?: "Client" | "Member" | "Tenant" | "Platform"
+     role?: "Client" | "Tenant" | "Platform"
      tags?: string[]
 }
 
@@ -71,11 +71,10 @@ const sections: DocSection[] = [
           navLabel: "Setup",
           title: "Initial Setup",
           description:
-               "After subscription/signup, the Client (Owner/Manager) configures the organization and first building. This is the foundation for apartments, seats (members), and tenant invitations.",
+               "After subscription/signup, the Client (Owner/Manager) configures the organization and first building. This is the foundation for apartments and tenant invitations.",
           bullets: [
                "Create your first Building (address, city, building settings)",
                "Add Apartments/Units and optionally attach owners/tenants later",
-               "Create Client Members (reserved seats) with specific permissions",
                "Invite Tenants to apartments via email/phone/invite link",
           ],
           role: "Client",
@@ -88,7 +87,6 @@ const sections: DocSection[] = [
                "NestLink is role-based by design. Permissions ensure people see only what they should and can perform only the actions assigned to them.",
           bullets: [
                "Client (Owner/Manager): subscription + configuration + full building management",
-               "Client Members: same dashboard, limited permissions (moderation/incidents/announcements/polls, etc.)",
                "Tenants: mobile/web tenant experience (announcements, posts, polls, incident reporting, etc.)",
           ],
           role: "Platform",
@@ -153,7 +151,6 @@ const sections: DocSection[] = [
                "Create posts with text and optional images (where enabled)",
                "Comment threads keep context in one place",
                "Like/react to posts and comments (optional feature depending on your implementation)",
-               "Moderation tools can be enabled for Client Members (remove/hide content)",
           ],
           role: "Platform",
           tags: ["feed", "discussion", "moderation"],
@@ -163,7 +160,7 @@ const sections: DocSection[] = [
           navLabel: "Polls & Voting",
           title: "Polls & Voting",
           description:
-               "Polls enable transparent decisions. Clients/Members create a poll, tenants vote, and results are tracked clearly. Perfect for repairs, budgets, contractor selection, and building rules.",
+               "Polls enable transparent decisions. Clients create a poll, tenants vote, and results are tracked clearly. Perfect for repairs, budgets, contractor selection, and building rules.",
           bullets: [
                "Create polls with question, options, and voting window (open/close dates)",
                "Track participation and outcomes in a transparent way",
@@ -179,12 +176,11 @@ const sections: DocSection[] = [
           navLabel: "Incidents & Service Requests",
           title: "Incidents & Service Requests",
           description:
-               "Tenants can report issues with details and photos. Client Members manage triage, status updates, and resolution. This creates a single source of truth for building problems.",
+               "Tenants can report issues with details and photos. Client manage triage, status updates, and resolution. This creates a single source of truth for building problems.",
           bullets: [
                "Tenant submits report: category, description, location, urgency",
                "Attach photos directly from mobile camera (where enabled)",
                "Track status: submitted → in progress → resolved (example)",
-               "Assign responsibility to a member and keep notes/history",
                "Close the incident with resolution details for transparency",
           ],
           role: "Platform",
@@ -195,7 +191,7 @@ const sections: DocSection[] = [
           navLabel: "Notifications",
           title: "Notifications",
           description:
-               "Notifications keep everyone in sync. NestLink can notify tenants and members about announcements, poll events, incident status changes, and important activity.",
+               "Notifications keep everyone in sync. NestLink can notify tenants and clients about announcements, poll events, incident status changes, and important activity.",
           bullets: [
                "In-app notifications for critical events",
                "Push notifications for mobile users (when enabled)",
@@ -214,10 +210,9 @@ const sections: DocSection[] = [
           navLabel: "Subscriptions & Billing",
           title: "Subscriptions & Billing",
           description:
-               "NestLink is subscription-based, commonly priced per apartment. Clients control plan status, renewal, and seat allocation for members.",
+               "NestLink is subscription-based, commonly priced per apartment.",
           bullets: [
                "Pay per apartment (scales with community size)",
-               "Add/remove member seats (reserved access for staff/team members)",
                "Track subscription status (trial/active/inactive, if applicable to your system)",
                "Centralized plan information for transparency",
           ],
@@ -225,26 +220,11 @@ const sections: DocSection[] = [
           tags: ["pricing", "plans", "seats"],
      },
      {
-          id: "member-seats",
-          navLabel: "Member Seats",
-          title: "Client Members (Reserved Seats)",
-          description:
-               "Reserved seats allow the Client to invite staff or committee members into the dashboard with controlled permissions. This helps you delegate moderation, incidents, and operations without sharing a super-admin account.",
-          bullets: [
-               "Invite members and assign role/permission sets",
-               "Give access only to needed modules (polls, announcements, incidents, moderation)",
-               "Audit actions by user (who created/edited/resolved)",
-               "Remove access quickly when someone leaves the team",
-          ],
-          role: "Client",
-          tags: ["delegation", "rbac", "team"],
-     },
-     {
           id: "security",
           navLabel: "Security",
           title: "Security & Access Control",
           description:
-               "NestLink is designed around least-privilege access and clear boundaries between clients, members, and tenants. Authentication flows can include modern security options depending on your setup.",
+               "NestLink is designed around least-privilege access and clear boundaries between clients, and tenants. Authentication flows can include modern security options depending on your setup.",
           bullets: [
                "Authentication and session management via your auth provider (e.g., Supabase Auth)",
                "Optional 2FA (TOTP) for higher security accounts",
@@ -311,9 +291,7 @@ const sections: DocSection[] = [
           description: "Quick answers to common questions about using NestLink.",
           bullets: [
                "Is NestLink web-only or mobile-only? → Both (web dashboard + tenant mobile/web)",
-               "Can I limit what members can do? → Yes, permissions are role-based",
-               "How do incidents work? → Tenants submit; members manage status; resolution is tracked",
-               "How is pricing calculated? → Typically pay-per-apartment, plus optional member seats",
+               "How do incidents work? → Tenants submit; clients manage status; resolution is tracked",
           ],
           role: "Platform",
           tags: ["help"],
@@ -334,7 +312,7 @@ function groupForNav(s: DocSection) {
           ].includes(s.id)
      )
           return "Features"
-     if (["subscriptions-and-billing", "member-seats", "security"].includes(s.id)) return "Admin & Security"
+     if (["subscriptions-and-billing", "security"].includes(s.id)) return "Admin & Security"
      if (["api-authentication", "api-endpoints", "webhooks"].includes(s.id)) return "API Reference"
      if (s.id === "faq") return "FAQ"
      return "Other"

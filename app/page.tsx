@@ -8,14 +8,14 @@ import { buildCanonicalUrl } from "@/app/lib/seo";
 const canonicalUrl = buildCanonicalUrl("/");
 
 export const metadata: Metadata = {
-  title: "NestLink | House Council Platform for Buildings, Tenants, and Members",
+  title: "NestLink | House Council Platform for Buildings, Tenants, and Building managers",
   description:
     "Run announcements, polls, incident reporting, and tenant communication in one place with NestLink’s web dashboard and mobile app.",
   alternates: {
     canonical: canonicalUrl,
   },
   openGraph: {
-    title: "NestLink | House Council Platform for Buildings, Tenants, and Members",
+    title: "NestLink | House Council Platform for Buildings, Tenants, and Building managers",
     description:
       "Manage building communication, polls, and service requests with NestLink’s web dashboard and tenant mobile experience.",
     url: canonicalUrl,

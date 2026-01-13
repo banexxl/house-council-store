@@ -67,7 +67,6 @@ export interface PolarSubscription {
      meters: PolarActiveMeter[];
      seats: number;
      customFieldData: Record<string, unknown>;
-     subscriptionId?: string
 }
 
 export type PolarSubscriptionStatus =

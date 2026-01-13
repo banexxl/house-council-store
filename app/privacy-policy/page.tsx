@@ -11,7 +11,7 @@ const canonicalUrl = buildCanonicalUrl("/privacy-policy");
 export const metadata: Metadata = {
   title: "Privacy Policy | NestLink Building Platform",
   description:
-    "Learn how NestLink handles data for building managers, members, and tenants across the web dashboard and mobile app.",
+    "Learn how NestLink handles data for building managers and tenants across the web dashboard and mobile app.",
   alternates: {
     canonical: canonicalUrl,
   },
@@ -38,14 +38,14 @@ export const metadata: Metadata = {
 
 export default async function Page() {
 
-     const user = await getSessionUser();
+  const user = await getSessionUser();
 
-     return (
-          <>
-               <Header user={user ? user : null} />
-               <PrivacyPage />
-               <Footer />
-          </>
+  return (
+    <>
+      <Header user={user ? user : null} />
+      <PrivacyPage />
+      <Footer />
+    </>
 
-     )
+  )
 }

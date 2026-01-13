@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Terms and Conditions | NestLink",
     description:
-      "The terms that govern use of NestLink for building managers, members, and tenants.",
+      "The terms that govern use of NestLink for building managers and tenants.",
     url: canonicalUrl,
     siteName: "NestLink",
     type: "website",
@@ -38,14 +38,14 @@ export const metadata: Metadata = {
 
 export default async function Page() {
 
-     const user = await getSessionUser();
+  const user = await getSessionUser();
 
-     return (
-          <>
-               <Header user={user ? user : null} />
-               <TermsPage />
-               <Footer />
-          </>
+  return (
+    <>
+      <Header user={user ? user : null} />
+      <TermsPage />
+      <Footer />
+    </>
 
-     )
+  )
 }

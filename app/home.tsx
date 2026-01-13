@@ -169,8 +169,7 @@ const LandingPage = () => {
                                                        }}
                                                   >
                                                        A subscription-based platform for house councils and building managers to run announcements, polls,
-                                                       tenant communication, and service/incident reporting — with role-based access for clients, members,
-                                                       and tenants.
+                                                       tenant communication, and service/incident reporting — with role-based access for clients and tenants.
                                                   </Typography>
                                              </Reveal>
 
@@ -219,13 +218,7 @@ const LandingPage = () => {
                                                             icon: <AdminPanelSettingsIcon />,
                                                             title: 'Building manager',
                                                             text:
-                                                                 'Purchases the subscription, manages buildings & apartments, creates members, invites tenants, configures permissions and workflows.',
-                                                       },
-                                                       {
-                                                            icon: <GroupsIcon />,
-                                                            title: 'Members (Reserved Seats)',
-                                                            text:
-                                                                 'Same dashboard, different authorizations. Collaborate on moderation, polls, announcements, and incident handling.',
+                                                                 'Purchases the subscription, manages buildings & apartments, invites tenants, configures permissions and workflows.',
                                                        },
                                                        {
                                                             icon: <HowToRegIcon />,
@@ -323,12 +316,6 @@ const LandingPage = () => {
                                              'Manage buildings, apartments, and tenants. Configure roles, create announcements, run polls, and track service issues in one place.',
                                    },
                                    {
-                                        icon: <GroupsIcon />,
-                                        title: 'Member Seats (Web)',
-                                        description:
-                                             'Invite additional client members with reserved access spots. Assign responsibilities like moderation, incident handling, and announcements.',
-                                   },
-                                   {
                                         icon: <PhoneIphoneIcon />,
                                         title: 'Tenant App (Mobile)',
                                         description:
@@ -350,7 +337,7 @@ const LandingPage = () => {
                                         icon: <NotificationsActiveIcon />,
                                         title: 'Real-time Updates',
                                         description:
-                                             'Notify tenants and members about announcements, vote openings/closures, and new incident progress — without chaos in messaging apps.',
+                                             'Notify tenants and clients about announcements, vote openings/closures, and new incident progress — without chaos in messaging apps.',
                                    },
                               ].map((item, idx) => (
                                    <Grid key={idx} size={{ xs: 12, sm: 6, md: 4 }}>
@@ -437,12 +424,12 @@ const LandingPage = () => {
                                         {
                                              title: 'Incident reporting with evidence',
                                              description:
-                                                  'Tenants submit issues with photos, notes, and categories. Members track progress until resolution.',
+                                                  'Tenants submit issues with photos, notes, and categories. Clients track progress until resolution.',
                                         },
                                         {
                                              title: 'Roles and permissions by design',
                                              description:
-                                                  'Clients manage the subscription and configuration, members moderate and resolve, tenants participate and report.',
+                                                  'Clients manage the subscription and configuration, clients moderate and resolve, tenants participate and report.',
                                         },
                                         {
                                              title: 'Web + mobile, same rules',
@@ -490,8 +477,7 @@ const LandingPage = () => {
                                              color="text.secondary"
                                              sx={{ mt: 1.5, lineHeight: 1.7, overflowWrap: 'anywhere' }}
                                         >
-                                             Pay per apartment — perfect for small buildings and scalable for larger communities. Add member seats as
-                                             needed and keep everything organized in one platform.
+                                             Pay per apartment — perfect for small buildings and scalable for larger communities.
                                         </Typography>
 
                                         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 3 }}>
@@ -522,7 +508,7 @@ const LandingPage = () => {
                                                   'Announcements, posts, and notifications',
                                                   'Polls and voting with clear results',
                                                   'Incident/service reports with photos (mobile)',
-                                                  'Role-based permissions for building managers, members, tenants',
+                                                  'Role-based permissions for building managers, tenants',
                                              ].map((t) => (
                                                   <Stack key={t} direction="row" spacing={1.5} alignItems="flex-start">
                                                        <Box
@@ -594,19 +580,15 @@ const LandingPage = () => {
                                    {[
                                         {
                                              q: 'Is NestLink web-only or mobile-only?',
-                                             a: 'Both. Clients and members use the web dashboard, and tenants have mobile + web access with consistent permissions.',
-                                        },
-                                        {
-                                             q: 'Can I limit what members can do?',
-                                             a: 'Yes. Member seats are role-based—give access only to what that person needs (moderation, incidents, announcements, etc.).',
+                                             a: 'Both. Clients use the web dashboard, and tenants have mobile + web access with consistent permissions.',
                                         },
                                         {
                                              q: 'How does incident reporting work?',
-                                             a: 'Tenants submit a report (optionally with photos). Members manage progress and close it when resolved.',
+                                             a: 'Tenants submit a report (optionally with photos). Clients manage progress and close it when resolved.',
                                         },
                                         {
                                              q: 'How do you price it?',
-                                             a: 'Pay per apartment (plus optional reserved seats for additional client members).',
+                                             a: 'It is priced per apartment/unit, with no limit on tenants.',
                                         },
                                    ].map((item, idx) => (
                                         <Grid key={idx} size={{ xs: 12, md: 6 }}>

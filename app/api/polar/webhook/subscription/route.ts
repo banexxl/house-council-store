@@ -66,7 +66,7 @@ async function upsertSubscription(subscription: any, eventType: string) {
 
      // Map to database row structure
      const row = {
-          subscriptionId: polarSubscription.id,
+          id: polarSubscription.id,
           orderId: polarSubscription.orderId ?? null,
           checkoutId: polarSubscription.checkoutId ?? null,
           customerId: polarSubscription.customerId,
@@ -100,7 +100,7 @@ async function upsertSubscription(subscription: any, eventType: string) {
      // ✅ Use subscriptionId as conflict target (external id)
      const { data, error } = await supabase
           .from("tblPolarSubscriptions")
-          .upsert(row, { onConflict: "subscriptionId" })
+          .upsert(row, { onConflict: "id" })
           .select()
           .single();
 

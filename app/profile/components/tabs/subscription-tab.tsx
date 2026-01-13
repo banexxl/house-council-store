@@ -50,7 +50,7 @@ export default function SubscriptionTab({ customerSubscriptionObject, apartments
      }, [customerSubscriptionObject])
 
      useEffect(() => {
-          const subscriptionId = customerSubscriptionObject?.subscriptionId;
+          const subscriptionId = customerSubscriptionObject?.id;
           if (!subscriptionId) return;
 
           let isMounted = true;
@@ -110,7 +110,7 @@ export default function SubscriptionTab({ customerSubscriptionObject, apartments
                if (refreshTimer) clearTimeout(refreshTimer);
                if (stop) void stop();
           };
-     }, [customerSubscriptionObject?.subscriptionId]);
+     }, [customerSubscriptionObject?.id]);
 
 
 
@@ -151,7 +151,7 @@ export default function SubscriptionTab({ customerSubscriptionObject, apartments
                          method: "DELETE",
                          headers: { "Content-Type": "application/json" },
                          body: JSON.stringify({
-                              polarSubscriptionId: subscriptionData.subscriptionId,
+                              polarSubscriptionId: subscriptionData.id,
                               polarCustomerId: subscriptionData.customerId,
                          }),
                     });

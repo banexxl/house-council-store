@@ -43,7 +43,7 @@ export default async function Page() {
   const user = await getSessionUser();
   const { customer, error } = await readAccountByEmailAction(user?.email!);
   const { polarProducts } = await readActivePolarProducts();
-  const { customerSubscriptionPlanData } = await readCustomerSubscriptionPlanFromCustomerId(customer?.customerId!)
+  const { customerSubscriptionPlanData } = await readCustomerSubscriptionPlanFromCustomerId(customer?.id!)
   const apartmentCountResult = customer?.id ? await getApartmentCountForCustomer(customer.id) : 0;
 
   return (

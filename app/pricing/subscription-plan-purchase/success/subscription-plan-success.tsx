@@ -133,15 +133,6 @@ export default function SubscriptionSuccessPage({
                                                        secondary="Familiarize yourself with all the features available to you"
                                                   />
                                              </ListItem>
-                                             <ListItem disableGutters sx={{ pb: 1 }}>
-                                                  <ListItemIcon sx={{ minWidth: 36 }}>
-                                                       <CheckCircleOutlineIcon color="primary" />
-                                                  </ListItemIcon>
-                                                  <ListItemText
-                                                       primary="Invite your team"
-                                                       secondary="Add other council members to collaborate effectively"
-                                                  />
-                                             </ListItem>
                                         </List>
                                    </Grid>
                               </Grid>

@@ -113,20 +113,17 @@ export async function GET(request: Request) {
           // Check if email exists in other role tables first (security check)
           console.log('Checking if email exists in other role tables...');
 
-          const [customerCheck, customerMemberCheck, tenantCheck] = await Promise.all([
+          const [customerCheck, tenantCheck] = await Promise.all([
                supabase.from('tblPolarCustomers').select('id').eq('email', email).single(),
-               supabase.from('tblcustomerMembers').select('id').eq('email', email).single(),
                supabase.from('tblTenants').select('id').eq('email', email).single()
           ]);
 
           const existingRoles = [];
           if (customerCheck.data) existingRoles.push('customer');
-          if (customerMemberCheck.data) existingRoles.push('customer Member');
           if (tenantCheck.data) existingRoles.push('Tenant');
 
           console.log('Existing role check results:', {
                hascustomerRole: !!customerCheck.data,
-               hascustomerMemberRole: !!customerMemberCheck.data,
                hasTenantRole: !!tenantCheck.data,
                existingRoles
           });

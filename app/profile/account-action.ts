@@ -43,7 +43,7 @@ export const deleteAccountAction = async (userId: string, clientEmail: string): 
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
-     const { data: customer, error: customerError } = await supabase.from('tblPolarCustomers').select('customerId').eq('externalId', userId).single();
+     const { data: customer, error: customerError } = await supabase.from('tblPolarCustomers').select('id').eq('externalId', userId).single();
 
 
      await logoutUserAction();
@@ -67,7 +67,7 @@ export const deleteAccountAction = async (userId: string, clientEmail: string): 
      let deleteCustomerResult
      try {
           deleteCustomerResult = await polar.customers.delete({
-               id: customer?.customerId || ''
+               id: customer?.id || ''
           });
      } catch (error: any) {
           await logServerAction({
