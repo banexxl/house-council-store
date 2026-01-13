@@ -54,8 +54,6 @@ export default async function Page() {
           session: { ...user },
      };
 
-     const binCheckerAPIKey = process.env.NEXT_PUBLIC_BIN_CHECKER_API_KEY
-
      return (
           <>
                <Header user={user} />
@@ -63,7 +61,7 @@ export default async function Page() {
                     sessionAndCustomerDataCombined={sessionAndCustomerDataCombined}
                     customerSubscriptionObject={customerSubscriptionObject?.customerSubscriptionPlanData! ?? null}
                     recentActivity={recentActivity.data ?? []}
-                    apartmentsCount={apartments ? apartments?.data!.length : 0}
+                    apartmentsCount={apartments?.data?.length ?? 0}
                     productData={productData?.product ?? null}
                     payments={ordersResult?.orders ?? null}
                />

@@ -62,7 +62,6 @@ export default function Error({
                                    <Typography
                                         variant="body1"
                                         color="text.secondary"
-                                        paragraph
                                         sx={{
                                              maxWidth: 500,
                                              mx: "auto",
