@@ -48,9 +48,12 @@ export async function middleware(request: NextRequest) {
      // Public routes (no auth needed)
      // -----------------------------
      const publicRoutes = [
+          "/",
           "/auth/sign-in",
           "/auth/callback",
           "/auth/error",
+          "/auth/forgot-password",
+          "/auth/invite-user",
           "/auth/register",
           "/auth/registration-confirmation",
           "/auth/registration-confirmed",
