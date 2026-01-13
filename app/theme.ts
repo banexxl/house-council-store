@@ -56,6 +56,42 @@ const theme = createTheme({
     },
   },
   components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          "&::-webkit-scrollbar": {
+            width: "6px",
+            height: "6px",
+          },
+          "&::-webkit-scrollbar-track": {
+            backgroundColor: "rgba(0, 0, 0, 0.05)",
+            borderRadius: "3px",
+          },
+          "&::-webkit-scrollbar-thumb": {
+            backgroundColor: "#f79622",
+            borderRadius: "3px",
+            "&:hover": {
+              backgroundColor: "#f68a00",
+            },
+          },
+          "*::-webkit-scrollbar": {
+            width: "6px",
+            height: "6px",
+          },
+          "*::-webkit-scrollbar-track": {
+            backgroundColor: "rgba(0, 0, 0, 0.05)",
+            borderRadius: "3px",
+          },
+          "*::-webkit-scrollbar-thumb": {
+            backgroundColor: "#f79622",
+            borderRadius: "3px",
+            "&:hover": {
+              backgroundColor: "#f68a00",
+            },
+          },
+        },
+      },
+    },
     MuiButton: {
       styleOverrides: {
         root: {

@@ -460,6 +460,21 @@ export const DocsPage = () => {
                                                   height: { md: "calc(100vh - 180px)" },
                                                   overflowY: "auto",
                                                   pr: { md: 1 },
+                                                  // Custom scrollbar styling
+                                                  "&::-webkit-scrollbar": {
+                                                       width: "6px",
+                                                  },
+                                                  "&::-webkit-scrollbar-track": {
+                                                       backgroundColor: "rgba(0, 0, 0, 0.05)",
+                                                       borderRadius: "3px",
+                                                  },
+                                                  "&::-webkit-scrollbar-thumb": {
+                                                       backgroundColor: "primary.main",
+                                                       borderRadius: "3px",
+                                                       "&:hover": {
+                                                            backgroundColor: "primary.dark",
+                                                       },
+                                                  },
                                              }}
                                         >
                                              {navGroups.map(([groupName, items]) => (
@@ -474,9 +489,11 @@ export const DocsPage = () => {
                                                                       <MuiLink href={`#${s.id}`} underline="hover" color="inherit" sx={{ width: "100%" }}>
                                                                            <ListItemText
                                                                                 primary={s.navLabel}
-                                                                                primaryTypographyProps={{
-                                                                                     variant: "body2",
-                                                                                     sx: { lineHeight: 1.4 },
+                                                                                slotProps={{
+                                                                                     primary: {
+                                                                                          variant: "body2",
+                                                                                          sx: { lineHeight: 1.4 },
+                                                                                     },
                                                                                 }}
                                                                            />
                                                                       </MuiLink>
