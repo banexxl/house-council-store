@@ -36,9 +36,9 @@ export async function GET(request: Request) {
      }
 
      try {
-          console.log('Initializing Supabase service role client...');
+          console.log('Initializing Supabase service role customer...');
           const supabase = await useServerSideSupabaseServiceRoleClient();
-          console.log('Supabase client initialized successfully');
+          console.log('Supabase customer initialized successfully');
 
           // Try to verify token if we have one (optional since Supabase may have already verified)
           let tokenVerified = false;
@@ -113,20 +113,20 @@ export async function GET(request: Request) {
           // Check if email exists in other role tables first (security check)
           console.log('Checking if email exists in other role tables...');
 
-          const [clientCheck, clientMemberCheck, tenantCheck] = await Promise.all([
+          const [customerCheck, customerMemberCheck, tenantCheck] = await Promise.all([
                supabase.from('tblPolarCustomers').select('id').eq('email', email).single(),
-               supabase.from('tblClientMembers').select('id').eq('email', email).single(),
+               supabase.from('tblcustomerMembers').select('id').eq('email', email).single(),
                supabase.from('tblTenants').select('id').eq('email', email).single()
           ]);
 
           const existingRoles = [];
-          if (clientCheck.data) existingRoles.push('Client');
-          if (clientMemberCheck.data) existingRoles.push('Client Member');
+          if (customerCheck.data) existingRoles.push('customer');
+          if (customerMemberCheck.data) existingRoles.push('customer Member');
           if (tenantCheck.data) existingRoles.push('Tenant');
 
           console.log('Existing role check results:', {
-               hasClientRole: !!clientCheck.data,
-               hasClientMemberRole: !!clientMemberCheck.data,
+               hascustomerRole: !!customerCheck.data,
+               hascustomerMemberRole: !!customerMemberCheck.data,
                hasTenantRole: !!tenantCheck.data,
                existingRoles
           });

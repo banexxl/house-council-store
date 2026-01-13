@@ -164,6 +164,10 @@ export const POST = Webhooks({
           const t0 = Date.now();
           const customer = payload.data;
           console.log('On customer deleted payload data: ', payload);
+
+          //Deleteing from auth.users by external id
+          supabase.auth.admin.deleteUser(String(customer.externalId));
+
           await logServerAction({
                user_id: customer.externalId ? String(customer.externalId) : null,
                action: "customer.deleted - Just log, delete will be done directly from app",
