@@ -104,7 +104,6 @@ export interface PolarActiveMeter {
 
 export interface PolarCustomer {
      id: string;
-     customerId?: string
      externalId: string | null;
      createdAt: Date | null;
      modifiedAt: Date | null;

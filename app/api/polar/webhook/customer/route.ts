@@ -13,7 +13,7 @@ const supabase = createClient(
 
 function mapCustomerToRow(c: PolarCustomer) {
      return {
-          customerId: c.id!,
+          id: c.id!,
           email: c.email!,
           externalId: c.metadata?.userId ? String(c.metadata.userId) : null,
           name: c.name!,
@@ -54,13 +54,13 @@ export const POST = Webhooks({
           }
 
           // Check if user exists in auth.users table
-          const { data: userExists } = await supabase.auth.admin.getUserById(String(customer.metadata.userId));
+          const { data: userExists } = await supabase.auth.admin.getUserById(String(customer.externalId));
 
           if (!userExists.user) {
                await logServerAction({
-                    user_id: String(customer.metadata.userId),
+                    user_id: String(customer.externalId),
                     action: "customer.created - skipped (user not found in auth.users)",
-                    payload: { userId: customer.metadata.userId, email: customer.email },
+                    payload: { userId: customer.externalId, email: customer.email },
                     status: "fail",
                     error: "User ID not found in auth.users table",
                     duration_ms: Date.now() - t0,
@@ -117,14 +117,14 @@ export const POST = Webhooks({
                const { data, error } = await supabase
                     .from("tblPolarCustomers")
                     .update(patch)
-                    .eq("customerId", customer.id)
+                    .eq("id", customer.id)
                     .select()
                     .maybeSingle();
 
                await logServerAction({
                     user_id: customer.externalId ? String(customer.externalId) : null,
                     action: "customer.updated - update-only (missing userId in metadata)",
-                    payload: { customerId: customer.id, patch },
+                    payload: { id: customer.id, patch },
                     status: error ? "fail" : "success",
                     error: error?.message || "",
                     duration_ms: Date.now() - t0,
@@ -139,7 +139,7 @@ export const POST = Webhooks({
 
           const { data, error } = await supabase
                .from("tblPolarCustomers")
-               .upsert(row, { onConflict: "customerId" })
+               .upsert(row, { onConflict: "id" })
                .select()
                .single();
 
@@ -164,16 +164,10 @@ export const POST = Webhooks({
           const t0 = Date.now();
           const customer = payload.data;
           console.log('On customer deleted payload data: ', payload);
-
-          //Just loggin the deletedAt timestamp since the delete will be handled in a server action
-          const patch = {
-               deletedAt: customer.deletedAt ?? new Date().toISOString(),
-               modifiedAt: customer.modifiedAt ?? new Date().toISOString(),
-          };
           await logServerAction({
                user_id: customer.externalId ? String(customer.externalId) : null,
-               action: "customer.deleted - mark deletedAt",
-               payload: { customerId: customer.id, patch },
+               action: "customer.deleted - Just log, delete will be done directly from app",
+               payload: { id: customer.id },
                status: "success",
                error: "",
                duration_ms: Date.now() - t0,
@@ -201,14 +195,14 @@ export const POST = Webhooks({
           const { data, error } = await supabase
                .from("tblPolarCustomers")
                .update(patch)
-               .eq("customerId", customer.id)
+               .eq("id", customer.id)
                .select()
                .maybeSingle();
 
           await logServerAction({
                user_id: customer.externalId ? String(customer.externalId) : null,
                action: "customer.state_changed - snapshot in metadata",
-               payload: { customerId: customer.id, patch },
+               payload: { id: customer.id, patch },
                status: error ? "fail" : "success",
                error: error?.message || "",
                duration_ms: Date.now() - t0,
