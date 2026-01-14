@@ -12,6 +12,7 @@ const supabase = createClient(
 );
 
 function mapCustomerToRow(c: PolarCustomer) {
+     console.log('Mapping customer to row:', c);
      return {
           id: c.id!,
           email: c.email!,
