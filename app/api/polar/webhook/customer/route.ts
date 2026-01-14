@@ -56,6 +56,7 @@ export const POST = Webhooks({
 
           // Check if user exists in auth.users table
           const { data: userExists } = await supabase.auth.admin.getUserById(String(customer.externalId));
+          console.log('userExists', userExists);
 
           if (!userExists.user) {
                await logServerAction({

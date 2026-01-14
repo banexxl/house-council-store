@@ -45,7 +45,6 @@ export const deleteAccountAction = async (userId: string, clientEmail: string): 
 
      const { data: customer, error: customerError } = await supabase.from('tblPolarCustomers').select('id').eq('externalId', userId).single();
 
-
      await logoutUserAction();
 
      const { data, error } = await supabase.auth.admin.deleteUser(userId);

@@ -117,39 +117,39 @@ export async function GET(request: Request) {
           return NextResponse.redirect(redirectUrl);
      }
 
-     // Extract the user's email from the session
-     const sessionUser = sessionData.session.user;
-     const userEmail = normalizeEmail(sessionUser.email);
-     const userId = sessionUser.id;
-     const { data: customerInsertData, error: customerInsertError } = await supabase.from('tblPolarCustomers').upsert({
-          externalId: userId,
-          email: userEmail,
-          name: (sessionUser.user_metadata as any)?.full_name || (sessionUser.user_metadata as any)?.name || (sessionUser.user_metadata as any)?.contact_person || userEmail.split('@')[0],
-          emailVerified: sessionUser.email_confirmed_at !== null,
-          metadata: sessionUser.user_metadata,
-     }, { onConflict: 'externalId' })
-          .select().single();
+     // // Extract the user's email from the session
+     // const sessionUser = sessionData.session.user;
+     // const userEmail = normalizeEmail(sessionUser.email);
+     // const userId = sessionUser.id;
+     // const { data: customerInsertData, error: customerInsertError } = await supabase.from('tblPolarCustomers').upsert({
+     //      externalId: userId,
+     //      email: userEmail,
+     //      name: (sessionUser.user_metadata as any)?.full_name || (sessionUser.user_metadata as any)?.name || (sessionUser.user_metadata as any)?.contact_person || userEmail.split('@')[0],
+     //      emailVerified: sessionUser.email_confirmed_at !== null,
+     //      metadata: sessionUser.user_metadata,
+     // }, { onConflict: 'externalId' })
+     //      .select().single();
 
-     if (customerInsertError) {
-          await logServerAction({
-               action: 'Auth callback errored - Inserting user into tblPolarCustomers failed',
-               error: customerInsertError.message,
-               duration_ms: Date.now() - start,
-               payload: { externalId: userId, email: userEmail },
-               status: 'fail',
-               user_id: userId,
-               type: 'auth'
-          });
-          // Rollback by deleting the auth user
-          await supabase.auth.signOut();
-          await supabase.auth.admin.deleteUser(userId);
-          throw customerInsertError;
-     }
+     // if (customerInsertError) {
+     //      await logServerAction({
+     //           action: 'Auth callback errored - Inserting user into tblPolarCustomers failed',
+     //           error: customerInsertError.message,
+     //           duration_ms: Date.now() - start,
+     //           payload: { externalId: userId, email: userEmail },
+     //           status: 'fail',
+     //           user_id: userId,
+     //           type: 'auth'
+     //      });
+     //      // Rollback by deleting the auth user
+     //      await supabase.auth.signOut();
+     //      await supabase.auth.admin.deleteUser(userId);
+     //      throw customerInsertError;
+     // }
      // Check if Polar customer already exists for this user
      try {
           // Search by email since that's the primary identifier
           const existingCustomer = await polar.customers.list({
-               email: userEmail,
+               email: sessionData.session.user.email || '',
                limit: 1,
           });
 
@@ -161,7 +161,7 @@ export async function GET(request: Request) {
                     duration_ms: Date.now() - start,
                     payload: { code, requestUrl, customerId: existingCustomer.result.items[0].id },
                     status: 'success',
-                    user_id: userId,
+                    user_id: sessionData.session.user.id,
                     type: 'auth'
                });
 
@@ -171,9 +171,10 @@ export async function GET(request: Request) {
 
           const polarCustomer = await polar.customers.create({
                email: sessionData.session.user.email || '',
-               name: (sessionUser.user_metadata as any)?.full_name || (sessionUser.user_metadata as any)?.name || (sessionUser.user_metadata as any)?.contact_person || userEmail.split('@')[0],
+               name: (sessionData.session.user.user_metadata.name as any),
+               externalId: sessionData.session.user.id,
                metadata: {
-                    userId: sessionUser.id,
+                    userId: sessionData.session.user.id,
                }
           });
 
@@ -186,10 +187,10 @@ export async function GET(request: Request) {
                     requestUrl,
                     customerId: polarCustomer.id,
                     email: sessionData.session.user.email || '',
-                    name: (sessionUser.user_metadata as any)?.full_name || (sessionUser.user_metadata as any)?.name || (sessionUser.user_metadata as any)?.contact_person || userEmail.split('@')[0],
+                    name: (sessionData.session.user.user_metadata.name as any),
                },
                status: 'success',
-               user_id: userId,
+               user_id: sessionData.session.user.id,
                type: 'auth'
           });
 
@@ -202,14 +203,14 @@ export async function GET(request: Request) {
                action: 'Auth callback errored - Polar customer creation failed',
                error: customerError.message || String(customerError),
                duration_ms: Date.now() - start,
-               payload: { code, requestUrl, email: userEmail },
+               payload: { code, requestUrl, email: sessionData.session.user.email || '' },
                status: 'fail',
-               user_id: userId,
+               user_id: sessionData.session.user.id,
                type: 'auth'
           });
 
           await supabase.auth.signOut();
-          await supabase.auth.admin.deleteUser(userId);
+          await supabase.auth.admin.deleteUser(sessionData.session.user.id);
 
           const allCookies = cookieStore.getAll();
           allCookies.forEach(cookie => cookieStore.delete(cookie.name));
