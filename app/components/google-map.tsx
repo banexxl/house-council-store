@@ -28,7 +28,7 @@ declare global {
 
 export default function GoogleMap({
      apiKey,
-     center = { lat: 47.5017, lng: 19.0824 }, // Default to Budapest, Hungary
+     center = { lat: 45.2671, lng: 19.8335 }, // Default to Novi Sad Serbia
      zoom = 12,
      markers = [],
      height = 400,
