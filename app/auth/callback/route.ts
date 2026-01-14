@@ -24,7 +24,7 @@ export async function GET(request: Request) {
      // If there's an error parameter, log it and redirect to error page
      if (error) {
           await logServerAction({
-               action: 'Auth callback errored',
+               action: 'Auth callback errored - No code in search params',
                error,
                duration_ms: Date.now() - start,
                payload: { code, requestUrl, errorCode, errorDescription },
@@ -52,7 +52,7 @@ export async function GET(request: Request) {
 
           if (authError) {
                await logServerAction({
-                    action: 'Auth callback errored',
+                    action: 'Auth callback errored - Exchange code for session failed',
                     error: authError.message,
                     duration_ms: Date.now() - start,
                     payload: { code, requestUrl },
@@ -68,7 +68,7 @@ export async function GET(request: Request) {
      // If "code" is not present, log an error and redirect to error page
      else {
           await logServerAction({
-               action: 'Auth callback errored',
+               action: 'Auth callback errored - No code in search params',
                error: 'No code provided in the callback.',
                duration_ms: Date.now() - start,
                payload: { code, requestUrl },
@@ -88,7 +88,7 @@ export async function GET(request: Request) {
      // If there's an error retrieving the session, log it and redirect to error page
      if (sessionError) {
           await logServerAction({
-               action: 'Auth callback errored',
+               action: 'Auth callback errored - Get session failed',
                error: sessionError.message,
                duration_ms: Date.now() - start,
                payload: { code, requestUrl },
@@ -104,7 +104,7 @@ export async function GET(request: Request) {
      // If no session is found, log it and redirect to error page
      if (!sessionData.session) {
           await logServerAction({
-               action: 'Auth callback errored',
+               action: 'Auth callback errored - No session found',
                error: 'No session found',
                duration_ms: Date.now() - start,
                payload: { code, requestUrl },
