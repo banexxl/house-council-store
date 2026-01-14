@@ -62,7 +62,6 @@ export async function POST(req: Request) {
 
           // ✅ server-truth seats
           const apartmentsCount = await getApartmentCountForClient(customerId);
-          console.log(apartmentsCount);
 
           let checkout;
           try {
