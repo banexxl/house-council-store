@@ -16,7 +16,7 @@ function mapCustomerToRow(c: PolarCustomer) {
      return {
           id: c.id!,
           email: c.email!,
-          externalId: c.metadata?.userId ? String(c.metadata.userId) : null,
+          externalId: c.metadata?.userId,
           name: c.name!,
           emailVerified: c.emailVerified ?? false,
           organizationId: c.organizationId ?? null,
@@ -168,10 +168,10 @@ export const POST = Webhooks({
           console.log('On customer deleted payload data: ', payload);
 
           //Deleteing from auth.users by external id
-          supabase.auth.admin.deleteUser(String(customer.externalId));
+          supabase.auth.admin.deleteUser(customer.externalId!);
 
           await logServerAction({
-               user_id: customer.externalId ? String(customer.externalId) : null,
+               user_id: customer.externalId,
                action: "customer.deleted - Just log, delete will be done directly from app",
                payload: { id: customer.id },
                status: "success",
@@ -206,7 +206,7 @@ export const POST = Webhooks({
                .maybeSingle();
 
           await logServerAction({
-               user_id: customer.externalId ? String(customer.externalId) : null,
+               user_id: customer.externalId,
                action: "customer.state_changed - snapshot in metadata",
                payload: { id: customer.id, patch },
                status: error ? "fail" : "success",

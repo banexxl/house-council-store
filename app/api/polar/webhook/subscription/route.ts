@@ -17,13 +17,13 @@ const supabase = createClient(
 // Helpers
 // ---------------------------------------------------------------------------
 
-async function convertToPolarSubscription(subscription: any): Promise<PolarSubscription> {
+async function convertToPolarSubscription(subscription: PolarSubscription): Promise<PolarSubscription> {
      // Get apartment count for customer
-     const apartmentCount = await getApartmentCountForCustomer(subscription.customerId ?? subscription.customer_id);
+     const apartmentCount = await getApartmentCountForCustomer(subscription.customerId ?? subscription.customerId);
 
      return {
           id: subscription.id,
-          orderId: subscription.orderId ?? subscription.order_id ?? null,
+          orderId: subscription.orderId ?? subscription.orderId ?? null,
           createdAt: subscription.createdAt ? new Date(subscription.createdAt) : null,
           modifiedAt: subscription.modifiedAt ? new Date(subscription.modifiedAt) : null,
           metadata: {
@@ -31,30 +31,30 @@ async function convertToPolarSubscription(subscription: any): Promise<PolarSubsc
           },
           amount: Number(subscription.amount * apartmentCount),
           currency: subscription.currency,
-          recurringInterval: subscription.recurringInterval ?? subscription.recurring_interval,
-          recurringIntervalCount: subscription.recurringIntervalCount ?? subscription.recurring_interval_count,
+          recurringInterval: subscription.recurringInterval ?? subscription.recurringInterval,
+          recurringIntervalCount: subscription.recurringIntervalCount ?? subscription.recurringIntervalCount,
           status: subscription.status,
           currentPeriodStart: subscription.currentPeriodStart ? new Date(subscription.currentPeriodStart) : null,
           currentPeriodEnd: subscription.currentPeriodEnd ? new Date(subscription.currentPeriodEnd) : null,
           trialStart: subscription.trialStart ? new Date(subscription.trialStart) : null,
           trialEnd: subscription.trialEnd ? new Date(subscription.trialEnd) : null,
-          cancelAtPeriodEnd: subscription.cancelAtPeriodEnd ?? subscription.cancel_at_period_end ?? false,
+          cancelAtPeriodEnd: subscription.cancelAtPeriodEnd ?? subscription.cancelAtPeriodEnd ?? false,
           canceledAt: subscription.canceledAt ? new Date(subscription.canceledAt) : null,
           startedAt: subscription.startedAt ? new Date(subscription.startedAt) : null,
           endsAt: subscription.endsAt ? new Date(subscription.endsAt) : null,
           endedAt: subscription.endedAt ? new Date(subscription.endedAt) : null,
-          customerId: subscription.customerId ?? subscription.customer_id,
-          productId: subscription.productId ?? subscription.product_id,
+          customerId: subscription.customerId ?? subscription.customerId,
+          productId: subscription.productId ?? subscription.productId,
           product: subscription.product,
-          discountId: subscription.discountId ?? subscription.discount_id ?? null,
+          discountId: subscription.discountId ?? subscription.discountId ?? null,
           discount: subscription.discount ?? null,
-          checkoutId: subscription.checkoutId ?? subscription.checkout_id ?? null,
-          customerCancellationReason: subscription.customerCancellationReason ?? subscription.customer_cancellation_reason ?? null,
-          customerCancellationComment: subscription.customerCancellationComment ?? subscription.customer_cancellation_comment ?? null,
+          checkoutId: subscription.checkoutId ?? subscription.checkoutId ?? null,
+          customerCancellationReason: subscription.customerCancellationReason ?? subscription.customerCancellationReason ?? null,
+          customerCancellationComment: subscription.customerCancellationComment ?? subscription.customerCancellationComment ?? null,
           prices: subscription.prices || [],
           meters: subscription.meters || [],
-          seats: subscription.seats ?? 0,
-          customFieldData: subscription.customFieldData ?? subscription.custom_field_data ?? {},
+          seats: apartmentCount || 0,
+          customFieldData: subscription.customFieldData ?? subscription.customFieldData ?? {},
      };
 }
 
