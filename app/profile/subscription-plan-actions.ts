@@ -224,9 +224,9 @@ export const readCustomerSubscriptionPlanFromCustomerId = async (customerId: str
      if (customerSubscriptionDataError) {
           await logServerAction({
                user_id: null,
-               action: 'Read Customer Subscription Plan - Customer Subscription Not Created',
+               action: 'Read Customer Subscription Plan - Customer Subscription Not Created Yet!',
                payload: { customerId },
-               status: 'fail',
+               status: 'success',
                error: customerSubscriptionDataError.message,
                duration_ms: 0,
                type: 'db'
