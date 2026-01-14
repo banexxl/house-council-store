@@ -41,7 +41,7 @@ export const POST = Webhooks({
           const customer = payload.data;
           console.log('On customer created payload data: ', payload);
 
-          if (!customer.metadata?.userId) {
+          if (!customer.externalId) {
                await logServerAction({
                     user_id: null,
                     action: "customer.created - skipped (missing userId in metadata)",
@@ -55,8 +55,7 @@ export const POST = Webhooks({
           }
 
           // Check if user exists in auth.users table
-          const { data: userExists } = await supabase.auth.admin.getUserById(String(customer.externalId));
-          console.log('userExists', userExists);
+          const { data: userExists } = await supabase.auth.admin.getUserById(customer.externalId)
 
           if (!userExists.user) {
                await logServerAction({
