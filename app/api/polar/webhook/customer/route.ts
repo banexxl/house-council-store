@@ -101,39 +101,7 @@ export const POST = Webhooks({
           console.log('On customer updated payload data: ', payload);
           // If userId is missing, avoid insert risk (userId NOT NULL) -> update-only.
           if (!customer.externalId) {
-               const patch = {
-                    email: customer.email,
-                    name: customer.name,
-                    emailVerified: customer.emailVerified ?? false,
-                    organizationId: customer.organizationId ?? null,
-                    avatarUrl: customer.avatarUrl ?? null,
-                    billingAddress: customer.billingAddress ?? null,
-                    taxId: customer.taxId ?? [],
-                    metadata: customer.metadata ?? {},
-                    deletedAt: customer.deletedAt ?? null,
-                    createdAt: customer.createdAt ?? null,
-                    modifiedAt: customer.modifiedAt ?? null,
-               };
-
-               const { data, error } = await supabase
-                    .from("tblPolarCustomers")
-                    .update(patch)
-                    .eq("id", customer.id)
-                    .select()
-                    .maybeSingle();
-
-               await logServerAction({
-                    user_id: customer.externalId ? String(customer.externalId) : null,
-                    action: "customer.updated - update-only (missing userId in metadata)",
-                    payload: { id: customer.id, patch },
-                    status: error ? "fail" : "success",
-                    error: error?.message || "",
-                    duration_ms: Date.now() - t0,
-                    type: "webhook",
-               });
-
-               if (error) throw error;
-               return data;
+               return
           }
 
           const row = mapCustomerToRow(customer);
@@ -141,6 +109,7 @@ export const POST = Webhooks({
           const { data, error } = await supabase
                .from("tblPolarCustomers")
                .upsert(row, { onConflict: "id" })
+               .eq("id", customer.id)
                .select()
                .single();
 
@@ -162,22 +131,24 @@ export const POST = Webhooks({
      // customer.deleted
      // ---------------------------
      onCustomerDeleted: async (payload) => {
-          const t0 = Date.now();
-          const customer = payload.data;
-          console.log('On customer deleted payload data: ', payload);
+          // Cutomer is delete before this webhook is sent, so we cannot fetch it anymore.
+          return
+          // const t0 = Date.now();
+          // const customer = payload.data;
+          // console.log('On customer deleted payload data: ', payload);
 
-          //Deleteing from auth.users by external id
-          supabase.auth.admin.deleteUser(customer.externalId!);
+          // //Deleteing from auth.users by external id
+          // supabase.auth.admin.deleteUser(customer.externalId!);
 
-          await logServerAction({
-               user_id: customer.externalId,
-               action: "customer.deleted - Just log, delete will be done directly from app",
-               payload: { id: customer.id },
-               status: "success",
-               error: "",
-               duration_ms: Date.now() - t0,
-               type: "webhook",
-          });
+          // await logServerAction({
+          //      user_id: customer.externalId,
+          //      action: "customer.deleted - Just log, delete will be done directly from app",
+          //      payload: { id: customer.id },
+          //      status: "success",
+          //      error: "",
+          //      duration_ms: Date.now() - t0,
+          //      type: "webhook",
+          // });
      },
 
      // ---------------------------
