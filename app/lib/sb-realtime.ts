@@ -88,7 +88,7 @@ export const initPolarSubscriptionRealtime = <T extends Record<string, any> = Re
           return Promise.resolve(async () => { });
      }
 
-     const filter = `subscriptionId=eq.${subscriptionId}`;
+     const filter = `id=eq.${subscriptionId}`;
      log(`[Realtime] Subscribing to tblPolarSubscriptions with filter: ${filter}`, "info");
 
      return initTableRealtimeListener<T>("tblPolarSubscriptions", ["INSERT", "UPDATE", "DELETE"], {
