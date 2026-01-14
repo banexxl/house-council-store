@@ -202,9 +202,9 @@ export const PricingPage: React.FC<PricingPageProps> = ({ polarProducts, custome
 
           try {
                const successUrl =
-                    `https://nest-link.app/pricing/subscription-plan-purchase/success?customerId=${customer.id}&subscription_id=${productId}`;
+                    `${process.env.NEXT_PUBLIC_BASE_URL}/pricing/subscription-plan-purchase/success?customerId=${customer.id}&subscription_id=${productId}`;
                const returnUrl =
-                    `https://nest-link.app/pricing`;
+                    `${process.env.NEXT_PUBLIC_BASE_URL}/pricing`;
 
                const res = await fetch("/api/polar/", {
                     method: "POST",
