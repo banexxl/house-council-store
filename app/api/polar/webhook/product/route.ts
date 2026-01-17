@@ -108,6 +108,7 @@ async function syncProductToDb(product: any, eventLabel: string) {
                productId: p.productId ?? productId,
                type: p.type, // e.g. "recurring"
                recurringInterval: p.recurringInterval ?? null,
+               recurringIntervalCount: p.recurringIntervalCount ?? null,
 
                priceCurrency: p.priceCurrency,
                // ✅ Store unitAmount into priceAmount since your table has only priceAmount
