@@ -212,7 +212,8 @@ export default function SubscriptionSuccessPage({
                                                   Get the mobile app
                                              </Typography>
                                              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, mb: 1.5 }}>
-                                                  Scan and install NestLink on your phone to report issues faster and stay updated on the go.
+                                                  Send this QR code or print it out for your tenants
+                                                  to report issues faster and stay updated on the go.
                                              </Typography>
 
                                              <Button
@@ -309,7 +310,7 @@ export default function SubscriptionSuccessPage({
                                              {/* Update logo path as needed */}
                                              <Box
                                                   component="img"
-                                                  src="/logos/nestlink-logo.png"
+                                                  src="/logos/1-01.png"
                                                   alt="NestLink"
                                                   sx={{
                                                        maxHeight: 56,
