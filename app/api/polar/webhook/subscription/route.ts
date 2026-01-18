@@ -95,6 +95,25 @@ async function upsertSubscription(subscription: any, eventType: string) {
           customFieldData: polarSubscription.customFieldData ?? null,
      };
 
+     // ✅ Handle unique constraint on customerId by deleting old subscriptions first
+     // Check if a subscription with different ID exists for this customer
+     const { data: existingSubscriptions } = await supabase
+          .from("tblPolarSubscriptions")
+          .select("id")
+          .eq("customerId", polarSubscription.customerId)
+          .neq("id", polarSubscription.id);
+
+     // Delete old subscriptions for this customer if they exist
+     if (existingSubscriptions && existingSubscriptions.length > 0) {
+          const oldIds = existingSubscriptions.map(sub => sub.id);
+          await supabase
+               .from("tblPolarSubscriptions")
+               .delete()
+               .in("id", oldIds);
+
+          console.log(`Deleted ${oldIds.length} old subscription(s) for customer ${polarSubscription.customerId}`);
+     }
+
      // ✅ Use subscriptionId as conflict target (external id)
      const { data, error } = await supabase
           .from("tblPolarSubscriptions")
