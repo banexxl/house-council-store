@@ -28,6 +28,7 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import CloseIcon from "@mui/icons-material/Close";
 import PrintIcon from "@mui/icons-material/Print";
 import QrCode2Icon from "@mui/icons-material/QrCode2";
+import QRCode from "qrcode";
 import Animate from "@/app/components/animation-framer-motion";
 import Link from "next/link";
 import { QRCodeSVG } from "qrcode.react";
@@ -143,6 +144,29 @@ function printElementById(elementId: string) {
      });
 }
 
+function useQrPng(value: string) {
+     const [pngDataUrl, setPngDataUrl] = React.useState<string>("");
+
+     React.useEffect(() => {
+          let cancelled = false;
+
+          (async () => {
+               const url = await QRCode.toDataURL(value, {
+                    errorCorrectionLevel: "M",
+                    margin: 2,
+                    width: 900, // high-res for printing
+               });
+               if (!cancelled) setPngDataUrl(url);
+          })();
+
+          return () => {
+               cancelled = true;
+          };
+     }, [value]);
+
+     return pngDataUrl;
+}
+
 
 export default function SubscriptionSuccessPage({
      isTrial,
@@ -150,6 +174,7 @@ export default function SubscriptionSuccessPage({
      dashboardUrl,
 }: SubscriptionSuccessPageProps) {
      const [qrOpen, setQrOpen] = React.useState(false);
+     const qrPng = useQrPng(PLAY_STORE_URL);
 
      // Calculate trial end date (30 days from now)
      const trialEndDate = new Date();
@@ -266,22 +291,102 @@ export default function SubscriptionSuccessPage({
                                         </List>
 
                                         {/* NEW: Mobile app QR section */}
-                                        <Box id={printableId} sx={{ mt: 2, p: 2, borderRadius: 2, border: "1px solid", borderColor: "divider" }}>
-                                             <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                                                  Get the mobile app
-                                             </Typography>
-                                             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, mb: 1.5 }}>
-                                                  Send this QR code or print it out for your tenants
-                                                  to report issues faster and stay updated on the go.
-                                             </Typography>
+                                        <Box
+                                             id={printableId}
+                                             sx={{
+                                                  width: "210mm",            // A4 width
+                                                  minHeight: "297mm",        // A4 height
+                                                  mx: "auto",
+                                                  bgcolor: "#fff",
+                                                  color: "#111",
+                                                  p: "18mm",
+                                                  borderRadius: 3,
+                                                  border: "1px solid #e6e6e6",
+                                                  display: "flex",
+                                                  flexDirection: "column",
+                                                  justifyContent: "space-between",
+                                                  boxSizing: "border-box",
+                                             }}
+                                        >
+                                             {/* Top */}
+                                             <Box sx={{ textAlign: "center" }}>
+                                                  <Box
+                                                       component="img"
+                                                       src="/logos/nestlink-logo.png"
+                                                       alt="NestLink"
+                                                       sx={{
+                                                            maxHeight: 110,
+                                                            width: "auto",
+                                                            maxWidth: "90%",
+                                                            objectFit: "contain",
+                                                            mx: "auto",
+                                                       }}
+                                                  />
 
-                                             <Button
-                                                  variant="contained"
-                                                  startIcon={<QrCode2Icon />}
-                                                  onClick={() => setQrOpen(true)}
-                                             >
-                                                  Show QR Code
-                                             </Button>
+                                                  <Typography sx={{ mt: 2, fontSize: 34, fontWeight: 900, letterSpacing: 0.4 }}>
+                                                       Install NestLink
+                                                  </Typography>
+
+                                                  <Typography sx={{ mt: 1, fontSize: 18, color: "#444", maxWidth: 700, mx: "auto" }}>
+                                                       Scan the QR code to open Google Play and install the app.
+                                                       Use it to report issues and stay updated.
+                                                  </Typography>
+                                             </Box>
+
+                                             {/* Middle (QR focus) */}
+                                             <Box sx={{ display: "flex", justifyContent: "center" }}>
+                                                  <Box
+                                                       sx={{
+                                                            mt: 2,
+                                                            p: 4,
+                                                            borderRadius: 4,
+                                                            border: "3px solid #111",
+                                                            display: "inline-flex",
+                                                            alignItems: "center",
+                                                            justifyContent: "center",
+                                                       }}
+                                                  >
+                                                       {/* High-res PNG (best for printing + scanning) */}
+                                                       {qrPng ? (
+                                                            <Box
+                                                                 component="img"
+                                                                 src={qrPng}
+                                                                 alt="NestLink QR"
+                                                                 sx={{ width: 360, height: 360 }}
+                                                            />
+                                                       ) : (
+                                                            <Box sx={{ width: 360, height: 360 }} />
+                                                       )}
+                                                  </Box>
+                                             </Box>
+
+                                             {/* Bottom */}
+                                             <Box sx={{ textAlign: "center" }}>
+                                                  <Typography sx={{ fontSize: 16, fontWeight: 700 }}>
+                                                       How to use
+                                                  </Typography>
+
+                                                  <Typography sx={{ mt: 1, fontSize: 14, color: "#444", maxWidth: 760, mx: "auto" }}>
+                                                       1) Open your phone camera<br />
+                                                       2) Point it at the QR code<br />
+                                                       3) Tap the link to install NestLink
+                                                  </Typography>
+
+                                                  <Typography
+                                                       sx={{
+                                                            mt: 2,
+                                                            fontSize: 12,
+                                                            color: "#666",
+                                                            wordBreak: "break-all",
+                                                       }}
+                                                  >
+                                                       {PLAY_STORE_URL}
+                                                  </Typography>
+
+                                                  <Typography sx={{ mt: 1, fontSize: 12, color: "#888" }}>
+                                                       © NestLink • Building communication made simple
+                                                  </Typography>
+                                             </Box>
                                         </Box>
                                    </Grid>
                               </Grid>
