@@ -372,8 +372,8 @@ export default function SubscriptionSuccessPage({
                                                   src="/logos/1-01.png"
                                                   alt="NestLink"
                                                   sx={{
-                                                       maxHeight: 56,
-                                                       maxWidth: "80%",
+                                                       maxHeight: 76,
+                                                       maxWidth: "90%",
                                                        objectFit: "contain",
                                                   }}
                                              />
