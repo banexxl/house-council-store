@@ -365,15 +365,15 @@ export default function SubscriptionSuccessPage({
                                              mx: "auto",
                                         }}
                                    >
-                                        <Stack spacing={2} alignItems="center">
+                                        <Stack spacing={1} alignItems="center">
                                              {/* Update logo path as needed */}
                                              <Box
                                                   component="img"
                                                   src="/logos/1-01.png"
                                                   alt="NestLink"
                                                   sx={{
-                                                       maxHeight: 76,
-                                                       maxWidth: "90%",
+                                                       maxHeight: 86,
+                                                       maxWidth: "100%",
                                                        objectFit: "contain",
                                                   }}
                                              />
