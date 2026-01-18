@@ -26,9 +26,7 @@ async function convertToPolarSubscription(subscription: PolarSubscription): Prom
           orderId: subscription.orderId ?? subscription.orderId ?? null,
           createdAt: subscription.createdAt ? new Date(subscription.createdAt) : null,
           modifiedAt: subscription.modifiedAt ? new Date(subscription.modifiedAt) : null,
-          metadata: {
-               apartmentCount, // Add apartment count to metadata
-          },
+          metadata: subscription.metadata ?? subscription.metadata ?? {},
           amount: Number(subscription.amount * apartmentCount),
           currency: subscription.currency,
           recurringInterval: subscription.recurringInterval ?? subscription.recurringInterval,

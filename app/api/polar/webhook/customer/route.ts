@@ -158,19 +158,10 @@ export const POST = Webhooks({
           const t0 = Date.now();
           const customer = payload.data;
           console.log('On customer state_changed payload data: ', payload);
-          // Store a snapshot in metadata (safe even if event fields evolve)
-          const patch = {
-               modifiedAt: customer.modifiedAt ?? new Date().toISOString(),
-               metadata: {
-                    ...(customer.metadata ?? {}),
-                    last_state_changed_at: new Date().toISOString(),
-                    last_state_changed_customer: customer,
-               },
-          };
 
           const { data, error } = await supabase
                .from("tblPolarCustomers")
-               .update(patch)
+               .update(customer)
                .eq("id", customer.id)
                .select()
                .maybeSingle();
@@ -178,7 +169,7 @@ export const POST = Webhooks({
           await logServerAction({
                user_id: customer.externalId,
                action: "customer.state_changed - snapshot in metadata",
-               payload: { id: customer.id, patch },
+               payload: { id: customer.id, customer },
                status: error ? "fail" : "success",
                error: error?.message || "",
                duration_ms: Date.now() - t0,

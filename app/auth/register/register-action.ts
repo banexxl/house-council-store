@@ -96,7 +96,6 @@ export const registerUser = async (
                     email: values.email,
                     name: values.contact_person,
                     externalId: userId,
-                    metadata: { userId },
                });
 
                await logServerAction({

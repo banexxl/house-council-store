@@ -67,14 +67,10 @@ export async function POST(req: Request) {
           try {
                checkout = await polar.checkouts.create({
                     products: productIds,
+                    externalCustomerId: customerId,
                     successUrl,
                     returnUrl,
                     customerEmail,
-                    metadata: {
-                         customerId: customerId,
-                         subscription_id: productIds.join(","),
-                         apartments_count: apartmentsCount,
-                    },
                     requireBillingAddress: true,
                });
           } catch (error) {

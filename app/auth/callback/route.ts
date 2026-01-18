@@ -145,9 +145,6 @@ export async function GET(request: Request) {
                email: sessionData.session.user.email || '',
                name: (sessionData.session.user.user_metadata.name as any),
                externalId: sessionData.session.user.id,
-               metadata: {
-                    userId: sessionData.session.user.id,
-               }
           });
 
           await logServerAction({
