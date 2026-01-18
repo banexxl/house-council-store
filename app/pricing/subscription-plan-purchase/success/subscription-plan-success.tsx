@@ -19,7 +19,6 @@ import {
      DialogContent,
      DialogTitle,
      IconButton,
-     Stack,
 } from "@mui/material";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
@@ -31,7 +30,6 @@ import QrCode2Icon from "@mui/icons-material/QrCode2";
 import QRCode from "qrcode";
 import Animate from "@/app/components/animation-framer-motion";
 import Link from "next/link";
-import { QRCodeSVG } from "qrcode.react";
 
 interface SubscriptionSuccessPageProps {
      isTrial: boolean;
@@ -42,6 +40,9 @@ interface SubscriptionSuccessPageProps {
 const PLAY_STORE_URL =
      "https://play.google.com/store/apps/details?id=com.banexxl.nestlinkapp";
 
+// -----------------------------
+// Print helper (iframe)
+// -----------------------------
 function printElementById(elementId: string) {
      const el = document.getElementById(elementId);
      if (!el) return;
@@ -53,7 +54,6 @@ function printElementById(elementId: string) {
      iframe.style.width = "0";
      iframe.style.height = "0";
      iframe.style.border = "0";
-     iframe.setAttribute("aria-hidden", "true");
      document.body.appendChild(iframe);
 
      const doc = iframe.contentWindow?.document;
@@ -64,9 +64,6 @@ function printElementById(elementId: string) {
 
      const origin = window.location.origin;
 
-     // IMPORTANT: use OUTER html so the wrapper styles/structure stay together
-     const printableHtml = el.outerHTML;
-
      doc.open();
      doc.write(`
 <!doctype html>
@@ -74,38 +71,80 @@ function printElementById(elementId: string) {
   <head>
     <meta charset="utf-8" />
     <base href="${origin}/" />
-    <title>Print QR</title>
+    <title>NestLink QR Poster</title>
+
     <style>
-      @page { margin: 12mm; }
-      html, body { margin: 0; padding: 0; }
-      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+      @page {
+        size: A4 portrait;
+        margin: 12mm;
+      }
 
-      /* Center and keep as ONE printable block */
-      .wrap {
+      html, body {
+        margin: 0;
+        padding: 0;
+        background: #fff;
+        width: 100%;
+        height: 100%;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      /* Full printable area (inside margins) */
+      .page {
+        width: 100%;
+        height: 100%;
         display: flex;
+        align-items: center;
         justify-content: center;
-        align-items: flex-start;
-        padding: 12mm;
+        padding: 8mm;
       }
 
-      /* Prevent page splitting */
-      .no-break {
-        break-inside: avoid;
-        page-break-inside: avoid;
+      /* Actual poster container - scale down to fit */
+      .sheet {
+        width: 100%;
+        max-width: 170mm;
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
       }
 
-      /* Make sure QR/logo fit on one page */
-      svg { max-width: 100%; height: auto; }
-      img { max-width: 100%; height: auto; }
+      /* Scale down all images to fit */
+      .sheet img {
+        max-width: 100% !important;
+        height: auto !important;
+      }
 
-      /* Optional: if your block is too wide, cap it */
-      #${elementId} { max-width: 360px; }
+
+               /* Ensure logo stays reasonable size (target Box with alt="NestLink") */
+               .sheet img[alt="NestLink"] {
+                    max-height: 125mm !important;
+                    width: auto !important;
+               }
+
+      /* Scale QR code container and image */
+      .sheet > div {
+        max-width: 100% !important;
+      }
+
+      /* Target QR code specifically */
+      .sheet img[alt*="QR"] {
+        max-width: 45mm !important;
+        max-height: 45mm !important;
+        width: 45mm !important;
+        height: 45mm !important;
+      }
     </style>
   </head>
+
   <body>
-    <div class="wrap">
-      <div class="no-break">
-        ${printableHtml}
+    <div class="page">
+      <div class="sheet">
+        ${el.outerHTML}
       </div>
     </div>
   </body>
@@ -123,9 +162,9 @@ function printElementById(elementId: string) {
           cleanup();
      };
 
-     // Wait for images (logo) before printing
+     // Wait for logo + QR PNG to load
      if (imgs.length === 0) {
-          setTimeout(doPrint, 150);
+          setTimeout(doPrint, 200);
           return;
      }
 
@@ -144,6 +183,10 @@ function printElementById(elementId: string) {
      });
 }
 
+
+// -----------------------------
+// QR PNG hook (high-res for print)
+// -----------------------------
 function useQrPng(value: string) {
      const [pngDataUrl, setPngDataUrl] = React.useState<string>("");
 
@@ -154,7 +197,7 @@ function useQrPng(value: string) {
                const url = await QRCode.toDataURL(value, {
                     errorCorrectionLevel: "M",
                     margin: 2,
-                    width: 900, // high-res for printing
+                    width: 1200, // bigger = better print/scanning
                });
                if (!cancelled) setPngDataUrl(url);
           })();
@@ -167,16 +210,17 @@ function useQrPng(value: string) {
      return pngDataUrl;
 }
 
-
 export default function SubscriptionSuccessPage({
      isTrial,
      userEmail,
      dashboardUrl,
 }: SubscriptionSuccessPageProps) {
      const [qrOpen, setQrOpen] = React.useState(false);
+
+     // High-res PNG QR for poster
      const qrPng = useQrPng(PLAY_STORE_URL);
 
-     // Calculate trial end date (30 days from now)
+     // Trial dates
      const trialEndDate = new Date();
      trialEndDate.setDate(trialEndDate.getDate() + 30);
      const formattedTrialEndDate = trialEndDate.toLocaleDateString("en-US", {
@@ -185,7 +229,6 @@ export default function SubscriptionSuccessPage({
           day: "numeric",
      });
 
-     // Calculate the first billing date (after trial)
      const firstBillingDate = new Date(trialEndDate);
      const formattedBillingDate = firstBillingDate.toLocaleDateString("en-US", {
           year: "numeric",
@@ -193,7 +236,8 @@ export default function SubscriptionSuccessPage({
           day: "numeric",
      });
 
-     const printableId = "nestlink-qr-print-block";
+     // IMPORTANT: printable ID is ONLY used in the modal poster
+     const printablePosterId = "nestlink-qr-poster-a4";
 
      return (
           <Container maxWidth="md" sx={{ py: 8 }}>
@@ -245,7 +289,10 @@ export default function SubscriptionSuccessPage({
                                                             <ListItemIcon sx={{ minWidth: 36 }}>
                                                                  <CalendarTodayIcon color="primary" />
                                                             </ListItemIcon>
-                                                            <ListItemText primary="Trial End Date" secondary={formattedTrialEndDate} />
+                                                            <ListItemText
+                                                                 primary="Trial End Date"
+                                                                 secondary={formattedTrialEndDate}
+                                                            />
                                                        </ListItem>
 
                                                        <ListItem disableGutters sx={{ pb: 1 }}>
@@ -290,109 +337,41 @@ export default function SubscriptionSuccessPage({
                                              </ListItem>
                                         </List>
 
-                                        {/* NEW: Mobile app QR section */}
+                                        {/* Mobile app section (NOT printed) */}
                                         <Box
-                                             id={printableId}
                                              sx={{
-                                                  width: "210mm",            // A4 width
-                                                  minHeight: "297mm",        // A4 height
-                                                  mx: "auto",
-                                                  bgcolor: "#fff",
-                                                  color: "#111",
-                                                  p: "18mm",
-                                                  borderRadius: 3,
-                                                  border: "1px solid #e6e6e6",
-                                                  display: "flex",
-                                                  flexDirection: "column",
-                                                  justifyContent: "space-between",
-                                                  boxSizing: "border-box",
+                                                  mt: 2,
+                                                  p: 2,
+                                                  borderRadius: 2,
+                                                  border: "1px solid",
+                                                  borderColor: "divider",
                                              }}
                                         >
-                                             {/* Top */}
-                                             <Box sx={{ textAlign: "center" }}>
-                                                  <Box
-                                                       component="img"
-                                                       src="/logos/nestlink-logo.png"
-                                                       alt="NestLink"
-                                                       sx={{
-                                                            maxHeight: 110,
-                                                            width: "auto",
-                                                            maxWidth: "90%",
-                                                            objectFit: "contain",
-                                                            mx: "auto",
-                                                       }}
-                                                  />
+                                             <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+                                                  Get the mobile app
+                                             </Typography>
+                                             <Typography
+                                                  variant="body2"
+                                                  color="text.secondary"
+                                                  sx={{ mt: 0.5, mb: 1.5 }}
+                                             >
+                                                  Print a poster with a QR code for your tenants to quickly install the
+                                                  NestLink app.
+                                             </Typography>
 
-                                                  <Typography sx={{ mt: 2, fontSize: 34, fontWeight: 900, letterSpacing: 0.4 }}>
-                                                       Install NestLink
-                                                  </Typography>
-
-                                                  <Typography sx={{ mt: 1, fontSize: 18, color: "#444", maxWidth: 700, mx: "auto" }}>
-                                                       Scan the QR code to open Google Play and install the app.
-                                                       Use it to report issues and stay updated.
-                                                  </Typography>
-                                             </Box>
-
-                                             {/* Middle (QR focus) */}
-                                             <Box sx={{ display: "flex", justifyContent: "center" }}>
-                                                  <Box
-                                                       sx={{
-                                                            mt: 2,
-                                                            p: 4,
-                                                            borderRadius: 4,
-                                                            border: "3px solid #111",
-                                                            display: "inline-flex",
-                                                            alignItems: "center",
-                                                            justifyContent: "center",
-                                                       }}
-                                                  >
-                                                       {/* High-res PNG (best for printing + scanning) */}
-                                                       {qrPng ? (
-                                                            <Box
-                                                                 component="img"
-                                                                 src={qrPng}
-                                                                 alt="NestLink QR"
-                                                                 sx={{ width: 360, height: 360 }}
-                                                            />
-                                                       ) : (
-                                                            <Box sx={{ width: 360, height: 360 }} />
-                                                       )}
-                                                  </Box>
-                                             </Box>
-
-                                             {/* Bottom */}
-                                             <Box sx={{ textAlign: "center" }}>
-                                                  <Typography sx={{ fontSize: 16, fontWeight: 700 }}>
-                                                       How to use
-                                                  </Typography>
-
-                                                  <Typography sx={{ mt: 1, fontSize: 14, color: "#444", maxWidth: 760, mx: "auto" }}>
-                                                       1) Open your phone camera<br />
-                                                       2) Point it at the QR code<br />
-                                                       3) Tap the link to install NestLink
-                                                  </Typography>
-
-                                                  <Typography
-                                                       sx={{
-                                                            mt: 2,
-                                                            fontSize: 12,
-                                                            color: "#666",
-                                                            wordBreak: "break-all",
-                                                       }}
-                                                  >
-                                                       {PLAY_STORE_URL}
-                                                  </Typography>
-
-                                                  <Typography sx={{ mt: 1, fontSize: 12, color: "#888" }}>
-                                                       © NestLink • Building communication made simple
-                                                  </Typography>
-                                             </Box>
+                                             <Button
+                                                  variant="contained"
+                                                  startIcon={<QrCode2Icon />}
+                                                  onClick={() => setQrOpen(true)}
+                                             >
+                                                  Open QR Poster
+                                             </Button>
                                         </Box>
                                    </Grid>
                               </Grid>
 
                               {/* Bottom row: Image and CTA */}
-                              <Box>
+                              <Box sx={{ mt: 4 }}>
                                    <Box sx={{ height: 400, position: "relative", mb: 4 }}>
                                         <Image
                                              src="/cards/ty-card.png"
@@ -443,10 +422,10 @@ export default function SubscriptionSuccessPage({
                               </Box>
                          </Box>
 
-                         {/* QR MODAL */}
-                         <Dialog open={qrOpen} onClose={() => setQrOpen(false)} maxWidth="xs" fullWidth>
+                         {/* QR POSTER MODAL */}
+                         <Dialog open={qrOpen} onClose={() => setQrOpen(false)} maxWidth={false}>
                               <DialogTitle sx={{ pr: 6 }}>
-                                   Get NestLink on Google Play
+                                   Print QR Poster (A4)
                                    <IconButton
                                         onClick={() => setQrOpen(false)}
                                         aria-label="Close"
@@ -456,57 +435,91 @@ export default function SubscriptionSuccessPage({
                                    </IconButton>
                               </DialogTitle>
 
-                              <DialogContent>
+                              <DialogContent sx={{ bgcolor: "#f5f5f5", display: "flex", justifyContent: "center" }}>
+                                   {/* Printable A4 poster */}
                                    <Box
-                                        id={printableId}
+                                        id={printablePosterId}
                                         sx={{
-                                             p: 2.5,
-                                             borderRadius: 2,
-                                             border: "1px solid",
-                                             borderColor: "divider",
-                                             bgcolor: "background.paper",
-                                             width: "100%",
-                                             maxWidth: 360,
-                                             mx: "auto",
+                                             width: "110mm",
+                                             height: "197mm",
+                                             bgcolor: "#fff",
+                                             color: "#111",
+                                             overflow: "hidden",
+                                             display: "flex",
+                                             flexDirection: "column",
+                                             alignItems: "center",
+                                             justifyContent: "center",
+                                             textAlign: "center",
+                                             boxSizing: "border-box",
                                         }}
                                    >
-                                        <Stack spacing={1} alignItems="center">
-                                             {/* Update logo path as needed */}
-                                             <Box
-                                                  component="img"
-                                                  src="/logos/1-01.png"
-                                                  alt="NestLink"
-                                                  sx={{
-                                                       maxHeight: 86,
-                                                       maxWidth: "100%",
-                                                       objectFit: "contain",
-                                                  }}
-                                             />
+                                        {/* Logo */}
+                                        <Box
+                                             component="img"
+                                             src="/logos/1-01.png"
+                                             alt="NestLink"
+                                             sx={{
+                                                  height: "24mm",
+                                                  width: "auto",
+                                                  objectFit: "contain",
+                                             }}
+                                        />
+                                        {/* Title */}
+                                        <Typography sx={{ fontSize: 16, fontWeight: 700 }}>
+                                             Install NestLink
+                                        </Typography>
 
-                                             <Divider flexItem />
+                                        <Typography sx={{ fontSize: 13, color: "#f8cd57" }}>
+                                             Scan the QR code to open Google Play and install the app.
+                                        </Typography>
 
-                                             <Box
-                                                  sx={{
-                                                       p: 1.5,
-                                                       bgcolor: "#fff",
-                                                       borderRadius: 2,
-                                                       display: "inline-flex",
-                                                  }}
-                                             >
-                                                  <QRCodeSVG value={PLAY_STORE_URL} size={220} level="M" includeMargin />
-                                             </Box>
+                                        {/* QR */}
+                                        <Box
+                                             sx={{
+                                                  mt: "6mm",
+                                                  p: "4mm",
+                                                  borderRadius: "4mm",
+                                                  border: "2px solid #111",
+                                                  bgcolor: "#fff",
+                                                  display: "inline-flex",
+                                                  alignItems: "center",
+                                                  justifyContent: "center",
+                                             }}
+                                        >
+                                             {qrPng ? (
+                                                  <Box
+                                                       component="img"
+                                                       src={qrPng}
+                                                       alt="NestLink QR"
+                                                       sx={{
+                                                            width: "50mm",
+                                                            height: "50mm",
+                                                       }}
+                                                  />
+                                             ) : (
+                                                  <Box sx={{ width: "50mm", height: "50mm" }} />
+                                             )}
+                                        </Box>
 
-                                             <Typography variant="body2" sx={{ textAlign: "center" }}>
-                                                  Scan to open the app on Google Play
-                                             </Typography>
+                                        {/* Instructions */}
+                                        <Typography sx={{ mt: "5mm", fontSize: 15, fontWeight: 800 }}>
+                                             How to install
+                                        </Typography>
 
-                                             <Typography
-                                                  variant="caption"
-                                                  sx={{ textAlign: "center", wordBreak: "break-all", opacity: 0.7 }}
-                                             >
-                                                  {PLAY_STORE_URL}
-                                             </Typography>
-                                        </Stack>
+                                        <Typography sx={{ mt: 1, fontSize: 14, color: "#444" }}>
+                                             1) Open your phone camera<br />
+                                             2) Point it at the QR code<br />
+                                             3) Tap the link to install
+                                        </Typography>
+
+                                        {/* Footer link */}
+                                        <Typography sx={{ mt: "6mm", fontSize: 11.5, color: "#666", wordBreak: "break-all", maxWidth: "170mm" }}>
+                                             {PLAY_STORE_URL}
+                                        </Typography>
+
+                                        <Typography sx={{ mt: 1, fontSize: 11.5, color: "#999" }}>
+                                             © NestLink • Building communication made simple
+                                        </Typography>
                                    </Box>
                               </DialogContent>
 
@@ -515,9 +528,10 @@ export default function SubscriptionSuccessPage({
                                         Close
                                    </Button>
                                    <Button
-                                        onClick={() => printElementById(printableId)}
+                                        onClick={() => printElementById(printablePosterId)}
                                         variant="contained"
                                         startIcon={<PrintIcon />}
+                                        disabled={!qrPng} // wait for QR to be ready
                                    >
                                         Print
                                    </Button>
