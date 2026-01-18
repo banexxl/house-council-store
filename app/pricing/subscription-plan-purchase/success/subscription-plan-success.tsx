@@ -45,7 +45,6 @@ function printElementById(elementId: string) {
      const el = document.getElementById(elementId);
      if (!el) return;
 
-     // Create hidden iframe
      const iframe = document.createElement("iframe");
      iframe.style.position = "fixed";
      iframe.style.right = "0";
@@ -54,7 +53,6 @@ function printElementById(elementId: string) {
      iframe.style.height = "0";
      iframe.style.border = "0";
      iframe.setAttribute("aria-hidden", "true");
-
      document.body.appendChild(iframe);
 
      const doc = iframe.contentWindow?.document;
@@ -64,6 +62,9 @@ function printElementById(elementId: string) {
      }
 
      const origin = window.location.origin;
+
+     // IMPORTANT: use OUTER html so the wrapper styles/structure stay together
+     const printableHtml = el.outerHTML;
 
      doc.open();
      doc.write(`
@@ -75,58 +76,72 @@ function printElementById(elementId: string) {
     <title>Print QR</title>
     <style>
       @page { margin: 12mm; }
+      html, body { margin: 0; padding: 0; }
       body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
-      .wrap { display:flex; justify-content:center; padding: 12px; }
-      .card { border: 1px solid #ddd; border-radius: 12px; padding: 20px; }
+
+      /* Center and keep as ONE printable block */
+      .wrap {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 12mm;
+      }
+
+      /* Prevent page splitting */
+      .no-break {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      /* Make sure QR/logo fit on one page */
       svg { max-width: 100%; height: auto; }
       img { max-width: 100%; height: auto; }
+
+      /* Optional: if your block is too wide, cap it */
+      #${elementId} { max-width: 360px; }
     </style>
   </head>
   <body>
     <div class="wrap">
-      <div class="card">${el.innerHTML}</div>
+      <div class="no-break">
+        ${printableHtml}
+      </div>
     </div>
   </body>
 </html>
   `);
      doc.close();
 
-     // Wait for images (logo) to load, then print
      const win = iframe.contentWindow!;
-     const images = Array.from(doc.images);
+     const imgs = Array.from(doc.images);
 
-     const cleanup = () => {
-          setTimeout(() => {
-               document.body.removeChild(iframe);
-          }, 300);
-     };
-
+     const cleanup = () => setTimeout(() => document.body.removeChild(iframe), 300);
      const doPrint = () => {
           win.focus();
           win.print();
           cleanup();
      };
 
-     if (images.length === 0) {
-          setTimeout(doPrint, 200);
+     // Wait for images (logo) before printing
+     if (imgs.length === 0) {
+          setTimeout(doPrint, 150);
           return;
      }
 
      let loaded = 0;
      const done = () => {
           loaded += 1;
-          if (loaded >= images.length) setTimeout(doPrint, 150);
+          if (loaded >= imgs.length) setTimeout(doPrint, 150);
      };
 
-     images.forEach((img) => {
+     imgs.forEach((img) => {
           if (img.complete) done();
           else {
                img.onload = done;
-               img.onerror = done; // still print even if logo fails
+               img.onerror = done;
           }
      });
 }
-
 
 
 export default function SubscriptionSuccessPage({
@@ -251,7 +266,7 @@ export default function SubscriptionSuccessPage({
                                         </List>
 
                                         {/* NEW: Mobile app QR section */}
-                                        <Box sx={{ mt: 2, p: 2, borderRadius: 2, border: "1px solid", borderColor: "divider" }}>
+                                        <Box id={printableId} sx={{ mt: 2, p: 2, borderRadius: 2, border: "1px solid", borderColor: "divider" }}>
                                              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
                                                   Get the mobile app
                                              </Typography>
