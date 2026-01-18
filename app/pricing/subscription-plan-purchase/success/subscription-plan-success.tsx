@@ -45,14 +45,28 @@ function printElementById(elementId: string) {
      const el = document.getElementById(elementId);
      if (!el) return;
 
-     const printWindow = window.open("", "_blank", "noopener,noreferrer,width=900,height=650");
-     if (!printWindow) return;
+     // Create hidden iframe
+     const iframe = document.createElement("iframe");
+     iframe.style.position = "fixed";
+     iframe.style.right = "0";
+     iframe.style.bottom = "0";
+     iframe.style.width = "0";
+     iframe.style.height = "0";
+     iframe.style.border = "0";
+     iframe.setAttribute("aria-hidden", "true");
+
+     document.body.appendChild(iframe);
+
+     const doc = iframe.contentWindow?.document;
+     if (!doc) {
+          document.body.removeChild(iframe);
+          return;
+     }
 
      const origin = window.location.origin;
 
-     // Minimal print page (reliable)
-     printWindow.document.open();
-     printWindow.document.write(`
+     doc.open();
+     doc.write(`
 <!doctype html>
 <html>
   <head>
@@ -62,35 +76,57 @@ function printElementById(elementId: string) {
     <style>
       @page { margin: 12mm; }
       body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
-      .print-wrap { display:flex; justify-content:center; padding: 12px; }
-      .paper { border: 1px solid #ddd; border-radius: 12px; padding: 20px; }
+      .wrap { display:flex; justify-content:center; padding: 12px; }
+      .card { border: 1px solid #ddd; border-radius: 12px; padding: 20px; }
       svg { max-width: 100%; height: auto; }
       img { max-width: 100%; height: auto; }
     </style>
   </head>
   <body>
-    <div class="print-wrap">
-      <div class="paper" id="print-root"></div>
+    <div class="wrap">
+      <div class="card">${el.innerHTML}</div>
     </div>
   </body>
 </html>
   `);
-     printWindow.document.close();
+     doc.close();
 
-     // Inject the content after the skeleton exists
-     const mount = printWindow.document.getElementById("print-root");
-     if (!mount) return;
+     // Wait for images (logo) to load, then print
+     const win = iframe.contentWindow!;
+     const images = Array.from(doc.images);
 
-     // Copy the actual node (keeps your SVG markup)
-     mount.innerHTML = el.innerHTML;
+     const cleanup = () => {
+          setTimeout(() => {
+               document.body.removeChild(iframe);
+          }, 300);
+     };
 
-     // Wait a tick so SVG/images render, then print
-     setTimeout(() => {
-          printWindow.focus();
-          printWindow.print();
-          setTimeout(() => printWindow.close(), 250);
-     }, 250);
+     const doPrint = () => {
+          win.focus();
+          win.print();
+          cleanup();
+     };
+
+     if (images.length === 0) {
+          setTimeout(doPrint, 200);
+          return;
+     }
+
+     let loaded = 0;
+     const done = () => {
+          loaded += 1;
+          if (loaded >= images.length) setTimeout(doPrint, 150);
+     };
+
+     images.forEach((img) => {
+          if (img.complete) done();
+          else {
+               img.onload = done;
+               img.onerror = done; // still print even if logo fails
+          }
+     });
 }
+
 
 
 export default function SubscriptionSuccessPage({
