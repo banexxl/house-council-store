@@ -1,6 +1,7 @@
-"use client"
+"use client";
 
-import Image from "next/image"
+import React from "react";
+import Image from "next/image";
 import {
      Box,
      Container,
@@ -13,41 +14,102 @@ import {
      ListItemIcon,
      ListItemText,
      Grid,
-} from "@mui/material"
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline"
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday"
-import CreditCardIcon from "@mui/icons-material/CreditCard"
-import AccountCircleIcon from "@mui/icons-material/AccountCircle"
-import Animate from "@/app/components/animation-framer-motion"
-import Link from "next/link"
+     Dialog,
+     DialogActions,
+     DialogContent,
+     DialogTitle,
+     IconButton,
+     Stack,
+} from "@mui/material";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import CreditCardIcon from "@mui/icons-material/CreditCard";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import CloseIcon from "@mui/icons-material/Close";
+import PrintIcon from "@mui/icons-material/Print";
+import QrCode2Icon from "@mui/icons-material/QrCode2";
+import Animate from "@/app/components/animation-framer-motion";
+import Link from "next/link";
+import { QRCodeSVG } from "qrcode.react";
 
 interface SubscriptionSuccessPageProps {
-     isTrial: boolean
-     userEmail: string
-     dashboardUrl: string
+     isTrial: boolean;
+     userEmail: string;
+     dashboardUrl: string;
+}
+
+const PLAY_STORE_URL =
+     "https://play.google.com/store/apps/details?id=com.banexxl.nestlinkapp";
+
+function printElementById(elementId: string) {
+     const el = document.getElementById(elementId);
+     if (!el) return;
+
+     const printWindow = window.open("", "_blank", "noopener,noreferrer,width=900,height=650");
+     if (!printWindow) return;
+
+     const styles = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
+          .map((node) => (node as HTMLElement).outerHTML)
+          .join("\n");
+
+     const html = `
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Print QR</title>
+    ${styles}
+    <style>
+      @page { margin: 12mm; }
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+      .print-wrap { display:flex; justify-content:center; }
+      svg { max-width: 100%; height: auto; }
+    </style>
+  </head>
+  <body>
+    <div class="print-wrap">
+      ${el.outerHTML}
+    </div>
+    <script>
+      window.onload = () => {
+        window.focus();
+        window.print();
+        setTimeout(() => window.close(), 200);
+      };
+    </script>
+  </body>
+</html>`;
+
+     printWindow.document.open();
+     printWindow.document.write(html);
+     printWindow.document.close();
 }
 
 export default function SubscriptionSuccessPage({
      isTrial,
      userEmail,
-     dashboardUrl
+     dashboardUrl,
 }: SubscriptionSuccessPageProps) {
+     const [qrOpen, setQrOpen] = React.useState(false);
+
      // Calculate trial end date (30 days from now)
-     const trialEndDate = new Date()
-     trialEndDate.setDate(trialEndDate.getDate() + 30)
+     const trialEndDate = new Date();
+     trialEndDate.setDate(trialEndDate.getDate() + 30);
      const formattedTrialEndDate = trialEndDate.toLocaleDateString("en-US", {
           year: "numeric",
           month: "long",
           day: "numeric",
-     })
+     });
 
      // Calculate the first billing date (after trial)
-     const firstBillingDate = new Date(trialEndDate)
+     const firstBillingDate = new Date(trialEndDate);
      const formattedBillingDate = firstBillingDate.toLocaleDateString("en-US", {
           year: "numeric",
           month: "long",
           day: "numeric",
-     })
+     });
+
+     const printableId = "nestlink-qr-print-block";
 
      return (
           <Container maxWidth="md" sx={{ py: 8 }}>
@@ -70,9 +132,11 @@ export default function SubscriptionSuccessPage({
                                         {isTrial ? "Your Free Trial Has Started!" : "Subscription Successful!"}
                                    </Typography>
                                    <Typography variant="subtitle1">
-                                        {isTrial
-                                             ? <>You now have access to all plan features for the next 30 days.</>
-                                             : <>You now have full access to all plan features.</>}
+                                        {isTrial ? (
+                                             <>You now have access to all plan features for the next 30 days.</>
+                                        ) : (
+                                             <>You now have full access to all plan features.</>
+                                        )}
                                    </Typography>
                               </Box>
 
@@ -90,6 +154,7 @@ export default function SubscriptionSuccessPage({
                                                   </ListItemIcon>
                                                   <ListItemText primary="Account" secondary={userEmail} />
                                              </ListItem>
+
                                              {isTrial && (
                                                   <>
                                                        <ListItem disableGutters sx={{ pb: 1 }}>
@@ -98,11 +163,15 @@ export default function SubscriptionSuccessPage({
                                                             </ListItemIcon>
                                                             <ListItemText primary="Trial End Date" secondary={formattedTrialEndDate} />
                                                        </ListItem>
+
                                                        <ListItem disableGutters sx={{ pb: 1 }}>
                                                             <ListItemIcon sx={{ minWidth: 36 }}>
                                                                  <CreditCardIcon color="primary" />
                                                             </ListItemIcon>
-                                                            <ListItemText primary="First Billing Date" secondary={formattedBillingDate} />
+                                                            <ListItemText
+                                                                 primary="First Billing Date"
+                                                                 secondary={formattedBillingDate}
+                                                            />
                                                        </ListItem>
                                                   </>
                                              )}
@@ -114,6 +183,7 @@ export default function SubscriptionSuccessPage({
                                              Next Steps
                                         </Typography>
                                         <Divider sx={{ mb: 3 }} />
+
                                         <List sx={{ pl: 1 }}>
                                              <ListItem disableGutters sx={{ pb: 1 }}>
                                                   <ListItemIcon sx={{ minWidth: 36 }}>
@@ -124,6 +194,7 @@ export default function SubscriptionSuccessPage({
                                                        secondary="Complete your profile to get the most out of our platform"
                                                   />
                                              </ListItem>
+
                                              <ListItem disableGutters sx={{ pb: 1 }}>
                                                   <ListItemIcon sx={{ minWidth: 36 }}>
                                                        <CheckCircleOutlineIcon color="primary" />
@@ -134,6 +205,24 @@ export default function SubscriptionSuccessPage({
                                                   />
                                              </ListItem>
                                         </List>
+
+                                        {/* NEW: Mobile app QR section */}
+                                        <Box sx={{ mt: 2, p: 2, borderRadius: 2, border: "1px solid", borderColor: "divider" }}>
+                                             <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                                                  Get the mobile app
+                                             </Typography>
+                                             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, mb: 1.5 }}>
+                                                  Scan and install NestLink on your phone to report issues faster and stay updated on the go.
+                                             </Typography>
+
+                                             <Button
+                                                  variant="contained"
+                                                  startIcon={<QrCode2Icon />}
+                                                  onClick={() => setQrOpen(true)}
+                                             >
+                                                  Show QR Code
+                                             </Button>
+                                        </Box>
                                    </Grid>
                               </Grid>
 
@@ -155,7 +244,7 @@ export default function SubscriptionSuccessPage({
                                         <Button
                                              variant="contained"
                                              size="large"
-                                             onClick={() => window.open(dashboardUrl, '_blank')}
+                                             onClick={() => window.open(dashboardUrl, "_blank")}
                                              sx={{
                                                   mb: 2,
                                                   minWidth: 200,
@@ -163,33 +252,114 @@ export default function SubscriptionSuccessPage({
                                                   "@keyframes pulse": {
                                                        "0%": { transform: "scale(1)" },
                                                        "50%": { transform: "scale(1.05)" },
-                                                       "100%": { transform: "scale(1)" }
-                                                  }
+                                                       "100%": { transform: "scale(1)" },
+                                                  },
                                              }}
                                         >
                                              Go to Dashboard
                                         </Button>
+
                                         <Typography variant="body2" color="text.secondary">
                                              Need help? Check out our{" "}
                                              <Link href="/docs" passHref>
-                                                  <Typography variant="body2" color="primary">
+                                                  <Typography component="span" variant="body2" color="primary">
                                                        docs
                                                   </Typography>
                                              </Link>{" "}
                                              or{" "}
                                              <Link href="/contact" passHref>
-                                                  <Typography variant="body2" color="primary">
+                                                  <Typography component="span" variant="body2" color="primary">
                                                        contact support
                                                   </Typography>
-                                             </Link>.
+                                             </Link>
+                                             .
                                         </Typography>
                                    </Box>
                               </Box>
                          </Box>
+
+                         {/* QR MODAL */}
+                         <Dialog open={qrOpen} onClose={() => setQrOpen(false)} maxWidth="xs" fullWidth>
+                              <DialogTitle sx={{ pr: 6 }}>
+                                   Get NestLink on Google Play
+                                   <IconButton
+                                        onClick={() => setQrOpen(false)}
+                                        aria-label="Close"
+                                        sx={{ position: "absolute", right: 8, top: 8 }}
+                                   >
+                                        <CloseIcon />
+                                   </IconButton>
+                              </DialogTitle>
+
+                              <DialogContent>
+                                   <Box
+                                        id={printableId}
+                                        sx={{
+                                             p: 2.5,
+                                             borderRadius: 2,
+                                             border: "1px solid",
+                                             borderColor: "divider",
+                                             bgcolor: "background.paper",
+                                             width: "100%",
+                                             maxWidth: 360,
+                                             mx: "auto",
+                                        }}
+                                   >
+                                        <Stack spacing={2} alignItems="center">
+                                             {/* Update logo path as needed */}
+                                             <Box
+                                                  component="img"
+                                                  src="/logos/nestlink-logo.png"
+                                                  alt="NestLink"
+                                                  sx={{
+                                                       maxHeight: 56,
+                                                       maxWidth: "80%",
+                                                       objectFit: "contain",
+                                                  }}
+                                             />
+
+                                             <Divider flexItem />
+
+                                             <Box
+                                                  sx={{
+                                                       p: 1.5,
+                                                       bgcolor: "#fff",
+                                                       borderRadius: 2,
+                                                       display: "inline-flex",
+                                                  }}
+                                             >
+                                                  <QRCodeSVG value={PLAY_STORE_URL} size={220} level="M" includeMargin />
+                                             </Box>
+
+                                             <Typography variant="body2" sx={{ textAlign: "center" }}>
+                                                  Scan to open the app on Google Play
+                                             </Typography>
+
+                                             <Typography
+                                                  variant="caption"
+                                                  sx={{ textAlign: "center", wordBreak: "break-all", opacity: 0.7 }}
+                                             >
+                                                  {PLAY_STORE_URL}
+                                             </Typography>
+                                        </Stack>
+                                   </Box>
+                              </DialogContent>
+
+                              <DialogActions sx={{ px: 3, pb: 2 }}>
+                                   <Button onClick={() => setQrOpen(false)} variant="outlined">
+                                        Close
+                                   </Button>
+                                   <Button
+                                        onClick={() => printElementById(printableId)}
+                                        variant="contained"
+                                        startIcon={<PrintIcon />}
+                                   >
+                                        Print
+                                   </Button>
+                              </DialogActions>
+                         </Dialog>
                     </Paper>
                </Animate>
           </Container>
-     )
-
-
+     );
 }
