@@ -48,42 +48,50 @@ function printElementById(elementId: string) {
      const printWindow = window.open("", "_blank", "noopener,noreferrer,width=900,height=650");
      if (!printWindow) return;
 
-     const styles = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
-          .map((node) => (node as HTMLElement).outerHTML)
-          .join("\n");
+     const origin = window.location.origin;
 
-     const html = `
+     // Minimal print page (reliable)
+     printWindow.document.open();
+     printWindow.document.write(`
 <!doctype html>
 <html>
   <head>
     <meta charset="utf-8" />
+    <base href="${origin}/" />
     <title>Print QR</title>
-    ${styles}
     <style>
       @page { margin: 12mm; }
       body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
-      .print-wrap { display:flex; justify-content:center; }
+      .print-wrap { display:flex; justify-content:center; padding: 12px; }
+      .paper { border: 1px solid #ddd; border-radius: 12px; padding: 20px; }
       svg { max-width: 100%; height: auto; }
+      img { max-width: 100%; height: auto; }
     </style>
   </head>
   <body>
     <div class="print-wrap">
-      ${el.outerHTML}
+      <div class="paper" id="print-root"></div>
     </div>
-    <script>
-      window.onload = () => {
-        window.focus();
-        window.print();
-        setTimeout(() => window.close(), 200);
-      };
-    </script>
   </body>
-</html>`;
-
-     printWindow.document.open();
-     printWindow.document.write(html);
+</html>
+  `);
      printWindow.document.close();
+
+     // Inject the content after the skeleton exists
+     const mount = printWindow.document.getElementById("print-root");
+     if (!mount) return;
+
+     // Copy the actual node (keeps your SVG markup)
+     mount.innerHTML = el.innerHTML;
+
+     // Wait a tick so SVG/images render, then print
+     setTimeout(() => {
+          printWindow.focus();
+          printWindow.print();
+          setTimeout(() => printWindow.close(), 250);
+     }, 250);
 }
+
 
 export default function SubscriptionSuccessPage({
      isTrial,
