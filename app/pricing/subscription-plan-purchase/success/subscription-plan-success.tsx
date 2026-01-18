@@ -337,39 +337,45 @@ export default function SubscriptionSuccessPage({
                                              </ListItem>
                                         </List>
 
-                                        {/* Mobile app section (NOT printed) */}
-                                        <Box
-                                             sx={{
-                                                  mt: 2,
-                                                  p: 2,
-                                                  borderRadius: 2,
-                                                  border: "1px solid",
-                                                  borderColor: "divider",
-                                             }}
-                                        >
-                                             <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-                                                  Get the mobile app
-                                             </Typography>
-                                             <Typography
-                                                  variant="body2"
-                                                  color="text.secondary"
-                                                  sx={{ mt: 0.5, mb: 1.5 }}
-                                             >
-                                                  Print a poster with a QR code for your tenants to quickly install the
-                                                  NestLink app.
-                                             </Typography>
 
-                                             <Button
-                                                  variant="contained"
-                                                  startIcon={<QrCode2Icon />}
-                                                  onClick={() => setQrOpen(true)}
-                                             >
-                                                  Open QR Poster
-                                             </Button>
-                                        </Box>
                                    </Grid>
                               </Grid>
+                              {/* Mobile app section (NOT printed) */}
+                              <Box
+                                   sx={{
+                                        mt: 2,
+                                        p: 2,
+                                        borderRadius: 2,
+                                        border: "1px solid",
+                                        borderColor: "divider",
+                                        justifyContent: "center",
+                                        textAlign: "center",
+                                        bgcolor: "#ecd09e",
+                                   }}
+                              >
+                                   <Typography variant="subtitle1"
+                                        sx={{
+                                             fontWeight: 700
+                                        }}>
+                                        Get the mobile app
+                                   </Typography>
+                                   <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                        sx={{ mt: 0.5, mb: 1.5 }}
+                                   >
+                                        Print a poster with a QR code for your tenants to quickly install the
+                                        NestLink app.
+                                   </Typography>
 
+                                   <Button
+                                        variant="contained"
+                                        startIcon={<QrCode2Icon />}
+                                        onClick={() => setQrOpen(true)}
+                                   >
+                                        Open QR Poster
+                                   </Button>
+                              </Box>
                               {/* Bottom row: Image and CTA */}
                               <Box sx={{ mt: 4 }}>
                                    <Box sx={{ height: 400, position: "relative", mb: 4 }}>
