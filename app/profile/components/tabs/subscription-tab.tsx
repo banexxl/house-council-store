@@ -27,6 +27,7 @@ import { PolarSubscription } from "@/app/types/polar-subscription-types"
 import { PolarProduct } from "@/app/types/polar-product-types"
 import { PolarOrder } from "@/app/types/polar-order-types"
 import log from "@/app/lib/logger"
+import { PolarActiveMeter } from "@/app/types/polar-customer-types"
 
 interface SubscriptionTabProps {
      customerSubscriptionObject: PolarSubscription
@@ -44,6 +45,24 @@ export default function SubscriptionTab({ customerSubscriptionObject, apartments
      const [subscriptionData, setSubscriptionData] = useState<PolarSubscription | null>(customerSubscriptionObject)
      const [currentPage, setCurrentPage] = useState(1)
      const itemsPerPage = 5
+     const activeMeters: PolarActiveMeter[] = subscriptionData?.meters ?? []
+     const theme = useTheme()
+     const router = useRouter()
+     const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
+     const [confirmCancelDialogOpen, setConfirmCancelDialogOpen] = useState(false)
+     const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false)
+     const [isProcessing, setIsProcessing] = useState(false)
+     const [isPortalLoading, setIsPortalLoading] = useState(false)
+     const statusTone = getStatusColor(subscriptionData?.status)
+     const statusColorMap: Record<string, string> = {
+          success: theme.palette.success.main,
+          warning: theme.palette.warning.main,
+          error: theme.palette.error.main,
+          info: theme.palette.info.main,
+          default: theme.palette.text.primary,
+     }
+     const statusTextColor = statusColorMap[statusTone] ?? theme.palette.text.primary
+     const statusLabel = subscriptionData?.status?.toUpperCase() ?? "N/A"
 
      useEffect(() => {
           setSubscriptionData(customerSubscriptionObject)
@@ -112,25 +131,6 @@ export default function SubscriptionTab({ customerSubscriptionObject, apartments
           };
      }, [customerSubscriptionObject?.id]);
 
-
-
-     const theme = useTheme()
-     const router = useRouter()
-     const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
-     const [confirmCancelDialogOpen, setConfirmCancelDialogOpen] = useState(false)
-     const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false)
-     const [isProcessing, setIsProcessing] = useState(false)
-     const [isPortalLoading, setIsPortalLoading] = useState(false)
-     const statusTone = getStatusColor(subscriptionData?.status)
-     const statusColorMap: Record<string, string> = {
-          success: theme.palette.success.main,
-          warning: theme.palette.warning.main,
-          error: theme.palette.error.main,
-          info: theme.palette.info.main,
-          default: theme.palette.text.primary,
-     }
-     const statusTextColor = statusColorMap[statusTone] ?? theme.palette.text.primary
-     const statusLabel = subscriptionData?.status?.toUpperCase() ?? "N/A"
 
      const handleDialogToggle = (type: "cancel" | "confirmCancel" | "upgrade", open: boolean) => {
           if (type === "cancel") setCancelDialogOpen(open)
@@ -250,13 +250,7 @@ export default function SubscriptionTab({ customerSubscriptionObject, apartments
      }
 
      const currencyFormatter = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" })
-     // const pricePerApartment = subscriptionData?.metadata.
-     //      ? subscriptionData.recurringInterval === "year"
-     //           ? subscriptionData.subscription_plan.total_price_per_apartment_with_discounts
-     //           : subscriptionData.subscription_plan.monthly_total_price_per_apartment
-     //      : null
-     // const totalForAllApartments = pricePerApartment !== null ? pricePerApartment * apartmentsCount : null
-
+     const pricePerApartment = subscriptionData?.amount
      const billingPeriodLabel = subscriptionData?.recurringInterval === "year" ? "year" : "month"
      const hasSubscription = Boolean(subscriptionData?.id || subscriptionData?.id)
 
@@ -423,16 +417,33 @@ export default function SubscriptionTab({ customerSubscriptionObject, apartments
                                         <Alert severity="success" sx={{ mt: 1 }}>
                                              This plan includes a {productData.trialIntervalCount} {productData.trialInterval} free trial!
                                         </Alert>
-                                   )}aaaaaaa
-                                   {/* {pricePerApartment !== null && (
-                                        <Alert severity="info" sx={{ mt: 1 }}>
-                                             Billing is per apartment. With {apartmentsCount} apartment{apartmentsCount === 1 ? "" : "s"}, your {billingPeriodLabel}ly charge is {currencyFormatter.format(pricePerApartment)} x {apartmentsCount} = {currencyFormatter.format(totalForAllApartments ?? 0)}.
-                                        </Alert>
-                                   )} */}
+                                   )}
+
                               </Grid>
                          </Grid>
 
                     </CardContent>
+                    {activeMeters.length > 0 && pricePerApartment !== null && (
+                         <Alert severity="info" sx={{ mt: 1 }}>
+                              Billing is per active meter.
+                              <br />
+                              You have {activeMeters.length} active meter{activeMeters.length === 1 ? "" : "s"}:
+                              <List dense sx={{ pl: 2, mb: 1 }}>
+                                   {activeMeters.map((meter) => (
+                                        <ListItem key={meter.id} sx={{ py: 0, minHeight: 0 }}>
+                                             <ListItemText
+                                                  primary={`${meter.meter.name} – ${meter.consumedUnits} apartment${meter.consumedUnits === 1 ? "" : "s"}`}
+                                                  slotProps={{ primary: { variant: "body2" } }}
+                                             />
+                                        </ListItem>
+                                   ))}
+                              </List>
+                              Your {billingPeriodLabel}ly charge is {' '}
+                              {currencyFormatter.format(subscriptionData?.prices[0].unitAmount! / 100)} x {' '}
+                              {subscriptionData?.meters[0].consumedUnits} = {' '}
+                              {currencyFormatter.format((subscriptionData?.prices[0].unitAmount! / 100) * subscriptionData?.meters[0].consumedUnits!)}.
+                         </Alert>
+                    )}
 
                </Card>
                <Card>

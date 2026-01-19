@@ -92,11 +92,23 @@ export interface PolarGrantedBenefit {
      properties: Record<string, string>;
 }
 
+export type PolarMeter = {
+     id: string;
+     name: string;
+     organizationId: string;
+     createdAt: string;
+     modifiedAt: string;
+     archivedAt: string | null;
+     metadata: Record<string, unknown>;
+}
+
 export interface PolarActiveMeter {
      id: string;
+     amount: number;
      createdAt: string;
      modifiedAt: string;
      meterId: string;
+     meter: PolarMeter;
      consumedUnits: number;
      creditedUnits: number;
      balance: number;
