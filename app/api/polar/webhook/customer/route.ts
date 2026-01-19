@@ -16,7 +16,7 @@ function mapCustomerToRow(c: PolarCustomer) {
      return {
           id: c.id!,
           email: c.email!,
-          externalId: c.metadata?.userId,
+          externalId: c.externalId!,
           name: c.name!,
           emailVerified: c.emailVerified ?? false,
           organizationId: c.organizationId ?? null,
@@ -44,10 +44,10 @@ export const POST = Webhooks({
           if (!customer.externalId) {
                await logServerAction({
                     user_id: null,
-                    action: "customer.created - skipped (missing userId in metadata)",
+                    action: "customer.created - skipped (missing externalId)",
                     payload,
                     status: "success",
-                    error: "Missing userId in metadata",
+                    error: "Missing externalId",
                     duration_ms: Date.now() - t0,
                     type: "webhook",
                });
