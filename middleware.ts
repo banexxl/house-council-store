@@ -58,9 +58,9 @@ export async function middleware(request: NextRequest) {
           "/auth/registration-confirmation",
           "/auth/registration-confirmed",
           "/auth/reset-password",
-          "/documentation",
           "/pricing",
           "/contact",
+          "/docs",
           "/api/polar",
           "/api/polar/webhook",
      ];
