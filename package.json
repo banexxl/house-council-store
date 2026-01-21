@@ -15,7 +15,7 @@
     "@mui/material": "^7.0.2",
     "@polar-sh/nextjs": "^0.9.3",
     "@supabase/ssr": "^0.8.0",
-    "@supabase/supabase-js": "^2.49.1",
+    "@supabase/supabase-js": "^2.91.0",
     "@types/react": "latest",
     "bcryptjs": "^3.0.2",
     "date-fns": "^2.30.0",
