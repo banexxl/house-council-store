@@ -96,7 +96,6 @@ export default function SubscriptionTab({ customerSubscriptionObject, apartments
 
                const maybeRecord = payload.new;
                if (!isClientSubscriptionRecord(maybeRecord)) {
-                    console.log("Invalid payload:", payload);
                     return;
                }
 

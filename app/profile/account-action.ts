@@ -264,8 +264,6 @@ export const readAllApartmentsByClientId = async (clientId: string): Promise<{ s
           .in('building_id', buildingIds)
           .order('created_at', { ascending: false });
 
-     // Optionally: console.log('apartments', data, error)
-
      if (error) {
           await logServerAction({
                user_id: clientId,
