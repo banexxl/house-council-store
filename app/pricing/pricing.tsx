@@ -291,7 +291,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({
                                    </Typography>
                                    <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 700, mx: "auto", mt: 1 }}>
                                         Pricing is billed per apartment.{" "}
-                                        {apartmentCount !== undefined
+                                        {apartmentCount !== undefined && customer
                                              ? `You currently have ${apartmentCount} apartment${apartmentCount === 1 ? "" : "s"} on your account.`
                                              : "Sign in to see your apartment count."}
                                    </Typography>
