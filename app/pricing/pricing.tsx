@@ -416,7 +416,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({
                                                        </Typography>
 
                                                        {/* Optional: building total */}
-                                                       {pricingDisplay && apartmentCount !== undefined && (
+                                                       {customer && pricingDisplay && apartmentCount !== undefined && (
                                                             <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1 }}>
                                                                  Total for your {apartmentCount} apartment{apartmentCount === 1 ? "" : "s"}:{" "}
                                                                  <strong>
