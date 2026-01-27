@@ -177,10 +177,10 @@ export default function ProfileSidebar({ userData, recentActivity, onEditProfile
                          if (updateAccountActionResponse.success) {
                               toast.success("Avatar updated successfully.");
                          } else {
-                              toast.error("Failed to update account: " + updateAccountActionResponse.error);
+                              toast.error("Failed to update account");
                          }
                     } else {
-                         toast.error("Upload failed: " + uploadResponse.message);
+                         toast.error("Upload failed");
                     }
 
                     setImageLoading(false);
