@@ -14,7 +14,6 @@ interface AccountTabProps {
 }
 
 export default function AccountTab({ userData }: AccountTabProps) {
-
      const [signoutLoading, setSignoutLoading] = useState(false)
      const router = useRouter()
      const handleSignOut = async () => {
@@ -104,7 +103,7 @@ export default function AccountTab({ userData }: AccountTabProps) {
                               Created At
                          </Typography>
                          <Typography variant="body1">
-                              {new Intl.DateTimeFormat("en-US", {
+                              {userData.customer.createdAt && new Intl.DateTimeFormat("en-US", {
                                    year: "numeric",
                                    month: "short",
                                    day: "numeric",
@@ -119,7 +118,7 @@ export default function AccountTab({ userData }: AccountTabProps) {
                               Modified At
                          </Typography>
                          <Typography variant="body1">
-                              {new Intl.DateTimeFormat("en-US", {
+                              {userData.customer.modifiedAt && new Intl.DateTimeFormat("en-US", {
                                    year: "numeric",
                                    month: "short",
                                    day: "numeric",
