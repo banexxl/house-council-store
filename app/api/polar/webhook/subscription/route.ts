@@ -144,7 +144,7 @@ async function upsertSubscription(subscription: any, eventType: string) {
 // ---------------------------------------------------------------------------
 
 export const POST = Webhooks({
-     webhookSecret: process.env.POLAR_WEBHOOK_SECRET_SANDBOX_SUBSCRIPTION!,
+     webhookSecret: process.env.POLAR_WEBHOOK_SECRET_SUBSCRIPTION!,
 
      onSubscriptionCreated: async (payload) => {
           const eventType = "subscription.created";

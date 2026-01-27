@@ -146,7 +146,7 @@ async function upsertOrder(order: PolarOrder, eventType: string) {
 // ---------------------------------------------------------------------------
 
 export const POST = Webhooks({
-     webhookSecret: process.env.POLAR_WEBHOOK_SECRET_SANDBOX_ORDER!,
+     webhookSecret: process.env.POLAR_WEBHOOK_SECRET_ORDER!,
 
      onOrderCreated: async (payload) => {
           const eventType = "order.created";

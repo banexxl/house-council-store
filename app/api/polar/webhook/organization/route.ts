@@ -129,7 +129,7 @@ async function upsertOrganization(organization: PolarOrganization, eventType: st
 // ---------------------------------------------------------------------------
 
 export const POST = Webhooks({
-     webhookSecret: process.env.POLAR_WEBHOOK_SECRET_SANDBOX_ORGANIZATION!,
+     webhookSecret: process.env.POLAR_WEBHOOK_SECRET_ORGANIZATION!,
 
 
      onOrganizationUpdated: async (payload) => {

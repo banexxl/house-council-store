@@ -16,7 +16,7 @@ const supabase = createClient(
 // ---------------------------------------------------------------------------
 
 export const POST = Webhooks({
-     webhookSecret: process.env.POLAR_WEBHOOK_SECRET_SANDBOX_CHECKOUT!,
+     webhookSecret: process.env.POLAR_WEBHOOK_SECRET_CHECKOUT!,
 
      onCheckoutCreated: async (payload) => {
           const t0 = Date.now();

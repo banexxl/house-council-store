@@ -31,7 +31,7 @@ function mapCustomerToRow(c: PolarCustomer) {
 }
 
 export const POST = Webhooks({
-     webhookSecret: process.env.POLAR_WEBHOOK_SECRET_SANDBOX_CUSTOMER!,
+     webhookSecret: process.env.POLAR_WEBHOOK_SECRET_CUSTOMER!,
 
      // ---------------------------
      // customer.created

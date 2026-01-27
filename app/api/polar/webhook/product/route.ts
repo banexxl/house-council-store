@@ -347,7 +347,7 @@ async function syncProductToDb(product: any, eventLabel: string) {
 // Webhook handler
 // ------------------------------------------------------------
 export const POST = Webhooks({
-     webhookSecret: process.env.POLAR_WEBHOOK_SECRET_SANDBOX_PRODUCT!,
+     webhookSecret: process.env.POLAR_WEBHOOK_SECRET_PRODUCT!,
 
      onProductCreated: async (payload) => {
           console.log("Product created payload:", payload);
