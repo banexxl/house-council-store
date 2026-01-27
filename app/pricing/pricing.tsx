@@ -10,17 +10,12 @@ import {
      Container,
      Paper,
      Typography,
-     List,
-     ListItem,
-     ListItemIcon,
-     ListItemText,
      Accordion,
      AccordionSummary,
      AccordionDetails,
      Grid,
      useTheme,
 } from "@mui/material";
-import CheckIcon from "@mui/icons-material/Check";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import toast, { Toaster } from "react-hot-toast";
 import { useRouter } from "next/navigation";
@@ -130,15 +125,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({
           return Math.max(0, Math.round((savings / baselineCost) * 100));
      }, [currentProduct, baseMonthlyPrice]);
 
-     // Features: assuming product.metadata is "feature list"-like values
-     const features = useMemo(() => {
-          if (!currentProduct?.metadata) return [];
-          return Object.entries(currentProduct.metadata).map(([key, value]) => ({
-               id: key,
-               name: String(value),
-               description: String(value),
-          }));
-     }, [currentProduct]);
+     const productDescription = currentProduct?.description?.trim() ?? "";
 
      // ✅ Pricing display based on SELECTED product (not user's current subscription)
      const pricingDisplay = useMemo(() => {
@@ -439,17 +426,25 @@ export const PricingPage: React.FC<PricingPageProps> = ({
                                                             </Typography>
                                                        )}
 
-                                                       {/* Features */}
-                                                       <List dense>
-                                                            {features.map((feature) => (
-                                                                 <ListItem key={feature.id} disablePadding sx={{ py: 0.5 }}>
-                                                                      <ListItemIcon sx={{ minWidth: 32 }}>
-                                                                           <CheckIcon color="primary" fontSize="small" />
-                                                                      </ListItemIcon>
-                                                                      <ListItemText primary={feature.name} />
-                                                                 </ListItem>
-                                                            ))}
-                                                       </List>
+                                                       {/* Product description */}
+                                                       {productDescription ? (
+                                                            <Typography
+                                                                 variant="body2"
+                                                                 color="text.secondary"
+                                                                 sx={{
+                                                                      mt: 1,
+                                                                      whiteSpace: 'pre-line',
+                                                                      lineHeight: 1.7,
+                                                                 }}
+                                                            >
+                                                                 {productDescription}
+                                                            </Typography>
+                                                       ) : (
+                                                            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                                                                 No description available for this plan.
+                                                            </Typography>
+                                                       )}
+
                                                   </CardContent>
 
                                                   <CardActions sx={{ p: 2, pt: 0 }}>
