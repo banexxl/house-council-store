@@ -9,6 +9,7 @@ import {
      ListItem,
      ListItemIcon,
      ListItemText,
+     Link,
      useTheme,
      Tooltip,
      Pagination
@@ -51,6 +52,7 @@ export default function SubscriptionTab({ customerSubscriptionObject, apartments
      const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
      const [confirmCancelDialogOpen, setConfirmCancelDialogOpen] = useState(false)
      const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false)
+     const [descriptionDialogOpen, setDescriptionDialogOpen] = useState(false)
      const [isProcessing, setIsProcessing] = useState(false)
      const [isPortalLoading, setIsPortalLoading] = useState(false)
      const statusTone = getStatusColor(subscriptionData?.status)
@@ -282,9 +284,17 @@ export default function SubscriptionTab({ customerSubscriptionObject, apartments
                                         {productData?.name ?? "No plan selected"}
                                    </Typography>
                                    {productData?.description && (
-                                        <Typography variant="body2" color="text.secondary">
-                                             {productData.description}
-                                        </Typography>
+                                        <Link
+                                             component="button"
+                                             variant="body2"
+                                             underline="always"
+                                             sx={{ color: "text.secondary", p: 0, textAlign: "left" }}
+                                             onClick={() => setDescriptionDialogOpen(true)}
+                                             aria-haspopup="dialog"
+                                             aria-controls="plan-description-dialog"
+                                        >
+                                             View Plan Features
+                                        </Link>
                                    )}
                               </Box>
                               <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", justifyContent: "flex-end" }}>
@@ -576,6 +586,27 @@ export default function SubscriptionTab({ customerSubscriptionObject, apartments
                          <Button onClick={handleUpgradeSubscription} color="primary" variant="contained" disabled={isProcessing} startIcon={isProcessing ? <CircularProgress size={20} /> : null}>
                               {isProcessing ? "Processing..." : "Continue to Upgrade"}
                          </Button>
+                    </DialogActions>
+               </Dialog>
+               {/* Plan Description Dialog */}
+               <Dialog
+                    id="plan-description-dialog"
+                    open={descriptionDialogOpen}
+                    onClose={() => setDescriptionDialogOpen(false)}
+                    aria-labelledby="plan-description-title"
+               >
+                    <DialogTitle id="plan-description-title">Plan description</DialogTitle>
+                    <DialogContent dividers>
+                         <Typography variant="body2" color="text.secondary" sx={{
+                              mt: 1,
+                              whiteSpace: 'pre-line',
+                              lineHeight: 1.7,
+                         }}>
+                              {productData?.description ?? "No description available."}
+                         </Typography>
+                    </DialogContent>
+                    <DialogActions>
+                         <Button onClick={() => setDescriptionDialogOpen(false)} color="primary">Close</Button>
                     </DialogActions>
                </Dialog>
           </Box>
