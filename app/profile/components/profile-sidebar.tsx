@@ -143,6 +143,7 @@ export default function ProfileSidebar({ userData, recentActivity, onEditProfile
                toast.error("Error logging out")
           }
      }
+
      const handleUpdateAvatar = async (file: File) => {
           setImageLoading(true);
 
@@ -165,7 +166,7 @@ export default function ProfileSidebar({ userData, recentActivity, onEditProfile
                     formData.append('title', userData.customer.name ?? 'avatar');
                     formData.append('extension', extension);
                     formData.append('fileName', file.name);
-                    formData.append('folderName', userData.customer.id); // or use a unique ID
+                    formData.append('folderName', userData.customer.externalId!); // or use a unique ID
 
                     const uploadResponse = await uploadClientAvatarAction(formData);
 

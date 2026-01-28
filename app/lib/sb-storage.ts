@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { useServerSideSupabaseServiceRoleClient } from './ss-supabase-service-role-client';
 import { logServerAction } from './server-logging';
+import { useServerSideSupabaseAnonClient } from './ss-supabase-anon-client';
 
 const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4MB
 const bucket = process.env.SUPABASE_S3_CLIENT_IMAGES_BUCKET!;
@@ -37,8 +38,9 @@ export async function uploadClientAvatarAction(formData: FormData): Promise<{ su
           return { success: false, message: 'File size limit exceeded' };
      }
 
-     const supabase = await useServerSideSupabaseServiceRoleClient();
-     const key = `Clients/${folderName}/Images/Logos/${fileName.split('.')[0]}.${extension}`;
+     const supabase = await useServerSideSupabaseAnonClient();
+     const key = `clients/${folderName}/Images/Logos/${fileName.split('.')[0]}.${extension}`;
+     console.log(key);
 
      const { error: uploadError } = await supabase.storage
           .from(bucket)
@@ -46,6 +48,7 @@ export async function uploadClientAvatarAction(formData: FormData): Promise<{ su
                contentType: `image/${extension}`,
                upsert: true,
           });
+     console.log(uploadError);
 
      if (uploadError) {
           await logServerAction({
