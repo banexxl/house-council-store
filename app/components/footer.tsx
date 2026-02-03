@@ -93,7 +93,7 @@ export const Footer = () => {
                 </List>
               </Grid>
 
-              <Grid size={{ xs: 12, md: 4 }}>
+              {/* <Grid size={{ xs: 12, md: 4 }}>
                 <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
                   Connect
                 </Typography>
@@ -114,7 +114,7 @@ export const Footer = () => {
                     </Link>
                   </ListItem>
                 </List>
-              </Grid>
+              </Grid> */}
             </Grid>
           </Grid>
 
