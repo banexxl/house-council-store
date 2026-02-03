@@ -30,6 +30,52 @@ function mapCustomerToRow(c: PolarCustomer) {
      };
 }
 
+function parseCustomerName(name: string | null | undefined): { firstName: string; lastName: string } {
+     const fullName = name?.trim() || '';
+     const parts = fullName.split(/\s+/);
+
+     if (parts.length === 0 || fullName === '') {
+          return { firstName: 'Unknown', lastName: 'User' };
+     } else if (parts.length === 1) {
+          return { firstName: parts[0], lastName: 'User' };
+     } else {
+          const firstName = parts[0];
+          const lastName = parts.slice(1).join(' ');
+          return { firstName, lastName };
+     }
+}
+
+async function upsertTenantProfile(customer: PolarCustomer) {
+     const { firstName, lastName } = parseCustomerName(customer.name);
+
+     const tenantProfileRow = {
+          email: customer.email!,
+          first_name: firstName,
+          last_name: lastName,
+          customerId: customer.id!,
+          avatar_url: null,
+          bio: null,
+          cover_image_url: null,
+          current_city: null,
+          current_job_company: null,
+          current_job_title: null,
+          origin_city: null,
+          previous_job_company: null,
+          previous_job_title: null,
+          quote: null,
+          tenant_id: null,
+          date_of_birth: null,
+     };
+
+     const { data, error } = await supabase
+          .from("tblTenantProfiles")
+          .upsert(tenantProfileRow, { onConflict: "email" })
+          .select()
+          .single();
+
+     return { data, error };
+}
+
 export const POST = Webhooks({
      webhookSecret: process.env.POLAR_WEBHOOK_SECRET_CUSTOMER!,
 
@@ -89,6 +135,22 @@ export const POST = Webhooks({
           });
 
           if (error) throw error;
+
+          // Upsert tenant profile
+          const { data: tenantProfileData, error: tenantProfileError } = await upsertTenantProfile(customer);
+
+          await logServerAction({
+               user_id: customer.externalId,
+               action: "customer.created - upsert tblTenantProfiles",
+               payload: tenantProfileData,
+               status: tenantProfileError ? "fail" : "success",
+               error: tenantProfileError?.message || "",
+               duration_ms: Date.now() - t0,
+               type: "webhook",
+          });
+
+          if (tenantProfileError) throw tenantProfileError;
+
           return data;
      },
 
@@ -124,6 +186,22 @@ export const POST = Webhooks({
           });
 
           if (error) throw error;
+
+          // Upsert tenant profile
+          const { data: tenantProfileData, error: tenantProfileError } = await upsertTenantProfile(customer);
+
+          await logServerAction({
+               user_id: customer.externalId ? String(customer.externalId) : null,
+               action: "customer.updated - upsert tblTenantProfiles",
+               payload: tenantProfileData,
+               status: tenantProfileError ? "fail" : "success",
+               error: tenantProfileError?.message || "",
+               duration_ms: Date.now() - t0,
+               type: "webhook",
+          });
+
+          if (tenantProfileError) throw tenantProfileError;
+
           return data;
      },
 
