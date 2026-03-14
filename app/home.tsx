@@ -209,7 +209,7 @@ const LandingPage = () => {
                                              onMouseMove={onMoveSheen}
                                         >
                                              <Typography variant="h6" sx={{ mb: 2 }}>
-                                                  Designed for three roles
+                                                  Designed for two roles
                                              </Typography>
 
                                              <Stack spacing={2}>
@@ -226,7 +226,7 @@ const LandingPage = () => {
                                                             text:
                                                                  'Tenant permissions on web and mobile — participate in polls, read announcements, engage with posts, and submit service requests.',
                                                        },
-                                                  ].map((r, idx) => (
+                                                  ].map((r, idx, arr) => (
                                                        <Box key={idx} sx={{ minWidth: 0 }}>
                                                             <Stack direction="row" spacing={2} alignItems="flex-start">
                                                                  <Avatar sx={{ bgcolor: 'primary.main' }}>{r.icon}</Avatar>
@@ -239,7 +239,16 @@ const LandingPage = () => {
                                                                       </Typography>
                                                                  </Box>
                                                             </Stack>
-                                                            {idx !== 2 && <Divider sx={{ my: 2 }} />}
+                                                            {idx !== 2 && (
+                                                                 <Divider sx={{ my: 2 }}>
+                                                                      {/* Insert 'And' only between two values, never at start or end */}
+                                                                      {arr.length === 2 && idx === 0 ? (
+                                                                           <Typography variant="subtitle1" sx={{ fontWeight: 900, textAlign: 'center', my: 0 }}>
+                                                                                And
+                                                                           </Typography>
+                                                                      ) : null}
+                                                                 </Divider>
+                                                            )}
                                                        </Box>
                                                   ))}
                                              </Stack>
