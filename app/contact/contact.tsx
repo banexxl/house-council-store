@@ -199,7 +199,7 @@ export const ContactPage = ({ mapKey }: ContactProps) => {
                                         <Paper elevation={2} sx={{ flex: 2, overflow: "hidden" }}>
                                              <GoogleMap
                                                   markers={sampleLocations}
-                                                  center={{ lat: 47.5021, lng: 19.0402 }}
+                                                  center={{ lat: 45.236394, lng: 19.798346 }}
                                                   zoom={13}
                                                   height={500}
                                                   onMarkerClick={handleMarkerClick}
