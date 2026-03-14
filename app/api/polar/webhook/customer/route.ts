@@ -255,7 +255,7 @@ export const POST = Webhooks({
                .maybeSingle();
 
           await logServerAction({
-               user_id: customer.externalId,
+               user_id: typeof customer.externalId === 'undefined' ? null : customer.externalId,
                action: "customer.state_changed - snapshot in metadata",
                payload: { id: customer.id, customer },
                status: error ? "fail" : "success",
