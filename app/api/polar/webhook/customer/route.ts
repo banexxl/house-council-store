@@ -84,7 +84,12 @@ export const POST = Webhooks({
      // ---------------------------
      onCustomerCreated: async (payload) => {
           const t0 = Date.now();
-          const customer = payload.data;
+          const customerRaw = payload.data;
+          // Ensure externalId is string|null, never undefined
+          const customer: PolarCustomer = {
+               ...customerRaw,
+               externalId: typeof customerRaw.externalId === 'undefined' ? null : customerRaw.externalId,
+          };
           console.log('On customer created payload data: ', payload);
 
           if (!customer.externalId) {
@@ -159,7 +164,12 @@ export const POST = Webhooks({
      // ---------------------------
      onCustomerUpdated: async (payload) => {
           const t0 = Date.now();
-          const customer = payload.data;
+          const customerRaw = payload.data;
+          // Ensure externalId is string|null, never undefined
+          const customer: PolarCustomer = {
+               ...customerRaw,
+               externalId: typeof customerRaw.externalId === 'undefined' ? null : customerRaw.externalId,
+          };
           console.log('On customer updated payload data: ', payload);
           // If userId is missing, avoid insert risk (userId NOT NULL) -> update-only.
           if (!customer.externalId) {
