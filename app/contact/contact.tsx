@@ -236,7 +236,7 @@ export const ContactPage = ({ mapKey }: ContactProps) => {
                                                             Phone
                                                        </Typography>
                                                        <Typography variant="body2" color="text.secondary">
-                                                            +1 (381) 66 415651
+                                                            (+381) 66 415651
                                                        </Typography>
                                                        <Typography variant="body2" color="text.secondary">
                                                             Monday - Friday, 8am - 4pm CET
