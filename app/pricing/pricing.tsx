@@ -204,8 +204,8 @@ export const PricingPage: React.FC<PricingPageProps> = ({
 
      const startPolarCheckout = async (priceId: string, productId: string) => {
           if (!customer?.id) {
-               toast.error("Please sign in to start a trial.");
-               router.push("/auth/sign-in");
+               const msg = encodeURIComponent("sign_in_required");
+               router.push(`/auth/sign-in?message=${msg}`);
                return;
           }
 

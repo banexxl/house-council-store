@@ -9,6 +9,7 @@ import {
      Button,
      Checkbox,
      CircularProgress,
+     Alert,
      Container,
      Divider,
      FormControlLabel,
@@ -56,6 +57,13 @@ const GoogleMultiColorIcon = (props: any) => (
      </svg>
 )
 
+const signInMessages = {
+     "trial_expired": "Your trial has expired. Please sign in to continue.",
+     "session_expired": "Your session has expired. Please sign in again.",
+     "2fa_required": "Two-factor authentication is required. Please sign in to continue.",
+     "sign_in_required": "Please sign in to continue.",
+}
+
 export const LoginPage = () => {
      const [showPassword, setShowPassword] = useState(false)
      const [googleSignInLoading, setGoogleSignInLoading] = useState(false)
@@ -69,6 +77,10 @@ export const LoginPage = () => {
      const [factorId, setFactorId] = useState<string>("")
      const searchParams = useSearchParams();
      const mfaParam = searchParams.get("mfa"); // "1" when middleware forces MFA
+     const messageKey = searchParams.get("message");
+     const infoMessage = messageKey && messageKey in signInMessages
+          ? signInMessages[messageKey as keyof typeof signInMessages]
+          : null;
 
      useEffect(() => {
           const run = async () => {
@@ -302,6 +314,15 @@ export const LoginPage = () => {
                                              Welcome back! Please enter your details
                                         </Typography>
                                    </Box>
+
+                                   {/* Info message (optional) */}
+                                   {infoMessage && (
+                                        <Box sx={{ mb: 2 }}>
+                                             <Alert severity="warning">
+                                                  {infoMessage}
+                                             </Alert>
+                                        </Box>
+                                   )}
 
                                    {/* SIGN IN FORM */}
                                    <Box component="form" onSubmit={formik.handleSubmit} noValidate sx={{ mb: 2 }}>
