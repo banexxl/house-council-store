@@ -532,6 +532,7 @@ export default function SubscriptionTab({ customerSubscriptionObject, apartments
                                                                                 )}
                                                                            </Box>
                                                                       }
+                                                                      slotProps={{ secondary: { component: "div" } }}
                                                                  />
                                                             </ListItem>
                                                        );
