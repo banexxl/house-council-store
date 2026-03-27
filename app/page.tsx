@@ -8,7 +8,8 @@ import { buildCanonicalUrl } from "@/app/lib/seo";
 const canonicalUrl = buildCanonicalUrl("/");
 
 export const metadata: Metadata = {
-  title: "NestLink | House Council Platform for Buildings, Tenants, and Building managers",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL!),
+  title: "NestLink – Building Management & Tenant Communication Software",
   description:
     "Run announcements, polls, incident reporting, and tenant communication in one place with NestLink’s web dashboard and mobile app.",
   alternates: {
@@ -40,12 +41,17 @@ export default async function Page() {
 
   const organizationLd = {
     "@context": "https://schema.org",
-    "@type": "Organization",
-    name: "NestLink",
-    url: canonicalUrl,
-    description:
-      "NestLink is a building communication platform for announcements, polls, incident reporting, and tenant engagement.",
-  };
+    "@type": "SoftwareApplication",
+    "name": "NestLink",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Web, iOS, Android",
+    "description": "Building management and tenant communication platform",
+    "offers": {
+      "@type": "Offer",
+      "price": "Subscription",
+      "priceCurrency": "USD"
+    }
+  }
 
   return (
     <>
