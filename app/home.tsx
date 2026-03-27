@@ -150,7 +150,7 @@ const LandingPage = () => {
                                                             wordBreak: 'break-word',
                                                        }}
                                                   >
-                                                       NestLink brings your building community into one place.
+                                                       Building Management Software for Apartments & Housing Communities | NestLink
                                                   </Typography>
                                              </Reveal>
 
@@ -168,8 +168,7 @@ const LandingPage = () => {
                                                             wordBreak: 'break-word',
                                                        }}
                                                   >
-                                                       A subscription-based platform for house councils and building managers to run announcements, polls,
-                                                       tenant communication, and service/incident reporting — with role-based access for clients and tenants.
+                                                       NestLink is a building management software platform designed for apartment buildings, housing communities, and property managers. It helps manage tenants, communication, maintenance requests, announcements, and voting — all in one centralized system with role-based access.
                                                   </Typography>
                                              </Reveal>
 
@@ -286,6 +285,7 @@ const LandingPage = () => {
                          >
                               <Typography
                                    variant="h2"
+                                   component="h2"
                                    sx={{
                                         // ✅ mobile-safe heading sizing
                                         fontSize: { xs: '1.8rem', sm: '2.4rem', md: undefined },
@@ -392,156 +392,160 @@ const LandingPage = () => {
                          }}
                     />
 
-                    <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
-                         <Reveal>
-                              <Box sx={{ textAlign: 'center', mb: 6 }}>
-                                   <Typography
-                                        variant="h2"
-                                        gutterBottom
-                                        sx={{ overflowWrap: 'anywhere', color: 'common.white' }}
-                                   >
-                                        Built around real building workflows
-                                   </Typography>
-                                   <Typography
-                                        variant="h6"
-                                        sx={{
-                                             maxWidth: 860,
-                                             mx: 'auto',
-                                             overflowWrap: 'anywhere',
-                                             color: 'rgba(255,255,255,0.82)',
-                                        }}
-                                   >
-                                        Less chaos, fewer phone calls, more clarity. NestLink is structured so every request, decision, and update
-                                        has a proper place.
-                                   </Typography>
-                              </Box>
-                         </Reveal>
+                    <Box component="section">
+                         <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
+                              <Reveal>
+                                   <Box sx={{ textAlign: 'center', mb: 6 }}>
+                                        <Typography
+                                             variant="h2"
+                                             component="h2"
+                                             gutterBottom
+                                             sx={{ overflowWrap: 'anywhere', color: 'common.white' }}
+                                        >
+                                             Built around real building workflows
+                                        </Typography>
+                                        <Typography
+                                             variant="h6"
+                                             sx={{
+                                                  maxWidth: 860,
+                                                  mx: 'auto',
+                                                  overflowWrap: 'anywhere',
+                                                  color: 'rgba(255,255,255,0.82)',
+                                             }}
+                                        >
+                                             Less chaos, fewer phone calls, more clarity. NestLink is structured so every request, decision, and update
+                                             has a proper place.
+                                        </Typography>
+                                   </Box>
+                              </Reveal>
 
-                         <Stagger>
-                              <Grid container spacing={3}>
-                                   {[
-                                        {
-                                             title: 'Announcements that reach everyone',
-                                             description:
-                                                  'Post updates to the building and notify tenants instantly—no missed messages or fragmented chat threads.',
-                                        },
-                                        {
-                                             title: 'Polls with transparent outcomes',
-                                             description:
-                                                  'Open votes, track participation, and close polls with clear results that everyone can trust.',
-                                        },
-                                        {
-                                             title: 'Incident reporting with evidence',
-                                             description:
-                                                  'Tenants submit issues with photos, notes, and categories. Clients track progress until resolution.',
-                                        },
-                                        {
-                                             title: 'Roles and permissions by design',
-                                             description:
-                                                  'Clients manage the subscription and configuration, clients moderate and resolve, tenants participate and report.',
-                                        },
-                                        {
-                                             title: 'Web + mobile, same rules',
-                                             description:
-                                                  'Tenant permissions are consistent on both platforms, but the mobile app is optimized for fast actions.',
-                                        },
-                                        {
-                                             title: 'One source of truth',
-                                             description:
-                                                  'Reduce “who said what” and “where is that message?” Everything lives in NestLink, searchable and organized.',
-                                        },
-                                   ].map((item, idx) => (
-                                        <Grid key={idx} size={{ xs: 12, md: 6 }}>
-                                             <motion.div variants={itemVariants}>
-                                                  <Box
-                                                       sx={{ ...glassSx, ...liftHoverSx, p: 3, height: '100%', minWidth: 0 }}
-                                                       onMouseMove={onMoveSheen}
-                                                  >
-                                                       <Typography variant="h6" sx={{ fontWeight: 900, overflowWrap: 'anywhere' }}>
-                                                            {item.title}
-                                                       </Typography>
-                                                       <Typography variant="body2" color="text.secondary" sx={{ mt: 1, overflowWrap: 'anywhere' }}>
-                                                            {item.description}
-                                                       </Typography>
-                                                  </Box>
-                                             </motion.div>
-                                        </Grid>
-                                   ))}
-                              </Grid>
-                         </Stagger>
-                    </Container>
+                              <Stagger>
+                                   <Grid container spacing={3}>
+                                        {[
+                                             {
+                                                  title: 'Announcements that reach everyone',
+                                                  description:
+                                                       'Post updates to the building and notify tenants instantly—no missed messages or fragmented chat threads.',
+                                             },
+                                             {
+                                                  title: 'Polls with transparent outcomes',
+                                                  description:
+                                                       'Open votes, track participation, and close polls with clear results that everyone can trust.',
+                                             },
+                                             {
+                                                  title: 'Incident reporting with evidence',
+                                                  description:
+                                                       'Tenants submit issues with photos, notes, and categories. Clients track progress until resolution.',
+                                             },
+                                             {
+                                                  title: 'Roles and permissions by design',
+                                                  description:
+                                                       'Clients manage the subscription and configuration, clients moderate and resolve, tenants participate and report.',
+                                             },
+                                             {
+                                                  title: 'Web + mobile, same rules',
+                                                  description:
+                                                       'Tenant permissions are consistent on both platforms, but the mobile app is optimized for fast actions.',
+                                             },
+                                             {
+                                                  title: 'One source of truth',
+                                                  description:
+                                                       'Reduce “who said what” and “where is that message?” Everything lives in NestLink, searchable and organized.',
+                                             },
+                                        ].map((item, idx) => (
+                                             <Grid key={idx} size={{ xs: 12, md: 6 }}>
+                                                  <motion.div variants={itemVariants}>
+                                                       <Box
+                                                            sx={{ ...glassSx, ...liftHoverSx, p: 3, height: '100%', minWidth: 0 }}
+                                                            onMouseMove={onMoveSheen}
+                                                       >
+                                                            <Typography variant="h6" sx={{ fontWeight: 900, overflowWrap: 'anywhere' }}>
+                                                                 {item.title}
+                                                            </Typography>
+                                                            <Typography variant="body2" color="text.secondary" sx={{ mt: 1, overflowWrap: 'anywhere' }}>
+                                                                 {item.description}
+                                                            </Typography>
+                                                       </Box>
+                                                  </motion.div>
+                                             </Grid>
+                                        ))}
+                                   </Grid>
+                              </Stagger>
+                         </Container>
+                    </Box>
                </Box>
 
                {/* ✅ PRICING TEASER (no background image) */}
-               <Container maxWidth="lg" sx={{ py: { xs: 7, md: 10 } }}>
-                    <Grid container spacing={{ xs: 3, md: 4 }} alignItems="stretch">
-                         <Grid size={{ xs: 12, md: 6 }}>
-                              <Reveal>
-                                   <Box sx={{ ...glassSx, p: 3, height: '100%', minWidth: 0 }} onMouseMove={onMoveSheen}>
-                                        <Typography variant="h4" sx={{ fontWeight: 900, overflowWrap: 'anywhere' }}>
-                                             Simple pricing that scales with your building
-                                        </Typography>
-                                        <Typography
-                                             variant="body1"
-                                             color="text.secondary"
-                                             sx={{ mt: 1.5, lineHeight: 1.7, overflowWrap: 'anywhere' }}
-                                        >
-                                             Pay per apartment — perfect for small buildings and scalable for larger communities.
-                                        </Typography>
-
-                                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 3 }}>
-                                             <Button
-                                                  variant="contained"
-                                                  size="large"
-                                                  onClick={() => handleNavClick('/pricing')}
-                                                  sx={{ minHeight: 48 }}
+               <Box component="section">
+                    <Container maxWidth="lg" sx={{ py: { xs: 7, md: 10 } }}>
+                         <Grid container spacing={{ xs: 3, md: 4 }} alignItems="stretch">
+                              <Grid size={{ xs: 12, md: 6 }}>
+                                   <Reveal>
+                                        <Box sx={{ ...glassSx, p: 3, height: '100%', minWidth: 0 }} onMouseMove={onMoveSheen}>
+                                             <Typography variant="h4" sx={{ fontWeight: 900, overflowWrap: 'anywhere' }}>
+                                                  Simple pricing that scales with your building
+                                             </Typography>
+                                             <Typography
+                                                  variant="body1"
+                                                  color="text.secondary"
+                                                  sx={{ mt: 1.5, lineHeight: 1.7, overflowWrap: 'anywhere' }}
                                              >
-                                                  View Plans
-                                             </Button>
-                                        </Stack>
-                                   </Box>
-                              </Reveal>
+                                                  Pay per apartment — perfect for small buildings and scalable for larger communities.
+                                             </Typography>
+
+                                             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 3 }}>
+                                                  <Button
+                                                       variant="contained"
+                                                       size="large"
+                                                       onClick={() => handleNavClick('/pricing')}
+                                                       sx={{ minHeight: 48 }}
+                                                  >
+                                                       View Plans
+                                                  </Button>
+                                             </Stack>
+                                        </Box>
+                                   </Reveal>
+                              </Grid>
+
+                              <Grid size={{ xs: 12, md: 6 }}>
+                                   <Reveal delay={0.08}>
+                                        <Box sx={{ ...glassSx, ...liftHoverSx, p: 3, height: '100%', minWidth: 0 }} onMouseMove={onMoveSheen}>
+                                             <Typography variant="h6" sx={{ fontWeight: 900, mb: 2 }}>
+                                                  What you get
+                                             </Typography>
+
+                                             <Stack spacing={1.5}>
+                                                  {[
+                                                       'Building manager web dashboard for buildings & apartments',
+                                                       'Tenant web + mobile access',
+                                                       'Announcements, posts, and notifications',
+                                                       'Polls and voting with clear results',
+                                                       'Incident/service reports with photos (mobile)',
+                                                       'Role-based permissions for building managers, tenants',
+                                                  ].map((t) => (
+                                                       <Stack key={t} direction="row" spacing={1.5} alignItems="flex-start">
+                                                            <Box
+                                                                 sx={{
+                                                                      mt: '4px',
+                                                                      width: 8,
+                                                                      height: 8,
+                                                                      borderRadius: '999px',
+                                                                      bgcolor: 'primary.main',
+                                                                      flex: '0 0 auto',
+                                                                 }}
+                                                            />
+                                                            <Typography variant="body2" color="text.secondary" sx={{ overflowWrap: 'anywhere' }}>
+                                                                 {t}
+                                                            </Typography>
+                                                       </Stack>
+                                                  ))}
+                                             </Stack>
+                                        </Box>
+                                   </Reveal>
+                              </Grid>
                          </Grid>
-
-                         <Grid size={{ xs: 12, md: 6 }}>
-                              <Reveal delay={0.08}>
-                                   <Box sx={{ ...glassSx, ...liftHoverSx, p: 3, height: '100%', minWidth: 0 }} onMouseMove={onMoveSheen}>
-                                        <Typography variant="h6" sx={{ fontWeight: 900, mb: 2 }}>
-                                             What you get
-                                        </Typography>
-
-                                        <Stack spacing={1.5}>
-                                             {[
-                                                  'Building manager web dashboard for buildings & apartments',
-                                                  'Tenant web + mobile access',
-                                                  'Announcements, posts, and notifications',
-                                                  'Polls and voting with clear results',
-                                                  'Incident/service reports with photos (mobile)',
-                                                  'Role-based permissions for building managers, tenants',
-                                             ].map((t) => (
-                                                  <Stack key={t} direction="row" spacing={1.5} alignItems="flex-start">
-                                                       <Box
-                                                            sx={{
-                                                                 mt: '4px',
-                                                                 width: 8,
-                                                                 height: 8,
-                                                                 borderRadius: '999px',
-                                                                 bgcolor: 'primary.main',
-                                                                 flex: '0 0 auto',
-                                                            }}
-                                                       />
-                                                       <Typography variant="body2" color="text.secondary" sx={{ overflowWrap: 'anywhere' }}>
-                                                            {t}
-                                                       </Typography>
-                                                  </Stack>
-                                             ))}
-                                        </Stack>
-                                   </Box>
-                              </Reveal>
-                         </Grid>
-                    </Grid>
-               </Container>
-
+                    </Container>
+               </Box>
                {/* ✅ FAQ (WITH BACKGROUND IMAGE) */}
                <Box
                     sx={{
@@ -555,6 +559,7 @@ const LandingPage = () => {
                     }}
                >
                     <Box
+                         component={'section'}
                          sx={{
                               position: 'absolute',
                               inset: 0,
@@ -567,7 +572,10 @@ const LandingPage = () => {
                     <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
                          <Reveal>
                               <Box sx={{ textAlign: 'center', mb: 6 }}>
-                                   <Typography variant="h2" gutterBottom sx={{ overflowWrap: 'anywhere', color: 'common.white' }}>
+                                   <Typography
+                                        component="h2"
+                                        variant="h2"
+                                        gutterBottom sx={{ overflowWrap: 'anywhere', color: 'common.white' }}>
                                         FAQ
                                    </Typography>
                                    <Typography
@@ -619,34 +627,35 @@ const LandingPage = () => {
                </Box>
 
                {/* ✅ FINAL CTA (no background image) */}
-               <Container maxWidth="lg" sx={{ py: { xs: 7, md: 10 } }}>
-                    <Reveal>
-                         <Box sx={{ ...glassSx, p: { xs: 3, md: 4 }, textAlign: 'center' }} onMouseMove={onMoveSheen}>
-                              <Typography variant="h3" sx={{ fontWeight: 950, overflowWrap: 'anywhere' }}>
-                                   Ready to bring your tenants together?
-                              </Typography>
-                              <Typography
-                                   variant="h6"
-                                   color="text.secondary"
-                                   sx={{ mt: 1.5, maxWidth: 860, mx: 'auto', overflowWrap: 'anywhere' }}
-                              >
-                                   Start your free trial and set up your first building in minutes.
-                              </Typography>
-
-                              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 3, justifyContent: 'center' }}>
-                                   <Button
-                                        variant="outlined"
-                                        size="large"
-                                        onClick={() => handleNavClick('/pricing')}
-                                        sx={{ minHeight: 48 }}
+               <Box component="section">
+                    <Container maxWidth="lg" sx={{ py: { xs: 7, md: 10 } }}>
+                         <Reveal>
+                              <Box sx={{ ...glassSx, p: { xs: 3, md: 4 }, textAlign: 'center' }} onMouseMove={onMoveSheen}>
+                                   <Typography variant="h3" sx={{ fontWeight: 950, overflowWrap: 'anywhere' }}>
+                                        Ready to bring your tenants together?
+                                   </Typography>
+                                   <Typography
+                                        variant="h6"
+                                        color="text.secondary"
+                                        sx={{ mt: 1.5, maxWidth: 860, mx: 'auto', overflowWrap: 'anywhere' }}
                                    >
-                                        See Pricing
-                                   </Button>
-                              </Stack>
-                         </Box>
-                    </Reveal>
-               </Container>
+                                        Start your free trial and set up your first building in minutes.
+                                   </Typography>
 
+                                   <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 3, justifyContent: 'center' }}>
+                                        <Button
+                                             variant="outlined"
+                                             size="large"
+                                             onClick={() => handleNavClick('/pricing')}
+                                             sx={{ minHeight: 48 }}
+                                        >
+                                             See Pricing
+                                        </Button>
+                                   </Stack>
+                              </Box>
+                         </Reveal>
+                    </Container>
+               </Box>
                <Backdrop sx={{ color: '#fff', zIndex: (t) => t.zIndex.drawer + 1 }} open={isPending}>
                     <CircularProgress sx={{ color: theme.palette.primary.main }} />
                </Backdrop>
