@@ -58,6 +58,8 @@ export async function middleware(request: NextRequest) {
           "/auth/registration-confirmation",
           "/auth/registration-confirmed",
           "/auth/reset-password",
+          "/privacy-policy",
+          "/terms-and-conditions",
           "/pricing",
           "/contact",
           "/docs",
