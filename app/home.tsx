@@ -14,10 +14,8 @@ import {
      useTheme,
      useMediaQuery,
 } from '@mui/material';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import DashboardCustomizeIcon from '@mui/icons-material/DashboardCustomize';
 import ApartmentIcon from '@mui/icons-material/Apartment';
-import GroupsIcon from '@mui/icons-material/Groups';
 import HowToRegIcon from '@mui/icons-material/HowToReg';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import PhoneIphoneIcon from '@mui/icons-material/PhoneIphone';
@@ -287,101 +285,101 @@ const LandingPage = () => {
                               zIndex: 1,
                          }}
                     >
-                    <Reveal>
-                         <Box
-                              sx={{
-                                   textAlign: 'center',
-                                   // ✅ give more breathing room on small screens so it never sits on top of cards
-                                   mb: { xs: 8, sm: 7, md: 6 },
-                                   px: { xs: 1, sm: 0 },
-                              }}
-                         >
-                              <Typography
-                                   variant="h2"
-                                   component="h2"
+                         <Reveal>
+                              <Box
                                    sx={{
-                                        // ✅ mobile-safe heading sizing
-                                        fontSize: { xs: '1.8rem', sm: '2.4rem', md: undefined },
-                                        lineHeight: { xs: 1.15, sm: 1.2, md: undefined },
-                                        // ✅ avoid “gutterBottom” inconsistencies
-                                        mb: { xs: 2, sm: 2.5 },
-                                        overflowWrap: 'anywhere',
+                                        textAlign: 'center',
+                                        // ✅ give more breathing room on small screens so it never sits on top of cards
+                                        mb: { xs: 8, sm: 7, md: 6 },
+                                        px: { xs: 1, sm: 0 },
                                    }}
                               >
-                                   Everything you need to run a modern building community
-                              </Typography>
+                                   <Typography
+                                        variant="h2"
+                                        component="h2"
+                                        sx={{
+                                             // ✅ mobile-safe heading sizing
+                                             fontSize: { xs: '1.8rem', sm: '2.4rem', md: undefined },
+                                             lineHeight: { xs: 1.15, sm: 1.2, md: undefined },
+                                             // ✅ avoid “gutterBottom” inconsistencies
+                                             mb: { xs: 2, sm: 2.5 },
+                                             overflowWrap: 'anywhere',
+                                        }}
+                                   >
+                                        Everything you need to run a modern building community
+                                   </Typography>
 
-                              <Typography
-                                   variant="h6"
-                                   color="text.secondary"
-                                   sx={{
-                                        maxWidth: 860,
-                                        mx: 'auto',
-                                        fontSize: { xs: '1rem', sm: '1.05rem', md: undefined },
-                                        lineHeight: 1.65,
-                                        overflowWrap: 'anywhere',
-                                   }}
-                              >
-                                   NestLink is a web dashboard + mobile app built around real building workflows: communication, governance, and
-                                   service/incident reporting — with clear roles and permissions.
-                              </Typography>
-                         </Box>
-                    </Reveal>
+                                   <Typography
+                                        variant="h6"
+                                        color="text.secondary"
+                                        sx={{
+                                             maxWidth: 860,
+                                             mx: 'auto',
+                                             fontSize: { xs: '1rem', sm: '1.05rem', md: undefined },
+                                             lineHeight: 1.65,
+                                             overflowWrap: 'anywhere',
+                                        }}
+                                   >
+                                        NestLink is a web dashboard + mobile app built around real building workflows: communication, governance, and
+                                        service/incident reporting — with clear roles and permissions.
+                                   </Typography>
+                              </Box>
+                         </Reveal>
 
-                    <Stagger>
-                         <Grid container spacing={3}>
-                              {[
-                                   {
-                                        icon: <DashboardCustomizeIcon />,
-                                        title: 'Building Manager Dashboard (Web)',
-                                        description:
-                                             'Manage buildings, apartments, and tenants. Configure roles, create announcements, run polls, and track service issues in one place.',
-                                   },
-                                   {
-                                        icon: <PhoneIphoneIcon />,
-                                        title: 'Tenant App (Mobile)',
-                                        description:
-                                             'Tenants get the same tenant authorizations as on the web, optimized for quick actions and notifications.',
-                                   },
-                                   {
-                                        icon: <CameraAltIcon />,
-                                        title: 'Camera for Incident / Service Reports',
-                                        description:
-                                             'On mobile, tenants can capture photos and submit reports instantly, so issues are documented clearly and resolved faster.',
-                                   },
-                                   {
-                                        icon: <PollIcon />,
-                                        title: 'Voting & Decisions',
-                                        description:
-                                             'Create polls, collect votes, and keep decisions transparent. Great for budgets, repairs, and building-wide agreements.',
-                                   },
-                                   {
-                                        icon: <NotificationsActiveIcon />,
-                                        title: 'Real-time Updates',
-                                        description:
-                                             'Notify tenants and clients about announcements, vote openings/closures, and new incident progress — without chaos in messaging apps.',
-                                   },
-                              ].map((item, idx) => (
-                                   <Grid key={idx} size={{ xs: 12, sm: 6, md: 4 }}>
-                                        <motion.div variants={itemVariants}>
-                                             <Box
-                                                  sx={{ ...glassSx, ...liftHoverSx, p: 3, height: '100%', minWidth: 0 }}
-                                                  onMouseMove={onMoveSheen}
-                                             >
-                                                  <Avatar sx={{ bgcolor: 'primary.main', mb: 2 }}>{item.icon}</Avatar>
-                                                  <Typography variant="h6" gutterBottom sx={{ overflowWrap: 'anywhere' }}>
-                                                       {item.title}
-                                                  </Typography>
-                                                  <Typography variant="body2" color="text.secondary" sx={{ overflowWrap: 'anywhere' }}>
-                                                       {item.description}
-                                                  </Typography>
-                                             </Box>
-                                        </motion.div>
-                                   </Grid>
-                              ))}
-                         </Grid>
-                    </Stagger>
-               </Container>
+                         <Stagger>
+                              <Grid container spacing={3}>
+                                   {[
+                                        {
+                                             icon: <DashboardCustomizeIcon />,
+                                             title: 'Building Manager Dashboard (Web)',
+                                             description:
+                                                  'Manage buildings, apartments, and tenants. Configure roles, create announcements, run polls, and track service issues in one place.',
+                                        },
+                                        {
+                                             icon: <PhoneIphoneIcon />,
+                                             title: 'Tenant App (Mobile)',
+                                             description:
+                                                  'Tenants get the same tenant authorizations as on the web, optimized for quick actions and notifications.',
+                                        },
+                                        {
+                                             icon: <CameraAltIcon />,
+                                             title: 'Camera for Incident / Service Reports',
+                                             description:
+                                                  'On mobile, tenants can capture photos and submit reports instantly, so issues are documented clearly and resolved faster.',
+                                        },
+                                        {
+                                             icon: <PollIcon />,
+                                             title: 'Voting & Decisions',
+                                             description:
+                                                  'Create polls, collect votes, and keep decisions transparent. Great for budgets, repairs, and building-wide agreements.',
+                                        },
+                                        {
+                                             icon: <NotificationsActiveIcon />,
+                                             title: 'Real-time Updates',
+                                             description:
+                                                  'Notify tenants and clients about announcements, vote openings/closures, and new incident progress — without chaos in messaging apps.',
+                                        },
+                                   ].map((item, idx) => (
+                                        <Grid key={idx} size={{ xs: 12, sm: 6, md: 4 }}>
+                                             <motion.div variants={itemVariants}>
+                                                  <Box
+                                                       sx={{ ...glassSx, ...liftHoverSx, p: 3, height: '100%', minWidth: 0 }}
+                                                       onMouseMove={onMoveSheen}
+                                                  >
+                                                       <Avatar sx={{ bgcolor: 'primary.main', mb: 2 }}>{item.icon}</Avatar>
+                                                       <Typography variant="h6" gutterBottom sx={{ overflowWrap: 'anywhere' }}>
+                                                            {item.title}
+                                                       </Typography>
+                                                       <Typography variant="body2" color="text.secondary" sx={{ overflowWrap: 'anywhere' }}>
+                                                            {item.description}
+                                                       </Typography>
+                                                  </Box>
+                                             </motion.div>
+                                        </Grid>
+                                   ))}
+                              </Grid>
+                         </Stagger>
+                    </Container>
                </Box>
 
                {/* ✅ PRODUCT WORKFLOWS (WITH BACKGROUND IMAGE) */}
