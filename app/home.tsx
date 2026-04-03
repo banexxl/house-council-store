@@ -30,10 +30,12 @@ import { useRouter } from 'next/navigation';
 import ParallaxSection from './components/paralax-section';
 import { motion } from 'framer-motion';
 import { Reveal, Stagger, itemVariants } from './components/motion';
+import ParticleBackground from './components/particle-background';
 
 const LandingPage = () => {
      const theme = useTheme();
      const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+     const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
      const router = useRouter();
      const [isPending, startTransition] = useTransition();
 
@@ -266,14 +268,25 @@ const LandingPage = () => {
                     }}
                />
 
-               {/* FEATURES (no background image) */}
-               <Container
-                    maxWidth="lg"
+               {/* FEATURES — particle background on desktop */}
+               <Box
+                    component="section"
                     sx={{
-                         pt: { xs: 8, sm: 9, md: 10 },
-                         pb: { xs: 7, md: 10 },
+                         position: 'relative',
+                         overflow: 'hidden',
+                         background: 'radial-gradient(ellipse 80% 60% at 50% 40%, rgba(120,60,220,0.07) 0%, rgba(34,85,200,0.05) 45%, transparent 100%)',
                     }}
                >
+                    {isDesktop && <ParticleBackground />}
+                    <Container
+                         maxWidth="lg"
+                         sx={{
+                              pt: { xs: 8, sm: 9, md: 10 },
+                              pb: { xs: 7, md: 10 },
+                              position: 'relative',
+                              zIndex: 1,
+                         }}
+                    >
                     <Reveal>
                          <Box
                               sx={{
@@ -369,6 +382,7 @@ const LandingPage = () => {
                          </Grid>
                     </Stagger>
                </Container>
+               </Box>
 
                {/* ✅ PRODUCT WORKFLOWS (WITH BACKGROUND IMAGE) */}
                <Box
@@ -475,9 +489,17 @@ const LandingPage = () => {
                     </Box>
                </Box>
 
-               {/* ✅ PRICING TEASER (no background image) */}
-               <Box component="section">
-                    <Container maxWidth="lg" sx={{ py: { xs: 7, md: 10 } }}>
+               {/* ✅ PRICING TEASER — particle background on desktop */}
+               <Box
+                    component="section"
+                    sx={{
+                         position: 'relative',
+                         overflow: 'hidden',
+                         background: 'radial-gradient(ellipse 80% 60% at 50% 40%, rgba(120,60,220,0.07) 0%, rgba(34,85,200,0.05) 45%, transparent 100%)',
+                    }}
+               >
+                    {isDesktop && <ParticleBackground />}
+                    <Container maxWidth="lg" sx={{ py: { xs: 7, md: 10 }, position: 'relative', zIndex: 1 }}>
                          <Grid container spacing={{ xs: 3, md: 4 }} alignItems="stretch">
                               <Grid size={{ xs: 12, md: 6 }}>
                                    <Reveal>
