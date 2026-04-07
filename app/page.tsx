@@ -22,12 +22,21 @@ export const metadata: Metadata = {
     url: canonicalUrl,
     siteName: "NestLink",
     type: "website",
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'NestLink – Building Management Software',
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "NestLink | House Council Platform",
     description:
       "Run announcements, polls, and incident reporting for your building community with NestLink.",
+    images: ['/og-image.png'],
   },
   robots: {
     index: true,
@@ -43,22 +52,66 @@ export default async function Page() {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     "name": "NestLink",
+    "url": process.env.NEXT_PUBLIC_BASE_URL,
     "applicationCategory": "BusinessApplication",
     "operatingSystem": "Web, iOS, Android",
-    "description": "Building management and tenant communication platform",
+    "description": "Building management and tenant communication platform for apartment buildings and housing communities.",
+    "featureList": [
+      "Building Manager Web Dashboard",
+      "Tenant Mobile App",
+      "Announcements & Notifications",
+      "Polls & Voting",
+      "Incident & Service Reporting with Photos",
+      "Role-based Permissions"
+    ],
     "offers": {
       "@type": "Offer",
-      "price": "Subscription",
-      "priceCurrency": "USD"
+      "price": "0",
+      "priceCurrency": "USD",
+      "description": "Free trial available. Subscription priced per apartment/unit."
     }
-  }
+  };
+
+  const faqLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Is NestLink web-only or mobile-only?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Both. Clients use the web dashboard, and tenants have mobile + web access with consistent permissions."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does incident reporting work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Tenants submit a report (optionally with photos). Clients manage progress and close it when resolved."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do you price it?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "It is priced per apartment/unit, with no limit on tenants."
+        }
+      }
+    ]
+  };
 
   return (
     <>
       <script
         type="application/ld+json"
-        // Organization structured data for brand/entity clarity in search
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }}
       />
       <Header user={user ? user : null} />
       <HomePage />

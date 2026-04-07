@@ -33,11 +33,12 @@ const routes: RouteConfig[] = [
 const defaultChangeFrequency: MetadataRoute.Sitemap[0]['changeFrequency'] = 'weekly';
 
 export default function sitemap(): MetadataRoute.Sitemap {
+  const today = new Date().toISOString();
   const lastModified = new Date('2026-01-01').toISOString();
 
   return routes.map(({ path, priority = 0.8, changeFrequency = defaultChangeFrequency }) => ({
     url: `${baseUrl}${path}`,
-    lastModified,
+    lastModified: path === '/' ? today : lastModified,
     changeFrequency,
     priority,
   }));

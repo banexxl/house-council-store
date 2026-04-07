@@ -150,7 +150,7 @@ const LandingPage = () => {
                                                             wordBreak: 'break-word',
                                                        }}
                                                   >
-                                                       Building Management Software for Apartments & Housing Communities | NestLink
+                                                       Building Management Software for Apartments & Housing Communities
                                                   </Typography>
                                              </Reveal>
 
@@ -367,7 +367,7 @@ const LandingPage = () => {
                                                        onMouseMove={onMoveSheen}
                                                   >
                                                        <Avatar sx={{ bgcolor: 'primary.main', mb: 2 }}>{item.icon}</Avatar>
-                                                       <Typography variant="h6" gutterBottom sx={{ overflowWrap: 'anywhere' }}>
+                                                       <Typography component="h3" variant="h6" gutterBottom sx={{ overflowWrap: 'anywhere' }}>
                                                             {item.title}
                                                        </Typography>
                                                        <Typography variant="body2" color="text.secondary" sx={{ overflowWrap: 'anywhere' }}>
@@ -471,7 +471,7 @@ const LandingPage = () => {
                                                             sx={{ ...glassSx, ...liftHoverSx, p: 3, height: '100%', minWidth: 0 }}
                                                             onMouseMove={onMoveSheen}
                                                        >
-                                                            <Typography variant="h6" sx={{ fontWeight: 900, overflowWrap: 'anywhere' }}>
+                                                            <Typography component="h3" variant="h6" sx={{ fontWeight: 900, overflowWrap: 'anywhere' }}>
                                                                  {item.title}
                                                             </Typography>
                                                             <Typography variant="body2" color="text.secondary" sx={{ mt: 1, overflowWrap: 'anywhere' }}>
@@ -596,7 +596,7 @@ const LandingPage = () => {
                                         component="h2"
                                         variant="h2"
                                         gutterBottom sx={{ overflowWrap: 'anywhere', color: 'common.white' }}>
-                                        FAQ
+                                        Frequently Asked Questions About NestLink
                                    </Typography>
                                    <Typography
                                         variant="h6"
@@ -631,7 +631,7 @@ const LandingPage = () => {
                                         <Grid key={idx} size={{ xs: 12, md: 6 }}>
                                              <motion.div variants={itemVariants}>
                                                   <Box sx={{ ...glassSx, p: 3, height: '100%', minWidth: 0 }} onMouseMove={onMoveSheen}>
-                                                       <Typography variant="h6" sx={{ fontWeight: 900, overflowWrap: 'anywhere' }}>
+                                                       <Typography component="h3" variant="h6" sx={{ fontWeight: 900, overflowWrap: 'anywhere' }}>
                                                             {item.q}
                                                        </Typography>
                                                        <Typography variant="body2" color="text.secondary" sx={{ mt: 1, overflowWrap: 'anywhere' }}>
