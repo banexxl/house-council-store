@@ -40,6 +40,9 @@ type DocSection = {
 
 const HEADER_OFFSET_PX = 88 // adjust if your fixed header is taller/shorter
 
+const ANDROID_APP_URL = process.env.NEXT_PUBLIC_ANDROID_APP_URL || ""
+const IOS_APP_URL = process.env.NEXT_PUBLIC_IOS_APP_URL || ""
+
 const sections: DocSection[] = [
      // -----------------------------
      // Getting started
@@ -58,11 +61,13 @@ const sections: DocSection[] = [
           navLabel: "Installation",
           title: "Installation",
           description:
-               "There is no installation required for the web dashboard. Open NestLink in a modern browser and sign in. For tenants, install the mobile app (iOS/Android) if provided by the building, then sign in with the invitation flow.",
+               "There is no installation required for the web dashboard. Open NestLink in a modern browser and sign in. Tenants can use web or mobile (iOS/Android).",
           bullets: [
-               "Web dashboard: works in modern browsers (Chrome/Edge/Safari/Firefox)",
+               "Web dashboard: works in modern browsers (Chrome/Edge/Safari/Firefox) for building managers/tenants",
                "Tenant mobile app: iOS/Android build distributed by the building/team",
                "No local setup required for standard usage",
+               ANDROID_APP_URL ? `Android app: ${ANDROID_APP_URL}` : "Android app: contact your manager for install",
+               IOS_APP_URL ? `iOS app: ${IOS_APP_URL}` : "iOS app: contact your manager for install",
           ],
           role: "Platform",
      },
@@ -71,11 +76,12 @@ const sections: DocSection[] = [
           navLabel: "Setup",
           title: "Initial Setup",
           description:
-               "After subscription/signup, the Client (Owner/Manager) configures the organization and first building. This is the foundation for apartments and tenant invitations.",
+               "After subscription/signup, the Client (Owner/Manager) configures the organization, building properties, apartments and tenants. This is the foundation for apartments and tenant invitations. The manager can also print out a QR code for tenants to scan and join their apartment if that method is preferred.",
           bullets: [
                "Create your first Building (address, city, building settings)",
                "Add Apartments/Units and optionally attach owners/tenants later",
                "Invite Tenants to apartments via email/phone/invite link",
+               "Print QR code for tenants to scan and join their apartment (optional)",
           ],
           role: "Client",
      },
@@ -122,6 +128,8 @@ const sections: DocSection[] = [
                "Link tenants to apartments and set primary/secondary status",
                "Control what tenants can access based on unit/building membership",
                "Handle re-invites and access resets cleanly",
+               "Use QR code invites for easy tenant onboarding (optional)",
+               "Ban or remove tenants as needed to maintain a safe community",
           ],
           role: "Client",
           tags: ["onboarding", "invites", "access"],
@@ -137,6 +145,7 @@ const sections: DocSection[] = [
                "Include important details: what, when, who is affected, next steps",
                "Tenants receive updates in-app (and optionally via other channels depending on setup)",
                "Announcements remain searchable and auditable for later reference",
+               "Upload images or attachments to provide additional context",
           ],
           role: "Platform",
           tags: ["communication", "official", "updates"],
@@ -234,56 +243,6 @@ const sections: DocSection[] = [
           role: "Platform",
           tags: ["auth", "2fa", "rls"],
      },
-
-     // -----------------------------
-     // Links / integrations / API docs placeholders
-     // -----------------------------
-     // {
-     //      id: "api-authentication",
-     //      navLabel: "API: Authentication",
-     //      title: "API Reference: Authentication (Optional)",
-     //      description:
-     //           "If you expose APIs for integrations, authentication determines how requests are validated. Document this section based on your app’s real endpoints (tokens, session cookies, or service-to-service keys).",
-     //      bullets: [
-     //           "Use secure tokens (bearer tokens) or server-managed session cookies",
-     //           "Never expose admin keys in the browser",
-     //           "Scope API access by client/building as needed",
-     //      ],
-     //      role: "Platform",
-     //      tags: ["api", "security"],
-     // },
-     // {
-     //      id: "api-endpoints",
-     //      navLabel: "API: Endpoints",
-     //      title: "API Reference: Endpoints (Optional)",
-     //      description:
-     //           "List and document the endpoints your dashboard/mobile app relies on (or your server actions). Include request/response examples and required roles.",
-     //      bullets: [
-     //           "Document each endpoint: method, path, auth requirements, request body, response body",
-     //           "Include example errors and validation rules",
-     //           "Map endpoints to features (polls, announcements, incidents, tenants, buildings)",
-     //      ],
-     //      role: "Platform",
-     //      tags: ["api", "endpoints"],
-     // },
-     // {
-     //      id: "webhooks",
-     //      navLabel: "Webhooks",
-     //      title: "Webhooks (Optional)",
-     //      description:
-     //           "If you support outgoing webhooks (e.g., incident created, poll closed), document event types, payload format, and verification. If you don’t use webhooks yet, keep this as a placeholder for future integrations.",
-     //      bullets: [
-     //           "Define event types and payload schema",
-     //           "Sign/verify webhook requests (recommended)",
-     //           "Retry strategy and delivery logging",
-     //      ],
-     //      role: "Platform",
-     //      tags: ["integrations"],
-     // },
-
-     // -----------------------------
-     // FAQ
-     // -----------------------------
      {
           id: "faq",
           navLabel: "FAQ",
