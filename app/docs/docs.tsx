@@ -71,14 +71,14 @@ const sections: DocSection[] = [
                          Google Play
                     </MuiLink>
                ) : (
-                    "Android app: contact your manager for install"
+                    "Android app: Soon available on Google Play"
                ),
                IOS_APP_URL ? (
                     <MuiLink key="ios-app" href={IOS_APP_URL} target="_blank" rel="noopener noreferrer">
                          iOS App Store
                     </MuiLink>
                ) : (
-                    "iOS app: contact your manager for install"
+                    "iOS app: Soon available on App Store"
                ),
           ],
           role: "Platform",
