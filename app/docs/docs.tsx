@@ -33,7 +33,7 @@ type DocSection = {
      navLabel: string
      title: string
      description: string
-     bullets?: string[]
+     bullets?: React.ReactNode[]
      role?: "Client" | "Tenant" | "Platform"
      tags?: string[]
 }
@@ -66,8 +66,20 @@ const sections: DocSection[] = [
                "Web dashboard: works in modern browsers (Chrome/Edge/Safari/Firefox) for building managers/tenants",
                "Tenant mobile app: iOS/Android build distributed by the building/team",
                "No local setup required for standard usage",
-               ANDROID_APP_URL ? `Android app: ${ANDROID_APP_URL}` : "Android app: contact your manager for install",
-               IOS_APP_URL ? `iOS app: ${IOS_APP_URL}` : "iOS app: contact your manager for install",
+               ANDROID_APP_URL ? (
+                    <MuiLink key="android-app" href={ANDROID_APP_URL} target="_blank" rel="noopener noreferrer">
+                         Google Play
+                    </MuiLink>
+               ) : (
+                    "Android app: contact your manager for install"
+               ),
+               IOS_APP_URL ? (
+                    <MuiLink key="ios-app" href={IOS_APP_URL} target="_blank" rel="noopener noreferrer">
+                         iOS App Store
+                    </MuiLink>
+               ) : (
+                    "iOS app: contact your manager for install"
+               ),
           ],
           role: "Platform",
      },
@@ -513,8 +525,8 @@ export const DocsPage = () => {
 
                                                        {s.bullets?.length ? (
                                                             <List dense sx={{ mt: 0 }}>
-                                                                 {s.bullets.map((b) => (
-                                                                      <ListItem key={b} sx={{ py: 0.25 }}>
+                                                                 {s.bullets.map((b, idx) => (
+                                                                      <ListItem key={idx} sx={{ py: 0.25 }}>
                                                                            <ListItemText primary={b} />
                                                                       </ListItem>
                                                                  ))}
