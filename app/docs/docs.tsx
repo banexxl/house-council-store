@@ -40,8 +40,8 @@ type DocSection = {
 
 const HEADER_OFFSET_PX = 88 // adjust if your fixed header is taller/shorter
 
-const ANDROID_APP_URL = process.env.NEXT_PUBLIC_ANDROID_APP_URL || ""
-const IOS_APP_URL = process.env.NEXT_PUBLIC_IOS_APP_URL || ""
+const ANDROID_APP_URL = (process.env.NEXT_PUBLIC_ANDROID_APP_URL || "").trim()
+const IOS_APP_URL = (process.env.NEXT_PUBLIC_IOS_APP_URL || "").trim()
 
 const sections: DocSection[] = [
      // -----------------------------
