@@ -262,7 +262,15 @@ const sections: DocSection[] = [
           description: "Quick answers to common questions about using NestLink.",
           bullets: [
                "Is NestLink web-only or mobile-only? → Both (web dashboard + tenant mobile/web)",
+               "Can I use NestLink for multiple buildings? → Yes, you can manage multiple buildings under one account",
+               "How do tenant invitations work? → Invite by email/phone or share a QR code for easy onboarding",
+               "How do announcements differ from posts? → Announcements are official updates; posts are for community discussion",
+               "Can I attach photos to incident reports? → Yes, tenants can include photos for more context",
+               "How do polls work? → Create a question with options, tenants vote, and results are tracked transparently",
                "How do incidents work? → Tenants submit; clients manage status; resolution is tracked",
+               "What notification options are there? → In-app and optional push notifications for key events",
+               "How does billing work? → Subscription-based, priced per apartment",
+               "Is there a discount for larger buildings? → Contact support for custom pricing on larger communities"
           ],
           role: "Platform",
           tags: ["help"],
