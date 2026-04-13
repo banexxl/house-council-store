@@ -34,6 +34,7 @@ type DocSection = {
      title: string
      description: string
      bullets?: React.ReactNode[]
+     customContent?: React.ReactNode
      role?: "Client" | "Tenant" | "Platform"
      tags?: string[]
 }
@@ -42,11 +43,39 @@ const HEADER_OFFSET_PX = 88 // adjust if your fixed header is taller/shorter
 
 const ANDROID_APP_URL = (process.env.NEXT_PUBLIC_ANDROID_APP_URL || "").trim().length > 0 ? (process.env.NEXT_PUBLIC_ANDROID_APP_URL || "").trim() : ''
 const IOS_APP_URL = (process.env.NEXT_PUBLIC_IOS_APP_URL || "").trim().length > 0 ? (process.env.NEXT_PUBLIC_IOS_APP_URL || "").trim() : ''
+const DOCS_VIDEO_URL = "/videos/nla-overview.mp4"
 
 const sections: DocSection[] = [
      // -----------------------------
      // Getting started
      // -----------------------------
+     {
+          id: "product-tour",
+          navLabel: "Product Tour",
+          title: "Product Tour",
+          description:
+               "Watch a short walkthrough of the NestLink manager dashboard and resident experience.",
+          customContent: (
+               <Box
+                    component="video"
+                    src={DOCS_VIDEO_URL}
+                    autoPlay
+                    playsInline
+                    controls
+                    sx={{
+                         mt: 1,
+                         width: "100%",
+                         borderRadius: 2,
+                         border: "1px solid",
+                         borderColor: "divider",
+                         boxShadow: "0 12px 30px rgba(0,0,0,0.12)",
+                         backgroundColor: "#000",
+                    }}
+               />
+          ),
+          role: "Platform",
+          tags: ["video", "overview", "tour"],
+     },
      {
           id: "getting-started",
           navLabel: "Getting Started",
@@ -376,8 +405,8 @@ export const DocsPage = () => {
                          <Container maxWidth="lg">
                               <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", py: 2, gap: 2 }}>
                                    <Box sx={{ display: { xs: "none", md: 'flex' }, alignItems: "center", minWidth: 0 }}>
-                                        <MenuBookIcon sx={{ mr: 1 }} />
-                                        <Typography variant="h4" noWrap>
+                                        <MenuBookIcon sx={{ mr: 1, color: "primary.main" }} />
+                                        <Typography variant="h4" noWrap color="primary">
                                              Docs
                                         </Typography>
                                    </Box>
@@ -436,7 +465,7 @@ export const DocsPage = () => {
                                         >
                                              {navGroups.map(([groupName, items]) => (
                                                   <Box key={groupName} sx={{ mb: 3 }}>
-                                                       <Typography variant="h6" gutterBottom>
+                                                       <Typography variant="h6" gutterBottom sx={{ fontWeight: 900, color: "primary.main" }}>
                                                             {groupName}
                                                        </Typography>
 
@@ -483,7 +512,7 @@ export const DocsPage = () => {
                                                   >
                                                        <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} alignItems={{ sm: "center" }}>
                                                             <Stack direction="row" spacing={1} alignItems="center" sx={{ minWidth: 0, flexWrap: "wrap" }}>
-                                                                 <Typography variant="h5" component="h2" sx={{ fontWeight: 900 }}>
+                                                                 <Typography variant="h5" component="h2" sx={{ fontWeight: 900, color: "primary.main", minWidth: 0 }}>
                                                                       {s.title}
                                                                  </Typography>
 
@@ -530,6 +559,8 @@ export const DocsPage = () => {
                                                        <Typography paragraph sx={{ mt: 2, mb: 1.5, lineHeight: 1.75 }}>
                                                             {s.description}
                                                        </Typography>
+
+                                                       {s.customContent ? <Box sx={{ mt: 1.5 }}>{s.customContent}</Box> : null}
 
                                                        {s.bullets?.length ? (
                                                             <List dense sx={{ mt: 0 }}>
