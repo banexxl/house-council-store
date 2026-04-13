@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "patch:push": "npm version patch && git push && git push --tags"
   },
   "dependencies": {
     "@emotion/cache": "^11.14.0",
