@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "patch:push": "npm version patch && git push && git push --tags"
+    "patch:push": "npm version patch && git push && git push --tags",
+    "minor:push": "npm version minor && git push && git push --tags",
+    "major:push": "npm version major && git push && git push --tags"
   },
   "dependencies": {
     "@emotion/cache": "^11.14.0",
