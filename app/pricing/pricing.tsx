@@ -15,6 +15,7 @@ import {
      AccordionDetails,
      Grid,
      useTheme,
+     Stack,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import toast, { Toaster } from "react-hot-toast";
@@ -300,60 +301,65 @@ export const PricingPage: React.FC<PricingPageProps> = ({
                               {/* Billing Interval Selector */}
                               {sortedProducts.length > 1 && (
                                    <Box sx={{ display: "flex", justifyContent: "center", mb: 4 }}>
-                                        <Paper sx={{ p: 0.5, display: "inline-flex", gap: 0.5, flexWrap: "wrap" }}>
-                                             {sortedProducts.map((product) => {
-                                                  const intervalKey = `${product.recurringInterval}-${product.recurringIntervalCount ?? 1}`;
-                                                  const intervalCount = product.recurringIntervalCount ?? 1;
+                                        <Paper sx={{ p: 1, width: "100%" }}>
+                                             <Grid container spacing={1}>
+                                                  {sortedProducts.map((product, idx) => {
+                                                       const intervalKey = `${product.recurringInterval}-${product.recurringIntervalCount ?? 1}`;
+                                                       const intervalCount = product.recurringIntervalCount ?? 1;
+                                                       const isLastOdd = sortedProducts.length % 2 === 1 && idx === sortedProducts.length - 1;
 
-                                                  const label =
-                                                       product.recurringInterval === "month"
-                                                            ? intervalCount === 1
-                                                                 ? "Monthly"
-                                                                 : `${intervalCount} Months`
-                                                            : intervalCount === 1
-                                                                 ? "Annually"
-                                                                 : `${intervalCount} Years`;
+                                                       const label =
+                                                            product.recurringInterval === "month"
+                                                                 ? intervalCount === 1
+                                                                      ? "Monthly"
+                                                                      : `${intervalCount} Months`
+                                                                 : intervalCount === 1
+                                                                      ? "Annually"
+                                                                      : `${intervalCount} Years`;
 
-                                                  // Discount badge per button (vs month-1 baseline)
-                                                  const productPrice = product.prices?.[0];
-                                                  let discount = 0;
+                                                       // Discount badge per button (vs month-1 baseline)
+                                                       const productPrice = product.prices?.[0];
+                                                       let discount = 0;
 
-                                                  if (productPrice && baseMonthlyPrice && intervalKey !== "month-1") {
-                                                       const monthsInPeriod =
-                                                            product.recurringInterval === "year"
-                                                                 ? (product.recurringIntervalCount ?? 1) * 12
-                                                                 : (product.recurringIntervalCount ?? 1);
+                                                       if (productPrice && baseMonthlyPrice && intervalKey !== "month-1") {
+                                                            const monthsInPeriod =
+                                                                 product.recurringInterval === "year"
+                                                                      ? (product.recurringIntervalCount ?? 1) * 12
+                                                                      : (product.recurringIntervalCount ?? 1);
 
-                                                       const baselineCost = ((baseMonthlyPrice.priceAmount ?? 0) / 100) * monthsInPeriod;
-                                                       const actualCost = (productPrice.priceAmount ?? 0) / 100;
-                                                       if (baselineCost > 0) {
-                                                            discount = Math.max(0, Math.round(((baselineCost - actualCost) / baselineCost) * 100));
+                                                            const baselineCost = ((baseMonthlyPrice.priceAmount ?? 0) / 100) * monthsInPeriod;
+                                                            const actualCost = (productPrice.priceAmount ?? 0) / 100;
+                                                            if (baselineCost > 0) {
+                                                                 discount = Math.max(0, Math.round(((baselineCost - actualCost) / baselineCost) * 100));
+                                                            }
                                                        }
-                                                  }
 
-                                                  return (
-                                                       <Button
-                                                            key={intervalKey}
-                                                            variant={selectedIntervalKey === intervalKey ? "contained" : "outlined"}
-                                                            onClick={() => setSelectedIntervalKey(intervalKey)}
-                                                            sx={{ minWidth: 110 }}
-                                                       >
-                                                            {label}
-                                                            {discount > 0 && (
-                                                                 <Typography
-                                                                      component="span"
-                                                                      variant="caption"
-                                                                      sx={{
-                                                                           ml: 0.5,
-                                                                           color: selectedIntervalKey === intervalKey ? "inherit" : "success.main",
-                                                                      }}
+                                                       return (
+                                                            <Grid key={intervalKey} size={{ xs: isLastOdd ? 12 : 6, sm: 4, md: 3 }}>
+                                                                 <Button
+                                                                      fullWidth
+                                                                      variant={selectedIntervalKey === intervalKey ? "contained" : "outlined"}
+                                                                      onClick={() => setSelectedIntervalKey(intervalKey)}
+                                                                      sx={{ minHeight: 44 }}
                                                                  >
-                                                                      (-{discount}%)
-                                                                 </Typography>
-                                                            )}
-                                                       </Button>
-                                                  );
-                                             })}
+                                                                      {label}
+                                                                      {discount > 0 && (
+                                                                           <Typography
+                                                                                component="span"
+                                                                                variant="caption"
+                                                                                sx={{
+                                                                                     ml: 0.5,
+                                                                                     color: selectedIntervalKey === intervalKey ? "inherit" : "success.main",
+                                                                                }}
+                                                                           >
+                                                                                (-{discount}%)
+                                                                           </Typography>
+                                                                      )}
+                                                                 </Button>
+                                                            </Grid>
+                                                       );
+                                                  })}
+                                             </Grid>
                                         </Paper>
                                    </Box>
                               )}
@@ -372,78 +378,66 @@ export const PricingPage: React.FC<PricingPageProps> = ({
                                                   }}
                                              >
                                                   <CardContent sx={{ flexGrow: 1 }}>
-                                                       <Typography variant="h5" gutterBottom>
-                                                            {currentProduct.name}
+                                                       <Stack spacing={1.25}>
+                                                            <Typography variant="h5">{currentProduct.name}</Typography>
 
                                                             {currentProduct.trialIntervalCount && (
-                                                                 <Typography component="span" variant="caption" color="primary" sx={{ ml: 1 }}>
+                                                                 <Typography variant="body2" color="primary">
                                                                       {currentProduct.trialIntervalCount} {currentProduct.trialInterval} free trial
                                                                  </Typography>
                                                             )}
 
                                                             {discountPercentage > 0 && (
-                                                                 <Typography
-                                                                      component="span"
-                                                                      variant="caption"
-                                                                      sx={{
-                                                                           ml: 1,
-                                                                           px: 1,
-                                                                           py: 0.5,
-                                                                           bgcolor: "success.main",
-                                                                           color: "white",
-                                                                           borderRadius: 1,
-                                                                      }}
-                                                                 >
+                                                                 <Typography variant="body2" sx={{ color: "success.main", fontWeight: 700 }}>
                                                                       Save {discountPercentage}%
                                                                  </Typography>
                                                             )}
-                                                       </Typography>
 
-                                                       {/* ✅ Price for SELECTED product */}
-                                                       <Typography variant="body2" color="text.secondary" gutterBottom sx={{ minHeight: 48 }}>
-                                                            {pricingDisplay ? (
-                                                                 <>
-                                                                      <strong>{pricingDisplay.format(pricingDisplay.perMonthPerApartment)}</strong> per apartment /
-                                                                      month
-                                                                      <Typography component="span" variant="caption" sx={{ ml: 1 }}>
-                                                                           ({pricingDisplay.format(pricingDisplay.totalForPeriodPerApartment)} per apartment for{" "}
-                                                                           {pricingDisplay.months} month{pricingDisplay.months === 1 ? "" : "s"})
-                                                                      </Typography>
-                                                                 </>
-                                                            ) : (
-                                                                 "Pricing unavailable for this plan."
+                                                            {/* ✅ Price for SELECTED product */}
+                                                            <Typography variant="body2" color="text.secondary">
+                                                                 {pricingDisplay ? (
+                                                                      <>
+                                                                           <strong>{pricingDisplay.format(pricingDisplay.perMonthPerApartment)}</strong> per apartment /
+                                                                           month
+                                                                           <Typography component="span" variant="caption" sx={{ ml: 1 }}>
+                                                                                ({pricingDisplay.format(pricingDisplay.totalForPeriodPerApartment)} per apartment for{" "}
+                                                                                {pricingDisplay.months} month{pricingDisplay.months === 1 ? "" : "s"})
+                                                                           </Typography>
+                                                                      </>
+                                                                 ) : (
+                                                                      "Pricing unavailable for this plan."
+                                                                 )}
+                                                            </Typography>
+
+                                                            {/* Optional: building total */}
+                                                            {customer && pricingDisplay && apartmentCount !== undefined && (
+                                                                 <Typography variant="caption" color="text.secondary">
+                                                                      Total for your {apartmentCount} apartment{apartmentCount === 1 ? "" : "s"}:{" "}
+                                                                      <strong>
+                                                                           {pricingDisplay.format(pricingDisplay.totalForPeriodPerApartment * apartmentCount)}
+                                                                      </strong>{" "}
+                                                                      for {pricingDisplay.months} month{pricingDisplay.months === 1 ? "" : "s"}
+                                                                 </Typography>
                                                             )}
-                                                       </Typography>
 
-                                                       {/* Optional: building total */}
-                                                       {customer && pricingDisplay && apartmentCount !== undefined && (
-                                                            <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1 }}>
-                                                                 Total for your {apartmentCount} apartment{apartmentCount === 1 ? "" : "s"}:{" "}
-                                                                 <strong>
-                                                                      {pricingDisplay.format(pricingDisplay.totalForPeriodPerApartment * apartmentCount)}
-                                                                 </strong>{" "}
-                                                                 for {pricingDisplay.months} month{pricingDisplay.months === 1 ? "" : "s"}
-                                                            </Typography>
-                                                       )}
-
-                                                       {/* Product description */}
-                                                       {productDescription ? (
-                                                            <Typography
-                                                                 variant="body2"
-                                                                 color="text.secondary"
-                                                                 sx={{
-                                                                      mt: 1,
-                                                                      whiteSpace: 'pre-line',
-                                                                      lineHeight: 1.7,
-                                                                 }}
-                                                            >
-                                                                 {productDescription}
-                                                            </Typography>
-                                                       ) : (
-                                                            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                                                                 No description available for this plan.
-                                                            </Typography>
-                                                       )}
+                                                            {productDescription ? (
+                                                                 <Typography
+                                                                      variant="body2"
+                                                                      color="text.secondary"
+                                                                      sx={{
+                                                                           mt: 1,
+                                                                           whiteSpace: 'pre-line',
+                                                                           lineHeight: 1.7,
+                                                                      }}
+                                                                 >
+                                                                      {productDescription}
+                                                                 </Typography>
+                                                            ) : (
+                                                                 <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                                                                      No description available for this plan.
+                                                                 </Typography>
+                                                            )}
+                                                       </Stack>
 
                                                   </CardContent>
 

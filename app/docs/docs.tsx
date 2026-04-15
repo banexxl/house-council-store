@@ -15,12 +15,16 @@ import {
      List,
      ListItem,
      ListItemText,
+     ListSubheader,
+     MenuItem,
      Paper,
      Stack,
      TextField,
      Typography,
      Grid,
      Chip,
+     useMediaQuery,
+     useTheme,
 } from "@mui/material"
 import SearchIcon from "@mui/icons-material/Search"
 import MenuBookIcon from '@mui/icons-material/MenuBook';
@@ -331,8 +335,11 @@ function slugLink(id: string) {
 }
 
 export const DocsPage = () => {
+     const theme = useTheme()
+     const isMobileNav = useMediaQuery(theme.breakpoints.down("md"))
      const [query, setQuery] = useState("")
      const [copiedId, setCopiedId] = useState<string | null>(null)
+     const [selectedId, setSelectedId] = useState<string>("")
 
      const filtered = useMemo(() => {
           const q = query.trim().toLowerCase()
@@ -360,6 +367,16 @@ export const DocsPage = () => {
                map.set(g, [...(map.get(g) ?? []), s])
           }
           return Array.from(map.entries())
+     }, [filtered])
+
+     useEffect(() => {
+          const hash = window.location.hash?.replace("#", "")
+          const ids = new Set(filtered.map((s) => s.id))
+          if (hash && ids.has(hash)) {
+               setSelectedId(hash)
+               return
+          }
+          setSelectedId(filtered[0]?.id ?? "")
      }, [filtered])
 
      // ✅ Smooth scroll + header offset, including when you navigate directly to /docs#section
@@ -438,59 +455,86 @@ export const DocsPage = () => {
                               <Grid container spacing={4} sx={{ pt: 4 }}>
                                    {/* LEFT NAV */}
                                    <Grid size={{ xs: 12, md: 3 }}>
-                                        <Box
-                                             component="nav"
-                                             sx={{
-                                                  position: { md: "sticky" },
-                                                  top: { md: 24 },
-                                                  height: { md: "calc(100vh - 180px)" },
-                                                  overflowY: "auto",
-                                                  pr: { md: 1 },
-                                                  // Custom scrollbar styling
-                                                  "&::-webkit-scrollbar": {
-                                                       width: "6px",
-                                                  },
-                                                  "&::-webkit-scrollbar-track": {
-                                                       backgroundColor: "rgba(0, 0, 0, 0.05)",
-                                                       borderRadius: "3px",
-                                                  },
-                                                  "&::-webkit-scrollbar-thumb": {
-                                                       backgroundColor: "primary.main",
-                                                       borderRadius: "3px",
-                                                       "&:hover": {
-                                                            backgroundColor: "primary.dark",
+                                        {isMobileNav ? (
+                                             <Box sx={{ mb: 2 }}>
+                                                  <TextField
+                                                       select
+                                                       fullWidth
+                                                       label="Jump to section"
+                                                       value={selectedId}
+                                                       onChange={(e) => {
+                                                            const nextId = e.target.value
+                                                            setSelectedId(nextId)
+                                                            window.location.hash = nextId
+                                                       }}
+                                                  >
+                                                       {navGroups.map(([groupName, items]) => (
+                                                            [
+                                                                 <ListSubheader key={`${groupName}-label`}>{groupName}</ListSubheader>,
+                                                                 ...items.map((s) => (
+                                                                      <MenuItem key={s.id} value={s.id}>
+                                                                           {s.navLabel}
+                                                                      </MenuItem>
+                                                                 )),
+                                                            ]
+                                                       ))}
+                                                  </TextField>
+                                             </Box>
+                                        ) : (
+                                             <Box
+                                                  component="nav"
+                                                  sx={{
+                                                       position: { md: "sticky" },
+                                                       top: { md: 24 },
+                                                       height: { md: "calc(100vh - 180px)" },
+                                                       overflowY: "auto",
+                                                       pr: { md: 1 },
+                                                       // Custom scrollbar styling
+                                                       "&::-webkit-scrollbar": {
+                                                            width: "6px",
                                                        },
-                                                  },
-                                             }}
-                                        >
-                                             {navGroups.map(([groupName, items]) => (
-                                                  <Box key={groupName} sx={{ mb: 3 }}>
-                                                       <Typography variant="h6" gutterBottom sx={{ fontWeight: 900, color: "primary.main" }}>
-                                                            {groupName}
-                                                       </Typography>
+                                                       "&::-webkit-scrollbar-track": {
+                                                            backgroundColor: "rgba(0, 0, 0, 0.05)",
+                                                            borderRadius: "3px",
+                                                       },
+                                                       "&::-webkit-scrollbar-thumb": {
+                                                            backgroundColor: "primary.main",
+                                                            borderRadius: "3px",
+                                                            "&:hover": {
+                                                                 backgroundColor: "primary.dark",
+                                                            },
+                                                       },
+                                                  }}
+                                             >
+                                                  {navGroups.map(([groupName, items]) => (
+                                                       <Box key={groupName} sx={{ mb: 3 }}>
+                                                            <Typography variant="h6" gutterBottom sx={{ fontWeight: 900, color: "primary.main" }}>
+                                                                 {groupName}
+                                                            </Typography>
 
-                                                       <List dense disablePadding>
-                                                            {items.map((s) => (
-                                                                 <ListItem key={s.id} disablePadding sx={{ py: 0.25 }}>
-                                                                      <MuiLink href={`#${s.id}`} underline="hover" color="inherit" sx={{ width: "100%" }}>
-                                                                           <ListItemText
-                                                                                primary={s.navLabel}
-                                                                                slotProps={{
-                                                                                     primary: {
-                                                                                          variant: "body2",
-                                                                                          sx: { lineHeight: 1.4 },
-                                                                                     },
-                                                                                }}
-                                                                           />
-                                                                      </MuiLink>
-                                                                 </ListItem>
-                                                            ))}
-                                                       </List>
-                                                  </Box>
-                                             ))}
+                                                            <List dense disablePadding>
+                                                                 {items.map((s) => (
+                                                                      <ListItem key={s.id} disablePadding sx={{ py: 0.25 }}>
+                                                                           <MuiLink href={`#${s.id}`} underline="hover" color="inherit" sx={{ width: "100%" }}>
+                                                                                <ListItemText
+                                                                                     primary={s.navLabel}
+                                                                                     slotProps={{
+                                                                                          primary: {
+                                                                                               variant: "body2",
+                                                                                               sx: { lineHeight: 1.4 },
+                                                                                          },
+                                                                                     }}
+                                                                                />
+                                                                           </MuiLink>
+                                                                      </ListItem>
+                                                                 ))}
+                                                            </List>
+                                                       </Box>
+                                                  ))}
 
-                                             <Divider sx={{ my: 2 }} />
-                                        </Box>
+                                                  <Divider sx={{ my: 2 }} />
+                                             </Box>
+                                        )}
                                    </Grid>
 
                                    {/* CONTENT */}
