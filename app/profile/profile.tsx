@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import toast from "react-hot-toast"
 import { Box, Container, Grid } from "@mui/material"
 import ProfileSidebar, { ActivityItem } from "./components/profile-sidebar"
 import ProfileTabs from "./components/profile-tabs"
@@ -28,7 +28,52 @@ export const ProfilePage = ({
      payments
 }: ProfilePageProps) => {
 
-     const [editMode, setEditMode] = useState(false)
+     const handleOpenCustomerPortal = async () => {
+          const hasSubscription = Boolean(customerSubscriptionObject?.id && customerSubscriptionObject?.id)
+          if (!hasSubscription) {
+               toast.error("No subscription found. Please purchase a plan first.")
+               return
+          }
+
+          if (!customerSubscriptionObject?.customerId) {
+               toast.error("Missing customer identifier.")
+               return
+          }
+
+          try {
+               const returnUrl = typeof window !== "undefined"
+                    ? `${window.location.origin}/profile`
+                    : null
+
+               const res = await fetch("/api/polar/customer-portal", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                         polarCustomerId: customerSubscriptionObject.customerId,
+                         returnUrl,
+                    }),
+               })
+
+               const data = await res.json().catch(() => ({}))
+               if (!res.ok) {
+                    if (data?.error === "customer_not_found") {
+                         throw new Error("Please subscribe to a plan before opening the customer portal.")
+                    }
+                    throw new Error(data?.error || "Failed to open customer portal.")
+               }
+
+               const url = data?.url as string | undefined
+               if (!url) {
+                    throw new Error("Customer portal URL missing.")
+               }
+
+               if (typeof window !== "undefined") {
+                    window.open(url, "_blank", "noopener,noreferrer")
+               }
+          } catch (err: any) {
+               toast.error(err?.message || "Failed to open customer portal.")
+          }
+     }
 
      return (
           <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
@@ -41,7 +86,7 @@ export const ProfilePage = ({
                                         <ProfileSidebar
                                              userData={sessionAndCustomerDataCombined!}
                                              recentActivity={recentActivity}
-                                             onEditProfile={() => setEditMode(true)}
+                                             onEditProfile={() => handleOpenCustomerPortal()}
                                         />
                                    </Grid>
 
