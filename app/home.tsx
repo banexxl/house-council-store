@@ -651,6 +651,7 @@ const LandingPage = () => {
                     <Container maxWidth="lg" sx={{ py: { xs: 7, md: 10 } }}>
                          <Reveal>
                               <Box sx={{ ...glassSx, p: { xs: 3, md: 4 }, textAlign: 'center' }} onMouseMove={onMoveSheen}>
+                                   {isDesktop && <ParticleBackground />}
                                    <Typography variant="h3" sx={{ fontWeight: 950, overflowWrap: 'anywhere' }}>
                                         Ready to bring your tenants together?
                                    </Typography>
