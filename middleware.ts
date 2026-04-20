@@ -65,7 +65,8 @@ export async function middleware(request: NextRequest) {
           "/docs",
           "/api/polar",
           "/api/polar/webhook",
-          "/videos"
+          "/videos",
+          "/robots.txt",
      ];
 
      const isPublicRoute = publicRoutes.some(
