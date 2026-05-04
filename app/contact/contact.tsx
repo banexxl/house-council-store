@@ -6,7 +6,7 @@ import PhoneIcon from "@mui/icons-material/Phone"
 import LocationOnIcon from "@mui/icons-material/LocationOn"
 import toast, { Toaster } from "react-hot-toast";
 import GoogleMap, { MapMarker } from "@/app/components/google-map";
-import { use, useEffect, useState } from "react";
+import { useState } from "react";
 import * as Yup from "yup"
 import Animate from "@/app/components/animation-framer-motion"
 import { Form, Formik } from "formik"
@@ -47,8 +47,6 @@ const validationSchema = Yup.object({
      message: Yup.string().required('Message is required'),
 });
 
-
-
 type ContactProps = {
      mapKey: string
 }
@@ -61,13 +59,17 @@ export const ContactPage = ({ mapKey }: ContactProps) => {
           setSelectedLocation(marker)
      }
 
-     const handleSubmit = async (values: typeof initialValues) => {
+     const handleSubmit = async (
+          values: typeof initialValues,
+          helpers: { resetForm: () => void }
+     ) => {
 
           try {
                const sendEmailResponse = await sendClientContactMessageToSupport(values.email, values.fullName, values.message, values.subject)
 
                if (sendEmailResponse) {
                     toast.success("Message sent successfully.");
+                    helpers.resetForm();
                } else {
                     toast.error("Failed to send message.");
                }
