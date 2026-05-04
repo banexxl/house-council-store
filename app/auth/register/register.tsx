@@ -77,8 +77,10 @@ export const RegisterPage = () => {
                          toast.error("Data type mismatch")
                     } else if (error.code === '23514') {
                          toast.error("Check violation")
+                    } else if (error.code === 'EmailInUse') {
+                         toast.error(error.message || "This email cannot be used")
                     } else {
-                         toast.error("Client not saved: unexpected error")
+                         toast.error(error.message || "Client not saved: unexpected error")
                     }
                }
           },

@@ -3,6 +3,7 @@
 import { polar } from "@/app/lib/polar"; // adjust
 import { logServerAction } from "@/app/lib/server-logging"; // adjust
 import { useServerSideSupabaseServiceRoleClient } from "@/app/lib/ss-supabase-service-role-client";
+import { useServerSideSupabaseAnonClient } from "@/app/lib/ss-supabase-anon-client";
 
 export type RegisterErrorType = { code: string; details: string; hint: string | null; message: string };
 
@@ -44,6 +45,68 @@ export const registerUser = async (
      }
 
      const supabaseAdmin = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
+
+     const { data: tenantData, error: tenantError } = await supabase
+          .from('tblTenants')
+          .select('email')
+          .eq('email', values.email)
+          .maybeSingle();
+
+     if (tenantError) {
+          await logServerAction({
+               user_id: null,
+               action: "Register user - tblTenants lookup failed",
+               payload: { email: values.email },
+               status: "fail",
+               error: tenantError.message || "",
+               duration_ms: Date.now() - t0,
+               type: "auth",
+          });
+     }
+
+     if (tenantData?.email) {
+          return {
+               success: false,
+               error: {
+                    code: "EmailInUse",
+                    details: "Email already in use",
+                    hint: "Try registering with a different email or contact support.",
+                    message: "This email cannot be used",
+               },
+          };
+     }
+
+     const { data: customerData, error: customerError } = await supabase
+          .from('tblPolarCustomers')
+          .select('email')
+          .eq('email', values.email)
+          .is('deletedAt', null)
+          .maybeSingle();
+
+     if (customerError) {
+          await logServerAction({
+               user_id: null,
+               action: "Register user - tblPolarCustomers lookup failed",
+               payload: { email: values.email },
+               status: "fail",
+               error: customerError.message || "",
+               duration_ms: Date.now() - t0,
+               type: "auth",
+          });
+     }
+
+     if (customerData?.email) {
+          return {
+               success: false,
+               error: {
+                    code: "EmailInUse",
+                    details: "Email already in use",
+                    hint: "Try signing in or resetting your password instead.",
+                    message: "Email already in use",
+               },
+          };
+     }
 
      let userId: string | null = null;
 
@@ -121,6 +184,19 @@ export const registerUser = async (
                     duration_ms: Date.now() - t0,
                     type: "auth",
                });
+
+               const errorText = error?.message || error?.body$ || "";
+               if (typeof errorText === "string" && errorText.includes("customer with this email address already exists")) {
+                    return {
+                         success: false,
+                         error: {
+                              code: "EmailInUse",
+                              details: "Email already in use",
+                              hint: "Try signing in or resetting your password instead.",
+                              message: "Email already in use",
+                         },
+                    };
+               }
 
                throw error;
           }

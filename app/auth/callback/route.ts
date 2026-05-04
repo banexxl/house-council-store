@@ -3,6 +3,7 @@ import { useServerSideSupabaseServiceRoleClient } from '@/app/lib/ss-supabase-se
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { polar } from '@/app/lib/polar';
+import { checkUserPermissionServer } from '@/app/auth/sign-in/check-user-server-action';
 
 function normalizeEmail(v?: string | null) {
      return (v ?? '').trim().toLowerCase();
@@ -115,6 +116,51 @@ export async function GET(request: Request) {
 
           const redirectUrl = `${requestUrl.origin}/auth/error?error=No session found.`;
           return NextResponse.redirect(redirectUrl);
+     }
+
+     const email = normalizeEmail(sessionData.session.user.email);
+     if (email) {
+          const permission = await checkUserPermissionServer(email);
+          if (!permission.success) {
+               console.log('[auth/callback] permission denied', {
+                    email,
+                    error: permission.error,
+               });
+
+               await supabase.auth.signOut();
+               await supabase.auth.admin.deleteUser(sessionData.session.user.id);
+
+               const allCookies = cookieStore.getAll();
+               allCookies.forEach(cookie => cookieStore.delete(cookie.name));
+
+               if (permission.error?.code === 'EmailInUse') {
+                    console.log('[auth/callback] redirect EmailInUse', {
+                         email,
+                         error: permission.error,
+                    });
+                    const errorDescription = encodeURIComponent(permission.error?.message || 'This email is already in use');
+                    const redirectUrl = `${requestUrl.origin}/auth/error?error=email_in_use&error_description=${errorDescription}`;
+                    return NextResponse.redirect(redirectUrl);
+               }
+
+               if (permission.error?.code === 'UserNotFound') {
+                    console.log('[auth/callback] redirect UserNotFound', {
+                         email,
+                         error: permission.error,
+                    });
+                    const errorDescription = encodeURIComponent('This email cannot be used. Please register with a different email or contact support.');
+                    const redirectUrl = `${requestUrl.origin}/auth/error?error=user_not_found&error_description=${errorDescription}`;
+                    return NextResponse.redirect(redirectUrl);
+               }
+
+               console.log('[auth/callback] redirect sign_in_required', {
+                    email,
+                    error: permission.error,
+               });
+
+               const redirectUrl = `${requestUrl.origin}/auth/sign-in?message=sign_in_required`;
+               return NextResponse.redirect(redirectUrl);
+          }
      }
 
      // Check if Polar customer already exists for this user

@@ -15,6 +15,55 @@ export async function checkUserPermissionServer(email: string): Promise<{ succes
      const start = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
 
+     const { data: tenantData, error: tenantError } = await supabase
+          .from('tblTenants')
+          .select('email')
+          .eq('email', email)
+          .maybeSingle();
+
+     if (tenantError) {
+          await logServerAction({
+               user_id: null,
+               action: 'Check if email exists - tblTenants lookup failed',
+               payload: { email },
+               status: 'fail',
+               error: tenantError.message || '',
+               duration_ms: Date.now() - start,
+               type: 'auth'
+          });
+     }
+
+     await logServerAction({
+          user_id: null,
+          action: 'Check if email exists - tblTenants lookup result',
+          payload: { email, found: Boolean(tenantData?.email) },
+          status: 'success',
+          error: '',
+          duration_ms: Date.now() - start,
+          type: 'auth'
+     });
+
+     if (tenantData?.email) {
+          await logServerAction({
+               user_id: null,
+               action: 'Check if email exists - EmailInUse',
+               payload: { email },
+               status: 'fail',
+               error: 'Email already in use',
+               duration_ms: Date.now() - start,
+               type: 'auth'
+          });
+          return {
+               success: false,
+               error: {
+                    code: 'EmailInUse',
+                    details: 'Email already in use',
+                    message: 'This email is already in use',
+                    hint: 'Try signing in or resetting your password instead.',
+               },
+          };
+     }
+
      const { data: customerData, error: customerError } = await supabase
           .from('tblPolarCustomers')
           .select('email, externalId')
@@ -60,6 +109,15 @@ export async function checkUserPermissionServer(email: string): Promise<{ succes
 
      // If no userId, user setup is incomplete
      if (!customerData?.externalId) {
+          await logServerAction({
+               user_id: null,
+               action: 'Check if client exists - missing externalId',
+               payload: { email, externalId: customerData?.externalId ?? null },
+               status: 'fail',
+               error: 'Missing externalId',
+               duration_ms: Date.now() - start,
+               type: 'auth'
+          });
           return {
                success: false,
                error: {
@@ -92,6 +150,15 @@ export async function checkUserPermissionServer(email: string): Promise<{ succes
 
           // If status exists and is not 'active', deny access
           if (clientStatus && clientStatus !== 'active') {
+               await logServerAction({
+                    user_id: data.user.id,
+                    action: 'User restricted by client_status',
+                    payload: { email, clientStatus },
+                    status: 'fail',
+                    error: 'Client status not active',
+                    duration_ms: Date.now() - start,
+                    type: 'auth'
+               });
                let hint = `Your email is registered, but your account status "${clientStatus}" does not permit sign-in. Please contact support for assistance.`;
                switch (clientStatus) {
                     case 'inactive':

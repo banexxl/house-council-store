@@ -35,7 +35,7 @@ export default function AuthErrorPage() {
                const errorDescription = searchParams.get("error_description")
 
                if (error) {
-                    setErrorTitle(formatErrorTitle(error))
+                    setErrorTitle(getErrorTitle(error))
                }
 
                if (errorDescription) {
@@ -52,6 +52,15 @@ export default function AuthErrorPage() {
      const formatErrorTitle = (errorCode: string): string => {
           const sentences = errorCode.split("_").join(" ").replace(/([.!?])\s+/g, "$1|").split("|")
           return sentences.map((sentence) => sentence.charAt(0).toUpperCase() + sentence.slice(1).toLowerCase()).join(" ")
+     }
+
+     const getErrorTitle = (errorCode: string): string => {
+          const titles: Record<string, string> = {
+               user_not_found: "Email cannot be used",
+               email_in_use: "Email already in use",
+          }
+
+          return titles[errorCode.toLowerCase()] || formatErrorTitle(errorCode)
      }
 
      // Get default error message based on error code
