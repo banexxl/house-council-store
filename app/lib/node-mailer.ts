@@ -3,6 +3,7 @@
 import nodemailer, { SentMessageInfo } from 'nodemailer';
 import { logServerAction } from './server-logging';
 import { readCustomerSubscriptionPlanFromCustomerId } from '../profile/subscription-plan-actions';
+import { rateLimiter } from './rate-limiter';
 
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_SERVER_HOST,
@@ -444,6 +445,22 @@ export const sendSuccessfullClientRegistrationToSupport = async (clientEmail: st
 }
 
 export const sendClientContactMessageToSupport = async (clientEmail: string, contactPerson: string, message: string, subject: string): Promise<SentMessageInfo> => {
+  const identifier = `contact:${clientEmail.toLowerCase()}`;
+
+  const rate = await rateLimiter.limit(identifier);
+
+  if (!rate.success) {
+    await logServerAction({
+      user_id: null,
+      action: 'contact.form.rate_limited',
+      payload: { clientEmail },
+      status: 'fail',
+      error: 'Rate limit exceeded',
+      duration_ms: 0,
+      type: 'action'
+    });
+    throw new Error('Too many requests. Please wait before sending another message.');
+  }
 
   const htmlContent = `
 <html>

@@ -73,9 +73,15 @@ export const ContactPage = ({ mapKey }: ContactProps) => {
                } else {
                     toast.error("Failed to send message.");
                }
-          } catch (error) {
+          } catch (error: any) {
                console.error(error);
-               toast.error("Failed to send message. Please try again later.");
+               const msg = typeof error?.message === "string" ? error.message : "";
+               if (msg.toLowerCase().includes("too many requests")) {
+                    toast.error("Too many requests. Please wait and try again.");
+                    helpers.resetForm();
+               } else {
+                    toast.error("Failed to send message. Please try again later.");
+               }
           }
      };
 
