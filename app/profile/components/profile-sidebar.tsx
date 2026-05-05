@@ -194,12 +194,9 @@ export default function ProfileSidebar({ userData, recentActivity, onEditProfile
           }
      };
 
-     const handleDeleteAvatar = async (awsUrl: string) => {
-          const formData = new FormData();
-          formData.append('awsUrl', awsUrl);
-
+     const handleDeleteAvatar = async () => {
           try {
-               const res = await deleteClientAvatarAction(formData);
+               const res = await deleteClientAvatarAction();
 
                if (res.success) {
                     toast.success("Avatar deleted.");
@@ -309,7 +306,7 @@ export default function ProfileSidebar({ userData, recentActivity, onEditProfile
                                         src={userData.customer.avatarUrl!}
                                         alt={userData.customer.name ?? 'avatar'}
                                         sx={{ width: 120, height: 120 }}
-                                        onClick={() => handleDeleteAvatar(userData.customer.avatarUrl!)}
+                                        onClick={() => handleDeleteAvatar()}
                                    />
                               </Badge>
                          </Box>

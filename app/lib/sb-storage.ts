@@ -91,61 +91,96 @@ export async function uploadClientAvatarAction(
 
 /**
  * Deletes a client avatar from Supabase Storage
- */
-export async function deleteClientAvatarAction(formData: FormData): Promise<{ success: boolean; message: string }> {
-     const awsUrl = formData.get('awsUrl') as string;
-     if (!awsUrl) {
-          throw new Error('Missing awsUrl');
+ */export async function deleteClientAvatarAction(): Promise<{
+     success: boolean;
+     message: string;
+}> {
+     const supabaseAdmin = await useServerSideSupabaseServiceRoleClient();
+     const userId = (await supabaseAdmin.auth.getUser()).data.user?.id;
+
+     if (!userId) {
+          throw new Error('Unauthorized');
      }
 
-     const key = extractStorageKeyFromUrl(awsUrl);
+     const folderPath = `clients/${userId}/images/logos`;
 
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = supabaseAdmin;
 
-     const { error: deleteError } = await supabase.storage.from(bucket).remove([key]);
+     // ✅ 1. List all files in folder
+     const { data: files, error: listError } = await supabase.storage
+          .from(bucket)
+          .list(folderPath);
 
-     if (deleteError) {
+     if (listError) {
           await logServerAction({
-               action: 'Delete Client Avatar - Failed',
+               action: 'Delete Client Avatar - List Failed',
                duration_ms: 0,
-               error: deleteError.message,
-               payload: { awsUrl, key },
+               error: listError.message,
+               payload: { folderPath },
                status: 'fail',
                type: 'db',
-               user_id: '',
+               user_id: userId,
           });
 
-          throw new Error('Failed to delete image!');
+          return { success: false, message: 'Failed to list files' };
      }
 
-     const { error: updateError } = await supabase.from('tblPolarCustomers').update({ avatarUrl: '' }).eq('avatarUrl', awsUrl);
+     // ✅ 2. Build full paths
+     const filePaths =
+          files?.map((file) => `${folderPath}/${file.name}`) || [];
+
+     // If nothing exists, just clean DB
+     if (filePaths.length > 0) {
+          const { error: deleteError } = await supabase.storage
+               .from(bucket)
+               .remove(filePaths);
+
+          if (deleteError) {
+               await logServerAction({
+                    action: 'Delete Client Avatar - Delete Failed',
+                    duration_ms: 0,
+                    error: deleteError.message,
+                    payload: { filePaths },
+                    status: 'fail',
+                    type: 'db',
+                    user_id: userId,
+               });
+
+               return { success: false, message: 'Failed to delete images' };
+          }
+     }
+
+     // ✅ 3. Clear DB field
+     const { error: updateError } = await supabase
+          .from('tblPolarCustomers')
+          .update({ avatarUrl: '' })
+          .eq('externalId', userId);
 
      if (updateError) {
           await logServerAction({
-               action: 'Delete Client Avatar - Failed',
+               action: 'Delete Client Avatar - DB Update Failed',
                duration_ms: 0,
                error: updateError.message,
-               payload: { awsUrl, key },
+               payload: { userId },
                status: 'fail',
                type: 'db',
-               user_id: '',
+               user_id: userId,
           });
 
-          return { success: false, message: 'Failed to delete image!' };
-     } else {
-
-          await logServerAction({
-               action: 'Delete Client Avatar - Success',
-               duration_ms: 0,
-               error: '',
-               payload: { key },
-               status: 'success',
-               type: 'db',
-               user_id: '',
-          });
-
-          revalidatePath('/profile');
-
-          return { success: true, message: 'Image deleted successfully' };
+          return { success: false, message: 'Failed to update database' };
      }
+
+     await logServerAction({
+          action: 'Delete Client Avatar - Success',
+          duration_ms: 0,
+          error: '',
+          payload: { folderPath },
+          status: 'success',
+          type: 'db',
+          user_id: userId,
+     });
+
+     revalidatePath('/profile');
+
+     return { success: true, message: 'Avatar(s) deleted successfully' };
 }
