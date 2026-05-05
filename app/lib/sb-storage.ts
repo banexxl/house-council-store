@@ -47,7 +47,6 @@ export async function uploadClientAvatarAction(formData: FormData): Promise<{ su
                contentType: `image/${extension}`,
                upsert: true,
           });
-     console.log('aaaaaaaaaaa', uploadError);
 
      if (uploadError) {
           await logServerAction({
