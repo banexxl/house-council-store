@@ -112,7 +112,7 @@ export async function deleteClientAvatarAction(formData: FormData): Promise<{ su
                user_id: '',
           });
 
-          throw new Error('Failed to delete image from Supabase');
+          throw new Error('Failed to delete image!');
      }
 
      const { error: updateError } = await supabase.from('tblPolarCustomers').update({ avatar: '' }).eq('avatar', awsUrl);
@@ -128,7 +128,7 @@ export async function deleteClientAvatarAction(formData: FormData): Promise<{ su
                user_id: '',
           });
 
-          return { success: false, message: 'Failed to delete image from Supabase' };
+          return { success: false, message: 'Failed to delete image!' };
      } else {
 
           await logServerAction({
