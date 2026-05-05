@@ -19,15 +19,16 @@ function extractStorageKeyFromUrl(url: string): string {
 /**
  * Uploads a client avatar to Supabase Storage and returns the public URL
  */
-export async function uploadClientAvatarAction(formData: FormData): Promise<{ success: boolean; message: string; awsUrl?: string }> {
+export async function uploadClientAvatarAction(
+     formData: FormData
+): Promise<{ success: boolean; message: string; path?: string }> {
      const file = formData.get('file') as string;
-     const title = formData.get('title') as string;
      const extension = formData.get('extension') as string;
      const fileName = formData.get('fileName') as string;
      const folderName = formData.get('folderName') as string;
 
-     if (!file || !title || !extension || !fileName || !folderName) {
-          throw new Error('Missing file, title, or extension');
+     if (!file || !extension || !fileName || !folderName) {
+          throw new Error('Missing required fields');
      }
 
      const base64PrefixRegex = /^data:image\/[a-zA-Z]+;base64,/;
@@ -39,6 +40,7 @@ export async function uploadClientAvatarAction(formData: FormData): Promise<{ su
      }
 
      const supabase = await useServerSideSupabaseAnonClient();
+
      const key = `clients/${folderName}/images/logos/${fileName.split('.')[0]}.${extension}`;
 
      const { error: uploadError } = await supabase.storage
@@ -53,23 +55,26 @@ export async function uploadClientAvatarAction(formData: FormData): Promise<{ su
                action: 'Upload Client Avatar - Failed',
                duration_ms: 0,
                error: uploadError.message,
-               payload: { title, folderName, key },
+               payload: { folderName, key },
                status: 'fail',
                type: 'db',
                user_id: '',
           });
 
-          return { success: false, message: 'Failed to upload file: ' + uploadError.message };
+          return {
+               success: false,
+               message: 'Failed to upload file: ' + uploadError.message,
+          };
      }
 
-     const { data: publicUrlData } = supabase.storage.from(bucket).getPublicUrl(key);
-     const awsUrl = publicUrlData?.publicUrl;
+     // ✅ IMPORTANT: store ONLY this
+     const avatarPath = key;
 
      await logServerAction({
           action: 'Upload Client Avatar - Success',
           duration_ms: 0,
           error: '',
-          payload: { awsUrl, key },
+          payload: { avatarPath },
           status: 'success',
           type: 'db',
           user_id: '',
@@ -80,7 +85,7 @@ export async function uploadClientAvatarAction(formData: FormData): Promise<{ su
      return {
           success: true,
           message: 'File uploaded successfully',
-          awsUrl,
+          path: avatarPath,
      };
 }
 

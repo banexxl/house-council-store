@@ -170,9 +170,9 @@ export default function ProfileSidebar({ userData, recentActivity, onEditProfile
 
                     const uploadResponse = await uploadClientAvatarAction(formData);
 
-                    if (uploadResponse.success && uploadResponse.awsUrl) {
+                    if (uploadResponse.success && uploadResponse.path) {
                          const updateAccountActionResponse = await updateAccountAction(userData.customer.id, {
-                              avatarUrl: uploadResponse.awsUrl,
+                              avatarUrl: uploadResponse.path,
                          });
 
                          if (updateAccountActionResponse.success) {

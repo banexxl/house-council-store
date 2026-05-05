@@ -9,7 +9,7 @@ import {
   readCustomerSubscriptionPlanFromCustomerId,
   getApartmentCountForCustomer
 } from "../profile/subscription-plan-actions";
-import { readAccountByEmailAction } from "../profile/account-action";
+import { readAccountAction } from "../profile/account-action";
 import { buildCanonicalUrl } from "@/app/lib/seo";
 
 const canonicalUrl = buildCanonicalUrl("/pricing");
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
 export default async function Page() {
 
   const user = await getSessionUser();
-  const { customer, error } = await readAccountByEmailAction(user?.email!);
+  const { customer, error } = await readAccountAction();
   const { polarProducts } = await readActivePolarProducts();
   const { customerSubscriptionPlanData } = await readCustomerSubscriptionPlanFromCustomerId(customer?.id!)
   const apartmentCountResult = customer?.id ? await getApartmentCountForCustomer(customer.id) : 0;

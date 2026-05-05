@@ -94,13 +94,17 @@ export const deleteAccountAction = async (userId: string, clientEmail: string): 
      return { success: true }
 }
 
-export const readAccountByEmailAction = async (email: string): Promise<{ customer?: PolarCustomer, error?: string }> => {
-
+export const readAccountAction = async (): Promise<{
+     customer?: PolarCustomer & { avatarUrl?: string };
+     error?: string;
+}> => {
      const startTime = Date.now();
 
      const supabaseAdmin = await useServerSideSupabaseServiceRoleClient();
      const userId = (await supabaseAdmin.auth.getUser()).data.user?.id;
+
      const supabase = await useServerSideSupabaseAnonClient();
+
      const { data: customer, error } = await supabase
           .from('tblPolarCustomers')
           .select('*')
@@ -108,44 +112,68 @@ export const readAccountByEmailAction = async (email: string): Promise<{ custome
           .maybeSingle();
 
      if (error) {
-
           await logServerAction({
                user_id: userId ? userId : '',
                action: 'Read Account - Error for tblPolarCustomers table.',
-               payload: { email },
+               payload: { userId },
                status: 'fail',
                error: error.message,
                duration_ms: Date.now() - startTime,
                type: 'db'
-          })
-          return { error: error.message }
+          });
+
+          return { error: error.message };
      }
 
      if (!customer) {
           await logServerAction({
                user_id: userId ? userId : '',
                action: 'Read Account - Customer not found.',
-               payload: { email },
+               payload: { userId },
                status: 'fail',
-               error: 'No customer found with this email',
+               error: 'No customer found',
                duration_ms: Date.now() - startTime,
                type: 'db'
-          })
-          return { error: 'No customer found with this email' }
+          });
+
+          return { error: 'No customer found' };
+     }
+
+     // ✅ Generate signed avatar URL (PRIVATE bucket fix)
+     let avatarUrl: string | undefined;
+
+     if (customer.avatarUrl) {
+          console.log('customer.avatarUrl', customer.avatarUrl);
+
+          const { data: signedData, error: signedError } = await supabase.storage
+               .from('nla-clients-data')
+               .createSignedUrl(customer.avatarUrl, 60 * 60); // 1h
+          console.log('error', signedError);
+
+          if (!signedError) {
+               avatarUrl = signedData?.signedUrl;
+               console.log('avatarUrl', avatarUrl);
+
+          }
      }
 
      await logServerAction({
           user_id: customer?.id,
           action: 'Read Account - Success.',
-          payload: { email },
+          payload: { userId },
           status: 'success',
           error: '',
           duration_ms: Date.now() - startTime,
           type: 'db'
-     })
+     });
 
-     return { customer }
-}
+     return {
+          customer: {
+               ...customer,
+               avatarUrl,
+          },
+     };
+};
 
 export const updateAccountAction = async (id: string, update: Partial<PolarCustomer>): Promise<{ success: boolean, error?: string, data?: PolarCustomer }> => {
 

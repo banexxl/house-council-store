@@ -3,7 +3,7 @@ import { getSessionUser } from "@/app/lib/get-session";
 import { Footer } from "@/app/components/footer";
 import { Header } from "@/app/components/header";
 import { ProfilePage } from "./profile";
-import { readAccountByEmailAction, readAllApartmentsByClientId, readClientRecentActivityAction } from "./account-action";
+import { readAccountAction, readAllApartmentsByClientId, readClientRecentActivityAction } from "./account-action";
 import { User } from "@supabase/supabase-js";
 import { readCustomerSubscriptionPlanFromCustomerId, readProductFromSubscriptionId, readOrdersByCustomerId } from "./subscription-plan-actions";
 import { redirect } from "next/navigation";
@@ -32,7 +32,7 @@ export default async function Page() {
      }
 
      // Fetch client data
-     const { customer, error } = await readAccountByEmailAction(user.email);
+     const { customer, error } = await readAccountAction();
      // Fetch related data in parallel
      const [customerSubscriptionObject, recentActivity, apartments, ordersResult] = await Promise.all([
           readCustomerSubscriptionPlanFromCustomerId(customer!.id!),
