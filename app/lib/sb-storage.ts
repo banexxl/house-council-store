@@ -6,7 +6,7 @@ import { logServerAction } from './server-logging';
 import { useServerSideSupabaseAnonClient } from './ss-supabase-anon-client';
 
 const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4MB
-const bucket = process.env.SUPABASE_S3_CLIENT_IMAGES_BUCKET!;
+const bucket = process.env.AWS_S3_BUCKET_NAME!;
 
 /**
  * Extracts the storage key from a Supabase public URL
@@ -39,8 +39,7 @@ export async function uploadClientAvatarAction(formData: FormData): Promise<{ su
      }
 
      const supabase = await useServerSideSupabaseAnonClient();
-     const key = `clients/${folderName}/Images/Logos/${fileName.split('.')[0]}.${extension}`;
-     console.log(key);
+     const key = `clients/${folderName}/images/logos/${fileName.split('.')[0]}.${extension}`;
 
      const { error: uploadError } = await supabase.storage
           .from(bucket)
@@ -48,7 +47,7 @@ export async function uploadClientAvatarAction(formData: FormData): Promise<{ su
                contentType: `image/${extension}`,
                upsert: true,
           });
-     console.log(uploadError);
+     console.log('aaaaaaaaaaa', uploadError);
 
      if (uploadError) {
           await logServerAction({
@@ -115,7 +114,7 @@ export async function deleteClientAvatarAction(formData: FormData): Promise<{ su
           throw new Error('Failed to delete image!');
      }
 
-     const { error: updateError } = await supabase.from('tblPolarCustomers').update({ avatar: '' }).eq('avatar', awsUrl);
+     const { error: updateError } = await supabase.from('tblPolarCustomers').update({ avatarUrl: '' }).eq('avatarUrl', awsUrl);
 
      if (updateError) {
           await logServerAction({
