@@ -20,7 +20,6 @@ function mapCustomerToRow(c: PolarCustomer) {
           name: c.name!,
           emailVerified: c.emailVerified ?? false,
           organizationId: c.organizationId ?? null,
-          avatarUrl: c.avatarUrl ?? null,
           billingAddress: c.billingAddress ?? null,
           taxId: c.taxId ?? [],
           metadata: c.metadata ?? {},
@@ -244,7 +243,7 @@ export const POST = Webhooks({
      // ---------------------------
      onCustomerStateChanged: async (payload) => {
           const t0 = Date.now();
-          const customer = payload.data;
+          const { avatarUrl: _avatarUrl, ...customer } = payload.data;
           console.log('On customer state_changed payload data: ', payload);
 
           const { data, error } = await supabase

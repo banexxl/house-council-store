@@ -143,17 +143,11 @@ export const readAccountAction = async (): Promise<{
      let avatarUrl: string | undefined;
 
      if (customer.avatarUrl) {
-          console.log('customer.avatarUrl', customer.avatarUrl);
-
           const { data: signedData, error: signedError } = await supabase.storage
                .from('nla-clients-data')
                .createSignedUrl(customer.avatarUrl, 60 * 60); // 1h
-          console.log('error', signedError);
-
           if (!signedError) {
                avatarUrl = signedData?.signedUrl;
-               console.log('avatarUrl', avatarUrl);
-
           }
      }
 
