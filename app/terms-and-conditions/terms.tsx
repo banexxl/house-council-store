@@ -135,10 +135,6 @@ export const TermsPage = () => {
                                                   </ListItem>
                                              ))}
                                         </List>
-
-                                        <Button variant="outlined" fullWidth sx={{ mt: 3 }} component={Link} href="/terms.pdf" target="_blank">
-                                             Download PDF
-                                        </Button>
                                    </Box>
 
                                    {/* Main Content */}
@@ -477,13 +473,7 @@ export const TermsPage = () => {
                                              <Typography paragraph>If you have any questions about these Terms, please contact us:</Typography>
                                              <List>
                                                   <ListItem>
-                                                       <ListItemText primary="By email:" secondary="legal@NestLink.com" />
-                                                  </ListItem>
-                                                  <ListItem>
-                                                       <ListItemText
-                                                            primary="By mail:"
-                                                            secondary="NestLink, 123 Community Lane, Suite 456, Boston, MA 02110, United States"
-                                                       />
+                                                       <ListItemText primary="By email:" secondary="support@nest-link.app" />
                                                   </ListItem>
                                              </List>
                                         </section>

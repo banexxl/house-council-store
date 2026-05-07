@@ -143,17 +143,6 @@ export const PrivacyPage = () => {
                                                   </ListItem>
                                              ))}
                                         </List>
-
-                                        <Button
-                                             variant="outlined"
-                                             fullWidth
-                                             sx={{ mt: 3 }}
-                                             component={Link}
-                                             href="/privacy-policy.pdf"
-                                             target="_blank"
-                                        >
-                                             Download PDF
-                                        </Button>
                                    </Box>
 
                                    {/* Main Content */}
