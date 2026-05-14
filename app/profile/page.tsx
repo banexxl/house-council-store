@@ -30,9 +30,8 @@ export default async function Page() {
           // Server-side redirect to sign-in page
           return redirect("/auth/sign-in");
      }
-
      // Fetch client data
-     const { customer, error } = await readAccountAction();
+     const { customer } = await readAccountAction();
      // Fetch related data in parallel
      const [customerSubscriptionObject, recentActivity, apartments, ordersResult] = await Promise.all([
           readCustomerSubscriptionPlanFromCustomerId(customer!.id!),
