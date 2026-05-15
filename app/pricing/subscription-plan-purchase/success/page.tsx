@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { notFound, redirect } from "next/navigation"
+import Script from "next/script"
 import { getSessionUser } from "@/app/lib/get-session"
 import { Header } from "@/app/components/header"
 import { Footer } from "@/app/components/footer"
@@ -52,6 +53,15 @@ export default async function FreeTrialSuccessPage({ searchParams }: { searchPar
 
      return (
           <>
+               <Script async src="https://www.googletagmanager.com/gtag/js?id=AW-18137335805" />
+               <Script id="gtag-init" strategy="afterInteractive">
+                    {`
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'AW-18137335805');
+                    `}
+               </Script>
                <Header user={session ? session : null} />
                <SubscriptionSuccessPage
                     userEmail={session.email!}
