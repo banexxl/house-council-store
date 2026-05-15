@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { getSessionUser } from "@/app/lib/get-session";
 
 import { Footer } from "@/app/components/footer";
@@ -48,6 +49,9 @@ export default async function Page() {
 
   return (
     <>
+      <Script id="google-ads-pricing-page-view" strategy="afterInteractive">
+        {`gtag('event', 'conversion', {'send_to': 'AW-18137335805/vOSfCOC3060cEP2Px8hD'});`}
+      </Script>
       <Header user={user ? user : null} />
       <PricingPage
         polarProducts={polarProducts || []}
