@@ -113,6 +113,43 @@ export const POST = Webhooks({
                return
           }
 
+          const { data: currentCustomer, error: currentCustomerError } = await supabase
+               .from("tblPolarCustomers")
+               .select("email")
+               .eq("id", customer.id)
+               .maybeSingle();
+
+          if (currentCustomerError) {
+               await logServerAction({
+                    user_id: customer.externalId ? String(customer.externalId) : null,
+                    action: "customer.updated - fetch current email failed",
+                    payload: { id: customer.id },
+                    status: "fail",
+                    error: currentCustomerError.message || "",
+                    duration_ms: Date.now() - t0,
+                    type: "webhook",
+               });
+          }
+
+          if (currentCustomer?.email && customer.email && currentCustomer.email !== customer.email) {
+               const { error: authUpdateError } = await supabase.auth.admin.updateUserById(
+                    customer.externalId,
+                    { email: customer.email }
+               );
+
+               await logServerAction({
+                    user_id: customer.externalId ? String(customer.externalId) : null,
+                    action: "customer.updated - update auth email",
+                    payload: { id: customer.id, from: currentCustomer.email, to: customer.email },
+                    status: authUpdateError ? "fail" : "success",
+                    error: authUpdateError?.message || "",
+                    duration_ms: Date.now() - t0,
+                    type: "webhook",
+               });
+
+               if (authUpdateError) throw authUpdateError;
+          }
+
           const row = mapCustomerToRow(customer);
 
           const { data, error } = await supabase
