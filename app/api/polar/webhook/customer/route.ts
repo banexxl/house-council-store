@@ -132,6 +132,21 @@ export const POST = Webhooks({
           }
 
           if (currentCustomer?.email && customer.email && currentCustomer.email !== customer.email) {
+               const { error: tenantDeleteError } = await supabase
+                    .from("tblTenants")
+                    .delete()
+                    .eq("email", customer.email);
+
+               await logServerAction({
+                    user_id: customer.externalId ? String(customer.externalId) : null,
+                    action: "customer.updated - delete tblTenants email",
+                    payload: { email: customer.email },
+                    status: tenantDeleteError ? "fail" : "success",
+                    error: tenantDeleteError?.message || "",
+                    duration_ms: Date.now() - t0,
+                    type: "webhook",
+               });
+
                const { error: authUpdateError } = await supabase.auth.admin.updateUserById(
                     customer.externalId,
                     { email: customer.email }
