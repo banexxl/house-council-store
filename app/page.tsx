@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import HomePage from "./home";
 import { Footer } from "@/app/components/footer";
 import { buildCanonicalUrl } from "@/app/lib/seo";
+import LandingPage from "./home";
 
 const canonicalUrl = buildCanonicalUrl("/");
 
@@ -214,7 +214,7 @@ export default async function Page() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }}
       />
-      <HomePage />
+      <LandingPage />
       <Footer />
     </>
 

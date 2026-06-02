@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useTransition } from 'react';
+import React, { useTransition, Suspense, lazy, useEffect, useState } from 'react';
+import Image from 'next/image';
 import {
      Box,
      Button,
@@ -25,10 +26,15 @@ import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import CircularProgress from '@mui/material/CircularProgress';
 import Backdrop from '@mui/material/Backdrop';
 import { useRouter } from 'next/navigation';
-import ParallaxSection from './components/paralax-section';
-import { motion } from 'framer-motion';
 import { Reveal, Stagger, itemVariants } from './components/motion';
-import ParticleBackground from './components/particle-background';
+import { motion } from 'framer-motion';
+
+// Lazy load heavy components
+const ParallaxSection = lazy(() => import('./components/paralax-section'));
+const ParticleBackground = lazy(() => import('./components/particle-background'));
+
+// Motion div component - used conditionally based on showAnimations state
+const MotionDiv = motion.div;
 
 const LandingPage = () => {
      const theme = useTheme();
@@ -36,6 +42,16 @@ const LandingPage = () => {
      const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
      const router = useRouter();
      const [isPending, startTransition] = useTransition();
+     const [showAnimations, setShowAnimations] = useState(false);
+
+     // Defer animation loading until page is interactive
+     useEffect(() => {
+          if ('requestIdleCallback' in window) {
+               requestIdleCallback(() => setShowAnimations(true), { timeout: 2000 });
+          } else {
+               setTimeout(() => setShowAnimations(true), 1000);
+          }
+     }, []);
 
      const handleNavClick = (path: string) => {
           startTransition(() => router.push(path));
@@ -105,158 +121,160 @@ const LandingPage = () => {
      return (
           <Box component="main">
                {/* HERO */}
-               <ParallaxSection backgroundImage="/background-images/background-image-3.png">
-                    <Container
-                         maxWidth="lg"
-                         sx={{
-                              minHeight: '100vh',
-                              display: 'flex',
-                              alignItems: 'center',
-                              // ✅ Push hero down on mobile so the fixed header doesn’t overlap it
-                              pt: { xs: 'calc(56px + 24px)', sm: 'calc(64px + 24px)' },
-                              pb: { xs: 6, md: 0 },
-                              mt: { xs: 56, md: 0 },
-                         }}
-                    >
-                         <Grid container spacing={{ xs: 3, sm: 4, md: 6 }} alignItems="center">
-                              <Grid size={{ xs: 12, md: 7 }}>
-                                   <Box
-                                        sx={{
-                                             ...glassSx,
-                                             p: { xs: 2.5, sm: 3, md: 4 },
-                                             // ✅ prevent layout “squeeze” causing overlap
-                                             minWidth: 0,
-                                        }}
-                                        onMouseMove={onMoveSheen}
-                                   >
-                                        <Reveal>
-                                             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                                                  <Chip icon={<DashboardCustomizeIcon />} label="Web dashboard" sx={chipSx} />
-                                                  <Chip icon={<PhoneIphoneIcon />} label="Mobile app" sx={chipSx} />
-                                                  <Chip icon={<ApartmentIcon />} label="Pay per apartment" sx={chipSx} />
-                                             </Stack>
-                                        </Reveal>
-
-                                        <Box sx={{ mt: 2 }}>
-                                             <Reveal delay={0.05} y={22}>
-                                                  <Typography
-                                                       component="h1"
-                                                       variant={isMobile ? 'h3' : 'h1'}
-                                                       sx={{
-                                                            lineHeight: 1.08,
-                                                            // ✅ Responsive font sizes to avoid overlap on small screens
-                                                            fontSize: { xs: '2rem', sm: '2.35rem', md: undefined },
-                                                            overflowWrap: 'anywhere',
-                                                            wordBreak: 'break-word',
-                                                       }}
-                                                  >
-                                                       Building Management Software for Apartments & Housing Communities
-                                                  </Typography>
-                                             </Reveal>
-
-                                             <Reveal delay={0.12} y={18}>
-                                                  <Typography
-                                                       variant="h6"
-                                                       color="text.secondary"
-                                                       sx={{
-                                                            mt: 2,
-                                                            maxWidth: 680,
-                                                            // ✅ Mobile-safe text sizing & wrapping
-                                                            fontSize: { xs: '1rem', sm: '1.05rem', md: undefined },
-                                                            lineHeight: 1.6,
-                                                            overflowWrap: 'anywhere',
-                                                            wordBreak: 'break-word',
-                                                       }}
-                                                  >
-                                                       NestLink is a building management software platform designed for apartment buildings, housing communities, and property managers. It helps manage tenants, communication, maintenance requests, announcements, and voting — all in one centralized system with role-based access.
-                                                  </Typography>
-                                             </Reveal>
-
-                                             <Reveal delay={0.18} y={12}>
-                                                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 3 }}>
-                                                       <Button
-                                                            variant="outlined"
-                                                            size="large"
-                                                            onClick={() => handleNavClick('/pricing')}
-                                                            sx={{ minHeight: 48 }}
-                                                       >
-                                                            See Pricing
-                                                       </Button>
-                                                       <Button
-                                                            variant="text"
-                                                            size="large"
-                                                            onClick={() => handleNavClick('/docs')}
-                                                            sx={{ minHeight: 48 }}
-                                                       >
-                                                            How it works
-                                                       </Button>
-                                                  </Stack>
-                                             </Reveal>
-                                        </Box>
-                                   </Box>
-                              </Grid>
-
-                              <Grid size={{ xs: 12, md: 5 }}>
-                                   <Reveal delay={0.12} x={18}>
+               <Suspense fallback={<Box sx={{ minHeight: '100vh' }} />}>
+                    <ParallaxSection backgroundImage="/background-images/background-image-3.png">
+                         <Container
+                              maxWidth="lg"
+                              sx={{
+                                   minHeight: '100vh',
+                                   display: 'flex',
+                                   alignItems: 'center',
+                                   // ✅ Push hero down on mobile so the fixed header doesn’t overlap it
+                                   pt: { xs: 'calc(56px + 24px)', sm: 'calc(64px + 24px)' },
+                                   pb: { xs: 6, md: 0 },
+                                   mt: { xs: 56, md: 0 },
+                              }}
+                         >
+                              <Grid container spacing={{ xs: 3, sm: 4, md: 6 }} alignItems="center">
+                                   <Grid size={{ xs: 12, md: 7 }}>
                                         <Box
                                              sx={{
                                                   ...glassSx,
-                                                  ...liftHoverSx,
-                                                  p: { xs: 2.5, sm: 3 },
+                                                  p: { xs: 2.5, sm: 3, md: 4 },
+                                                  // ✅ prevent layout “squeeze” causing overlap
                                                   minWidth: 0,
                                              }}
                                              onMouseMove={onMoveSheen}
                                         >
-                                             <Typography variant="h6" sx={{ mb: 2 }}>
-                                                  Designed for two roles
-                                             </Typography>
+                                             <Reveal>
+                                                  <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                                                       <Chip icon={<DashboardCustomizeIcon />} label="Web dashboard" sx={chipSx} />
+                                                       <Chip icon={<PhoneIphoneIcon />} label="Mobile app" sx={chipSx} />
+                                                       <Chip icon={<ApartmentIcon />} label="Pay per apartment" sx={chipSx} />
+                                                  </Stack>
+                                             </Reveal>
 
-                                             <Stack spacing={2}>
-                                                  {[
-                                                       {
-                                                            icon: <AdminPanelSettingsIcon />,
-                                                            title: 'Building manager',
-                                                            text:
-                                                                 'Purchases the subscription, manages buildings & apartments, invites tenants, configures permissions and workflows.',
-                                                       },
-                                                       {
-                                                            icon: <HowToRegIcon />,
-                                                            title: 'Tenants',
-                                                            text:
-                                                                 'Tenant permissions on web and mobile — participate in polls, read announcements, engage with posts, and submit service requests.',
-                                                       },
-                                                  ].map((r, idx, arr) => (
-                                                       <Box key={idx} sx={{ minWidth: 0 }}>
-                                                            <Stack direction="row" spacing={2} alignItems="flex-start">
-                                                                 <Avatar sx={{ bgcolor: 'primary.main' }}>{r.icon}</Avatar>
-                                                                 <Box sx={{ minWidth: 0 }}>
-                                                                      <Typography variant="subtitle1" sx={{ fontWeight: 800, overflowWrap: 'anywhere' }}>
-                                                                           {r.title}
-                                                                      </Typography>
-                                                                      <Typography variant="body2" color="text.secondary" sx={{ overflowWrap: 'anywhere' }}>
-                                                                           {r.text}
-                                                                      </Typography>
-                                                                 </Box>
-                                                            </Stack>
-                                                            {idx !== 2 && (
-                                                                 <Divider sx={{ my: 2 }}>
-                                                                      {/* Insert 'And' only between two values, never at start or end */}
-                                                                      {arr.length === 2 && idx === 0 ? (
-                                                                           <Typography variant="subtitle1" sx={{ fontWeight: 900, textAlign: 'center', my: 0 }}>
-                                                                                And
-                                                                           </Typography>
-                                                                      ) : null}
-                                                                 </Divider>
-                                                            )}
-                                                       </Box>
-                                                  ))}
-                                             </Stack>
+                                             <Box sx={{ mt: 2 }}>
+                                                  <Reveal delay={0.05} y={22}>
+                                                       <Typography
+                                                            component="h1"
+                                                            variant={isMobile ? 'h3' : 'h1'}
+                                                            sx={{
+                                                                 lineHeight: 1.08,
+                                                                 // ✅ Responsive font sizes to avoid overlap on small screens
+                                                                 fontSize: { xs: '2rem', sm: '2.35rem', md: undefined },
+                                                                 overflowWrap: 'anywhere',
+                                                                 wordBreak: 'break-word',
+                                                            }}
+                                                       >
+                                                            Building Management Software for Apartments & Housing Communities
+                                                       </Typography>
+                                                  </Reveal>
+
+                                                  <Reveal delay={0.12} y={18}>
+                                                       <Typography
+                                                            variant="h6"
+                                                            color="text.secondary"
+                                                            sx={{
+                                                                 mt: 2,
+                                                                 maxWidth: 680,
+                                                                 // ✅ Mobile-safe text sizing & wrapping
+                                                                 fontSize: { xs: '1rem', sm: '1.05rem', md: undefined },
+                                                                 lineHeight: 1.6,
+                                                                 overflowWrap: 'anywhere',
+                                                                 wordBreak: 'break-word',
+                                                            }}
+                                                       >
+                                                            NestLink is a building management software platform designed for apartment buildings, housing communities, and property managers. It helps manage tenants, communication, maintenance requests, announcements, and voting — all in one centralized system with role-based access.
+                                                       </Typography>
+                                                  </Reveal>
+
+                                                  <Reveal delay={0.18} y={12}>
+                                                       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 3 }}>
+                                                            <Button
+                                                                 variant="outlined"
+                                                                 size="large"
+                                                                 onClick={() => handleNavClick('/pricing')}
+                                                                 sx={{ minHeight: 48 }}
+                                                            >
+                                                                 See Pricing
+                                                            </Button>
+                                                            <Button
+                                                                 variant="text"
+                                                                 size="large"
+                                                                 onClick={() => handleNavClick('/docs')}
+                                                                 sx={{ minHeight: 48 }}
+                                                            >
+                                                                 How it works
+                                                            </Button>
+                                                       </Stack>
+                                                  </Reveal>
+                                             </Box>
                                         </Box>
-                                   </Reveal>
+                                   </Grid>
+
+                                   <Grid size={{ xs: 12, md: 5 }}>
+                                        <Reveal delay={0.12} x={18}>
+                                             <Box
+                                                  sx={{
+                                                       ...glassSx,
+                                                       ...liftHoverSx,
+                                                       p: { xs: 2.5, sm: 3 },
+                                                       minWidth: 0,
+                                                  }}
+                                                  onMouseMove={onMoveSheen}
+                                             >
+                                                  <Typography variant="h6" sx={{ mb: 2 }}>
+                                                       Designed for two roles
+                                                  </Typography>
+
+                                                  <Stack spacing={2}>
+                                                       {[
+                                                            {
+                                                                 icon: <AdminPanelSettingsIcon />,
+                                                                 title: 'Building manager',
+                                                                 text:
+                                                                      'Purchases the subscription, manages buildings & apartments, invites tenants, configures permissions and workflows.',
+                                                            },
+                                                            {
+                                                                 icon: <HowToRegIcon />,
+                                                                 title: 'Tenants',
+                                                                 text:
+                                                                      'Tenant permissions on web and mobile — participate in polls, read announcements, engage with posts, and submit service requests.',
+                                                            },
+                                                       ].map((r, idx, arr) => (
+                                                            <Box key={idx} sx={{ minWidth: 0 }}>
+                                                                 <Stack direction="row" spacing={2} alignItems="flex-start">
+                                                                      <Avatar sx={{ bgcolor: 'primary.main' }}>{r.icon}</Avatar>
+                                                                      <Box sx={{ minWidth: 0 }}>
+                                                                           <Typography variant="subtitle1" sx={{ fontWeight: 800, overflowWrap: 'anywhere' }}>
+                                                                                {r.title}
+                                                                           </Typography>
+                                                                           <Typography variant="body2" color="text.secondary" sx={{ overflowWrap: 'anywhere' }}>
+                                                                                {r.text}
+                                                                           </Typography>
+                                                                      </Box>
+                                                                 </Stack>
+                                                                 {idx !== 2 && (
+                                                                      <Divider sx={{ my: 2 }}>
+                                                                           {/* Insert 'And' only between two values, never at start or end */}
+                                                                           {arr.length === 2 && idx === 0 ? (
+                                                                                <Typography variant="subtitle1" sx={{ fontWeight: 900, textAlign: 'center', my: 0 }}>
+                                                                                     And
+                                                                                </Typography>
+                                                                           ) : null}
+                                                                      </Divider>
+                                                                 )}
+                                                            </Box>
+                                                       ))}
+                                                  </Stack>
+                                             </Box>
+                                        </Reveal>
+                                   </Grid>
                               </Grid>
-                         </Grid>
-                    </Container>
-               </ParallaxSection>
+                         </Container>
+                    </ParallaxSection>
+               </Suspense>
 
                <Box
                     sx={{
@@ -275,7 +293,11 @@ const LandingPage = () => {
                          background: 'radial-gradient(ellipse 80% 60% at 50% 40%, rgba(120,60,220,0.07) 0%, rgba(34,85,200,0.05) 45%, transparent 100%)',
                     }}
                >
-                    {isDesktop && <ParticleBackground />}
+                    {isDesktop && (
+                         <Suspense fallback={null}>
+                              <ParticleBackground />
+                         </Suspense>
+                    )}
                     <Container
                          maxWidth="lg"
                          sx={{
@@ -361,7 +383,24 @@ const LandingPage = () => {
                                         },
                                    ].map((item, idx) => (
                                         <Grid key={idx} size={{ xs: 12, sm: 6, md: 4 }}>
-                                             <motion.div variants={itemVariants}>
+                                             {showAnimations ? (
+                                                  <Suspense fallback={<Box sx={{ p: 3, height: '100%' }} />}>
+                                                       <MotionDiv variants={itemVariants}>
+                                                            <Box
+                                                                 sx={{ ...glassSx, ...liftHoverSx, p: 3, height: '100%', minWidth: 0 }}
+                                                                 onMouseMove={onMoveSheen}
+                                                            >
+                                                                 <Avatar sx={{ bgcolor: 'primary.main', mb: 2 }}>{item.icon}</Avatar>
+                                                                 <Typography component="h3" variant="h6" gutterBottom sx={{ overflowWrap: 'anywhere' }}>
+                                                                      {item.title}
+                                                                 </Typography>
+                                                                 <Typography variant="body2" color="text.secondary" sx={{ overflowWrap: 'anywhere' }}>
+                                                                      {item.description}
+                                                                 </Typography>
+                                                            </Box>
+                                                       </MotionDiv>
+                                                  </Suspense>
+                                             ) : (
                                                   <Box
                                                        sx={{ ...glassSx, ...liftHoverSx, p: 3, height: '100%', minWidth: 0 }}
                                                        onMouseMove={onMoveSheen}
@@ -374,7 +413,7 @@ const LandingPage = () => {
                                                             {item.description}
                                                        </Typography>
                                                   </Box>
-                                             </motion.div>
+                                             )}
                                         </Grid>
                                    ))}
                               </Grid>
@@ -387,13 +426,16 @@ const LandingPage = () => {
                     sx={{
                          position: 'relative',
                          py: { xs: 7, md: 10 },
-                         backgroundImage: 'url(/background-images/background-image-4.png)',
-                         backgroundSize: 'cover',
-                         backgroundPosition: 'center',
-                         backgroundRepeat: 'no-repeat',
                          overflow: 'hidden',
                     }}
                >
+                    <Image
+                         src="/background-images/background-image-4.png"
+                         alt="Workflows background"
+                         fill
+                         style={{ objectFit: 'cover', objectPosition: 'center' }}
+                         quality={75}
+                    />
                     <Box
                          sx={{
                               position: 'absolute',
@@ -466,7 +508,23 @@ const LandingPage = () => {
                                              },
                                         ].map((item, idx) => (
                                              <Grid key={idx} size={{ xs: 12, md: 6 }}>
-                                                  <motion.div variants={itemVariants}>
+                                                  {showAnimations ? (
+                                                       <Suspense fallback={<Box sx={{ p: 3, height: '100%' }} />}>
+                                                            <MotionDiv variants={itemVariants}>
+                                                                 <Box
+                                                                      sx={{ ...glassSx, ...liftHoverSx, p: 3, height: '100%', minWidth: 0 }}
+                                                                      onMouseMove={onMoveSheen}
+                                                                 >
+                                                                      <Typography component="h3" variant="h6" sx={{ fontWeight: 900, overflowWrap: 'anywhere' }}>
+                                                                           {item.title}
+                                                                      </Typography>
+                                                                      <Typography variant="body2" color="text.secondary" sx={{ mt: 1, overflowWrap: 'anywhere' }}>
+                                                                           {item.description}
+                                                                      </Typography>
+                                                                 </Box>
+                                                            </MotionDiv>
+                                                       </Suspense>
+                                                  ) : (
                                                        <Box
                                                             sx={{ ...glassSx, ...liftHoverSx, p: 3, height: '100%', minWidth: 0 }}
                                                             onMouseMove={onMoveSheen}
@@ -478,7 +536,7 @@ const LandingPage = () => {
                                                                  {item.description}
                                                             </Typography>
                                                        </Box>
-                                                  </motion.div>
+                                                  )}
                                              </Grid>
                                         ))}
                                    </Grid>
@@ -571,13 +629,16 @@ const LandingPage = () => {
                     sx={{
                          position: 'relative',
                          py: { xs: 7, md: 10 },
-                         backgroundImage: 'url(/background-images/background-image-1.png)',
-                         backgroundSize: 'cover',
-                         backgroundPosition: 'center',
-                         backgroundRepeat: 'no-repeat',
                          overflow: 'hidden',
                     }}
                >
+                    <Image
+                         src="/background-images/background-image-1.png"
+                         alt="FAQ background"
+                         fill
+                         style={{ objectFit: 'cover', objectPosition: 'center' }}
+                         quality={75}
+                    />
                     <Box
                          component={'section'}
                          sx={{
@@ -629,7 +690,20 @@ const LandingPage = () => {
                                         },
                                    ].map((item, idx) => (
                                         <Grid key={idx} size={{ xs: 12, md: 6 }}>
-                                             <motion.div variants={itemVariants}>
+                                             {showAnimations ? (
+                                                  <Suspense fallback={<Box sx={{ p: 3, height: '100%' }} />}>
+                                                       <MotionDiv variants={itemVariants}>
+                                                            <Box sx={{ ...glassSx, p: 3, height: '100%', minWidth: 0 }} onMouseMove={onMoveSheen}>
+                                                                 <Typography component="h3" variant="h6" sx={{ fontWeight: 900, overflowWrap: 'anywhere' }}>
+                                                                      {item.q}
+                                                                 </Typography>
+                                                                 <Typography variant="body2" color="text.secondary" sx={{ mt: 1, overflowWrap: 'anywhere' }}>
+                                                                      {item.a}
+                                                                 </Typography>
+                                                            </Box>
+                                                       </MotionDiv>
+                                                  </Suspense>
+                                             ) : (
                                                   <Box sx={{ ...glassSx, p: 3, height: '100%', minWidth: 0 }} onMouseMove={onMoveSheen}>
                                                        <Typography component="h3" variant="h6" sx={{ fontWeight: 900, overflowWrap: 'anywhere' }}>
                                                             {item.q}
@@ -638,7 +712,7 @@ const LandingPage = () => {
                                                             {item.a}
                                                        </Typography>
                                                   </Box>
-                                             </motion.div>
+                                             )}
                                         </Grid>
                                    ))}
                               </Grid>
@@ -650,8 +724,12 @@ const LandingPage = () => {
                <Box component="section">
                     <Container maxWidth="lg" sx={{ py: { xs: 7, md: 10 } }}>
                          <Reveal>
-                              <Box sx={{ ...glassSx, p: { xs: 3, md: 4 }, textAlign: 'center' }} onMouseMove={onMoveSheen}>
-                                   {isDesktop && <ParticleBackground />}
+                              <Box sx={{ ...glassSx, p: { xs: 3, md: 4 }, textAlign: 'center', position: 'relative', zIndex: 1 }} onMouseMove={onMoveSheen}>
+                                   {isDesktop && showAnimations && (
+                                        <Suspense fallback={null}>
+                                             <ParticleBackground />
+                                        </Suspense>
+                                   )}
                                    <Typography variant="h3" sx={{ fontWeight: 950, overflowWrap: 'anywhere' }}>
                                         Ready to bring your tenants together?
                                    </Typography>
@@ -682,8 +760,6 @@ const LandingPage = () => {
                </Backdrop>
           </Box>
      );
-
-
 };
 
 export default LandingPage;
