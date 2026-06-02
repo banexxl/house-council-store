@@ -14,10 +14,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
-        />
         {/* Google tag (gtag.js) */}
         <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18137335805"></script>
         <script
