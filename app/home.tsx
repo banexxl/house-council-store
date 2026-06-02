@@ -623,6 +623,7 @@ const LandingPage = () => {
                          </Grid>
                     </Container>
                </Box>
+
                {/* ✅ FAQ (WITH BACKGROUND IMAGE) */}
                <Box
                     sx={{
@@ -754,9 +755,11 @@ const LandingPage = () => {
                          </Reveal>
                     </Container>
                </Box>
+
                <Backdrop sx={{ color: '#fff', zIndex: (t) => t.zIndex.drawer + 1 }} open={isPending}>
                     <CircularProgress sx={{ color: theme.palette.primary.main }} />
                </Backdrop>
+
           </Box>
      );
 };

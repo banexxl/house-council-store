@@ -16,9 +16,9 @@ import { buildCanonicalUrl } from "@/app/lib/seo";
 const canonicalUrl = buildCanonicalUrl("/pricing");
 
 export const metadata: Metadata = {
-  title: "NestLink Pricing | Simple Plans for Building Communities",
+  title: "NestLink Pricing – Simple Plans for Building Communities",
   description:
-    "See NestLink pricing, pay-per-apartment rates, and member seats for managing building communication, polls, and service requests.",
+    "Explore NestLink's transparent pay-per-apartment pricing. Find the right plan for your building with flexible member seat options, no setup fees, and full access to announcements, polls, incident reporting, and tenant communication features.",
   alternates: {
     canonical: canonicalUrl,
   },

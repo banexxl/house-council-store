@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL!),
   title: "NestLink – Building Management & Tenant Communication Software",
   description:
-    "Run announcements, polls, incident reporting, and tenant communication in one place with NestLink’s web dashboard and mobile app.",
+    "Streamline building operations with NestLink: a web dashboard and mobile app for announcements, tenant communication, incident reporting, voting, and service management. Perfect for apartment complexes, condos, and housing communities.",
   alternates: {
     canonical: canonicalUrl,
   },

@@ -9,9 +9,9 @@ import { buildCanonicalUrl } from "@/app/lib/seo";
 const canonicalUrl = buildCanonicalUrl("/terms-and-conditions");
 
 export const metadata: Metadata = {
-  title: "Terms and Conditions | NestLink",
+  title: "Terms of Service – NestLink Building & Community Management Platform",
   description:
-    "Review NestLink’s terms for using the building communication platform, including subscriptions, roles, and acceptable use.",
+    "Review the terms and conditions for NestLink. Learn about subscription agreements, user roles and permissions, acceptable use policies, subscription management, billing, and the complete legal terms governing use of our building communication platform.",
   alternates: {
     canonical: canonicalUrl,
   },

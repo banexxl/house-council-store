@@ -9,9 +9,9 @@ import { buildCanonicalUrl } from "@/app/lib/seo";
 const canonicalUrl = buildCanonicalUrl("/privacy-policy");
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | NestLink Building Platform",
+  title: "Privacy Policy – NestLink Building Management & Tenant Communication Software",
   description:
-    "Learn how NestLink handles data for building managers and tenants across the web dashboard and mobile app.",
+    "Learn how NestLink protects user data for building managers and tenants. Review our data security practices, privacy commitments, GDPR compliance, and how information is handled across the web dashboard, mobile app, and all services.",
   alternates: {
     canonical: canonicalUrl,
   },

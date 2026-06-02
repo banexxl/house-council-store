@@ -9,9 +9,9 @@ import { buildCanonicalUrl } from "@/app/lib/seo";
 const canonicalUrl = buildCanonicalUrl("/contact");
 
 export const metadata: Metadata = {
-  title: "Contact NestLink | Schedule a Demo or Get Support",
+  title: "Contact NestLink – Demo, Pricing & Support for Building Communities",
   description:
-    "Reach the NestLink team for product questions, demos, or support for your building community platform.",
+    "Get in touch with the NestLink team. Schedule a product demo, ask questions about pricing, get onboarding help, or contact support for building management and tenant communication software.",
   alternates: {
     canonical: canonicalUrl,
   },

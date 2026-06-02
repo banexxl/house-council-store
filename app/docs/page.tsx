@@ -9,9 +9,9 @@ import { buildCanonicalUrl } from "@/app/lib/seo";
 const canonicalUrl = buildCanonicalUrl("/docs");
 
 export const metadata: Metadata = {
-  title: "NestLink Product Docs | Building Communication Platform",
+  title: "NestLink Documentation – Building & Tenant Communication Platform",
   description:
-    "Explore NestLink documentation for announcements, polls, tenant communication, and incident reporting workflows.",
+    "Get started with NestLink's comprehensive documentation. Learn how to set up buildings, manage tenants, create announcements, run polls, track incidents, and configure roles and permissions.",
   alternates: {
     canonical: canonicalUrl,
   },
