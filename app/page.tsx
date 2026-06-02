@@ -5,6 +5,8 @@ import { buildCanonicalUrl } from "@/app/lib/seo";
 
 const canonicalUrl = buildCanonicalUrl("/");
 
+export const revalidate = 60; // ISR: revalidate every 60 seconds
+
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL!),
   title: "NestLink – Building Management & Tenant Communication Software",

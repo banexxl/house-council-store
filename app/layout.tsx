@@ -3,6 +3,8 @@ import { getSessionUser } from "@/app/lib/get-session"
 import { Providers } from "@/app/providers"
 import { Header } from "@/app/components/header"
 
+export const revalidate = 60; // ISR: revalidate every 60 seconds
+
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const user = await getSessionUser()
   // useCookieFocusChecker()
