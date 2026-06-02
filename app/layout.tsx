@@ -1,10 +1,10 @@
 import type React from "react"
-
+import { getSessionUser } from "@/app/lib/get-session"
 import { Providers } from "@/app/providers"
-// import { useCookieFocusChecker } from "@/app/components/cookie-checker"
+import { Header } from "@/app/components/header"
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const user = await getSessionUser()
   // useCookieFocusChecker()
 
   return (
@@ -30,7 +30,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
-        <Providers>{children}</Providers>
+        <Providers>
+          <Header key={user?.id || "guest"} user={user ? user : null} />
+          {children}
+        </Providers>
       </body>
     </html>
   )

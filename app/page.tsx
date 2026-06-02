@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
-import { getSessionUser } from "@/app/lib/get-session";
 import HomePage from "./home";
 import { Footer } from "@/app/components/footer";
-import { Header } from "@/app/components/header";
 import { buildCanonicalUrl } from "@/app/lib/seo";
 
 const canonicalUrl = buildCanonicalUrl("/");
@@ -149,9 +147,6 @@ export const metadata: Metadata = {
 };
 
 export default async function Page() {
-
-  const user = await getSessionUser();
-
   const organizationLd = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
@@ -217,7 +212,6 @@ export default async function Page() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }}
       />
-      <Header user={user ? user : null} />
       <HomePage />
       <Footer />
     </>
