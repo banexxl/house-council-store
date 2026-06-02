@@ -29,8 +29,9 @@ import { useRouter } from 'next/navigation';
 import { Reveal, Stagger, itemVariants } from './components/motion';
 import { motion } from 'framer-motion';
 
-// Lazy load heavy components
-const ParallaxSection = lazy(() => import('./components/paralax-section'));
+// Import ParallaxSection eagerly (needed for LCP hero image)
+import ParallaxSection from './components/paralax-section';
+// Lazy load ParticleBackground (decorative, not LCP)
 const ParticleBackground = lazy(() => import('./components/particle-background'));
 
 // Motion div component - used conditionally based on showAnimations state
@@ -121,160 +122,158 @@ const LandingPage = () => {
      return (
           <Box component="main">
                {/* HERO */}
-               <Suspense fallback={<Box sx={{ minHeight: '100vh' }} />}>
-                    <ParallaxSection backgroundImage="/background-images/background-image-3.png">
-                         <Container
-                              maxWidth="lg"
-                              sx={{
-                                   minHeight: '100vh',
-                                   display: 'flex',
-                                   alignItems: 'center',
-                                   // ✅ Push hero down on mobile so the fixed header doesn’t overlap it
-                                   pt: { xs: 'calc(56px + 24px)', sm: 'calc(64px + 24px)' },
-                                   pb: { xs: 6, md: 0 },
-                                   mt: { xs: 56, md: 0 },
-                              }}
-                         >
-                              <Grid container spacing={{ xs: 3, sm: 4, md: 6 }} alignItems="center">
-                                   <Grid size={{ xs: 12, md: 7 }}>
+               <ParallaxSection backgroundImage="/background-images/background-image-3.png" priority={true}>
+                    <Container
+                         maxWidth="lg"
+                         sx={{
+                              minHeight: '100vh',
+                              display: 'flex',
+                              alignItems: 'center',
+                              // ✅ Push hero down on mobile so the fixed header doesn’t overlap it
+                              pt: { xs: 'calc(56px + 24px)', sm: 'calc(64px + 24px)' },
+                              pb: { xs: 6, md: 0 },
+                              mt: { xs: 56, md: 0 },
+                         }}
+                    >
+                         <Grid container spacing={{ xs: 3, sm: 4, md: 6 }} alignItems="center">
+                              <Grid size={{ xs: 12, md: 7 }}>
+                                   <Box
+                                        sx={{
+                                             ...glassSx,
+                                             p: { xs: 2.5, sm: 3, md: 4 },
+                                             // ✅ prevent layout “squeeze” causing overlap
+                                             minWidth: 0,
+                                        }}
+                                        onMouseMove={onMoveSheen}
+                                   >
+                                        <Reveal>
+                                             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                                                  <Chip icon={<DashboardCustomizeIcon />} label="Web dashboard" sx={chipSx} />
+                                                  <Chip icon={<PhoneIphoneIcon />} label="Mobile app" sx={chipSx} />
+                                                  <Chip icon={<ApartmentIcon />} label="Pay per apartment" sx={chipSx} />
+                                             </Stack>
+                                        </Reveal>
+
+                                        <Box sx={{ mt: 2 }}>
+                                             <Reveal delay={0.05} y={22}>
+                                                  <Typography
+                                                       component="h1"
+                                                       variant={isMobile ? 'h3' : 'h1'}
+                                                       sx={{
+                                                            lineHeight: 1.08,
+                                                            // ✅ Responsive font sizes to avoid overlap on small screens
+                                                            fontSize: { xs: '2rem', sm: '2.35rem', md: undefined },
+                                                            overflowWrap: 'anywhere',
+                                                            wordBreak: 'break-word',
+                                                       }}
+                                                  >
+                                                       Building Management Software for Apartments & Housing Communities
+                                                  </Typography>
+                                             </Reveal>
+
+                                             <Reveal delay={0.12} y={18}>
+                                                  <Typography
+                                                       variant="h6"
+                                                       color="text.secondary"
+                                                       sx={{
+                                                            mt: 2,
+                                                            maxWidth: 680,
+                                                            // ✅ Mobile-safe text sizing & wrapping
+                                                            fontSize: { xs: '1rem', sm: '1.05rem', md: undefined },
+                                                            lineHeight: 1.6,
+                                                            overflowWrap: 'anywhere',
+                                                            wordBreak: 'break-word',
+                                                       }}
+                                                  >
+                                                       NestLink is a building management software platform designed for apartment buildings, housing communities, and property managers. It helps manage tenants, communication, maintenance requests, announcements, and voting — all in one centralized system with role-based access.
+                                                  </Typography>
+                                             </Reveal>
+
+                                             <Reveal delay={0.18} y={12}>
+                                                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 3 }}>
+                                                       <Button
+                                                            variant="outlined"
+                                                            size="large"
+                                                            onClick={() => handleNavClick('/pricing')}
+                                                            sx={{ minHeight: 48 }}
+                                                       >
+                                                            See Pricing
+                                                       </Button>
+                                                       <Button
+                                                            variant="text"
+                                                            size="large"
+                                                            onClick={() => handleNavClick('/docs')}
+                                                            sx={{ minHeight: 48 }}
+                                                       >
+                                                            How it works
+                                                       </Button>
+                                                  </Stack>
+                                             </Reveal>
+                                        </Box>
+                                   </Box>
+                              </Grid>
+
+                              <Grid size={{ xs: 12, md: 5 }}>
+                                   <Reveal delay={0.12} x={18}>
                                         <Box
                                              sx={{
                                                   ...glassSx,
-                                                  p: { xs: 2.5, sm: 3, md: 4 },
-                                                  // ✅ prevent layout “squeeze” causing overlap
+                                                  ...liftHoverSx,
+                                                  p: { xs: 2.5, sm: 3 },
                                                   minWidth: 0,
                                              }}
                                              onMouseMove={onMoveSheen}
                                         >
-                                             <Reveal>
-                                                  <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                                                       <Chip icon={<DashboardCustomizeIcon />} label="Web dashboard" sx={chipSx} />
-                                                       <Chip icon={<PhoneIphoneIcon />} label="Mobile app" sx={chipSx} />
-                                                       <Chip icon={<ApartmentIcon />} label="Pay per apartment" sx={chipSx} />
-                                                  </Stack>
-                                             </Reveal>
+                                             <Typography variant="h6" sx={{ mb: 2 }}>
+                                                  Designed for two roles
+                                             </Typography>
 
-                                             <Box sx={{ mt: 2 }}>
-                                                  <Reveal delay={0.05} y={22}>
-                                                       <Typography
-                                                            component="h1"
-                                                            variant={isMobile ? 'h3' : 'h1'}
-                                                            sx={{
-                                                                 lineHeight: 1.08,
-                                                                 // ✅ Responsive font sizes to avoid overlap on small screens
-                                                                 fontSize: { xs: '2rem', sm: '2.35rem', md: undefined },
-                                                                 overflowWrap: 'anywhere',
-                                                                 wordBreak: 'break-word',
-                                                            }}
-                                                       >
-                                                            Building Management Software for Apartments & Housing Communities
-                                                       </Typography>
-                                                  </Reveal>
-
-                                                  <Reveal delay={0.12} y={18}>
-                                                       <Typography
-                                                            variant="h6"
-                                                            color="text.secondary"
-                                                            sx={{
-                                                                 mt: 2,
-                                                                 maxWidth: 680,
-                                                                 // ✅ Mobile-safe text sizing & wrapping
-                                                                 fontSize: { xs: '1rem', sm: '1.05rem', md: undefined },
-                                                                 lineHeight: 1.6,
-                                                                 overflowWrap: 'anywhere',
-                                                                 wordBreak: 'break-word',
-                                                            }}
-                                                       >
-                                                            NestLink is a building management software platform designed for apartment buildings, housing communities, and property managers. It helps manage tenants, communication, maintenance requests, announcements, and voting — all in one centralized system with role-based access.
-                                                       </Typography>
-                                                  </Reveal>
-
-                                                  <Reveal delay={0.18} y={12}>
-                                                       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 3 }}>
-                                                            <Button
-                                                                 variant="outlined"
-                                                                 size="large"
-                                                                 onClick={() => handleNavClick('/pricing')}
-                                                                 sx={{ minHeight: 48 }}
-                                                            >
-                                                                 See Pricing
-                                                            </Button>
-                                                            <Button
-                                                                 variant="text"
-                                                                 size="large"
-                                                                 onClick={() => handleNavClick('/docs')}
-                                                                 sx={{ minHeight: 48 }}
-                                                            >
-                                                                 How it works
-                                                            </Button>
-                                                       </Stack>
-                                                  </Reveal>
-                                             </Box>
+                                             <Stack spacing={2}>
+                                                  {[
+                                                       {
+                                                            icon: <AdminPanelSettingsIcon />,
+                                                            title: 'Building manager',
+                                                            text:
+                                                                 'Purchases the subscription, manages buildings & apartments, invites tenants, configures permissions and workflows.',
+                                                       },
+                                                       {
+                                                            icon: <HowToRegIcon />,
+                                                            title: 'Tenants',
+                                                            text:
+                                                                 'Tenant permissions on web and mobile — participate in polls, read announcements, engage with posts, and submit service requests.',
+                                                       },
+                                                  ].map((r, idx, arr) => (
+                                                       <Box key={idx} sx={{ minWidth: 0 }}>
+                                                            <Stack direction="row" spacing={2} alignItems="flex-start">
+                                                                 <Avatar sx={{ bgcolor: 'primary.main' }}>{r.icon}</Avatar>
+                                                                 <Box sx={{ minWidth: 0 }}>
+                                                                      <Typography variant="subtitle1" sx={{ fontWeight: 800, overflowWrap: 'anywhere' }}>
+                                                                           {r.title}
+                                                                      </Typography>
+                                                                      <Typography variant="body2" color="text.secondary" sx={{ overflowWrap: 'anywhere' }}>
+                                                                           {r.text}
+                                                                      </Typography>
+                                                                 </Box>
+                                                            </Stack>
+                                                            {idx !== 2 && (
+                                                                 <Divider sx={{ my: 2 }}>
+                                                                      {/* Insert 'And' only between two values, never at start or end */}
+                                                                      {arr.length === 2 && idx === 0 ? (
+                                                                           <Typography variant="subtitle1" sx={{ fontWeight: 900, textAlign: 'center', my: 0 }}>
+                                                                                And
+                                                                           </Typography>
+                                                                      ) : null}
+                                                                 </Divider>
+                                                            )}
+                                                       </Box>
+                                                  ))}
+                                             </Stack>
                                         </Box>
-                                   </Grid>
-
-                                   <Grid size={{ xs: 12, md: 5 }}>
-                                        <Reveal delay={0.12} x={18}>
-                                             <Box
-                                                  sx={{
-                                                       ...glassSx,
-                                                       ...liftHoverSx,
-                                                       p: { xs: 2.5, sm: 3 },
-                                                       minWidth: 0,
-                                                  }}
-                                                  onMouseMove={onMoveSheen}
-                                             >
-                                                  <Typography variant="h6" sx={{ mb: 2 }}>
-                                                       Designed for two roles
-                                                  </Typography>
-
-                                                  <Stack spacing={2}>
-                                                       {[
-                                                            {
-                                                                 icon: <AdminPanelSettingsIcon />,
-                                                                 title: 'Building manager',
-                                                                 text:
-                                                                      'Purchases the subscription, manages buildings & apartments, invites tenants, configures permissions and workflows.',
-                                                            },
-                                                            {
-                                                                 icon: <HowToRegIcon />,
-                                                                 title: 'Tenants',
-                                                                 text:
-                                                                      'Tenant permissions on web and mobile — participate in polls, read announcements, engage with posts, and submit service requests.',
-                                                            },
-                                                       ].map((r, idx, arr) => (
-                                                            <Box key={idx} sx={{ minWidth: 0 }}>
-                                                                 <Stack direction="row" spacing={2} alignItems="flex-start">
-                                                                      <Avatar sx={{ bgcolor: 'primary.main' }}>{r.icon}</Avatar>
-                                                                      <Box sx={{ minWidth: 0 }}>
-                                                                           <Typography variant="subtitle1" sx={{ fontWeight: 800, overflowWrap: 'anywhere' }}>
-                                                                                {r.title}
-                                                                           </Typography>
-                                                                           <Typography variant="body2" color="text.secondary" sx={{ overflowWrap: 'anywhere' }}>
-                                                                                {r.text}
-                                                                           </Typography>
-                                                                      </Box>
-                                                                 </Stack>
-                                                                 {idx !== 2 && (
-                                                                      <Divider sx={{ my: 2 }}>
-                                                                           {/* Insert 'And' only between two values, never at start or end */}
-                                                                           {arr.length === 2 && idx === 0 ? (
-                                                                                <Typography variant="subtitle1" sx={{ fontWeight: 900, textAlign: 'center', my: 0 }}>
-                                                                                     And
-                                                                                </Typography>
-                                                                           ) : null}
-                                                                      </Divider>
-                                                                 )}
-                                                            </Box>
-                                                       ))}
-                                                  </Stack>
-                                             </Box>
-                                        </Reveal>
-                                   </Grid>
+                                   </Reveal>
                               </Grid>
-                         </Container>
-                    </ParallaxSection>
-               </Suspense>
+                         </Grid>
+                    </Container>
+               </ParallaxSection>
 
                <Box
                     sx={{
