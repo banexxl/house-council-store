@@ -423,7 +423,7 @@ export const DocsPage = () => {
                               <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", py: 2, gap: 2 }}>
                                    <Box sx={{ display: { xs: "none", md: 'flex' }, alignItems: "center", minWidth: 0 }}>
                                         <MenuBookIcon sx={{ mr: 1, color: "primary.main" }} />
-                                        <Typography variant="h4" noWrap color="primary">
+                                        <Typography component="h1" noWrap color="primary" sx={{ fontWeight: 900, fontSize: { xs: "1.25rem", sm: "1.5rem" } }}>
                                              Docs
                                         </Typography>
                                    </Box>
