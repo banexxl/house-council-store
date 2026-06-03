@@ -69,7 +69,7 @@ export const TermsPage = () => {
 
                               <Box sx={{ display: "flex", alignItems: "center", mb: 4 }}>
                                    <GavelIcon color="primary" sx={{ fontSize: 32, mr: 2 }} />
-                                   <Typography variant="h3" component="h1">
+                                   <Typography component="h1" sx={{ fontWeight: 900, fontSize: { xs: "1.5rem", sm: "2rem" } }} color="primary">
                                         Terms and Conditions
                                    </Typography>
                               </Box>
@@ -99,7 +99,7 @@ export const TermsPage = () => {
                                              mb: { xs: 4, md: 0 },
                                         }}
                                    >
-                                        <Typography variant="h6" gutterBottom>
+                                        <Typography variant="h6" gutterBottom sx={{ fontWeight: 700, color: "primary.main" }}>
                                              Table of Contents
                                         </Typography>
                                         <List dense disablePadding>
@@ -147,19 +147,19 @@ export const TermsPage = () => {
                                         }}
                                    >
                                         <section id="introduction">
-                                             <Typography variant="h5" component="h2" gutterBottom>
+                                             <Typography component="h2" gutterBottom color="primary" sx={{ fontWeight: 700, fontSize: { xs: "1rem", sm: "1.2rem" } }}>
                                                   Introduction
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography component="h2" color="text.secondary" sx={{ fontWeight: 400, fontSize: { xs: "1rem", sm: "1.1rem" } }}>
                                                   Welcome to NestLink. These Terms and Conditions ("Terms", "Terms and Conditions") govern your use
                                                   of our website and mobile application (collectively, the "Service") operated by NestLink ("us",
                                                   "we", or "our").
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography component="h2" color="text.secondary" sx={{ fontWeight: 400, fontSize: { xs: "1rem", sm: "1.1rem" } }}>
                                                   By accessing or using the Service, you agree to be bound by these Terms. If you disagree with any part
                                                   of the Terms, then you may not access the Service.
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography component="h2" color="text.secondary" sx={{ fontWeight: 400, fontSize: { xs: "1rem", sm: "1.1rem" } }}>
                                                   These Terms apply to all visitors, users, and others who access or use the Service. By accessing or
                                                   using the Service, you agree to be bound by these Terms. If you disagree with any part of the Terms,
                                                   then you may not access the Service.
@@ -168,10 +168,10 @@ export const TermsPage = () => {
                                         </section>
 
                                         <section id="definitions">
-                                             <Typography variant="h5" component="h2" gutterBottom>
+                                             <Typography component="h2" gutterBottom color="primary" sx={{ fontWeight: 700, fontSize: { xs: "1rem", sm: "1.2rem" } }}>
                                                   Definitions
                                              </Typography>
-                                             <Typography paragraph>For the purposes of these Terms and Conditions:</Typography>
+                                             <Typography component="h2" color="text.secondary" sx={{ fontWeight: 400, fontSize: { xs: "1rem", sm: "1.1rem" } }}>For the purposes of these Terms and Conditions:</Typography>
                                              <List>
                                                   <ListItem>
                                                        <ListItemText
@@ -208,24 +208,24 @@ export const TermsPage = () => {
                                         </section>
 
                                         <section id="account-terms">
-                                             <Typography variant="h5" component="h2" gutterBottom>
+                                             <Typography component="h2" gutterBottom color="primary" sx={{ fontWeight: 700, fontSize: { xs: "1rem", sm: "1.2rem" } }}>
                                                   Account Terms
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography component="h2" color="text.secondary" sx={{ fontWeight: 400, fontSize: { xs: "1rem", sm: "1.1rem" } }}>
                                                   When you create an account with us, you must provide accurate, complete, and up-to-date information at
                                                   all times. Failure to do so constitutes a breach of the Terms, which may result in immediate
                                                   termination of your account on our Service.
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography component="h2" color="text.secondary" sx={{ fontWeight: 400, fontSize: { xs: "1rem", sm: "1.1rem" } }}>
                                                   You are responsible for safeguarding the password that you use to access the Service and for any
                                                   activities or actions under your password, whether your password is with our Service or a third-party
                                                   service.
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography component="h2" color="text.secondary" sx={{ fontWeight: 400, fontSize: { xs: "1rem", sm: "1.1rem" } }}>
                                                   You agree not to disclose your password to any third party. You must notify us immediately upon
                                                   becoming aware of any breach of security or unauthorized use of your account.
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography component="h2" color="text.secondary" sx={{ fontWeight: 400, fontSize: { xs: "1rem", sm: "1.1rem" } }}>
                                                   You may not use as a username the name of another person or entity or that is not lawfully available
                                                   for use, a name or trademark that is subject to any rights of another person or entity other than you
                                                   without appropriate authorization, or a name that is otherwise offensive, vulgar, or obscene.
@@ -234,29 +234,29 @@ export const TermsPage = () => {
                                         </section>
 
                                         <section id="payment-terms">
-                                             <Typography variant="h5" component="h2" gutterBottom>
+                                             <Typography component="h2" gutterBottom color="primary" sx={{ fontWeight: 700, fontSize: { xs: "1rem", sm: "1.2rem" } }}>
                                                   Payment Terms
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography component="h2" color="text.secondary" sx={{ fontWeight: 400, fontSize: { xs: "1rem", sm: "1.1rem" } }}>
                                                   Some features of the Service are billed on a subscription basis. You will be billed in advance on a
                                                   recurring and periodic basis, depending on the type of subscription plan you select.
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography component="h2" color="text.secondary" sx={{ fontWeight: 400, fontSize: { xs: "1rem", sm: "1.1rem" } }}>
                                                   At the end of each period, your subscription will automatically renew under the same conditions unless
                                                   you cancel it or we cancel it. You may cancel your subscription renewal either through your online
                                                   account management page or by contacting our customer support team.
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography component="h2" color="text.secondary" sx={{ fontWeight: 400, fontSize: { xs: "1rem", sm: "1.1rem" } }}>
                                                   A valid payment method, including credit card, is required to process the payment for your
                                                   subscription. You shall provide accurate and complete billing information including full name,
                                                   address, state, zip code, telephone number, and valid payment method information.
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography component="h2" color="text.secondary" sx={{ fontWeight: 400, fontSize: { xs: "1rem", sm: "1.1rem" } }}>
                                                   Should automatic billing fail to occur for any reason, we will issue an electronic invoice indicating
                                                   that you must proceed manually, within a certain deadline date, with the full payment corresponding to
                                                   the billing period as indicated on the invoice.
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography component="h2" color="text.secondary" sx={{ fontWeight: 400, fontSize: { xs: "1rem", sm: "1.1rem" } }}>
                                                   We reserve the right to change, modify, or update our pricing at any time. If we do so, we will notify
                                                   you by either sending an email to the address associated with your account or by displaying a
                                                   prominent notice within the Service. Your continued use of the Service after the price change becomes
@@ -266,21 +266,21 @@ export const TermsPage = () => {
                                         </section>
 
                                         <section id="service-usage">
-                                             <Typography variant="h5" component="h2" gutterBottom>
+                                             <Typography component="h2" gutterBottom color="primary" sx={{ fontWeight: 700, fontSize: { xs: "1rem", sm: "1.2rem" } }}>
                                                   Service Usage
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography component="h2" color="text.secondary" sx={{ fontWeight: 400, fontSize: { xs: "1rem", sm: "1.1rem" } }}>
                                                   Our Service allows you to post, link, store, share, and otherwise make available certain information,
                                                   text, graphics, videos, or other material. You are responsible for the Content that you post to the
                                                   Service, including its legality, reliability, and appropriateness.
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography >
                                                   By posting Content to the Service, you grant us the right and license to use, modify, publicly
                                                   perform, publicly display, reproduce, and distribute such Content on and through the Service. You
                                                   retain any and all of your rights to any Content you submit, post, or display on or through the
                                                   Service and you are responsible for protecting those rights.
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography >
                                                   You represent and warrant that: (i) the Content is yours (you own it) or you have the right to use it
                                                   and grant us the rights and license as provided in these Terms, and (ii) the posting of your Content
                                                   on or through the Service does not violate the privacy rights, publicity rights, copyrights, contract
@@ -290,17 +290,17 @@ export const TermsPage = () => {
                                         </section>
 
                                         <section id="intellectual-property">
-                                             <Typography variant="h5" component="h2" gutterBottom>
+                                             <Typography component="h2" gutterBottom color="primary" sx={{ fontWeight: 700, fontSize: { xs: "1rem", sm: "1.2rem" } }}>
                                                   Intellectual Property
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography component="h2" color="text.secondary" sx={{ fontWeight: 400, fontSize: { xs: "1rem", sm: "1.1rem" } }}>
                                                   The Service and its original content (excluding Content provided by users), features, and
                                                   functionality are and will remain the exclusive property of NestLink and its licensors. The
                                                   Service is protected by copyright, trademark, and other laws of both the United States and foreign
                                                   countries. Our trademarks and trade dress may not be used in connection with any product or service
                                                   without the prior written consent of NestLink.
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography component="h2" color="text.secondary" sx={{ fontWeight: 400, fontSize: { xs: "1rem", sm: "1.1rem" } }}>
                                                   You acknowledge and agree that the Service may contain proprietary and confidential information that
                                                   is protected by applicable intellectual property and other laws. You agree not to modify, rent, lease,
                                                   loan, sell, distribute, or create derivative works based on the Service, in whole or in part.
@@ -309,21 +309,21 @@ export const TermsPage = () => {
                                         </section>
 
                                         <section id="user-content">
-                                             <Typography variant="h5" component="h2" gutterBottom>
+                                             <Typography component="h2" gutterBottom color="primary" sx={{ fontWeight: 700, fontSize: { xs: "1rem", sm: "1.2rem" } }}>
                                                   User Content
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography component="h2" color="text.secondary" sx={{ fontWeight: 400, fontSize: { xs: "1rem", sm: "1.1rem" } }}>
                                                   Our Service allows you to post, link, store, share, and otherwise make available certain information,
                                                   text, graphics, videos, or other material. You are responsible for the Content that you post to the
                                                   Service, including its legality, reliability, and appropriateness.
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography >
                                                   By posting Content to the Service, you grant us the right and license to use, modify, publicly
                                                   perform, publicly display, reproduce, and distribute such Content on and through the Service. You
                                                   retain any and all of your rights to any Content you submit, post, or display on or through the
                                                   Service and you are responsible for protecting those rights.
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography >
                                                   You represent and warrant that: (i) the Content is yours (you own it) or you have the right to use it
                                                   and grant us the rights and license as provided in these Terms, and (ii) the posting of your Content
                                                   on or through the Service does not violate the privacy rights, publicity rights, copyrights, contract
@@ -333,15 +333,15 @@ export const TermsPage = () => {
                                         </section>
 
                                         <section id="prohibited-activities">
-                                             <Typography variant="h5" component="h2" gutterBottom>
+                                             <Typography component="h2" gutterBottom color="primary" sx={{ fontWeight: 700, fontSize: { xs: "1rem", sm: "1.2rem" } }}>
                                                   Prohibited Activities
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography component="h2" color="text.secondary" sx={{ fontWeight: 400, fontSize: { xs: "1rem", sm: "1.1rem" } }}>
                                                   You may not access or use the Service for any purpose other than that for which we make the Service
                                                   available. The Service may not be used in connection with any commercial endeavors except those that
                                                   are specifically endorsed or approved by us.
                                              </Typography>
-                                             <Typography paragraph>As a user of the Service, you agree not to:</Typography>
+                                             <Typography component="h2" color="text.secondary" sx={{ fontWeight: 400, fontSize: { xs: "1rem", sm: "1.1rem" } }}>As a user of the Service, you agree not to:</Typography>
                                              <List>
                                                   <ListItem>
                                                        <ListItemText primary="Use the Service in any manner that could disable, overburden, damage, or impair the Service or interfere with any other party's use of the Service." />
@@ -372,10 +372,10 @@ export const TermsPage = () => {
                                         </section>
 
                                         <section id="limitation-liability">
-                                             <Typography variant="h5" component="h2" gutterBottom>
+                                             <Typography component="h2" gutterBottom color="primary" sx={{ fontWeight: 700, fontSize: { xs: "1rem", sm: "1.2rem" } }}>
                                                   Limitation of Liability
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography component="h2" color="text.secondary" sx={{ fontWeight: 400, fontSize: { xs: "1rem", sm: "1.1rem" } }}>
                                                   In no event shall NestLink, nor its directors, employees, partners, agents, suppliers, or
                                                   affiliates, be liable for any indirect, incidental, special, consequential, or punitive damages,
                                                   including without limitation, loss of profits, data, use, goodwill, or other intangible losses,
@@ -386,7 +386,7 @@ export const TermsPage = () => {
                                                   been informed of the possibility of such damage, and even if a remedy set forth herein is found to
                                                   have failed of its essential purpose.
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography component="h2" color="text.secondary" sx={{ fontWeight: 400, fontSize: { xs: "1rem", sm: "1.1rem" } }}>
                                                   Some jurisdictions do not allow the exclusion of certain warranties or the limitation or exclusion of
                                                   liability for incidental or consequential damages. Accordingly, some of the above limitations may not
                                                   apply to you.
@@ -395,10 +395,10 @@ export const TermsPage = () => {
                                         </section>
 
                                         <section id="indemnification">
-                                             <Typography variant="h5" component="h2" gutterBottom>
+                                             <Typography component="h2" gutterBottom color="primary" sx={{ fontWeight: 700, fontSize: { xs: "1rem", sm: "1.2rem" } }}>
                                                   Indemnification
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography component="h2" color="text.secondary" sx={{ fontWeight: 400, fontSize: { xs: "1rem", sm: "1.1rem" } }}>
                                                   You agree to defend, indemnify, and hold harmless NestLink, its parent, subsidiaries, affiliates,
                                                   and their respective directors, officers, employees, agents, service providers, contractors,
                                                   licensors, suppliers, successors, and assigns from and against any claims, liabilities, damages,
@@ -411,18 +411,18 @@ export const TermsPage = () => {
                                         </section>
 
                                         <section id="termination">
-                                             <Typography variant="h5" component="h2" gutterBottom>
+                                             <Typography component="h2" gutterBottom color="primary" sx={{ fontWeight: 700, fontSize: { xs: "1rem", sm: "1.2rem" } }}>
                                                   Termination
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography component="h2" color="text.secondary" sx={{ fontWeight: 400, fontSize: { xs: "1rem", sm: "1.1rem" } }}>
                                                   We may terminate or suspend your account immediately, without prior notice or liability, for any
                                                   reason whatsoever, including without limitation if you breach the Terms.
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography component="h2" color="text.secondary" sx={{ fontWeight: 400, fontSize: { xs: "1rem", sm: "1.1rem" } }}>
                                                   Upon termination, your right to use the Service will immediately cease. If you wish to terminate your
                                                   account, you may simply discontinue using the Service or contact us to request account deletion.
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography component="h2" color="text.secondary" sx={{ fontWeight: 400, fontSize: { xs: "1rem", sm: "1.1rem" } }}>
                                                   All provisions of the Terms which by their nature should survive termination shall survive
                                                   termination, including, without limitation, ownership provisions, warranty disclaimers, indemnity, and
                                                   limitations of liability.
@@ -431,19 +431,19 @@ export const TermsPage = () => {
                                         </section>
 
                                         <section id="governing-law">
-                                             <Typography variant="h5" component="h2" gutterBottom>
+                                             <Typography component="h2" gutterBottom color="primary" sx={{ fontWeight: 700, fontSize: { xs: "1rem", sm: "1.2rem" } }}>
                                                   Governing Law
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography component="h2" color="text.secondary" sx={{ fontWeight: 400, fontSize: { xs: "1rem", sm: "1.1rem" } }}>
                                                   These Terms shall be governed and construed in accordance with the laws of the Commonwealth of
                                                   Massachusetts, United States, without regard to its conflict of law provisions.
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography component="h2" color="text.secondary" sx={{ fontWeight: 400, fontSize: { xs: "1rem", sm: "1.1rem" } }}>
                                                   Our failure to enforce any right or provision of these Terms will not be considered a waiver of those
                                                   rights. If any provision of these Terms is held to be invalid or unenforceable by a court, the
                                                   remaining provisions of these Terms will remain in effect.
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography component="h2" color="text.secondary" sx={{ fontWeight: 400, fontSize: { xs: "1rem", sm: "1.1rem" } }}>
                                                   These Terms constitute the entire agreement between us regarding our Service, and supersede and
                                                   replace any prior agreements we might have between us regarding the Service.
                                              </Typography>
@@ -451,15 +451,15 @@ export const TermsPage = () => {
                                         </section>
 
                                         <section id="changes">
-                                             <Typography variant="h5" component="h2" gutterBottom>
+                                             <Typography component="h2" gutterBottom color="primary" sx={{ fontWeight: 700, fontSize: { xs: "1rem", sm: "1.2rem" } }}>
                                                   Changes to Terms
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography component="h2" color="text.secondary" sx={{ fontWeight: 400, fontSize: { xs: "1rem", sm: "1.1rem" } }}>
                                                   We reserve the right, at our sole discretion, to modify or replace these Terms at any time. If a
                                                   revision is material, we will try to provide at least 30 days' notice prior to any new terms taking
                                                   effect. What constitutes a material change will be determined at our sole discretion.
                                              </Typography>
-                                             <Typography paragraph>
+                                             <Typography component="h2" color="text.secondary" sx={{ fontWeight: 400, fontSize: { xs: "1rem", sm: "1.1rem" } }}>
                                                   By continuing to access or use our Service after those revisions become effective, you agree to be
                                                   bound by the revised terms. If you do not agree to the new terms, please stop using the Service.
                                              </Typography>
@@ -467,10 +467,10 @@ export const TermsPage = () => {
                                         </section>
 
                                         <section id="contact">
-                                             <Typography variant="h5" component="h2" gutterBottom>
+                                             <Typography component="h2" gutterBottom color="primary" sx={{ fontWeight: 700, fontSize: { xs: "1rem", sm: "1.2rem" } }}>
                                                   Contact Us
                                              </Typography>
-                                             <Typography paragraph>If you have any questions about these Terms, please contact us:</Typography>
+                                             <Typography component="h2" color="text.secondary" sx={{ fontWeight: 400, fontSize: { xs: "1rem", sm: "1.1rem" } }}>If you have any questions about these Terms, please contact us:</Typography>
                                              <List>
                                                   <ListItem>
                                                        <ListItemText primary="By email:" secondary="support@nest-link.app" />

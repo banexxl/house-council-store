@@ -16,6 +16,7 @@ import {
      Grid,
      useTheme,
      Stack,
+     Alert,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import toast, { Toaster } from "react-hot-toast";
@@ -284,18 +285,18 @@ export const PricingPage: React.FC<PricingPageProps> = ({
                     <Box component="main" sx={{ flexGrow: 1, py: { xs: 6, md: 10 } }}>
                          <Container maxWidth="lg">
                               <Box sx={{ textAlign: "center", mb: 6 }}>
-                                   <Typography variant="h2" gutterBottom>
+                                   <Typography component="h1" gutterBottom sx={{ fontWeight: 900, fontSize: { xs: "1.5rem", sm: "2rem" } }} color="primary">
                                         Simple, Transparent Pricing
                                    </Typography>
-                                   <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 700, mx: "auto" }}>
+                                   <Typography component="h2" color="text.secondary" sx={{ maxWidth: 700, mx: "auto" }}>
                                         Choose the plan that's right for your community. All plans include a free trial.
                                    </Typography>
-                                   <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 700, mx: "auto", mt: 1 }}>
+                                   <Alert severity="info" sx={{ maxWidth: 700, mx: "auto", mt: 1 }}>
                                         Pricing is billed per apartment.{" "}
                                         {apartmentCount !== undefined && customer
                                              ? `You currently have ${apartmentCount} apartment${apartmentCount === 1 ? "" : "s"} on your account.`
                                              : "Sign in to see your apartment count."}
-                                   </Typography>
+                                   </Alert>
                               </Box>
 
                               {/* Billing Interval Selector */}

@@ -92,17 +92,17 @@ export const ContactPage = ({ mapKey }: ContactProps) => {
                          <Container maxWidth="lg">
 
                               <Box sx={{ textAlign: "center", mb: 6 }}>
-                                   <Typography variant="h2" gutterBottom>
+                                   <Typography component="h1" gutterBottom color="primary" sx={{ fontWeight: 900, fontSize: { xs: "1.5rem", sm: "2rem" } }}>
                                         Contact Us
                                    </Typography>
-                                   <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 700, mx: "auto" }}>
+                                   <Typography component="h2" color="text.secondary" sx={{ fontWeight: 700, fontSize: { xs: "1.2rem", sm: "1.25rem" } }}>
                                         Have questions about our platform? We're here to help. Reach out to our team.
                                    </Typography>
                               </Box>
 
                               <Grid container spacing={6}>
                                    <Grid size={{ xs: 12, md: 6 }}>
-                                        <Typography variant="h4" gutterBottom>
+                                        <Typography component="h3" gutterBottom sx={{ fontWeight: 700, color: "primary.main" }}>
                                              Get in Touch
                                         </Typography>
                                         <Typography variant="body1" color="text.secondary">
@@ -217,7 +217,7 @@ export const ContactPage = ({ mapKey }: ContactProps) => {
                                    </Grid>
 
                                    <Grid size={{ xs: 12, md: 6 }}>
-                                        <Typography variant="h4" gutterBottom>
+                                        <Typography component="h4" gutterBottom sx={{ fontWeight: 700, color: "primary.main" }}>
                                              Contact Information
                                         </Typography>
                                         <Typography variant="body1" color="text.secondary" >
