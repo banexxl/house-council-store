@@ -17,6 +17,9 @@ export const metadata: Metadata = {
   },
   keywords: [
     "property management app",
+    "property manager",
+    "property maintenance software",
+    "software for property management",
     "building management system",
     "apartment management software",
     "tenant management app",
