@@ -38,12 +38,27 @@ export const POST = Webhooks({
      onCustomerCreated: async (payload) => {
           const t0 = Date.now();
           const customerRaw = payload.data;
+          console.log('On customer created payload data: ', payload);
+
+          // Validate required fields
+          if (!customerRaw.email) {
+               await logServerAction({
+                    user_id: null,
+                    action: "customer.created - skipped (missing email)",
+                    payload,
+                    status: "success",
+                    error: "Missing email",
+                    duration_ms: Date.now() - t0,
+                    type: "webhook",
+               });
+               return;
+          }
+
           // Ensure externalId is string|null, never undefined
           const customer: PolarCustomer = {
                ...customerRaw,
                externalId: typeof customerRaw.externalId === 'undefined' ? null : customerRaw.externalId,
-          };
-          console.log('On customer created payload data: ', payload);
+          } as PolarCustomer;
 
           if (!customer.externalId) {
                await logServerAction({
@@ -102,12 +117,28 @@ export const POST = Webhooks({
      onCustomerUpdated: async (payload) => {
           const t0 = Date.now();
           const customerRaw = payload.data;
+          console.log('On customer updated payload data: ', payload);
+
+          // Validate required fields
+          if (!customerRaw.email) {
+               await logServerAction({
+                    user_id: customerRaw.externalId ? String(customerRaw.externalId) : null,
+                    action: "customer.updated - skipped (missing email)",
+                    payload,
+                    status: "success",
+                    error: "Missing email",
+                    duration_ms: Date.now() - t0,
+                    type: "webhook",
+               });
+               return;
+          }
+
           // Ensure externalId is string|null, never undefined
           const customer: PolarCustomer = {
                ...customerRaw,
                externalId: typeof customerRaw.externalId === 'undefined' ? null : customerRaw.externalId,
-          };
-          console.log('On customer updated payload data: ', payload);
+          } as PolarCustomer;
+
           // If userId is missing, avoid insert risk (userId NOT NULL) -> update-only.
           if (!customer.externalId) {
                return
