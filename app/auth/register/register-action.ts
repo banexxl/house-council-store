@@ -200,59 +200,6 @@ export const registerUser = async (
 
                throw error;
           }
-          console.log("Polar customer created:", polarCustomer);
-          const { error: insertProfileError } = await supabaseAdmin.from('tblTenantProfiles').insert({
-               email: values.email,
-               first_name: values.contact_person.split(" ")[0] ? values.contact_person.split(" ")[0] : values.contact_person,
-               last_name: values.contact_person.split(" ").slice(1).join(" ") ? values.contact_person.split(" ").slice(1).join(" ") : "",
-               customerId: polarCustomer.id,
-          });
-          if (insertProfileError) {
-               // Rollback: Delete Polar customer
-               try {
-                    if (polarCustomer?.id) {
-                         await polar.customers.delete({ id: polarCustomer.id });
-                    }
-               } catch (deleteCustomerError: any) {
-                    await logServerAction({
-                         user_id: userId,
-                         action: "Register user - Polar customer rollback failed",
-                         payload: { polar_customer_id: polarCustomer?.id },
-                         status: "fail",
-                         error: deleteCustomerError?.message || String(deleteCustomerError),
-                         duration_ms: Date.now() - t0,
-                         type: "auth",
-                    });
-               }
-
-               // Rollback: Delete auth user
-               try {
-                    if (userId) {
-                         await supabaseAdmin.auth.admin.deleteUser(userId);
-                    }
-               } catch (deleteUserError: any) {
-                    await logServerAction({
-                         user_id: userId,
-                         action: "Register user - Auth user rollback failed",
-                         payload: { user_id: userId },
-                         status: "fail",
-                         error: deleteUserError?.message || String(deleteUserError),
-                         duration_ms: Date.now() - t0,
-                         type: "auth",
-                    });
-               }
-
-               await logServerAction({
-                    user_id: userId,
-                    action: "Register user - tblTenantProfiles insert failed",
-                    payload: { email: values.email, name: values.contact_person, polar_customer_id: polarCustomer.id },
-                    status: "fail",
-                    error: insertProfileError.message || "",
-                    duration_ms: Date.now() - t0,
-                    type: "auth",
-               });
-               throw insertProfileError;
-          }
           return { success: true };
      } catch (e: any) {
           // Rollback auth user if Polar create fails (or any error after signup)
