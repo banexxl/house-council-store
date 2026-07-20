@@ -222,7 +222,7 @@ export async function GET(request: Request) {
                     .insert({
                          userId: sessionData.session.user.id,
                          email: sessionData.session.user.email || '',
-                         name: (sessionData.session.user.user_metadata.name as any),
+                         first_name: (sessionData.session.user.user_metadata.name as any),
                     });
 
                if (tenantError) throw tenantError;
@@ -236,7 +236,7 @@ export async function GET(request: Request) {
                          requestUrl,
                          customerId: polarCustomer.id,
                          email: sessionData.session.user.email || '',
-                         name: (sessionData.session.user.user_metadata.name as any),
+                         first_name: (sessionData.session.user.user_metadata.name as any),
                     },
                     status: 'success',
                     user_id: sessionData.session.user.id,
