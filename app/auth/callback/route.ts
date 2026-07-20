@@ -187,30 +187,100 @@ export async function GET(request: Request) {
                return NextResponse.redirect(dashboardUrl);
           }
 
-          const polarCustomer = await polar.customers.create({
-               email: sessionData.session.user.email || '',
-               name: (sessionData.session.user.user_metadata.name as any),
-               externalId: sessionData.session.user.id,
-          });
-
-          await logServerAction({
-               action: 'Signed in with Google account (new customer created)',
-               error: '',
-               duration_ms: Date.now() - start,
-               payload: {
-                    code,
-                    requestUrl,
-                    customerId: polarCustomer.id,
+          let polarCustomer;
+          try {
+               polarCustomer = await polar.customers.create({
                     email: sessionData.session.user.email || '',
                     name: (sessionData.session.user.user_metadata.name as any),
-               },
-               status: 'success',
-               user_id: sessionData.session.user.id,
-               type: 'auth'
-          });
+                    externalId: sessionData.session.user.id,
+               });
+          } catch (polarError: any) {
+               await logServerAction({
+                    action: 'Auth callback errored - Polar customer creation failed',
+                    error: polarError.message || String(polarError),
+                    duration_ms: Date.now() - start,
+                    payload: { code, requestUrl, email: sessionData.session.user.email || '' },
+                    status: 'fail',
+                    user_id: sessionData.session.user.id,
+                    type: 'auth'
+               });
 
-          const dashboardUrl = `${requestUrl.origin}`;
-          return NextResponse.redirect(dashboardUrl);
+               await supabase.auth.signOut();
+               await supabase.auth.admin.deleteUser(sessionData.session.user.id);
+
+               const allCookies = cookieStore.getAll();
+               allCookies.forEach(cookie => cookieStore.delete(cookie.name));
+
+               const redirectUrl = `${requestUrl.origin}/auth/error?error=Failed to create customer account. Please try again or contact support.`;
+               return NextResponse.redirect(redirectUrl);
+          }
+
+          // Create tenant profile
+          try {
+               const { error: tenantError } = await supabase
+                    .from('tblTenantProfiles')
+                    .insert({
+                         userId: sessionData.session.user.id,
+                         email: sessionData.session.user.email || '',
+                         name: (sessionData.session.user.user_metadata.name as any),
+                    });
+
+               if (tenantError) throw tenantError;
+
+               await logServerAction({
+                    action: 'Signed in with Google account (new customer and tenant profile created)',
+                    error: '',
+                    duration_ms: Date.now() - start,
+                    payload: {
+                         code,
+                         requestUrl,
+                         customerId: polarCustomer.id,
+                         email: sessionData.session.user.email || '',
+                         name: (sessionData.session.user.user_metadata.name as any),
+                    },
+                    status: 'success',
+                    user_id: sessionData.session.user.id,
+                    type: 'auth'
+               });
+
+               const dashboardUrl = `${requestUrl.origin}`;
+               return NextResponse.redirect(dashboardUrl);
+
+          } catch (tenantError: any) {
+               // Delete Polar customer if tenant profile creation fails
+               try {
+                    await polar.customers.delete({ id: polarCustomer.id });
+               } catch (deleteError: any) {
+                    await logServerAction({
+                         action: 'Auth callback cleanup - Failed to delete Polar customer after tenant profile error',
+                         error: deleteError.message || String(deleteError),
+                         duration_ms: Date.now() - start,
+                         payload: { customerId: polarCustomer.id, email: sessionData.session.user.email || '' },
+                         status: 'fail',
+                         user_id: sessionData.session.user.id,
+                         type: 'auth'
+                    });
+               }
+
+               await logServerAction({
+                    action: 'Auth callback errored - Tenant profile creation failed',
+                    error: tenantError.message || String(tenantError),
+                    duration_ms: Date.now() - start,
+                    payload: { code, requestUrl, email: sessionData.session.user.email || '' },
+                    status: 'fail',
+                    user_id: sessionData.session.user.id,
+                    type: 'auth'
+               });
+
+               await supabase.auth.signOut();
+               await supabase.auth.admin.deleteUser(sessionData.session.user.id);
+
+               const allCookies = cookieStore.getAll();
+               allCookies.forEach(cookie => cookieStore.delete(cookie.name));
+
+               const redirectUrl = `${requestUrl.origin}/auth/error?error=Failed to complete account setup. Please try again or contact support.`;
+               return NextResponse.redirect(redirectUrl);
+          }
 
      } catch (customerError: any) {
           // If Polar customer creation fails, delete the auth user and sign out
