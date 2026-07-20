@@ -91,24 +91,53 @@ export const POST = Webhooks({
 
           const row = mapCustomerToRow(customer);
 
-          const { data, error } = await supabase
-               .from("tblPolarCustomers")
-               .upsert(row, { onConflict: "email" })
-               .select()
-               .single();
+          let polarCustomerRow;
+          try {
+               const { data, error } = await supabase
+                    .from("tblPolarCustomers")
+                    .upsert(row, { onConflict: "email" })
+                    .select()
+                    .single();
 
-          await logServerAction({
-               user_id: customer.externalId,
-               action: "customer.created - upsert tblPolarCustomers",
-               payload: row,
-               status: error ? "fail" : "success",
-               error: error?.message || "",
-               duration_ms: Date.now() - t0,
-               type: "webhook",
-          });
+               if (error) throw error;
+               polarCustomerRow = data;
 
-          if (error) throw error;
-          return data;
+               // Create tenant profile entry
+               const { error: tenantError } = await supabase
+                    .from("tblTenantProfiles")
+                    .insert({
+                         email: customer.email,
+                         first_name: customer.name || null,
+                         last_name: null,
+                         customerId: customer.id,
+                    });
+
+               if (tenantError) throw tenantError;
+
+               await logServerAction({
+                    user_id: customer.externalId,
+                    action: "customer.created - upsert tblPolarCustomers and create tblTenantProfile",
+                    payload: row,
+                    status: "success",
+                    error: "",
+                    duration_ms: Date.now() - t0,
+                    type: "webhook",
+               });
+
+               return polarCustomerRow;
+
+          } catch (err: any) {
+               await logServerAction({
+                    user_id: customer.externalId,
+                    action: "customer.created - failed to upsert or create tenant profile",
+                    payload: row,
+                    status: "fail",
+                    error: err?.message || String(err),
+                    duration_ms: Date.now() - t0,
+                    type: "webhook",
+               });
+               throw err;
+          }
      },
 
      // ---------------------------
