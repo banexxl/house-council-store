@@ -153,7 +153,7 @@ export const registerUser = async (
           if (!userId) throw new Error("SIGNUP_FAILED_NO_USER_ID");
 
           // 2) Create Polar customer
-          let polarCustomer
+          let polarCustomer = null
           try {
                polarCustomer = await polar.customers.create({
                     email: values.email,
@@ -199,6 +199,59 @@ export const registerUser = async (
                }
 
                throw error;
+          }
+
+          const { error: insertProfileError } = await supabaseAdmin.from('tblTenantProfiles').insert({
+               user_id: userId,
+               email: values.email,
+               name: values.contact_person,
+               polar_customer_id: polarCustomer.id,
+          });
+          if (insertProfileError) {
+               // Rollback: Delete Polar customer
+               try {
+                    if (polarCustomer?.id) {
+                         await polar.customers.delete({ id: polarCustomer.id });
+                    }
+               } catch (deleteCustomerError: any) {
+                    await logServerAction({
+                         user_id: userId,
+                         action: "Register user - Polar customer rollback failed",
+                         payload: { polar_customer_id: polarCustomer?.id },
+                         status: "fail",
+                         error: deleteCustomerError?.message || String(deleteCustomerError),
+                         duration_ms: Date.now() - t0,
+                         type: "auth",
+                    });
+               }
+
+               // Rollback: Delete auth user
+               try {
+                    if (userId) {
+                         await supabaseAdmin.auth.admin.deleteUser(userId);
+                    }
+               } catch (deleteUserError: any) {
+                    await logServerAction({
+                         user_id: userId,
+                         action: "Register user - Auth user rollback failed",
+                         payload: { user_id: userId },
+                         status: "fail",
+                         error: deleteUserError?.message || String(deleteUserError),
+                         duration_ms: Date.now() - t0,
+                         type: "auth",
+                    });
+               }
+
+               await logServerAction({
+                    user_id: userId,
+                    action: "Register user - tblTenantProfiles insert failed",
+                    payload: { email: values.email, name: values.contact_person, polar_customer_id: polarCustomer.id },
+                    status: "fail",
+                    error: insertProfileError.message || "",
+                    duration_ms: Date.now() - t0,
+                    type: "auth",
+               });
+               throw insertProfileError;
           }
           return { success: true };
      } catch (e: any) {
