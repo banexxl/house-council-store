@@ -203,7 +203,8 @@ export const registerUser = async (
 
           const { error: insertProfileError } = await supabaseAdmin.from('tblTenantProfiles').insert({
                email: values.email,
-               first_name: values.contact_person,
+               first_name: values.contact_person.split(" ")[0] ? values.contact_person.split(" ")[0] : values.contact_person,
+               last_name: values.contact_person.split(" ").slice(1).join(" ") ? values.contact_person.split(" ").slice(1).join(" ") : "",
                customerId: polarCustomer.id,
           });
           if (insertProfileError) {
