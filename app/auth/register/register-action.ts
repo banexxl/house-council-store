@@ -202,10 +202,9 @@ export const registerUser = async (
           }
 
           const { error: insertProfileError } = await supabaseAdmin.from('tblTenantProfiles').insert({
-               user_id: userId,
                email: values.email,
-               name: values.contact_person,
-               polar_customer_id: polarCustomer.id,
+               first_name: values.contact_person,
+               customerId: polarCustomer.id,
           });
           if (insertProfileError) {
                // Rollback: Delete Polar customer
