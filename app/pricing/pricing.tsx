@@ -110,22 +110,25 @@ export const PricingPage: React.FC<PricingPageProps> = ({
 
      const discountPercentage = useMemo(() => {
           if (!currentProduct) return 0;
-          const productPrice = currentProduct.prices?.[0];
-          if (!productPrice || !baseMonthlyPrice) return 0;
+
+          // Monthly baseline (month-1) has no discount
           if (currentProduct.recurringInterval === "month" && (currentProduct.recurringIntervalCount ?? 1) === 1) return 0;
 
-          const monthsInPeriod =
-               currentProduct.recurringInterval === "year"
-                    ? (currentProduct.recurringIntervalCount ?? 1) * 12
-                    : (currentProduct.recurringIntervalCount ?? 1);
+          // Fixed discounts based on interval
+          if (currentProduct.recurringInterval === "month") {
+               const monthCount = currentProduct.recurringIntervalCount ?? 1;
+               if (monthCount === 3) return 5;
+               if (monthCount === 6) return 10;
+               if (monthCount === 12) return 18;
+          }
 
-          const baselineCost = ((baseMonthlyPrice.priceAmount ?? 0) / 100) * monthsInPeriod; // per apt
-          const actualCost = (productPrice.priceAmount ?? 0) / 100; // per apt for whole period
-          if (baselineCost <= 0) return 0;
+          // Annual plans get 18% discount
+          if (currentProduct.recurringInterval === "year") {
+               return 18;
+          }
 
-          const savings = baselineCost - actualCost;
-          return Math.max(0, Math.round((savings / baselineCost) * 100));
-     }, [currentProduct, baseMonthlyPrice]);
+          return 0;
+     }, [currentProduct]);
 
      const productDescription = currentProduct?.description?.trim() ?? "";
 
@@ -318,20 +321,17 @@ export const PricingPage: React.FC<PricingPageProps> = ({
                                                                       ? "Annually"
                                                                       : `${intervalCount} Years`;
 
-                                                       // Discount badge per button (vs month-1 baseline)
-                                                       const productPrice = product.prices?.[0];
+                                                       // Discount badge per button - fixed tiers
                                                        let discount = 0;
 
-                                                       if (productPrice && baseMonthlyPrice && intervalKey !== "month-1") {
-                                                            const monthsInPeriod =
-                                                                 product.recurringInterval === "year"
-                                                                      ? (product.recurringIntervalCount ?? 1) * 12
-                                                                      : (product.recurringIntervalCount ?? 1);
-
-                                                            const baselineCost = ((baseMonthlyPrice.priceAmount ?? 0) / 100) * monthsInPeriod;
-                                                            const actualCost = (productPrice.priceAmount ?? 0) / 100;
-                                                            if (baselineCost > 0) {
-                                                                 discount = Math.max(0, Math.round(((baselineCost - actualCost) / baselineCost) * 100));
+                                                       if (intervalKey !== "month-1") {
+                                                            if (product.recurringInterval === "month") {
+                                                                 const monthCount = product.recurringIntervalCount ?? 1;
+                                                                 if (monthCount === 3) discount = 5;
+                                                                 else if (monthCount === 6) discount = 10;
+                                                                 else if (monthCount === 12) discount = 18;
+                                                            } else if (product.recurringInterval === "year") {
+                                                                 discount = 18;
                                                             }
                                                        }
 
@@ -396,13 +396,17 @@ export const PricingPage: React.FC<PricingPageProps> = ({
 
                                                             {/* ✅ Price for SELECTED product */}
                                                             <Typography variant="body2" color="text.secondary">
-                                                                 {pricingDisplay ? (
+                                                                 {pricingDisplay && baseMonthlyPrice ? (
                                                                       <>
-                                                                           <strong>{pricingDisplay.format(pricingDisplay.perMonthPerApartment)}</strong> per apartment /
-                                                                           month
+                                                                           {discountPercentage > 0 && (
+                                                                                <Typography component="span" variant="caption" sx={{ display: "block", mb: 0.5, color: "success.main", fontWeight: 600 }}>
+                                                                                     You save {pricingDisplay.format((baseMonthlyPrice.priceAmount ?? 0) / 100 * discountPercentage / 100)} per month
+                                                                                </Typography>
+                                                                           )}
+                                                                           <strong>{pricingDisplay.format(pricingDisplay.totalForPeriodPerApartment)}</strong> per apartment for{" "}
+                                                                           {pricingDisplay.months} month{pricingDisplay.months === 1 ? "" : "s"}
                                                                            <Typography component="span" variant="caption" sx={{ ml: 1 }}>
-                                                                                ({pricingDisplay.format(pricingDisplay.totalForPeriodPerApartment)} per apartment for{" "}
-                                                                                {pricingDisplay.months} month{pricingDisplay.months === 1 ? "" : "s"})
+                                                                                ({pricingDisplay.format(pricingDisplay.perMonthPerApartment)} per month)
                                                                            </Typography>
                                                                       </>
                                                                  ) : (
