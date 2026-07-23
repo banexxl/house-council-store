@@ -91,7 +91,7 @@ export async function middleware(request: NextRequest) {
      const {
           data: { user },
      } = await supabase.auth.getUser();
-
+     console.log("[middleware] session and user", { session, user });
      // -----------------------------
      // Not authenticated
      // -----------------------------
