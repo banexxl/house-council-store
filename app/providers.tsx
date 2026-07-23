@@ -17,7 +17,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
                          {children}
                     </Box>
                </Box>
-               <Toaster position="top-center" />
+               <Toaster position="top-center" toastOptions={{
+                    duration: 2000
+               }} />
           </ThemeProvider>
      )
 }
