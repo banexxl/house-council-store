@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { notFound, redirect } from "next/navigation"
+import { redirect } from "next/navigation"
 import Script from "next/script"
 import { getSessionUser } from "@/app/lib/get-session"
 import { Header } from "@/app/components/header"
@@ -31,20 +31,17 @@ export const metadata: Metadata = {
 export default async function FreeTrialSuccessPage({ searchParams }: { searchParams: Promise<{ customer_session_token?: string | string[] }> }) {
      const { customer_session_token } = await searchParams
      const customerSessionToken = Array.isArray(customer_session_token) ? customer_session_token[0] : customer_session_token
+     console.log('customerSessionToken', customerSessionToken);
 
      const isValidCustomerSessionToken =
           typeof customerSessionToken === "string" &&
           customerSessionToken.startsWith("polar_cst_") &&
           customerSessionToken.length > "polar_cst_".length
 
-     if (!isValidCustomerSessionToken) {
-          notFound()
-     }
-
      // Get the user session
      const session = await getSessionUser()
 
-     if (!session) {
+     if (!session || !isValidCustomerSessionToken) {
           // Redirect to login if not authenticated
           redirect("/auth/sign-in")
      }
