@@ -557,7 +557,7 @@ export default function SecurityTab({ userData }: SecurityTabProps) {
                          </Typography>
                          <Typography variant="body2" color="text.secondary" sx={{ mt: 1, fontWeight: "bold" }}>
                               All added buildings, units, and associated data will be permanently removed.
-                              Please consider reassaigning your account to another user before proceeding with deletion.
+                              Please consider reassigning your account to another user before proceeding with deletion.
                          </Typography>
                          <Stack direction="column" spacing={2} mt={2}>
                               <Button
