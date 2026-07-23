@@ -186,8 +186,8 @@ export const LoginPage = () => {
                     }
 
                     // No TOTP factor -> proceed normally
-                    toast.success("Sign in successful!");
                     router.refresh();
+                    toast.success("Sign in successful!");
                } catch (err) {
                     toast.error("Unexpected error during sign in. Please try again.");
                } finally {
