@@ -187,10 +187,10 @@ export const LoginPage = () => {
 
                     // No TOTP factor -> proceed normally
                     toast.success("Sign in successful!");
-                    // Use startTransition to properly coordinate state updates with navigation
-                    startTransition(() => {
-                         router.refresh();
-                    });
+                    // Use hard refresh to ensure cookies are properly set before middleware checks
+                    setTimeout(() => {
+                         window.location.href = "/";
+                    }, 500);
                } catch (err) {
                     toast.error("Unexpected error during sign in. Please try again.");
                } finally {
@@ -236,9 +236,10 @@ export const LoginPage = () => {
                });
 
                toast.success("2FA verified. You're now signed in!");
-               startTransition(() => {
-                    router.refresh();
-               });
+               // Use hard refresh to ensure cookies are properly set before middleware checks
+               setTimeout(() => {
+                    window.location.href = "/";
+               }, 500);
           } finally {
                setLoading(false);
           }
