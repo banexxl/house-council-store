@@ -148,7 +148,7 @@ export async function GET(request: Request) {
                          email,
                          error: permission.error,
                     });
-                    const errorDescription = encodeURIComponent('This email cannot be used. Please register with a different email or contact support.');
+                    const errorDescription = encodeURIComponent('Your account was not found. Please register first, or contact support.');
                     const redirectUrl = `${requestUrl.origin}/auth/error?error=user_not_found&error_description=${errorDescription}`;
                     return NextResponse.redirect(redirectUrl);
                }
