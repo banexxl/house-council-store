@@ -132,89 +132,61 @@ export const LoginPage = () => {
           validationSchema: signInSchema,
 
           onSubmit: async (values) => {
-               console.log("[onSubmit] Starting sign-in with email:", values.email);
-
                let checkPermissionResult;
                try {
-                    console.log("[client] Before permission action", new Date().toISOString());
-
-                    const permissionPromise =
-                         checkUserPermissionServer(values.email);
-
-                    console.log("[client] Action promise created");
-
+                    const permissionPromise = checkUserPermissionServer(values.email);
                     checkPermissionResult = await permissionPromise;
-
-                    console.log("[client] Action completed", checkPermissionResult);
                } catch (permissionErr) {
-                    console.error("[onSubmit] checkUserPermissionServer threw error:", permissionErr);
                     toast.error("Error checking permissions: " + (permissionErr instanceof Error ? permissionErr.message : String(permissionErr)));
                     return;
                }
 
                const { success, error } = checkPermissionResult;
-               console.log("[onSubmit] checkUserPermissionServer result:", { success, error });
-
                if (!success) {
-                    console.log("[onSubmit] User permission check failed, showing error");
                     toast.error(error?.message || error?.hint || error?.details || "Unknown error");
                     return;
                }
 
                setLoading(true);
-               console.log("[onSubmit] Set loading to true");
 
                try {
-                    console.log("[onSubmit] Calling signInWithPassword");
                     const { data, error: signInError } = await supabase.auth.signInWithPassword({
                          email: values.email,
                          password: values.password,
                     });
-                    console.log("[onSubmit] signInWithPassword response:", { signInError, hasSession: !!data?.session });
-
                     if (signInError) {
-                         console.log("[onSubmit] Sign in error:", signInError.message);
                          toast.error(signInError.message);
                          return;
                     }
 
                     // We have a session now (AAL1 typically).
                     if (!data.session) {
-                         console.log("[onSubmit] No session returned from sign in");
                          toast.error("No session returned from sign in.");
                          return;
                     }
 
-                    console.log("[onSubmit] Session obtained, checking 2FA factors");
                     // If you WANT to require 2FA when user has TOTP enabled:
                     const { data: factorsData, error: factorsErr } = await supabase.auth.mfa.listFactors();
-                    console.log("[onSubmit] MFA factors:", { factorsErr, factorsCount: factorsData?.totp?.length });
 
                     if (factorsErr) {
-                         console.log("[onSubmit] Error listing 2FA factors:", factorsErr.message);
                          toast.error("Failed to load 2FA factors: " + factorsErr.message);
                          return;
                     }
 
                     const totpFactor = factorsData?.totp?.find((f) => f.status === "verified");
-                    console.log("[onSubmit] TOTP factor found:", !!totpFactor);
 
                     if (totpFactor) {
-                         console.log("[onSubmit] User has verified TOTP, creating challenge");
                          // Create a real challenge
                          const { data: challengeData, error: challengeErr } = await supabase.auth.mfa.challenge({
                               factorId: totpFactor.id,
                          });
-                         console.log("[onSubmit] Challenge created:", { challengeErr, challengeId: challengeData?.id });
 
                          if (challengeErr || !challengeData?.id) {
-                              console.log("[onSubmit] Challenge creation failed");
                               toast.error("Failed to create 2FA challenge: " + (challengeErr?.message ?? "Unknown"));
                               return;
                          }
 
                          // Show OTP UI (do NOT redirect yet)
-                         console.log("[onSubmit] Showing 2FA UI");
                          setDoesRequire2FA(true);
                          setFactorId(totpFactor.id);
                          setChallengeId(challengeData.id);
@@ -224,16 +196,12 @@ export const LoginPage = () => {
                     }
 
                     // No TOTP factor -> proceed normally
-                    console.log("[onSubmit] No 2FA required, proceeding with redirect");
                     toast.success("Sign in successful!");
                     // Force full page reload with updated cookies
-                    console.log("[onSubmit] Executing window.location.replace('/')");
                     window.location.replace("/");
                } catch (err) {
-                    console.error("[onSubmit] Unexpected error:", err);
                     toast.error("Unexpected error during sign in. Please try again.");
                } finally {
-                    console.log("[onSubmit] Finally block - setting loading to false");
                     setLoading(false);
                }
           },
