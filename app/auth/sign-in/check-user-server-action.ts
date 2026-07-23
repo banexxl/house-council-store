@@ -11,7 +11,7 @@ export type ErrorType = {
 }
 
 // Helper function to safely serialize error objects
-function safeSerializeError(err: any): { code: string; message: string; details: string } {
+const safeSerializeError = (err: any): { code: string; message: string; details: string } => {
      if (!err) {
           return { code: 'UnknownError', message: 'Unknown error', details: 'An unknown error occurred' };
      }

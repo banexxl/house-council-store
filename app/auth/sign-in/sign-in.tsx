@@ -128,7 +128,6 @@ export const LoginPage = () => {
                rememberMe: false,
           },
           validationSchema: signInSchema,
-
           onSubmit: async (values) => {
                let checkPermissionResult;
                try {

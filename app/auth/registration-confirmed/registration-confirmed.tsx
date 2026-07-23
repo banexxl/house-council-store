@@ -46,6 +46,7 @@ export const RegistrationConfirmedPage = () => {
                     if (user?.email) {
                          setAuthEmail(user.email)
                     }
+                    supabase.auth.signOut()
                } catch (err) {
                     console.error("Failed to get auth user:", err)
                }
