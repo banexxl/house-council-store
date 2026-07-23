@@ -137,7 +137,7 @@ export const LoginPage = () => {
                let checkPermissionResult;
                try {
                     console.log("[onSubmit] About to call checkUserPermissionServer");
-                    checkPermissionResult = await checkUserPermissionServer(values.email);
+                    // checkPermissionResult = await checkUserPermissionServer(values.email);
                     console.log("[onSubmit] checkUserPermissionServer completed:", checkPermissionResult);
                } catch (permissionErr) {
                     console.error("[onSubmit] checkUserPermissionServer threw error:", permissionErr);
@@ -145,14 +145,14 @@ export const LoginPage = () => {
                     return;
                }
 
-               const { success, error } = checkPermissionResult;
-               console.log("[onSubmit] checkUserPermissionServer result:", { success, error });
+               // const { success, error } = checkPermissionResult;
+               // console.log("[onSubmit] checkUserPermissionServer result:", { success, error });
 
-               if (!success) {
-                    console.log("[onSubmit] User permission check failed, showing error");
-                    toast.error(error?.message || error?.hint || error?.details || "Unknown error");
-                    return;
-               }
+               // if (!success) {
+               //      console.log("[onSubmit] User permission check failed, showing error");
+               //      toast.error(error?.message || error?.hint || error?.details || "Unknown error");
+               //      return;
+               // }
 
                setLoading(true);
                console.log("[onSubmit] Set loading to true");

@@ -25,6 +25,8 @@ function safeSerializeError(err: any): { code: string; message: string; details:
 }
 
 export async function checkUserPermissionServer(email: string): Promise<{ success: boolean; error?: ErrorType }> {
+     console.log('checkUserPermissionServer', email);
+
      const start = Date.now();
 
      // Helper to safely log without crashing
