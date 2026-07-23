@@ -31,8 +31,6 @@ export const metadata: Metadata = {
 export default async function FreeTrialSuccessPage({ searchParams }: { searchParams: Promise<{ customer_session_token?: string | string[] }> }) {
      const { customer_session_token } = await searchParams
      const customerSessionToken = Array.isArray(customer_session_token) ? customer_session_token[0] : customer_session_token
-     console.log('customerSessionToken', customerSessionToken);
-
      const isValidCustomerSessionToken =
           typeof customerSessionToken === "string" &&
           customerSessionToken.startsWith("polar_cst_") &&

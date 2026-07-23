@@ -95,7 +95,7 @@ export async function middleware(request: NextRequest) {
      // -----------------------------
      // Not authenticated
      // -----------------------------
-     if (!user) {
+     if (!user && !session) {
           if (!isPublicRoute) {
                return NextResponse.redirect(new URL("/auth/sign-in", request.url));
           }
