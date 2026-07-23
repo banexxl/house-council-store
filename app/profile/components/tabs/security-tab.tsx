@@ -555,6 +555,10 @@ export default function SecurityTab({ userData }: SecurityTabProps) {
                               Note: This action is irreversible. Deleting your account will
                               also delete all of your data and billing information.
                          </Typography>
+                         <Typography variant="body2" color="text.secondary" sx={{ mt: 1, fontWeight: "bold" }}>
+                              All added buildings, units, and associated data will be permanently removed.
+                              Please consider reassaigning your account to another user before proceeding with deletion.
+                         </Typography>
                          <Stack direction="column" spacing={2} mt={2}>
                               <Button
                                    variant="contained"
