@@ -134,7 +134,18 @@ export const LoginPage = () => {
           onSubmit: async (values) => {
                console.log("[onSubmit] Starting sign-in with email:", values.email);
 
-               const { success, error } = await checkUserPermissionServer(values.email);
+               let checkPermissionResult;
+               try {
+                    console.log("[onSubmit] About to call checkUserPermissionServer");
+                    checkPermissionResult = await checkUserPermissionServer(values.email);
+                    console.log("[onSubmit] checkUserPermissionServer completed:", checkPermissionResult);
+               } catch (permissionErr) {
+                    console.error("[onSubmit] checkUserPermissionServer threw error:", permissionErr);
+                    toast.error("Error checking permissions: " + (permissionErr instanceof Error ? permissionErr.message : String(permissionErr)));
+                    return;
+               }
+
+               const { success, error } = checkPermissionResult;
                console.log("[onSubmit] checkUserPermissionServer result:", { success, error });
 
                if (!success) {
