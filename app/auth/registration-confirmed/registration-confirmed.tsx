@@ -31,7 +31,6 @@ export const RegistrationConfirmedPage = () => {
      const searchParams = useSearchParams()
      const errorCode = searchParams.get("error_code")
      const errorDescription = searchParams.get("error_description")
-     let email = searchParams.get("email")
      const [resendingConfirmation, setResendingConfirmation] = useState(false)
      const [authEmail, setAuthEmail] = useState<string | null>(null)
 
@@ -54,20 +53,17 @@ export const RegistrationConfirmedPage = () => {
           getAuthEmail()
      }, [])
 
-     // Use URL param email first, fallback to auth session email
-     const emailToUse = email || authEmail
-
      const isError = !!errorCode
 
      const handleResendEmail = async () => {
-          if (!emailToUse) {
+          if (!authEmail) {
                toast.error("Email not found. Please try registering again.")
                return
           }
 
           setResendingConfirmation(true)
           try {
-               const success = await resendRegistrationEmail(emailToUse)
+               const success = await resendRegistrationEmail(authEmail)
                if (success) {
                     toast.success("Confirmation email sent! Check your inbox.")
                } else {
@@ -114,7 +110,7 @@ export const RegistrationConfirmedPage = () => {
                                                        variant="contained"
                                                        size="large"
                                                        onClick={handleResendEmail}
-                                                       disabled={resendingConfirmation || !emailToUse}
+                                                       disabled={resendingConfirmation || !authEmail}
                                                   >
                                                        {resendingConfirmation ? "Resending..." : "Resend Confirmation Email"}
                                                   </Button>
