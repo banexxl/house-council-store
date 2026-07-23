@@ -187,10 +187,10 @@ export const LoginPage = () => {
 
                     // No TOTP factor -> proceed normally
                     toast.success("Sign in successful!");
-                    // Use hard refresh to ensure cookies are properly set before middleware checks
+                    // Force full page reload with updated cookies
                     setTimeout(() => {
-                         window.location.href = "/";
-                    }, 500);
+                         window.location.reload();
+                    }, 300);
                } catch (err) {
                     toast.error("Unexpected error during sign in. Please try again.");
                } finally {
@@ -236,10 +236,10 @@ export const LoginPage = () => {
                });
 
                toast.success("2FA verified. You're now signed in!");
-               // Use hard refresh to ensure cookies are properly set before middleware checks
+               // Force full page reload with updated cookies
                setTimeout(() => {
-                    window.location.href = "/";
-               }, 500);
+                    window.location.reload();
+               }, 300);
           } finally {
                setLoading(false);
           }
