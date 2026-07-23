@@ -136,9 +136,16 @@ export const LoginPage = () => {
 
                let checkPermissionResult;
                try {
-                    console.log("[onSubmit] About to call checkUserPermissionServer");
-                    checkPermissionResult = await checkUserPermissionServer(values.email);
-                    console.log("[onSubmit] checkUserPermissionServer completed:", checkPermissionResult);
+                    console.log("[client] Before permission action", new Date().toISOString());
+
+                    const permissionPromise =
+                         checkUserPermissionServer(values.email);
+
+                    console.log("[client] Action promise created");
+
+                    checkPermissionResult = await permissionPromise;
+
+                    console.log("[client] Action completed", checkPermissionResult);
                } catch (permissionErr) {
                     console.error("[onSubmit] checkUserPermissionServer threw error:", permissionErr);
                     toast.error("Error checking permissions: " + (permissionErr instanceof Error ? permissionErr.message : String(permissionErr)));
