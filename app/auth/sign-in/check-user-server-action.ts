@@ -27,6 +27,23 @@ function safeSerializeError(err: any): { code: string; message: string; details:
 export async function checkUserPermissionServer(email: string): Promise<{ success: boolean; error?: ErrorType }> {
      const start = Date.now();
 
+     // Helper to safely log without crashing
+     const safeLog = async (action: string, payload: any, status: 'success' | 'fail', error: string) => {
+          try {
+               await logServerAction({
+                    user_id: null,
+                    action,
+                    payload,
+                    status,
+                    error,
+                    duration_ms: Date.now() - start,
+                    type: 'auth'
+               });
+          } catch (logErr) {
+               console.error('[checkUserPermissionServer] Logging failed:', logErr);
+          }
+     };
+
      try {
           console.log('[checkUserPermissionServer] Starting for email:', email);
           const supabase = await useServerSideSupabaseAnonClient();
@@ -46,37 +63,13 @@ export async function checkUserPermissionServer(email: string): Promise<{ succes
 
           if (tenantError) {
                console.log('[checkUserPermissionServer] Tenant error occurred, logging and continuing');
-               await logServerAction({
-                    user_id: null,
-                    action: 'Check if email exists - tblTenants lookup failed',
-                    payload: { email },
-                    status: 'fail',
-                    error: tenantError.message || '',
-                    duration_ms: Date.now() - start,
-                    type: 'auth'
-               });
+               await safeLog('Check if email exists - tblTenants lookup failed', { email }, 'fail', tenantError.message || '');
           }
 
-          await logServerAction({
-               user_id: null,
-               action: 'Check if email exists - tblTenants lookup result',
-               payload: { email, found: Boolean(tenantData?.email) },
-               status: 'success',
-               error: '',
-               duration_ms: Date.now() - start,
-               type: 'auth'
-          });
+          await safeLog('Check if email exists - tblTenants lookup result', { email, found: Boolean(tenantData?.email) }, 'success', '');
 
           if (tenantData?.email) {
-               await logServerAction({
-                    user_id: null,
-                    action: 'Check if email exists - EmailInUse',
-                    payload: { email },
-                    status: 'fail',
-                    error: 'Email already in use',
-                    duration_ms: Date.now() - start,
-                    type: 'auth'
-               });
+               await safeLog('Check if email exists - EmailInUse', { email }, 'fail', 'Email already in use');
                return {
                     success: false,
                     error: {
@@ -105,16 +98,7 @@ export async function checkUserPermissionServer(email: string): Promise<{ succes
           if (customerError) {
                const serializedError = safeSerializeError(customerError);
                console.log('[checkUserPermissionServer] Customer error occurred:', serializedError);
-
-               await logServerAction({
-                    user_id: null,
-                    action: 'Check if client exists - not found in tblPolarCustomers',
-                    payload: { email },
-                    status: 'fail',
-                    error: serializedError.message,
-                    duration_ms: Date.now() - start,
-                    type: 'auth'
-               });
+               await safeLog('Check if client exists - not found in tblPolarCustomers', { email }, 'fail', serializedError.message);
 
                if (serializedError.code === 'PGRST116') {
                     console.log('[checkUserPermissionServer] Customer not found (PGRST116)');
@@ -142,15 +126,7 @@ export async function checkUserPermissionServer(email: string): Promise<{ succes
           }
 
           if (!customerData?.externalId) {
-               await logServerAction({
-                    user_id: null,
-                    action: 'Check if client exists - missing externalId',
-                    payload: { email, externalId: customerData?.externalId ?? null },
-                    status: 'fail',
-                    error: 'Missing externalId',
-                    duration_ms: Date.now() - start,
-                    type: 'auth'
-               });
+               await safeLog('Check if client exists - missing externalId', { email, externalId: customerData?.externalId ?? null }, 'fail', 'Missing externalId');
                return {
                     success: false,
                     error: {
@@ -170,27 +146,10 @@ export async function checkUserPermissionServer(email: string): Promise<{ succes
           if (data?.user) {
                const userMetadata = data.user.user_metadata;
                const clientStatus = userMetadata?.client_status;
-
-               await logServerAction({
-                    user_id: data.user.id,
-                    action: 'User successfully authenticated.',
-                    payload: { email, clientStatus },
-                    status: 'success',
-                    error: '',
-                    duration_ms: Date.now() - start,
-                    type: 'auth'
-               });
+               await safeLog('User successfully authenticated.', { email, clientStatus }, 'success', '');
 
                if (clientStatus && clientStatus !== 'active') {
-                    await logServerAction({
-                         user_id: data.user.id,
-                         action: 'User restricted by client_status',
-                         payload: { email, clientStatus },
-                         status: 'fail',
-                         error: 'Client status not active',
-                         duration_ms: Date.now() - start,
-                         type: 'auth'
-                    });
+                    await safeLog('User restricted by client_status', { email, clientStatus }, 'fail', 'Client status not active');
                     let hint = `Your email is registered, but your account status "${clientStatus}" does not permit sign-in. Please contact support for assistance.`;
                     switch (clientStatus) {
                          case 'inactive':
@@ -222,16 +181,7 @@ export async function checkUserPermissionServer(email: string): Promise<{ succes
           if (error) {
                const serializedError = safeSerializeError(error);
                console.log('[checkUserPermissionServer] Auth error occurred:', serializedError);
-
-               await logServerAction({
-                    user_id: null,
-                    action: 'Check if client exists - auth error',
-                    payload: { email },
-                    status: 'fail',
-                    error: serializedError.message,
-                    duration_ms: Date.now() - start,
-                    type: 'auth'
-               });
+               await safeLog('Check if client exists - auth error', { email }, 'fail', serializedError.message);
 
                if (serializedError.message?.includes('User not found') || serializedError.code === '404') {
                     return {
@@ -268,15 +218,7 @@ export async function checkUserPermissionServer(email: string): Promise<{ succes
                };
           }
 
-          await logServerAction({
-               user_id: null,
-               action: 'Check if client exists - unexpected state',
-               payload: { email },
-               status: 'fail',
-               error: 'No data and no error from getUserById',
-               duration_ms: Date.now() - start,
-               type: 'auth'
-          });
+          await safeLog('Check if client exists - unexpected state', { email }, 'fail', 'No data and no error from getUserById');
 
           return {
                success: false,
@@ -293,15 +235,7 @@ export async function checkUserPermissionServer(email: string): Promise<{ succes
           const errorStack = err instanceof Error ? err.stack : '';
           console.error('[checkUserPermissionServer] Error stack:', errorStack);
 
-          await logServerAction({
-               user_id: null,
-               action: 'checkUserPermissionServer - Unexpected error caught',
-               payload: { email, error: errorMessage, stack: errorStack },
-               status: 'fail',
-               error: errorMessage,
-               duration_ms: Date.now() - start,
-               type: 'auth'
-          });
+          await safeLog('checkUserPermissionServer - Unexpected error caught', { email, error: errorMessage, stack: errorStack }, 'fail', errorMessage);
 
           return {
                success: false,
