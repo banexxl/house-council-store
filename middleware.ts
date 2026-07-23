@@ -16,6 +16,13 @@ function getAalFromJwt(accessToken?: string | null): string | null {
 }
 
 export async function middleware(request: NextRequest) {
+
+     console.log("[middleware]", {
+          method: request.method,
+          pathname: request.nextUrl.pathname,
+          isServerAction: request.headers.has("next-action"),
+     });
+
      let supabaseResponse = NextResponse.next({ request });
 
      const supabase = createServerClient(
