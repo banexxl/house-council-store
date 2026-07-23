@@ -66,7 +66,6 @@ const signInMessages = {
 
 export const LoginPage = () => {
      const [showPassword, setShowPassword] = useState(false)
-     const [googleSignInLoading, setGoogleSignInLoading] = useState(false)
      const router = useRouter()
      const theme = useTheme()
      const [doesRequire2FA, setDoesRequire2FA] = useState(false)
@@ -107,7 +106,6 @@ export const LoginPage = () => {
           // eslint-disable-next-line react-hooks/exhaustive-deps
      }, [mfaParam]);
 
-
      const supabase = createBrowserClient(
           process.env.NEXT_PUBLIC_SUPABASE_URL as string,
           process.env.NEXT_PUBLIC_SB_CLIENT_KEY as string
@@ -134,8 +132,7 @@ export const LoginPage = () => {
           onSubmit: async (values) => {
                let checkPermissionResult;
                try {
-                    const permissionPromise = checkUserPermissionServer(values.email);
-                    checkPermissionResult = await permissionPromise;
+                    checkPermissionResult = await checkUserPermissionServer(values.email);
                } catch (permissionErr) {
                     toast.error("Error checking permissions: " + (permissionErr instanceof Error ? permissionErr.message : String(permissionErr)));
                     return;
@@ -253,7 +250,6 @@ export const LoginPage = () => {
 
 
      const handleGoogleSignIn = async (): Promise<{ success: boolean; error?: any }> => {
-          setGoogleSignInLoading(true)
           const start = Date.now()
           const { data: authData, error: authError } = await supabase.auth.signInWithOAuth({
                provider: "google",
@@ -297,7 +293,6 @@ export const LoginPage = () => {
                duration_ms: Date.now() - start,
                type: "auth",
           })
-          setGoogleSignInLoading(false)
           return { success: false, error: { message: "Redirect URL is null." } }
      }
 
@@ -485,14 +480,11 @@ export const LoginPage = () => {
                                                        },
                                                   }}
                                                   onClick={async () => {
-                                                       setGoogleSignInLoading(true)
                                                        const { success, error } = await handleGoogleSignIn()
                                                        if (success) {
-                                                            setGoogleSignInLoading(false)
                                                             router.push("/")
                                                        }
                                                        if (error) {
-                                                            setGoogleSignInLoading(false)
                                                             toast.error(error.message ?? error.hint ?? error.details)
                                                        }
                                                   }}

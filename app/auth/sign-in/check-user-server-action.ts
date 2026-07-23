@@ -2,7 +2,6 @@
 
 import { useServerSideSupabaseServiceRoleClient } from '@/app/lib/ss-supabase-service-role-client';
 import { useServerSideSupabaseAnonClient } from '@/app/lib/ss-supabase-anon-client';
-import { logServerAction } from '@/app/lib/server-logging';
 
 export type ErrorType = {
      code: string;
