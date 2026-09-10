@@ -5,11 +5,10 @@ import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { useFormik } from "formik"
 import Animate from "@/app/components/animation-framer-motion"
+import AuthShell from "@/app/components/auth-shell"
 import {
      Box,
      Button,
-     Container,
-     Paper,
      TextField,
      Typography,
      Alert,
@@ -112,88 +111,81 @@ export const ResetPasswordPage = () => {
      // Show error if token is invalid
      if (!isTokenValid) {
           return (
-               <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
-                    <Box component="main" sx={{ flexGrow: 1, py: { xs: 6, md: 10 } }}>
-                         <Container maxWidth="sm">
-                              <Paper elevation={3} sx={{ p: 4, borderRadius: 2, textAlign: "center" }}>
-                                   <Box sx={{ color: "error.main", mb: 2 }}>
-                                        <ErrorOutlineIcon sx={{ fontSize: 60 }} />
-                                   </Box>
-                                   <Typography variant="h5" gutterBottom>
-                                        Invalid or Expired Link
-                                   </Typography>
-                                   <Typography variant="body1" >
-                                        The password reset link you clicked is invalid or has expired.
-                                   </Typography>
-                                   <Typography variant="body2" color="text.secondary" >
-                                        Password reset links are valid for 24 hours. Please request a new password reset link.
-                                   </Typography>
-                                   <Button variant="contained" component={Link} href="/auth/forgot-password" sx={{ mt: 2 }}>
-                                        Request New Reset Link
-                                   </Button>
-                              </Paper>
-                         </Container>
+               <AuthShell>
+                    <Box sx={{ textAlign: "center" }}>
+                         <Box sx={{ color: "error.main", mb: 2 }}>
+                              <ErrorOutlineIcon sx={{ fontSize: 60 }} />
+                         </Box>
+                         <Typography variant="h5" gutterBottom>
+                              Invalid or Expired Link
+                         </Typography>
+                         <Typography variant="body1" >
+                              The password reset link you clicked is invalid or has expired.
+                         </Typography>
+                         <Typography variant="body2" color="text.secondary" >
+                              Password reset links are valid for 24 hours. Please request a new password reset link.
+                         </Typography>
+                         <Button variant="contained" component={Link} href="/auth/forgot-password" sx={{ mt: 2 }}>
+                              Request New Reset Link
+                         </Button>
                     </Box>
-               </Box>
+               </AuthShell>
           )
      }
 
      return (
-          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
+          <AuthShell>
                <Animate>
-                    <Box component="main" sx={{ flexGrow: 1, py: { xs: 6, md: 10 } }}>
-                         <Container maxWidth="sm">
-                              <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
-                                   <Stepper activeStep={isSubmitted ? 1 : 0} sx={{ mb: 4 }}>
-                                        <Step>
-                                             <StepLabel>Reset Password</StepLabel>
-                                        </Step>
-                                        <Step>
-                                             <StepLabel>Complete</StepLabel>
-                                        </Step>
-                                   </Stepper>
+                    <Stepper activeStep={isSubmitted ? 1 : 0} sx={{ mb: 4 }}>
+                         <Step>
+                              <StepLabel>Reset Password</StepLabel>
+                         </Step>
+                         <Step>
+                              <StepLabel>Complete</StepLabel>
+                         </Step>
+                    </Stepper>
 
-                                   {isSubmitted ? (
-                                        <Box sx={{ textAlign: "center" }}>
-                                             <Box sx={{ color: "success.main", mb: 2 }}>
-                                                  <CheckCircleOutlineIcon sx={{ fontSize: 60 }} />
-                                             </Box>
-                                             <Typography variant="h5" gutterBottom>
-                                                  Password Reset Successful
-                                             </Typography>
-                                             <Typography variant="body1" >
-                                                  Your password has been successfully reset.
-                                             </Typography>
-                                             <Typography variant="body2" color="text.secondary" >
-                                                  You can now log in to your account with your new password.
-                                             </Typography>
-                                             <Button variant="contained" component={Link} href="/auth/sign-in" sx={{ mt: 2 }}>
-                                                  Login
-                                             </Button>
-                                        </Box>
-                                   ) : (
-                                        <>
-                                             <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", mb: 4 }}>
-                                                  <Box
-                                                       sx={{
-                                                            bgcolor: "primary.main",
-                                                            color: "primary.contrastText",
-                                                            borderRadius: "50%",
-                                                            p: 1,
-                                                            mb: 2,
-                                                       }}
-                                                  >
-                                                       <LockResetIcon />
-                                                  </Box>
-                                                  <Typography variant="h4" component="h1" gutterBottom>
-                                                       Reset Your Password
-                                                  </Typography>
-                                                  <Typography variant="body2" color="text.secondary" textAlign="center">
-                                                       Please enter your new password below
-                                                  </Typography>
-                                             </Box>
+                    {isSubmitted ? (
+                         <Box sx={{ textAlign: "center" }}>
+                              <Box sx={{ color: "success.main", mb: 2 }}>
+                                   <CheckCircleOutlineIcon sx={{ fontSize: 60 }} />
+                              </Box>
+                              <Typography variant="h5" gutterBottom>
+                                   Password Reset Successful
+                              </Typography>
+                              <Typography variant="body1" >
+                                   Your password has been successfully reset.
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary" >
+                                   You can now log in to your account with your new password.
+                              </Typography>
+                              <Button variant="contained" component={Link} href="/auth/sign-in" sx={{ mt: 2 }}>
+                                   Login
+                              </Button>
+                         </Box>
+                    ) : (
+                         <>
+                              <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-start", mb: 4 }}>
+                                   <Box
+                                        sx={{
+                                             bgcolor: "primary.main",
+                                             color: "primary.contrastText",
+                                             borderRadius: "50%",
+                                             p: 1,
+                                             mb: 2,
+                                        }}
+                                   >
+                                        <LockResetIcon />
+                                   </Box>
+                                   <Typography variant="h4" component="h1" gutterBottom>
+                                        Reset Your Password
+                                   </Typography>
+                                   <Typography variant="body2" color="text.secondary">
+                                        Please enter your new password below
+                                   </Typography>
+                              </Box>
 
-                                             <Box component="form" onSubmit={formik.handleSubmit} noValidate>
+                              <Box component="form" onSubmit={formik.handleSubmit} noValidate>
                                                   <TextField
                                                        fullWidth
                                                        id="newPassword"
@@ -292,14 +284,11 @@ export const ResetPasswordPage = () => {
                                                        {formik.isSubmitting ? <CircularProgress size={24} color="inherit" /> : "Reset Password"}
                                                   </Button>
                                              </Box>
-                                        </>
-                                   )}
-                              </Paper>
-                         </Container>
-                    </Box>
+                         </>
+                    )}
+                    <Toaster />
                </Animate>
-               <Toaster />
-          </Box>
+          </AuthShell>
      )
 }
 

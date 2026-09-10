@@ -36,7 +36,7 @@ export default function SubscriptionErrorPage({ userEmail }: FreeTrialErrorProps
      return (
           <Container maxWidth="md" sx={{ py: 8 }}>
                <Animate>
-                    <Paper elevation={3} sx={{ p: 4, borderRadius: 2, textAlign: "center" }}>
+                    <Paper elevation={0} sx={{ p: 4, textAlign: "center", border: "1px solid", borderColor: "divider" }}>
                          <Box sx={{ color: "error.main", mb: 3 }}>
                               <WarningIcon sx={{ fontSize: 80 }} />
                          </Box>

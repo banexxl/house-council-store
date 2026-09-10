@@ -31,6 +31,8 @@ import MenuBookIcon from '@mui/icons-material/MenuBook';
 import ContentCopyIcon from "@mui/icons-material/ContentCopy"
 import LinkIcon from "@mui/icons-material/Link"
 import { Toaster } from "react-hot-toast"
+import PageBanner from "@/app/components/page-banner"
+import { HEADER_HEIGHT } from "@/app/lib/layout-constants"
 
 type DocSection = {
      id: string
@@ -43,7 +45,7 @@ type DocSection = {
      tags?: string[]
 }
 
-const HEADER_OFFSET_PX = 88 // adjust if your fixed header is taller/shorter
+const HEADER_OFFSET_PX = HEADER_HEIGHT + 16 // fixed header height plus a little breathing room
 
 const ANDROID_APP_URL = (process.env.NEXT_PUBLIC_ANDROID_APP_URL || "").trim().length > 0 ? (process.env.NEXT_PUBLIC_ANDROID_APP_URL || "").trim() : ''
 const IOS_APP_URL = (process.env.NEXT_PUBLIC_IOS_APP_URL || "").trim().length > 0 ? (process.env.NEXT_PUBLIC_IOS_APP_URL || "").trim() : ''
@@ -266,7 +268,7 @@ const sections: DocSection[] = [
           description:
                "NestLink is subscription-based, commonly priced per apartment.",
           bullets: [
-               "Pay per apartment (scales with community size)",
+               "Per apartment pricing (scales with community size)",
                "Track subscription status (trial/active/inactive, if applicable to your system)",
                "Centralized plan information for transparency",
           ],
@@ -413,44 +415,51 @@ export const DocsPage = () => {
                     display: "flex",
                     flexDirection: "column",
                     minHeight: "100vh",
-                    mt: 5,
                }}
           >
-               <Animate>
-                    {/* HEADER */}
-                    <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-                         <Container maxWidth="lg">
-                              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", py: 2, gap: 2 }}>
-                                   <Box sx={{ display: { xs: "none", md: 'flex' }, alignItems: "center", minWidth: 0 }}>
-                                        <MenuBookIcon sx={{ mr: 1, color: "primary.main" }} />
-                                        <Typography component="h1" noWrap color="primary" sx={{ fontWeight: 900, fontSize: { xs: "1.25rem", sm: "1.5rem" } }}>
-                                             Docs
-                                        </Typography>
-                                   </Box>
-
-                                   <TextField
-                                        value={query}
-                                        onChange={(e) => setQuery(e.target.value)}
-                                        placeholder="Search docs..."
-                                        variant="outlined"
-                                        size="small"
-                                        sx={{ width: { xs: "100%", sm: 360 } }}
-                                        slotProps={{
-                                             input: {
-                                                  startAdornment: (
-                                                       <InputAdornment position="start">
-                                                            <SearchIcon />
-                                                       </InputAdornment>
-                                                  ),
-                                             },
-                                        }}
-                                   />
-                              </Box>
-                         </Container>
+               <PageBanner
+                    image="/background-images/balcony-building.jpg"
+                    eyebrow="Documentation"
+                    title="Everything about NestLink"
+                    subtitle="Core concepts, roles, and every major feature — so you can onboard a building quickly and use the platform with confidence."
+                    height={{ xs: 220, md: 260 }}
+                    priority
+               >
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mt: 1.5 }}>
+                         <MenuBookIcon sx={{ color: "common.white" }} />
+                         <TextField
+                              value={query}
+                              onChange={(e) => setQuery(e.target.value)}
+                              placeholder="Search docs..."
+                              variant="outlined"
+                              size="small"
+                              sx={{
+                                   width: { xs: "100%", sm: 360 },
+                                   "& .MuiOutlinedInput-root": {
+                                        bgcolor: "rgba(255,255,255,0.12)",
+                                        backdropFilter: "blur(8px)",
+                                        color: "common.white",
+                                        "& fieldset": { borderColor: "rgba(255,255,255,0.3)" },
+                                        "&:hover fieldset": { borderColor: "rgba(255,255,255,0.5)" },
+                                        "&.Mui-focused fieldset": { borderColor: "primary.main" },
+                                   },
+                                   "& .MuiInputBase-input::placeholder": { color: "rgba(255,255,255,0.7)", opacity: 1 },
+                              }}
+                              slotProps={{
+                                   input: {
+                                        startAdornment: (
+                                             <InputAdornment position="start">
+                                                  <SearchIcon sx={{ color: "rgba(255,255,255,0.8)" }} />
+                                             </InputAdornment>
+                                        ),
+                                   },
+                              }}
+                         />
                     </Box>
-
+               </PageBanner>
+               <Animate>
                     {/* MAIN */}
-                    <Box component="main" sx={{ flexGrow: 1 }}>
+                    <Box component="main" sx={{ flexGrow: 1, pt: 4 }}>
                          <Container maxWidth="lg">
                               <Grid container spacing={4} sx={{ pt: 4 }}>
                                    {/* LEFT NAV */}

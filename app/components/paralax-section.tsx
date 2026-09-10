@@ -6,7 +6,7 @@ const ParallaxSection = ({ backgroundImage, children, height = '100vh', priority
      <Box
           sx={{
                position: 'relative',
-               height,
+               minHeight: height,
                display: 'flex',
                alignItems: 'center',
                justifyContent: 'center',

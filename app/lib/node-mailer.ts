@@ -71,7 +71,7 @@ export const sendTrialEndingEmailToClient = async ({ to, daysRemaining }: SendTr
       text-align: center;
     }
     .footer {
-      background-color: #4a1005;
+      background-color: #131A2C;
       color: white;
       font-weight: bold;
       font-size: 16px;
@@ -169,7 +169,7 @@ export const sendTrialEndingEmailToClient = async ({ to, daysRemaining }: SendTr
             </tr>
           </table>
 
-          <table role="presentation" width="100%" style="margin-top: 30px; background-color: #4a1005; border-radius: 0 0 10px 10px;">
+          <table role="presentation" width="100%" style="margin-top: 30px; background-color: #131A2C; border-radius: 0 0 10px 10px;">
             <tr>
               <td align="center" style="padding: 15px;">
                 <table role="presentation" style="margin: 0 auto;">
@@ -275,7 +275,7 @@ export const sendSubscriptionEndingNotificationToSupport = async ({ daysRemainin
       text-align: center;
     }
     .footer {
-      background-color: #4a1005;
+      background-color: #131A2C;
       color: white;
       font-weight: bold;
       font-size: 16px;

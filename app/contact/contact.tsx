@@ -11,6 +11,7 @@ import * as Yup from "yup"
 import Animate from "@/app/components/animation-framer-motion"
 import { Form, Formik } from "formik"
 import { sendClientContactMessageToSupport } from "../lib/node-mailer"
+import PageBanner from "../components/page-banner"
 // Sample data for markers
 const sampleLocations: MapMarker[] = [
      {
@@ -86,19 +87,17 @@ export const ContactPage = ({ mapKey }: ContactProps) => {
      };
 
      return (
-          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
+          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+               <PageBanner
+                    image="/background-images/skyline-aerial.jpg"
+                    eyebrow="Contact"
+                    title="We're here to help"
+                    subtitle="Have questions about our platform? Reach out to our team — we usually reply within 24 hours."
+                    priority
+               />
                <Animate>
                     <Box component="main" sx={{ flexGrow: 1, py: { xs: 6, md: 10 } }}>
                          <Container maxWidth="lg">
-
-                              <Box sx={{ textAlign: "center", mb: 6 }}>
-                                   <Typography component="h1" gutterBottom color="primary" sx={{ fontWeight: 900, fontSize: { xs: "1.5rem", sm: "2rem" } }}>
-                                        Contact Us
-                                   </Typography>
-                                   <Typography component="h2" color="text.secondary" sx={{ fontWeight: 700, fontSize: { xs: "1.2rem", sm: "1.25rem" } }}>
-                                        Have questions about our platform? We're here to help. Reach out to our team.
-                                   </Typography>
-                              </Box>
 
                               <Grid container spacing={6}>
                                    <Grid size={{ xs: 12, md: 6 }}>

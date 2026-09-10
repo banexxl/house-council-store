@@ -10,13 +10,11 @@ import {
      Checkbox,
      CircularProgress,
      Alert,
-     Container,
      Divider,
      FormControlLabel,
      Grid,
      IconButton,
      InputAdornment,
-     Paper,
      TextField,
      Typography,
      useTheme,
@@ -28,6 +26,7 @@ import { signInSchema } from "./sign-in-schema"
 import { useRouter } from "next/navigation"
 import toast from "react-hot-toast"
 import Animate from "@/app/components/animation-framer-motion"
+import AuthShell from "@/app/components/auth-shell"
 import { createBrowserClient } from "@supabase/ssr"
 import { logClientAction } from "@/app/lib/client-logging"
 import { checkUserPermissionServer } from "./check-user-server-action"
@@ -296,41 +295,38 @@ export const LoginPage = () => {
      }
 
      return (
-          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
+          <AuthShell>
                <Animate>
-                    <Box component="main" sx={{ flexGrow: 1, py: { xs: 6, md: 10 } }}>
-                         <Container maxWidth="sm">
-                              <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
-                                   <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", mb: 4 }}>
-                                        <Box
-                                             sx={{
-                                                  bgcolor: "primary.main",
-                                                  color: "primary.contrastText",
-                                                  borderRadius: "50%",
-                                                  p: 1,
-                                                  mb: 2,
-                                             }}
-                                        >
-                                             <LockOutlinedIcon />
-                                        </Box>
-                                        <Typography variant="h4" component="h1" gutterBottom>
-                                             Sign In
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary">
-                                             Welcome back! Please enter your details
-                                        </Typography>
-                                   </Box>
+                    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-start", mb: 4 }}>
+                         <Box
+                              sx={{
+                                   bgcolor: "primary.main",
+                                   color: "primary.contrastText",
+                                   borderRadius: "50%",
+                                   p: 1,
+                                   mb: 2,
+                              }}
+                         >
+                              <LockOutlinedIcon />
+                         </Box>
+                         <Typography variant="h4" component="h1" gutterBottom>
+                              Sign In
+                         </Typography>
+                         <Typography variant="body2" color="text.secondary">
+                              Welcome back! Please enter your details
+                         </Typography>
+                    </Box>
 
-                                   {/* Info message (optional) */}
-                                   {infoMessage && (
-                                        <Box sx={{ mb: 2 }}>
-                                             <Alert severity="warning">
-                                                  {infoMessage}
-                                             </Alert>
-                                        </Box>
-                                   )}
+                    {/* Info message (optional) */}
+                    {infoMessage && (
+                         <Box sx={{ mb: 2 }}>
+                              <Alert severity="warning">
+                                   {infoMessage}
+                              </Alert>
+                         </Box>
+                    )}
 
-                                   {/* SIGN IN FORM */}
+                    {/* SIGN IN FORM */}
                                    <Box component="form" onSubmit={formik.handleSubmit} noValidate sx={{ mb: 2 }}>
                                         <Grid container spacing={3}>
                                              <Grid size={{ xs: 12 }}>
@@ -508,17 +504,14 @@ export const LoginPage = () => {
                                              </Typography>
                                         </Typography>
                                    </Box>
-                              </Paper>
-                         </Container>
-                    </Box>
                </Animate>
 
                <Backdrop
-                    sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                    sx={{ color: "#fff", zIndex: (t) => t.zIndex.drawer + 1 }}
                     open={isPending}
                >
                     <CircularProgress sx={{ color: theme.palette.primary.main }} />
                </Backdrop>
-          </Box>
+          </AuthShell>
      )
 }

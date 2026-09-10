@@ -16,7 +16,7 @@ export default function Error({
      const router = useRouter()
 
      return (
-          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
+          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "calc(100vh - 72px)" }}>
                <Animate>
                     <Box
                          component="main"
@@ -29,12 +29,13 @@ export default function Error({
                     >
                          <Container maxWidth="md">
                               <Paper
-                                   elevation={3}
+                                   elevation={0}
                                    sx={{
                                         p: { xs: 4, md: 6 },
-                                        borderRadius: 2,
                                         textAlign: "center",
                                         bgcolor: "background.paper",
+                                        border: "1px solid",
+                                        borderColor: "divider",
                                    }}
                               >
                                    <Box sx={{ mb: 4 }}>

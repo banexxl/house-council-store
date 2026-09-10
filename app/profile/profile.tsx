@@ -10,6 +10,7 @@ import { PolarSubscription } from "../types/polar-subscription-types"
 import { PolarCustomer } from "../types/polar-customer-types"
 import { PolarProduct } from "../types/polar-product-types"
 import { PolarOrder } from "../types/polar-order-types"
+import PageBanner from "../components/page-banner"
 
 type ProfilePageProps = {
      sessionAndCustomerDataCombined?: { customer: PolarCustomer, session: User }
@@ -76,7 +77,14 @@ export const ProfilePage = ({
      }
 
      return (
-          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
+          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+               <PageBanner
+                    image="/background-images/skyline-aerial.jpg"
+                    eyebrow="Account"
+                    title={`Welcome back${sessionAndCustomerDataCombined?.customer?.name ? ", " + sessionAndCustomerDataCombined.customer.name : ""}`}
+                    subtitle="Manage your account details, subscription, and security settings."
+                    height={{ xs: 180, md: 220 }}
+               />
                <Animate>
                     <Box component="main" sx={{ flexGrow: 1, py: { xs: 4, md: 6 } }}>
                          <Container maxWidth="lg">

@@ -12,15 +12,13 @@ import {
      ListItemText,
      Breadcrumbs,
      Link as MuiLink,
-     Chip,
-     Button,
      Alert,
 } from "@mui/material"
 import Link from "next/link"
 import NavigateNextIcon from "@mui/icons-material/NavigateNext"
-import GavelIcon from "@mui/icons-material/Gavel"
 import { Toaster } from "react-hot-toast"
 import Animate from "@/app/components/animation-framer-motion"
+import PageBanner from "@/app/components/page-banner"
 
 // Table of contents items
 const tableOfContents = [
@@ -55,7 +53,15 @@ export const TermsPage = () => {
      const lastUpdated = "January 15, 2024"
 
      return (
-          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
+          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+               <PageBanner
+                    image="/background-images/skyline-aerial.jpg"
+                    eyebrow="Legal"
+                    title="Terms and Conditions"
+                    subtitle={`Last updated: ${lastUpdated}`}
+                    height={{ xs: 200, md: 240 }}
+                    priority
+               />
                <Animate>
                     <Box component="main" sx={{ flexGrow: 1, py: { xs: 4, md: 6 } }}>
                          <Container maxWidth="lg">
@@ -66,19 +72,6 @@ export const TermsPage = () => {
                                    </MuiLink>
                                    <Typography color="text.primary">Terms and Conditions</Typography>
                               </Breadcrumbs>
-
-                              <Box sx={{ display: "flex", alignItems: "center", mb: 4 }}>
-                                   <GavelIcon color="primary" sx={{ fontSize: 32, mr: 2 }} />
-                                   <Typography component="h1" sx={{ fontWeight: 900, fontSize: { xs: "1.5rem", sm: "2rem" } }} color="primary">
-                                        Terms and Conditions
-                                   </Typography>
-                              </Box>
-
-                              <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                                   Last Updated: {lastUpdated}
-                              </Typography>
-
-                              <Chip label="Official Document" color="primary" size="small" sx={{ mb: 4 }} />
 
                               <Alert severity="info" sx={{ mb: 4 }}>
                                    Please read these Terms and Conditions carefully before using our Service. By accessing or using the

@@ -1,11 +1,12 @@
 "use client"
 
 import { useEffect, useState, useTransition } from "react"
-import { Box, Container, Typography, Paper, Button, Alert, AlertTitle, Backdrop, CircularProgress, useTheme } from "@mui/material"
+import { Box, Typography, Button, Alert, AlertTitle, Backdrop, CircularProgress, useTheme } from "@mui/material"
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import Animate from "@/app/components/animation-framer-motion"
+import AuthShell from "@/app/components/auth-shell"
 
 export default function AuthErrorPage() {
 
@@ -85,16 +86,13 @@ export default function AuthErrorPage() {
      }
 
      return (
-          <Container maxWidth="md" sx={{ py: 8 }}>
+          <AuthShell contentMaxWidth={520}>
                <Animate>
-                    <Paper
-                         elevation={3}
+                    <Box
                          sx={{
-                              p: 4,
                               display: "flex",
                               flexDirection: "column",
                               alignItems: "center",
-                              borderRadius: 2,
                          }}
                     >
                          <ErrorOutlineIcon color="error" sx={{ fontSize: 64, mb: 2 }} />
@@ -131,18 +129,18 @@ export default function AuthErrorPage() {
                                    Sign Up
                               </Button>
                          </Box>
-                    </Paper>
+                    </Box>
                </Animate>
                <Backdrop
                     sx={{
                          color: '#fff',
-                         zIndex: (theme) => theme.zIndex.drawer + 1,
+                         zIndex: (t) => t.zIndex.drawer + 1,
                     }}
                     open={isPending}
                >
                     <CircularProgress sx={{ color: theme.palette.primary.main }} />
                </Backdrop>
-          </Container>
+          </AuthShell>
      )
 }
 

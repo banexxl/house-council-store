@@ -19,6 +19,7 @@ import {
      DialogContent,
      DialogTitle,
      IconButton,
+     alpha,
 } from "@mui/material";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
@@ -243,12 +244,13 @@ export default function SubscriptionSuccessPage({
           <Container maxWidth="md" sx={{ py: 8 }}>
                <Animate>
                     <Paper
-                         elevation={3}
+                         elevation={0}
                          sx={{
                               p: 4,
-                              borderRadius: 2,
                               position: "relative",
                               overflow: "hidden",
+                              border: "1px solid",
+                              borderColor: "divider",
                          }}
                     >
                          <Box sx={{ position: "relative", zIndex: 1 }}>
@@ -350,7 +352,7 @@ export default function SubscriptionSuccessPage({
                                         borderColor: "divider",
                                         justifyContent: "center",
                                         textAlign: "center",
-                                        bgcolor: "#ecd09e",
+                                        bgcolor: alpha("#f79622", 0.1),
                                    }}
                               >
                                    <Typography variant="subtitle1"
@@ -475,7 +477,7 @@ export default function SubscriptionSuccessPage({
                                              Install NestLink
                                         </Typography>
 
-                                        <Typography sx={{ fontSize: 13, color: "#f8cd57" }}>
+                                        <Typography sx={{ fontSize: 13, color: "#555" }}>
                                              Scan the QR code to open Google Play and install the app.
                                         </Typography>
 

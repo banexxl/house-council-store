@@ -6,17 +6,11 @@ import {
      Backdrop,
      Box,
      Button,
-     Checkbox,
      CircularProgress,
-     Container,
      Divider,
-     FormControl,
-     FormControlLabel,
-     FormHelperText,
      Grid,
      IconButton,
      InputAdornment,
-     Paper,
      TextField,
      Typography,
      useTheme,
@@ -28,6 +22,7 @@ import { RegisterErrorType, RegisterFormValues, registerUser } from "./register-
 import toast, { Toaster } from "react-hot-toast"
 import { useRouter } from "next/navigation"
 import Animate from "@/app/components/animation-framer-motion"
+import AuthShell from "@/app/components/auth-shell"
 
 export const RegisterPage = () => {
 
@@ -87,21 +82,18 @@ export const RegisterPage = () => {
      })
 
      return (
-          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
+          <AuthShell>
                <Animate>
-                    <Box component="main" sx={{ flexGrow: 1, py: { xs: 6, md: 10 } }}>
-                         <Container maxWidth="sm">
-                              <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
-                                   <Box sx={{ textAlign: "center", mb: 4 }}>
-                                        <Typography variant="h4" component="h1" gutterBottom>
-                                             Create an Account
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary">
-                                             Join NestLink to manage your residential community efficiently
-                                        </Typography>
-                                   </Box>
+                    <Box sx={{ mb: 4 }}>
+                         <Typography variant="h4" component="h1" gutterBottom>
+                              Create an Account
+                         </Typography>
+                         <Typography variant="body2" color="text.secondary">
+                              Join NestLink to manage your residential community efficiently
+                         </Typography>
+                    </Box>
 
-                                   <Box component="form" onSubmit={formik.handleSubmit}>
+                    <Box component="form" onSubmit={formik.handleSubmit}>
                                         <Grid container spacing={3}>
                                              {/* Each field container has a fixed height to prevent layout shifts */}
                                              <Grid size={{ xs: 12 }}>
@@ -247,20 +239,17 @@ export const RegisterPage = () => {
                                              </Button>
                                         </Typography>
                                    </Box>
-                              </Paper>
-                         </Container>
-                    </Box>
                     <Toaster />
                </Animate>
                <Backdrop
                     sx={{
                          color: '#fff',
-                         zIndex: (theme) => theme.zIndex.drawer + 1,
+                         zIndex: (t) => t.zIndex.drawer + 1,
                     }}
                     open={isPending}
                >
                     <CircularProgress sx={{ color: theme.palette.primary.main }} />
                </Backdrop>
-          </Box >
+          </AuthShell>
      )
 }

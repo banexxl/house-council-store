@@ -28,6 +28,7 @@ import Backdrop from "@mui/material/Backdrop";
 import { PolarSubscription } from "../types/polar-subscription-types";
 import { PolarProduct } from "../types/polar-product-types";
 import { PolarCustomer } from "../types/polar-customer-types";
+import PageBanner from "../components/page-banner";
 
 const faqs = [
      {
@@ -283,18 +284,19 @@ export const PricingPage: React.FC<PricingPageProps> = ({
           loadingKey !== null || !currentProduct || !currentPriceId || (isCurrentPlan && hasActiveOrTrial);
 
      return (
-          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
+          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+               <PageBanner
+                    image="/background-images/balcony-building.jpg"
+                    eyebrow="Pricing"
+                    title="Simple, transparent pricing"
+                    subtitle="Choose the plan that's right for your community. All plans include a free trial, billed per apartment."
+                    priority
+               />
                <Animate>
                     <Box component="main" sx={{ flexGrow: 1, py: { xs: 6, md: 10 } }}>
                          <Container maxWidth="lg">
                               <Box sx={{ textAlign: "center", mb: 6 }}>
-                                   <Typography component="h1" gutterBottom sx={{ fontWeight: 900, fontSize: { xs: "1.5rem", sm: "2rem" } }} color="primary">
-                                        Simple, Transparent Pricing
-                                   </Typography>
-                                   <Typography component="h2" color="text.secondary" sx={{ maxWidth: 700, mx: "auto" }}>
-                                        Choose the plan that's right for your community. All plans include a free trial.
-                                   </Typography>
-                                   <Alert severity="info" sx={{ maxWidth: 700, mx: "auto", mt: 1 }}>
+                                   <Alert severity="info" sx={{ maxWidth: 700, mx: "auto" }}>
                                         Pricing is billed per apartment.{" "}
                                         {apartmentCount !== undefined && customer
                                              ? `You currently have ${apartmentCount} apartment${apartmentCount === 1 ? "" : "s"} on your account.`

@@ -18,14 +18,12 @@ import {
      TableContainer,
      TableHead,
      TableRow,
-     Chip,
-     Button,
 } from "@mui/material"
 import Link from "next/link"
 import NavigateNextIcon from "@mui/icons-material/NavigateNext"
-import SecurityIcon from "@mui/icons-material/Security"
 import { Toaster } from "react-hot-toast"
 import Animate from "@/app/components/animation-framer-motion"
+import PageBanner from "@/app/components/page-banner"
 
 // Table of contents items
 const tableOfContents = [
@@ -59,7 +57,15 @@ export const PrivacyPage = () => {
      const lastUpdated = "January 15, 2024"
 
      return (
-          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
+          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+               <PageBanner
+                    image="/background-images/skyline-aerial.jpg"
+                    eyebrow="Legal"
+                    title="Privacy Policy"
+                    subtitle={`Last updated: ${lastUpdated}`}
+                    height={{ xs: 200, md: 240 }}
+                    priority
+               />
                <Animate>
                     <Box component="main" sx={{ flexGrow: 1, py: { xs: 4, md: 6 } }}>
                          <Container maxWidth="lg">
@@ -74,24 +80,6 @@ export const PrivacyPage = () => {
                                    </MuiLink>
                                    <Typography color="text.primary">Privacy Policy</Typography>
                               </Breadcrumbs>
-
-                              <Box sx={{ display: "flex", alignItems: "center", mb: 4 }}>
-                                   <SecurityIcon color="primary" sx={{ fontSize: 32, mr: 2 }} />
-                                   <Typography component="h1" sx={{ fontWeight: 900, fontSize: { xs: "1.5rem", sm: "2rem" } }} color="primary">
-                                        Privacy Policy
-                                   </Typography>
-                              </Box>
-
-                              <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                                   Last Updated: {lastUpdated}
-                              </Typography>
-
-                              <Chip
-                                   label="Official Document"
-                                   color="primary"
-                                   size="small"
-                                   sx={{ mb: 4 }}
-                              />
 
                               <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 4 }}>
                                    {/* Table of Contents Sidebar */}

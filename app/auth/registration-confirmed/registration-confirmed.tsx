@@ -5,8 +5,6 @@ import { useSearchParams } from "next/navigation"
 import {
      Box,
      Button,
-     Container,
-     Paper,
      Typography,
      Divider,
      List,
@@ -22,6 +20,7 @@ import PersonIcon from "@mui/icons-material/Person"
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import BiotechIcon from '@mui/icons-material/Biotech';
 import Animate from "@/app/components/animation-framer-motion"
+import AuthShell from "@/app/components/auth-shell"
 import toast from "react-hot-toast"
 import { createBrowserClient } from "@supabase/ssr"
 import { useEffect, useState } from "react"
@@ -78,11 +77,9 @@ export const RegistrationConfirmedPage = () => {
      }
 
      return (
-          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
+          <AuthShell contentMaxWidth={560}>
                <Animate>
-                    <Box component="main" sx={{ flexGrow: 1, py: { xs: 6, md: 10 } }}>
-                         <Container maxWidth="md">
-                              <Paper elevation={3} sx={{ p: { xs: 3, md: 5 }, textAlign: "center" }}>
+                    <Box sx={{ textAlign: "center" }}>
                                    {isError ? (
                                         <>
                                              <Box sx={{ color: "error.main", mb: 3 }}>
@@ -211,10 +208,8 @@ export const RegistrationConfirmedPage = () => {
                                              </Box>
                                         </>
                                    )}
-                              </Paper>
-                         </Container>
                     </Box>
                </Animate>
-          </Box>
+          </AuthShell>
      )
 }

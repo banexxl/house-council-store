@@ -7,18 +7,23 @@ import CssBaseline from "@mui/material/CssBaseline"
 import { Box } from "@mui/material"
 import theme from "@/app/theme"
 import { Toaster } from "react-hot-toast"
+import { HEADER_HEIGHT } from "@/app/lib/layout-constants"
 
 export function Providers({ children }: { children: React.ReactNode }) {
      return (
           <ThemeProvider theme={theme}>
                <CssBaseline />
-               <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
-                    <Box component="main" sx={{ flexGrow: 1, backgroundColor: "#f7f1e6" }}>
+               <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+                    <Box component="main" sx={{ flexGrow: 1, pt: `${HEADER_HEIGHT}px`, backgroundColor: "background.default" }}>
                          {children}
                     </Box>
                </Box>
                <Toaster position="top-center" toastOptions={{
-                    duration: 2000
+                    duration: 2000,
+                    style: {
+                         borderRadius: "10px",
+                         fontWeight: 600,
+                    },
                }} />
           </ThemeProvider>
      )

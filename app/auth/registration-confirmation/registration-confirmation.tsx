@@ -7,8 +7,6 @@ import Link from "next/link"
 import {
      Box,
      Button,
-     Container,
-     Paper,
      Typography,
      TextField,
      InputAdornment,
@@ -23,6 +21,7 @@ import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline"
 import { resendRegistrationEmail } from "./resend-email-action"
 import { Toaster } from "react-hot-toast"
 import Animate from "@/app/components/animation-framer-motion"
+import AuthShell from "@/app/components/auth-shell"
 
 export const RegistrationConfirmationPage = () => {
 
@@ -55,18 +54,9 @@ export const RegistrationConfirmationPage = () => {
      }
 
      return (
-          <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", mt: 5 }}>
+          <AuthShell contentMaxWidth={560}>
                <Animate>
-                    <Box component="main" sx={{ flexGrow: 1, py: { xs: 6, md: 10 } }}>
-                         <Container maxWidth="md">
-                              <Paper
-                                   elevation={3}
-                                   sx={{
-                                        p: { xs: 3, md: 6 },
-                                        borderRadius: 2,
-                                        textAlign: "center",
-                                   }}
-                              >
+                    <Box sx={{ textAlign: "center" }}>
                                    <Box sx={{ display: "flex", justifyContent: "center", mb: 4 }}>
                                         <MarkEmailReadIcon color="primary" sx={{ fontSize: 80 }} />
                                    </Box>
@@ -173,12 +163,10 @@ export const RegistrationConfirmationPage = () => {
                                              Return to Home Page
                                         </Button>
                                    </Box>
-                              </Paper>
-                         </Container>
                     </Box>
                </Animate>
                <Toaster />
-          </Box>
+          </AuthShell>
      )
 }
 
