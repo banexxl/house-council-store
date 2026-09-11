@@ -3,11 +3,11 @@
 import { Box, Button, Typography, Grid } from "@mui/material"
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser"
 import LogoutIcon from "@mui/icons-material/Logout"
-import { logoutUserAction } from "../../account-action"
 import { User } from "@supabase/supabase-js"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { PolarCustomer } from "@/app/types/polar-customer-types"
+import { signOutClient } from "@/app/lib/use-auth-user"
 
 interface AccountTabProps {
      userData: { customer: PolarCustomer; session: User }
@@ -19,10 +19,12 @@ export default function AccountTab({ userData }: AccountTabProps) {
      const handleSignOut = async () => {
           setSignoutLoading(true)
           try {
-               logoutUserAction();
+               await signOutClient()
                router.refresh();
           } catch (error) {
                console.error("Error signing out:", error);
+          } finally {
+               setSignoutLoading(false)
           }
      };
 

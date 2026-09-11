@@ -35,7 +35,8 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday"
 import toast from "react-hot-toast"
 import { useRouter } from "next/navigation"
 import { User } from "@supabase/supabase-js"
-import { logoutUserAction, updateAccountAction } from "../account-action"
+import { updateAccountAction } from "../account-action"
+import { signOutClient } from "@/app/lib/use-auth-user"
 import { deleteClientAvatarAction, uploadClientAvatarAction } from "@/app/lib/sb-storage"
 import { PolarSubscriptionStatus } from "@/app/types/polar-subscription-types"
 import { PolarCustomer } from "@/app/types/polar-customer-types"
@@ -134,11 +135,9 @@ export default function ProfileSidebar({ userData, recentActivity, onEditProfile
      const handleLogout = async () => {
           handleMenuClose()
           try {
-               const logoutUserResponse = await logoutUserAction()
-               if (!logoutUserResponse) {
-                    toast.success("You have been logged out successfully!")
-                    router.push("/")
-               }
+               await signOutClient()
+               toast.success("You have been logged out successfully!")
+               router.push("/")
           } catch (error) {
                toast.error("Error logging out")
           }

@@ -1,8 +1,11 @@
 'use server'
 
+import { unstable_cache } from "next/cache";
 import { Feature } from "../types/feature";
 import { logServerAction } from "../lib/server-logging";
 import { useServerSideSupabaseAnonClient } from "../lib/ss-supabase-anon-client";
+import { getCacheableServiceRoleClient } from "../lib/ss-supabase-cacheable-client";
+import { polarCustomerTag, polarProductTag } from "../lib/polar-cache-tags";
 import { PolarSubscription } from "../types/polar-subscription-types";
 import { PolarProduct, PolarProductPrice } from "../types/polar-product-types";
 import { PolarOrder } from "../types/polar-order-types";
@@ -211,15 +214,23 @@ export const readCustomerSubscriptionPlanFromCustomerId = async (customerId: str
           return { success: false, error: "Customer ID is required" };
      }
 
-     const supabase = await useServerSideSupabaseAnonClient(); // Use the server-side Supabase customer
-     const { data: customerSubscriptionPlanData, error: customerSubscriptionDataError } = await supabase
-          .from("tblPolarSubscriptions")
-          .select(`*`)
-          .eq("customerId", customerId)
-          //find the one with the greatest currentPeriodStart
-          .order("currentPeriodStart", { ascending: false })
-          .limit(1)
-          .single();
+     const getCachedSubscription = unstable_cache(
+          async (id: string) => {
+               const supabase = getCacheableServiceRoleClient();
+               return supabase
+                    .from("tblPolarSubscriptions")
+                    .select(`*`)
+                    .eq("customerId", id)
+                    //find the one with the greatest currentPeriodStart
+                    .order("currentPeriodStart", { ascending: false })
+                    .limit(1)
+                    .single();
+          },
+          ["customer-subscription", customerId],
+          { tags: [polarCustomerTag(customerId)], revalidate: 300 }
+     );
+
+     const { data: customerSubscriptionPlanData, error: customerSubscriptionDataError } = await getCachedSubscription(customerId);
 
      if (customerSubscriptionDataError) {
           await logServerAction({
@@ -261,12 +272,20 @@ export const readCustomerSubscriptionPlanFromCustomerId = async (customerId: str
 }
 
 export const getApartmentCountForCustomer = async (customerId: string): Promise<number> => {
-     const supabase = await useServerSideSupabaseAnonClient();
-     // Join apartments -> buildings to filter by customerId
-     const { count, error } = await supabase
-          .from("tblApartments")
-          .select("id, tblBuildings!inner(customerId)", { count: "exact", head: true })
-          .eq("tblBuildings.customerId", customerId);
+     const getCachedApartmentCount = unstable_cache(
+          async (id: string) => {
+               const supabase = getCacheableServiceRoleClient();
+               // Join apartments -> buildings to filter by customerId
+               return supabase
+                    .from("tblApartments")
+                    .select("id, tblBuildings!inner(customerId)", { count: "exact", head: true })
+                    .eq("tblBuildings.customerId", id);
+          },
+          ["apartment-count", customerId],
+          { tags: [polarCustomerTag(customerId)], revalidate: 300 }
+     );
+
+     const { count, error } = await getCachedApartmentCount(customerId);
 
      if (error) {
           await logServerAction({
@@ -299,18 +318,24 @@ export const readProductFromSubscriptionId = async (subscriptionPlanId: string):
           return { success: false, error: "Subscription plan ID is required" };
      }
 
-     const supabase = await useServerSideSupabaseAnonClient();
-     const userId = (await supabase.auth.getUser()).data.user?.id;
+     const getCachedProduct = unstable_cache(
+          async (id: string) => {
+               const supabase = getCacheableServiceRoleClient();
+               return supabase
+                    .from("tblPolarProducts")
+                    .select(`*`)
+                    .eq("id", id)
+                    .single();
+          },
+          ["product-from-subscription", subscriptionPlanId],
+          { tags: [polarProductTag(subscriptionPlanId)], revalidate: 300 }
+     );
 
-     const { data: product, error: productError } = await supabase
-          .from("tblPolarProducts")
-          .select(`*`)
-          .eq("id", subscriptionPlanId)
-          .single();
+     const { data: product, error: productError } = await getCachedProduct(subscriptionPlanId);
 
      if (productError) {
           await logServerAction({
-               user_id: userId ?? null,
+               user_id: null,
                action: 'Read Product from Subscription ID - Query Failed',
                payload: { subscriptionPlanId, error: productError.message },
                status: 'fail',
@@ -323,7 +348,7 @@ export const readProductFromSubscriptionId = async (subscriptionPlanId: string):
 
      if (!product) {
           await logServerAction({
-               user_id: userId ?? null,
+               user_id: null,
                action: 'Read Product from Subscription ID - Not Found',
                payload: { subscriptionPlanId },
                status: 'fail',
@@ -335,7 +360,7 @@ export const readProductFromSubscriptionId = async (subscriptionPlanId: string):
      }
 
      await logServerAction({
-          user_id: userId ?? null,
+          user_id: null,
           action: 'Read Product from Subscription ID - Success',
           payload: { subscriptionPlanId, productId: product.id },
           status: 'success',
@@ -356,18 +381,24 @@ export const readOrdersByCustomerId = async (customerId: string): Promise<{
           return { success: false, error: "Customer ID is required" };
      }
 
-     const supabase = await useServerSideSupabaseAnonClient();
-     const userId = (await supabase.auth.getUser()).data.user?.id;
+     const getCachedOrders = unstable_cache(
+          async (id: string) => {
+               const supabase = getCacheableServiceRoleClient();
+               return supabase
+                    .from("tblPolarOrders")
+                    .select("*")
+                    .eq("customerId", id)
+                    .order("createdAt", { ascending: false });
+          },
+          ["orders-by-customer", customerId],
+          { tags: [polarCustomerTag(customerId)], revalidate: 300 }
+     );
 
-     const { data: orders, error: ordersError } = await supabase
-          .from("tblPolarOrders")
-          .select("*")
-          .eq("customerId", customerId)
-          .order("createdAt", { ascending: false });
+     const { data: orders, error: ordersError } = await getCachedOrders(customerId);
 
      if (ordersError) {
           await logServerAction({
-               user_id: userId ?? null,
+               user_id: null,
                action: "Read Orders by Customer ID - Query Failed",
                payload: { customerId, error: ordersError.message },
                status: "fail",
@@ -379,7 +410,7 @@ export const readOrdersByCustomerId = async (customerId: string): Promise<{
      }
 
      await logServerAction({
-          user_id: userId ?? null,
+          user_id: null,
           action: "Read Orders by Customer ID - Success",
           payload: { customerId, orderCount: orders?.length ?? 0 },
           status: "success",

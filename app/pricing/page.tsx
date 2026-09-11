@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { getSessionUser } from "@/app/lib/get-session";
 
 import { Footer } from "@/app/components/footer";
-import { Header } from "@/app/components/header";
 import { PricingPage } from "./pricing";
 import {
   readActivePolarProducts,
@@ -41,7 +39,6 @@ export const metadata: Metadata = {
 
 export default async function Page() {
 
-  const user = await getSessionUser();
   const { customer, error } = await readAccountAction();
   const { polarProducts } = await readActivePolarProducts();
   const { customerSubscriptionPlanData } = await readCustomerSubscriptionPlanFromCustomerId(customer?.id!)
@@ -52,7 +49,6 @@ export default async function Page() {
       <Script id="google-ads-pricing-page-view" strategy="afterInteractive">
         {`gtag('event', 'conversion', {'send_to': 'AW-18137335805/vOSfCOC3060cEP2Px8hD'});`}
       </Script>
-      <Header user={user ? user : null} />
       <PricingPage
         polarProducts={polarProducts || []}
         customerSubscriptionPlanData={customerSubscriptionPlanData}

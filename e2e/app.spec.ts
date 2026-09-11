@@ -25,6 +25,11 @@ test("sign in with the seeded test user", async () => {
      const { email, password } = readTestUser()
 
      await page.goto("/auth/sign-in")
+
+     // Header should show the signed-out state before we've authenticated.
+     await expect(page.getByRole("button", { name: "Get Started" })).toBeVisible()
+     await expect(page.getByRole("button", { name: "Profile", exact: true })).toBeHidden()
+
      await page.getByLabel("Email Address").fill(email)
      await page.getByLabel("Password", { exact: true }).fill(password)
      // Scoped to the form: the header also renders a "Sign In" nav button on this page.
@@ -114,6 +119,12 @@ test("profile - security tab loads", async () => {
 test("sign out", async () => {
      await page.getByRole("tab", { name: "Account" }).click()
      await page.getByRole("button", { name: "Sign out" }).click()
+
+     // Header should reactively flip to signed-out state without a reload —
+     // "Get Started" only renders in the header when signed out, so it's an
+     // unambiguous signal (unlike "Sign In", which the sign-in form also uses).
+     await expect(page.getByRole("button", { name: "Get Started" })).toBeVisible({ timeout: 15_000 })
+     await expect(page.getByRole("button", { name: "Profile", exact: true })).toBeHidden()
 
      // Protected route should now bounce to sign-in (also exercises the
      // middleware/get-session auth changes from the performance pass).

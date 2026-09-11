@@ -1,10 +1,12 @@
 'use server';
 
 import { useServerSideSupabaseServiceRoleClient } from "@/app/lib/ss-supabase-service-role-client";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_cache } from "next/cache";
 import { logServerAction } from "../lib/server-logging";
 import { ActivityItem } from "./components/profile-sidebar";
 import { useServerSideSupabaseAnonClient } from "../lib/ss-supabase-anon-client";
+import { getCacheableServiceRoleClient } from "../lib/ss-supabase-cacheable-client";
+import { polarCustomerTag } from "../lib/polar-cache-tags";
 import { PolarCustomer } from "../types/polar-customer-types";
 import { polar } from "../lib/polar";
 
@@ -260,31 +262,40 @@ export const readClientRecentActivityAction = async (clientEmail: string, client
 export const readAllApartmentsByClientId = async (clientId: string): Promise<{ success: boolean, error?: string, data?: any[] }> => {
 
      const startTime = Date.now();
-     const supabase = await useServerSideSupabaseAnonClient();
-     // First, get all buildings for the client
-     const { data: buildings, error: buildingsError } = await supabase
-          .from('tblBuildings')
-          .select('id')
-          .eq('client_id', clientId)
-          .order('created_at', { ascending: false });
 
-     if (buildingsError) {
-          return { success: false, error: buildingsError.message };
-     }
+     const getCachedApartments = unstable_cache(
+          async (id: string) => {
+               const supabase = getCacheableServiceRoleClient();
+               // First, get all buildings for the client
+               const { data: buildings, error: buildingsError } = await supabase
+                    .from('tblBuildings')
+                    .select('id')
+                    .eq('client_id', id)
+                    .order('created_at', { ascending: false });
 
-     const buildingIds = (buildings ?? []).map(b => b.id);
+               if (buildingsError) {
+                    return { data: null, error: buildingsError };
+               }
 
-     // If no buildings, return empty array
-     if (buildingIds.length === 0) {
-          return { success: true, data: [] };
-     }
+               const buildingIds = (buildings ?? []).map(b => b.id);
 
-     // Get all apartments with building_id in buildingIds
-     const { data, error } = await supabase
-          .from('tblApartments')
-          .select('*')
-          .in('building_id', buildingIds)
-          .order('created_at', { ascending: false });
+               // If no buildings, return empty array
+               if (buildingIds.length === 0) {
+                    return { data: [], error: null };
+               }
+
+               // Get all apartments with building_id in buildingIds
+               return supabase
+                    .from('tblApartments')
+                    .select('*')
+                    .in('building_id', buildingIds)
+                    .order('created_at', { ascending: false });
+          },
+          ["apartments-by-client", clientId],
+          { tags: [polarCustomerTag(clientId)], revalidate: 300 }
+     );
+
+     const { data, error } = await getCachedApartments(clientId);
 
      if (error) {
           await logServerAction({

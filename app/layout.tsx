@@ -1,14 +1,10 @@
 import type React from "react"
 import Script from "next/script"
-import { getSessionUser } from "@/app/lib/get-session"
 import { Providers } from "@/app/providers"
 import { Header } from "@/app/components/header"
 import { plusJakartaSans } from "@/app/lib/fonts"
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const user = await getSessionUser()
-  // useCookieFocusChecker()
-
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
@@ -27,7 +23,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           `}
         </Script>
         <Providers>
-          <Header key={user?.id || "guest"} user={user ? user : null} />
+          <Header />
           {children}
         </Providers>
       </body>

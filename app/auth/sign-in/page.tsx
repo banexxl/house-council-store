@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import { getSessionUser } from "@/app/lib/get-session";
+import { Suspense } from "react";
 import { buildCanonicalUrl } from "@/app/lib/seo";
 
 import { Footer } from "@/app/components/footer";
 import { LoginPage } from "./sign-in";
-import { Header } from "@/app/components/header";
 
 const canonicalUrl = buildCanonicalUrl("/auth/sign-in");
 
@@ -28,14 +27,12 @@ export const metadata: Metadata = {
      },
 };
 
-export default async function Page() {
-
-     const user = await getSessionUser();
-
+export default function Page() {
      return (
           <>
-               <Header user={user ? user : null} />
-               <LoginPage />
+               <Suspense fallback={null}>
+                    <LoginPage />
+               </Suspense>
                <Footer />
           </>
 

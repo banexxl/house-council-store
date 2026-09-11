@@ -2,7 +2,9 @@
 import { Webhooks } from "@polar-sh/nextjs";
 import { createClient } from "@supabase/supabase-js";
 import { logServerAction } from "@/app/lib/server-logging";
+import { polarCustomerTag } from "@/app/lib/polar-cache-tags";
 import { PolarCustomer } from "@/app/types/polar-customer-types";
+import { revalidateTag } from "next/cache";
 
 export const runtime = "nodejs";
 
@@ -123,6 +125,8 @@ export const POST = Webhooks({
                     duration_ms: Date.now() - t0,
                     type: "webhook",
                });
+
+               revalidateTag(polarCustomerTag(row.id));
 
                return polarCustomerRow;
 
@@ -245,6 +249,9 @@ export const POST = Webhooks({
           });
 
           if (error) throw error;
+
+          revalidateTag(polarCustomerTag(customer.id));
+
           return data;
      },
 
@@ -298,6 +305,9 @@ export const POST = Webhooks({
           });
 
           if (error) throw error;
+
+          revalidateTag(polarCustomerTag(customer.id));
+
           return data;
      },
 });

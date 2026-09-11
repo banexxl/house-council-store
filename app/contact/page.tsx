@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
-import { getSessionUser } from "@/app/lib/get-session";
 
 import { Footer } from "@/app/components/footer";
-import { Header } from "@/app/components/header";
 import { ContactPage } from "./contact";
 import { buildCanonicalUrl } from "@/app/lib/seo";
 
@@ -31,18 +29,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function Page() {
-
-  const user = await getSessionUser();
-
+export default function Page() {
   const mapKey = process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY
 
   return (
     <>
-      <Header user={user ? user : null} />
       <ContactPage mapKey={mapKey ? mapKey : ""} />
       <Footer />
     </>
-
   )
 }

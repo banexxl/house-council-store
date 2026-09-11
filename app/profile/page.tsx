@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { getSessionUser } from "@/app/lib/get-session";
 import { Footer } from "@/app/components/footer";
-import { Header } from "@/app/components/header";
 import { ProfilePage } from "./profile";
 import { readAccountAction, readAllApartmentsByClientId, readClientRecentActivityAction } from "./account-action";
 import { User } from "@supabase/supabase-js";
@@ -55,7 +54,6 @@ export default async function Page() {
 
      return (
           <>
-               <Header user={user} />
                <ProfilePage
                     sessionAndCustomerDataCombined={sessionAndCustomerDataCombined}
                     customerSubscriptionObject={customerSubscriptionObject?.customerSubscriptionPlanData! ?? null}

@@ -11,7 +11,8 @@ import { useEffect, useState } from "react"
 import { calculatePasswordStrength, getStrengthColor, getStrengthLabel, validationSchemaWithOldPassword } from "@/app/auth/reset-password/reset-password-utils"
 import { useRouter } from "next/navigation"
 import toast from "react-hot-toast"
-import { deleteAccountAction, logoutUserAction } from "../../account-action"
+import { deleteAccountAction } from "../../account-action"
+import { signOutClient } from "@/app/lib/use-auth-user"
 import { useFormik } from "formik"
 import { resetPasswordWithOldPassword } from "@/app/auth/reset-password/reset-password-actions"
 import { challengeTOTP, startEnrollTOTP, verifyTOTPEnrollment } from "@/app/lib/account-2fa-actions"
@@ -154,7 +155,7 @@ export default function SecurityTab({ userData }: SecurityTabProps) {
           const deleteAccount = await deleteAccountAction(userData.session.id, userData.customer.email);
           if (deleteAccount.success) {
                toast.success("Account deleted successfully.");
-               logoutUserAction();
+               await signOutClient();
                router.push("/");
           } else {
                toast.error("There was a problem deleting your account.");
@@ -165,10 +166,12 @@ export default function SecurityTab({ userData }: SecurityTabProps) {
      const handleSignOut = async () => {
           setSignoutLoading(true)
           try {
-               logoutUserAction();
+               await signOutClient();
                router.refresh();
           } catch (error) {
                toast.error("There was a problem signing out.");
+          } finally {
+               setSignoutLoading(false)
           }
      };
 

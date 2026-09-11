@@ -2,7 +2,6 @@ import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 import Script from "next/script"
 import { getSessionUser } from "@/app/lib/get-session"
-import { Header } from "@/app/components/header"
 import { Footer } from "@/app/components/footer"
 import SubscriptionSuccessPage from "./subscription-plan-success"
 import { buildCanonicalUrl } from "@/app/lib/seo"
@@ -57,7 +56,6 @@ export default async function FreeTrialSuccessPage({ searchParams }: { searchPar
   gtag('config', 'AW-18137335805');
                     `}
                </Script>
-               <Header user={session ? session : null} />
                <SubscriptionSuccessPage
                     userEmail={session.email!}
                     isTrial={false} dashboardUrl={dashboardUrl} />

@@ -1,9 +1,11 @@
 // app/api/polar/webhook/subscription/route.ts
 import { logServerAction } from "@/app/lib/server-logging";
 import { getApartmentCountForCustomer } from "@/app/profile/subscription-plan-actions";
+import { polarCustomerTag } from "@/app/lib/polar-cache-tags";
 import { PolarSubscription } from "@/app/types/polar-subscription-types";
 import { Webhooks } from "@polar-sh/nextjs";
 import { createClient } from "@supabase/supabase-js";
+import { revalidateTag } from "next/cache";
 
 export const runtime = "nodejs";
 
@@ -135,6 +137,8 @@ async function upsertSubscription(subscription: any, eventType: string) {
           console.error(`Error upserting subscription for ${eventType}:`, error);
           throw error;
      }
+
+     revalidateTag(polarCustomerTag(polarSubscription.customerId));
 
      return data;
 }

@@ -1,7 +1,9 @@
 // app/api/polar/webhook/product/route.ts
 import { Webhooks } from "@polar-sh/nextjs";
 import { logServerAction } from "@/app/lib/server-logging";
+import { polarProductTag } from "@/app/lib/polar-cache-tags";
 import { createClient } from "@supabase/supabase-js";
+import { revalidateTag } from "next/cache";
 
 export const runtime = "nodejs";
 
@@ -341,6 +343,8 @@ async function syncProductToDb(product: any, eventLabel: string) {
           duration_ms: Date.now() - t0,
           type: "internal",
      });
+
+     revalidateTag(polarProductTag(productId));
 }
 
 // ------------------------------------------------------------

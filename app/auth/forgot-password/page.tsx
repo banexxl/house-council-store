@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
-import { getSessionUser } from "@/app/lib/get-session";
 
 import { Footer } from "@/app/components/footer";
-import { Header } from "@/app/components/header";
 import ForgotPasswordPage from "./forgot-password";
 import { buildCanonicalUrl } from "@/app/lib/seo";
 
@@ -27,13 +25,9 @@ export const metadata: Metadata = {
      },
 };
 
-export default async function Page() {
-
-     const user = await getSessionUser();
-
+export default function Page() {
      return (
           <>
-               <Header user={user ? user : null} />
                <ForgotPasswordPage />
                <Footer />
           </>

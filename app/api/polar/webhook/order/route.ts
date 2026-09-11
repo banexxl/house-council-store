@@ -1,8 +1,10 @@
 // app/api/polar/webhook/order/route.ts
 import { logServerAction } from "@/app/lib/server-logging";
+import { polarCustomerTag } from "@/app/lib/polar-cache-tags";
 import { PolarOrder } from "@/app/types/polar-order-types";
 import { Webhooks } from "@polar-sh/nextjs";
 import { createClient } from "@supabase/supabase-js";
+import { revalidateTag } from "next/cache";
 
 export const runtime = "nodejs";
 
@@ -137,6 +139,8 @@ async function upsertOrder(order: PolarOrder, eventType: string) {
           duration_ms: duration,
           type: "webhook",
      });
+
+     revalidateTag(polarCustomerTag(order.customerId));
 
      return data;
 }

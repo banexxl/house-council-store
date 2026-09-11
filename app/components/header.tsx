@@ -7,27 +7,20 @@ import { useState, useTransition } from "react";
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import ArrowOutwardIcon from '@mui/icons-material/ArrowOutward';
-import { User } from "@supabase/supabase-js";
 import { useRouter, usePathname } from "next/navigation";
-import { useCookieTokenUpdater } from "@/app/lib/client-session-update";
+import { useAuthUser, signOutClient } from "@/app/lib/use-auth-user";
 import useScrollTrigger from "@mui/material/useScrollTrigger";
-import { logoutUserAction } from "../profile/account-action";
 import CircularProgress from '@mui/material/CircularProgress';
 import Backdrop from '@mui/material/Backdrop';
 import toast from "react-hot-toast";
 import { HEADER_HEIGHT } from "@/app/lib/layout-constants";
 
-type HeaderProps = {
-  user: User | null;
-}
-
-export const Header = ({ user }: HeaderProps) => {
+export const Header = () => {
+  const user = useAuthUser();
   const [mobileOpen, setMobileOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const theme = useTheme();
-
-  useCookieTokenUpdater();
 
   const [isPending, startTransition] = useTransition()
 
@@ -44,7 +37,7 @@ export const Header = ({ user }: HeaderProps) => {
 
   const handleSignOut = async () => {
     try {
-      logoutUserAction();
+      await signOutClient();
       startTransition(() => {
         router.refresh();
       });
