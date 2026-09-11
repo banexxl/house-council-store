@@ -70,6 +70,8 @@ export const LoginPage = () => {
      const [doesRequire2FA, setDoesRequire2FA] = useState(false)
      const [twoFactorCode, setTwoFactorCode] = useState("")
      const [loading, setLoading] = useState(false)
+     const [googleLoading, setGoogleLoading] = useState(false)
+     const isBusy = loading || googleLoading
      const [isPending, startTransition] = useTransition()
      const [challengeId, setChallengeId] = useState<string>("")
      const [factorId, setFactorId] = useState<string>("")
@@ -341,6 +343,7 @@ export const LoginPage = () => {
                                                        onBlur={formik.handleBlur}
                                                        error={formik.touched.email && Boolean(formik.errors.email)}
                                                        helperText={formik.touched.email && formik.errors.email}
+                                                       disabled={isBusy}
                                                   />
                                              </Grid>
 
@@ -357,11 +360,12 @@ export const LoginPage = () => {
                                                        onBlur={formik.handleBlur}
                                                        error={formik.touched.password && Boolean(formik.errors.password)}
                                                        helperText={formik.touched.password && formik.errors.password}
+                                                       disabled={isBusy}
                                                        slotProps={{
                                                             input: {
                                                                  endAdornment: (
                                                                       <InputAdornment position="end">
-                                                                           <IconButton onClick={handleClickShowPassword} edge="end">
+                                                                           <IconButton onClick={handleClickShowPassword} edge="end" disabled={isBusy}>
                                                                                 {showPassword ? <VisibilityOff /> : <Visibility />}
                                                                            </IconButton>
                                                                       </InputAdornment>
@@ -381,12 +385,21 @@ export const LoginPage = () => {
                                                                       color="primary"
                                                                       checked={formik.values.rememberMe}
                                                                       onChange={formik.handleChange}
+                                                                      disabled={isBusy}
                                                                  />
                                                             }
                                                             label={<Typography variant="body2">Remember me</Typography>}
                                                        />
-                                                       <Link href="/auth/forgot-password" style={{ textDecoration: "none" }}>
-                                                            <Typography variant="body2" color="primary">
+                                                       <Link
+                                                            href="/auth/forgot-password"
+                                                            style={{
+                                                                 textDecoration: "none",
+                                                                 pointerEvents: isBusy ? "none" : "auto",
+                                                            }}
+                                                            aria-disabled={isBusy}
+                                                            tabIndex={isBusy ? -1 : undefined}
+                                                       >
+                                                            <Typography variant="body2" color={isBusy ? "text.disabled" : "primary"}>
                                                                  Forgot password?
                                                             </Typography>
                                                        </Link>
@@ -399,9 +412,10 @@ export const LoginPage = () => {
                                                        fullWidth
                                                        variant="contained"
                                                        size="large"
-                                                       disabled={loading || formik.isSubmitting || doesRequire2FA}
+                                                       disabled={isBusy || formik.isSubmitting || doesRequire2FA}
+                                                       startIcon={loading ? <CircularProgress size={20} color="inherit" /> : undefined}
                                                   >
-                                                       Sign In
+                                                       {loading ? "Signing in..." : "Sign In"}
                                                   </Button>
                                              </Grid>
                                         </Grid>
@@ -455,7 +469,8 @@ export const LoginPage = () => {
                                              <Button
                                                   fullWidth
                                                   variant="outlined"
-                                                  startIcon={<GoogleMultiColorIcon />}
+                                                  disabled={isBusy}
+                                                  startIcon={googleLoading ? <CircularProgress size={20} color="inherit" /> : <GoogleMultiColorIcon />}
                                                   sx={{
                                                        display: "flex",
                                                        alignItems: "center",
@@ -473,18 +488,27 @@ export const LoginPage = () => {
                                                             backgroundColor: "#f7f7f7",
                                                             borderColor: "#dcdcdc",
                                                        },
+                                                       "&.Mui-disabled": {
+                                                            backgroundColor: "white",
+                                                            color: "rgba(0, 0, 0, 0.38)",
+                                                       },
                                                   }}
                                                   onClick={async () => {
+                                                       setGoogleLoading(true)
                                                        const { success, error } = await handleGoogleSignIn()
                                                        if (success) {
                                                             router.push("/")
+                                                            return
                                                        }
+                                                       setGoogleLoading(false)
                                                        if (error) {
                                                             toast.error(error.message ?? error.hint ?? error.details)
                                                        }
                                                   }}
                                              >
-                                                  <Typography variant="body2">Continue with Google</Typography>
+                                                  <Typography variant="body2">
+                                                       {googleLoading ? "Redirecting..." : "Continue with Google"}
+                                                  </Typography>
                                              </Button>
                                         </Grid>
                                    </Grid>
