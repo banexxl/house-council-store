@@ -37,6 +37,7 @@ module.exports = {
           serverActions: {
                bodySizeLimit: "5MB",
           },
+          optimizePackageImports: ["@mui/material"],
      },
 };
 

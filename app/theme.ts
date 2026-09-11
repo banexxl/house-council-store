@@ -58,7 +58,7 @@ const theme = createTheme({
   },
   typography: {
     fontFamily:
-      '"Plus Jakarta Sans", "Segoe UI", "Inter", "Roboto", "Helvetica Neue", "Arial", sans-serif',
+      'var(--font-plus-jakarta-sans), "Segoe UI", "Inter", "Roboto", "Helvetica Neue", "Arial", sans-serif',
     h1: {
       fontWeight: 800,
       fontSize: "3.25rem",

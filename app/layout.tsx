@@ -1,9 +1,9 @@
 import type React from "react"
+import Script from "next/script"
 import { getSessionUser } from "@/app/lib/get-session"
 import { Providers } from "@/app/providers"
 import { Header } from "@/app/components/header"
-
-export const revalidate = 60; // ISR: revalidate every 60 seconds
+import { plusJakartaSans } from "@/app/lib/fonts"
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const user = await getSessionUser()
@@ -14,20 +14,18 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+      </head>
+      <body className={plusJakartaSans.variable}>
         {/* Google tag (gtag.js) */}
-        <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18137335805"></script>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
+        <Script async src="https://www.googletagmanager.com/gtag/js?id=AW-18137335805" strategy="afterInteractive" />
+        <Script id="gtag-init" strategy="afterInteractive">
+          {`
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
   gtag('config', 'AW-18137335805');
-            `,
-          }}
-        />
-      </head>
-      <body>
+          `}
+        </Script>
         <Providers>
           <Header key={user?.id || "guest"} user={user ? user : null} />
           {children}

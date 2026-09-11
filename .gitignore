@@ -28,3 +28,8 @@ next-env.d.ts
 
 # package-lock
 package-lock.json
+
+# playwright
+/e2e/.auth/
+/playwright-report/
+/test-results/
