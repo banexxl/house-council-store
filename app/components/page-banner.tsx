@@ -36,7 +36,7 @@ export const PageBanner: React.FC<PageBannerProps> = ({
       component="section"
       sx={{
         position: "relative",
-        height,
+        minHeight: height,
         display: "flex",
         alignItems: "flex-end",
         overflow: "hidden",
