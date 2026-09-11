@@ -117,9 +117,30 @@ const LandingPage = () => {
                               <Grid size={{ xs: 12, md: 7 }}>
                                    <Reveal>
                                         <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mb: 3 }}>
-                                             <Chip icon={<DashboardCustomizeIcon />} label="Web dashboard" sx={chipSx} />
-                                             <Chip icon={<PhoneIphoneIcon />} label="Mobile app" sx={chipSx} />
-                                             <Chip icon={<ApartmentIcon />} label="Per apartment pricing" sx={chipSx} />
+                                             <Chip
+                                                  icon={<DashboardCustomizeIcon />}
+                                                  label="Web dashboard"
+                                                  component="a"
+                                                  href={process.env.NEXT_PUBLIC_DASHBOARD_URL}
+                                                  target="_blank"
+                                                  rel="noopener noreferrer"
+                                                  clickable
+                                                  sx={chipSx}
+                                             />
+                                             <Chip
+                                                  icon={<PhoneIphoneIcon />}
+                                                  label="Mobile app"
+                                                  onClick={() => handleNavClick('/docs#installation')}
+                                                  clickable
+                                                  sx={chipSx}
+                                             />
+                                             <Chip
+                                                  icon={<ApartmentIcon />}
+                                                  label="Per apartment pricing"
+                                                  onClick={() => handleNavClick('/pricing')}
+                                                  clickable
+                                                  sx={chipSx}
+                                             />
                                         </Stack>
                                    </Reveal>
 
