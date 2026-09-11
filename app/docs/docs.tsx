@@ -65,7 +65,6 @@ const sections: DocSection[] = [
                <Box
                     component="video"
                     src={DOCS_VIDEO_URL}
-                    autoPlay
                     playsInline
                     controls
                     sx={{
