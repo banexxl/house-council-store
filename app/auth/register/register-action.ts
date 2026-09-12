@@ -47,11 +47,14 @@ export const registerUser = async (
      const supabaseAdmin = await useServerSideSupabaseServiceRoleClient();
      const supabase = await useServerSideSupabaseAnonClient();
 
-     const { data: tenantData, error: tenantError } = await supabase
-          .from('tblTenants')
-          .select('email')
-          .eq('email', values.email)
-          .maybeSingle();
+     // tblTenants/tblPolarCustomers RLS is scoped to the caller's own row —
+     // this pre-auth "is this email already taken" check has no session
+     // yet, so it goes through SECURITY DEFINER RPCs that only ever
+     // return existence/id, not the full row.
+     const { data: tenantId, error: tenantError } = await supabase.rpc(
+          'app_tenant_exists_by_email',
+          { p_email: values.email }
+     );
 
      if (tenantError) {
           await logServerAction({
@@ -65,7 +68,7 @@ export const registerUser = async (
           });
      }
 
-     if (tenantData?.email) {
+     if (tenantId) {
           return {
                success: false,
                error: {
@@ -77,12 +80,11 @@ export const registerUser = async (
           };
      }
 
-     const { data: customerData, error: customerError } = await supabase
-          .from('tblPolarCustomers')
-          .select('email')
-          .eq('email', values.email)
-          .is('deletedAt', null)
-          .maybeSingle();
+     const { data: customerRows, error: customerError } = await supabase.rpc(
+          'app_polar_customer_by_email',
+          { p_email: values.email }
+     );
+     const customerData = customerRows?.[0] ?? null;
 
      if (customerError) {
           await logServerAction({

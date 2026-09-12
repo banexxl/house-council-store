@@ -28,14 +28,14 @@ export async function checkUserPermissionServer(email: string): Promise<{ succes
      try {
           const supabase = await useServerSideSupabaseAnonClient();
 
-          const { data: tenantData, error: tenantError } = await supabase
-               .from('tblTenants')
-               .select('email')
-               .eq('email', email)
-               .maybeSingle();
+          // tblTenants/tblPolarCustomers RLS is scoped to the caller's own
+          // row — this pre-auth check has no session yet, so it goes
+          // through SECURITY DEFINER RPCs that only return existence/id.
+          const { data: tenantId } = await supabase.rpc('app_tenant_exists_by_email', {
+               p_email: email,
+          });
 
-
-          if (tenantData?.email) {
+          if (tenantId) {
                return {
                     success: false,
                     error: {
@@ -47,27 +47,14 @@ export async function checkUserPermissionServer(email: string): Promise<{ succes
                };
           }
 
-          const { data: customerData, error: customerError } = await supabase
-               .from('tblPolarCustomers')
-               .select('email, externalId')
-               .eq('email', email)
-               .is('deletedAt', null)
-               .single();
+          const { data: customerRows, error: customerError } = await supabase.rpc(
+               'app_polar_customer_by_email',
+               { p_email: email }
+          );
+          const customerData = customerRows?.[0] ?? null;
 
           if (customerError) {
                const serializedError = safeSerializeError(customerError);
-               if (serializedError.code === 'PGRST116') {
-                    return {
-                         success: false,
-                         error: {
-                              code: 'UserNotFound',
-                              details: 'No account found with this email',
-                              message: 'Invalid credentials',
-                              hint: 'Please try registering first or check your email address',
-                         },
-                    };
-               }
-
                return {
                     success: false,
                     error: {
@@ -75,6 +62,18 @@ export async function checkUserPermissionServer(email: string): Promise<{ succes
                          details: serializedError.details || 'Database query failed',
                          message: serializedError.message || 'Unknown error',
                          hint: 'Please try again later',
+                    },
+               };
+          }
+
+          if (!customerData) {
+               return {
+                    success: false,
+                    error: {
+                         code: 'UserNotFound',
+                         details: 'No account found with this email',
+                         message: 'Invalid credentials',
+                         hint: 'Please try registering first or check your email address',
                     },
                };
           }
